@@ -1,0 +1,40 @@
+8
+
+dir
+16846
+svn://svn.mplayerhq.hu/ffmpeg/trunk/libavutil/arm
+svn://svn.mplayerhq.hu/ffmpeg
+
+
+
+2009-01-13T23:44:16.634366Z
+16590
+aurel
+has-props
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+9553f0bf-9b14-0410-a0b8-cfaf0461ba5b
+
+bswap.h
+file
+
+
+
+
+2009-01-29T11:51:02.000000Z
+cfb38b02fb387497f52ed6016cd9da3d
+2009-01-13T23:44:16.634366Z
+16590
+aurel
+

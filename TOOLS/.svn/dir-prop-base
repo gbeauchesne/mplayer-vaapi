@@ -1,0 +1,29 @@
+K 10
+svn:ignore
+V 237
+alaw-gen
+alaw.dat
+alaw.out
+asfinfo
+avi-fix
+avisubdump
+bmovl-test
+compare
+cpuinfo
+dump_mp4
+modify_reg
+movinfo
+netstream
+subrip
+vivodump
+fastmem-mmx
+fastmem-k6
+fastmem-k7
+fastmem-sse
+fastmem2-mmx
+fastmem2-k6
+fastmem2-k7
+fastmem2-sse
+*.exe
+
+END

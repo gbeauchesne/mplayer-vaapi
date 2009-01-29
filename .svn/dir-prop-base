@@ -1,0 +1,31 @@
+K 13
+svn:externals
+V 349
+libavutil	svn://svn.ffmpeg.org/ffmpeg/trunk/libavutil
+libavcodec	svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec
+libavformat	svn://svn.ffmpeg.org/ffmpeg/trunk/libavformat
+libpostproc	svn://svn.ffmpeg.org/ffmpeg/trunk/libpostproc
+libdvdread4	svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdread/src
+libdvdnav	svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdnav/src
+
+K 10
+svn:ignore
+V 151
+*.d
+*.ho
+config.h
+config.mak
+configure.log
+gmplayer
+help_mp.h
+mencoder
+mplayer
+version.h
+codecs.conf.h
+codec-cfg
+codec-cfg-test
+codecs2html
+TAGS
+*.exe
+
+END

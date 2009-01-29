@@ -1,0 +1,52 @@
+8
+
+dir
+28382
+svn://svn.mplayerhq.hu/mplayer/trunk/rpm
+svn://svn.mplayerhq.hu/mplayer
+
+
+
+2008-07-07T09:30:22.719008Z
+27230
+diego
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+b3059339-0415-0410-9bf9-f77b7e298cf2
+
+mplayer-codecs.spec
+file
+
+
+
+
+2009-01-29T11:50:48.000000Z
+2ecf87668871a85bdb413fefdbf1c040
+2007-10-06T20:13:30.708709Z
+24714
+rathann
+
+mplayer.spec
+file
+
+
+
+
+2009-01-29T11:50:48.000000Z
+623aaa4f3000915807736716f2393f88
+2008-07-07T09:30:22.719008Z
+27230
+diego
+

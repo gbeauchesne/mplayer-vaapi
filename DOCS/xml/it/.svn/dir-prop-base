@@ -1,0 +1,9 @@
+K 10
+svn:ignore
+V 47
+main.xml
+encoding-guide.xml
+ports.xml
+skin.xml
+
+END

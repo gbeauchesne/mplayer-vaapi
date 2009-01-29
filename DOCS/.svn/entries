@@ -1,0 +1,63 @@
+8
+
+dir
+28382
+svn://svn.mplayerhq.hu/mplayer/trunk/DOCS
+svn://svn.mplayerhq.hu/mplayer
+
+
+
+2009-01-20T23:23:53.925705Z
+28347
+diego
+has-props
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+b3059339-0415-0410-9bf9-f77b7e298cf2
+
+xml
+dir
+
+tech
+dir
+
+man
+dir
+
+default.css
+file
+
+
+
+
+2009-01-29T11:50:48.000000Z
+2964d06b47cc3f87a59314843aee8e0f
+2002-08-13T11:20:12.000000Z
+6987
+jonas
+has-props
+
+README
+file
+
+
+
+
+2009-01-29T11:50:48.000000Z
+1a30d8da1440b760f175ce5da2fd48a2
+2008-12-27T13:58:20.457713Z
+28202
+diego
+has-props
+

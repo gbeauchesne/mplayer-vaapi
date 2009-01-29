@@ -1,0 +1,17 @@
+K 10
+svn:ignore
+V 137
+main.xml
+codecs.xml
+containers.xml
+encoding-guide.xml
+faq.xml
+history.xml
+install.xml
+ports.xml
+skin.xml
+tvinput.xml
+usage.xml
+video.xml
+
+END
