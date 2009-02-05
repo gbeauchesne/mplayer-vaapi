@@ -27,7 +27,7 @@
  */
 
 /**
- * @file h263.c
+ * @file libavcodec/h263.c
  * h263/mpeg4 codec.
  */
 
@@ -55,7 +55,6 @@
 #define H263_MBTYPE_B_VLC_BITS 6
 #define CBPC_B_VLC_BITS 3
 
-#if CONFIG_ENCODERS
 static void h263_encode_block(MpegEncContext * s, DCTELEM * block,
                               int n);
 static void h263p_encode_umotion(MpegEncContext * s, int val);
@@ -64,7 +63,6 @@ static inline void mpeg4_encode_block(MpegEncContext * s, DCTELEM * block,
                                PutBitContext *dc_pb, PutBitContext *ac_pb);
 static int mpeg4_get_block_length(MpegEncContext * s, DCTELEM * block, int n, int intra_dc,
                                   uint8_t *scan_table);
-#endif
 
 static int h263_decode_motion(MpegEncContext * s, int pred, int fcode);
 static int h263p_decode_umotion(MpegEncContext * s, int pred);
@@ -73,11 +71,11 @@ static int h263_decode_block(MpegEncContext * s, DCTELEM * block,
 static inline int mpeg4_decode_dc(MpegEncContext * s, int n, int *dir_ptr);
 static inline int mpeg4_decode_block(MpegEncContext * s, DCTELEM * block,
                               int n, int coded, int intra, int rvlc);
-#if CONFIG_ENCODERS
+
 static int h263_pred_dc(MpegEncContext * s, int n, int16_t **dc_val_ptr);
 static void mpeg4_encode_visual_object_header(MpegEncContext * s);
 static void mpeg4_encode_vol_header(MpegEncContext * s, int vo_number, int vol_number);
-#endif //CONFIG_ENCODERS
+
 static void mpeg4_decode_sprite_trajectory(MpegEncContext * s, GetBitContext *gb);
 static inline int ff_mpeg4_pred_dc(MpegEncContext * s, int n, int level, int *dir_ptr, int encoding);
 
@@ -3296,10 +3294,10 @@ void ff_mpeg4_clean_buffers(MpegEncContext *s)
 
 /**
  * decodes the group of blocks / video packet header.
- * @return <0 if no resync found
+ * @return bit position of the resync_marker, or <0 if none was found
  */
 int ff_h263_resync(MpegEncContext *s){
-    int left, ret;
+    int left, pos, ret;
 
     if(s->codec_id==CODEC_ID_MPEG4){
         skip_bits1(&s->gb);
@@ -3307,12 +3305,13 @@ int ff_h263_resync(MpegEncContext *s){
     }
 
     if(show_bits(&s->gb, 16)==0){
+        pos= get_bits_count(&s->gb);
         if(s->codec_id==CODEC_ID_MPEG4)
             ret= mpeg4_decode_video_packet_header(s);
         else
             ret= h263_decode_gob_header(s);
         if(ret>=0)
-            return 0;
+            return pos;
     }
     //OK, it's not where it is supposed to be ...
     s->gb= s->last_resync_gb;
@@ -3323,12 +3322,13 @@ int ff_h263_resync(MpegEncContext *s){
         if(show_bits(&s->gb, 16)==0){
             GetBitContext bak= s->gb;
 
+            pos= get_bits_count(&s->gb);
             if(s->codec_id==CODEC_ID_MPEG4)
                 ret= mpeg4_decode_video_packet_header(s);
             else
                 ret= h263_decode_gob_header(s);
             if(ret>=0)
-                return 0;
+                return pos;
 
             s->gb= bak;
         }
@@ -5491,7 +5491,7 @@ static int decode_vol_header(MpegEncContext *s, GetBitContext *gb){
 
     if ((s->vol_control_parameters=get_bits1(gb))) { /* vol control parameter */
         int chroma_format= get_bits(gb, 2);
-        if(chroma_format!=1){
+        if(chroma_format!=CHROMA_420){
             av_log(s->avctx, AV_LOG_ERROR, "illegal chroma format\n");
         }
         s->low_delay= get_bits1(gb);

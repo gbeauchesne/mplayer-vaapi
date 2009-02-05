@@ -81,7 +81,7 @@ typedef struct AVMetadata AVMetadata;
 /**
  * gets a metadata element with matching key.
  * @param prev set to the previous matching element to find the next.
- * @param flags allows case as well as suffix insensitive comparissions.
+ * @param flags allows case as well as suffix insensitive comparisons.
  * @return found tag or NULL, changing key or value leads to undefined behavior.
  */
 AVMetadataTag *
@@ -89,10 +89,11 @@ av_metadata_get(AVMetadata *m, const char *key, const AVMetadataTag *prev, int f
 
 /**
  * sets the given tag in m, overwriting an existing tag.
- * @param tag tag to add to m, key and value will be av_strduped.
+ * @param key tag key to add to m (will be av_strduped).
+ * @param value tag value to add to m (will be av_strduped).
  * @return >= 0 if success otherwise error code that is <0.
  */
-int av_metadata_set(AVMetadata **m, AVMetadataTag tag);
+int av_metadata_set(AVMetadata **pm, const char *key, const char *value);
 
 /**
  * Free all the memory allocated for an AVMetadata struct.
@@ -1196,7 +1197,7 @@ int avf_sdp_create(AVFormatContext *ac[], int n_files, char *buff, int size);
 
 #ifdef HAVE_AV_CONFIG_H
 
-void ff_dynarray_add(unsigned long **tab_ptr, int *nb_ptr, unsigned long elem);
+void ff_dynarray_add(intptr_t **tab_ptr, int *nb_ptr, intptr_t elem);
 
 #ifdef __GNUC__
 #define dynarray_add(tab, nb_ptr, elem)\
@@ -1204,12 +1205,12 @@ do {\
     __typeof__(tab) _tab = (tab);\
     __typeof__(elem) _elem = (elem);\
     (void)sizeof(**_tab == _elem); /* check that types are compatible */\
-    ff_dynarray_add((unsigned long **)_tab, nb_ptr, (unsigned long)_elem);\
+    ff_dynarray_add((intptr_t **)_tab, nb_ptr, (intptr_t)_elem);\
 } while(0)
 #else
 #define dynarray_add(tab, nb_ptr, elem)\
 do {\
-    ff_dynarray_add((unsigned long **)(tab), nb_ptr, (unsigned long)(elem));\
+    ff_dynarray_add((intptr_t **)(tab), nb_ptr, (intptr_t)(elem));\
 } while(0)
 #endif
 

@@ -29,6 +29,7 @@ OBJS-$(CONFIG_ENCODERS)                += faandct.o jfdctfst.o jfdctint.o
 OBJS-$(CONFIG_FFT)                     += fft.o
 OBJS-$(CONFIG_GOLOMB)                  += golomb.o
 OBJS-$(CONFIG_MDCT)                    += mdct.o
+OBJS-$(CONFIG_RDFT)                    += rdft.o
 OBJS-$(CONFIG_OLDSCALER)               += imgresample.o
 
 # decoders/encoders
@@ -74,6 +75,7 @@ OBJS-$(CONFIG_EAC3_DECODER)            += eac3dec.o ac3dec.o ac3tab.o ac3dec_dat
 OBJS-$(CONFIG_EACMV_DECODER)           += eacmv.o
 OBJS-$(CONFIG_EATGQ_DECODER)           += eatgq.o eaidct.o
 OBJS-$(CONFIG_EATGV_DECODER)           += eatgv.o
+OBJS-$(CONFIG_EATQI_DECODER)           += eatqi.o eaidct.o
 OBJS-$(CONFIG_EIGHTBPS_DECODER)        += 8bps.o
 OBJS-$(CONFIG_EIGHTSVX_EXP_DECODER)    += 8svx.o
 OBJS-$(CONFIG_EIGHTSVX_FIB_DECODER)    += 8svx.o

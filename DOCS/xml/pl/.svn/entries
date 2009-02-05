@@ -1,7 +1,7 @@
 8
 
 dir
-28382
+28469
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/pl
 svn://svn.mplayerhq.hu/mplayer
 
@@ -64,19 +64,6 @@ a1e69fc97dab6e30a7d423c40a0b070d
 torinthiel
 has-props
 
-mencoder.xml
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-5a38ad8541d2361915b7878aba0dd7aa
-2008-07-15T22:22:25.958704Z
-27292
-diego
-has-props
-
 bugreports.xml
 file
 
@@ -88,6 +75,19 @@ bbee5210db49e98b9df0cc180bc85ccf
 2007-01-04T09:02:22.993689Z
 21814
 torinthiel
+has-props
+
+mencoder.xml
+file
+
+
+
+
+2009-01-29T11:50:47.000000Z
+5a38ad8541d2361915b7878aba0dd7aa
+2008-07-15T22:22:25.958704Z
+27292
+diego
 has-props
 
 radio.xml
@@ -102,16 +102,16 @@ file
 23737
 torinthiel
 
-html-common.xsl
+bugs.xml
 file
 
 
 
 
 2009-01-29T11:50:47.000000Z
-a737e4352bf8e373053e9a2afb2abe7c
-2006-12-17T09:10:26.961916Z
-21644
+f2b9b8459de4a8e8e99b42a4ecdb1767
+2006-12-19T11:23:07.582649Z
+21687
 torinthiel
 has-props
 
@@ -128,16 +128,16 @@ file
 gpoirier
 has-props
 
-bugs.xml
+html-common.xsl
 file
 
 
 
 
 2009-01-29T11:50:47.000000Z
-f2b9b8459de4a8e8e99b42a4ecdb1767
-2006-12-19T11:23:07.582649Z
-21687
+a737e4352bf8e373053e9a2afb2abe7c
+2006-12-17T09:10:26.961916Z
+21644
 torinthiel
 has-props
 
@@ -154,19 +154,6 @@ fae3f70b833a3c0697b054e165c08142
 torinthiel
 has-props
 
-skin.xml
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-d552992eb46a53c3235fd038083b3d69
-2006-10-30T21:25:02.533299Z
-20540
-kraymer
-has-props
-
 usage.xml
 file
 
@@ -178,6 +165,19 @@ file
 2006-12-23T23:28:04.690918Z
 21751
 torinthiel
+has-props
+
+skin.xml
+file
+
+
+
+
+2009-01-29T11:50:47.000000Z
+d552992eb46a53c3235fd038083b3d69
+2006-10-30T21:25:02.533299Z
+20540
+kraymer
 has-props
 
 containers.xml
@@ -193,19 +193,6 @@ file
 torinthiel
 has-props
 
-install.xml
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-ff1afb387d43e14332d7f6d4a908e839
-2006-12-23T17:00:22.628680Z
-21743
-torinthiel
-has-props
-
 video.xml
 file
 
@@ -216,6 +203,19 @@ file
 daf624bd7d25e6d3004d1857cf958682
 2006-12-23T15:58:02.172201Z
 21741
+torinthiel
+has-props
+
+install.xml
+file
+
+
+
+
+2009-01-29T11:50:47.000000Z
+ff1afb387d43e14332d7f6d4a908e839
+2006-12-23T17:00:22.628680Z
+21743
 torinthiel
 has-props
 

@@ -20,7 +20,7 @@
  */
 
 /**
- * @file mpc.c Musepack decoder core
+ * @file libavcodec/mpc.c Musepack decoder core
  * MPEG Audio Layer 1/2 -like codec with frames of 1152 samples
  * divided into 32 subbands.
  */
@@ -36,7 +36,7 @@
 
 static DECLARE_ALIGNED_16(MPA_INT, mpa_window[512]);
 
-void ff_mpc_init()
+void ff_mpc_init(void)
 {
     ff_mpa_synth_init(mpa_window);
 }

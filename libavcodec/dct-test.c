@@ -20,8 +20,8 @@
  */
 
 /**
- * @file dct-test.c
- * DCT test. (c) 2001 Fabrice Bellard.
+ * @file libavcodec/dct-test.c
+ * DCT test (c) 2001 Fabrice Bellard
  * Started from sample code by Juan J. Sierralta P.
  */
 
@@ -48,7 +48,7 @@ void *fast_memcpy(void *a, const void *b, size_t c){return memcpy(a,b,c);};
 /* reference fdct/idct */
 void fdct(DCTELEM *block);
 void idct(DCTELEM *block);
-void init_fdct();
+void init_fdct(void);
 
 void ff_mmx_idct(DCTELEM *data);
 void ff_mmxext_idct(DCTELEM *data);

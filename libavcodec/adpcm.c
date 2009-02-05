@@ -23,7 +23,7 @@
 #include "bytestream.h"
 
 /**
- * @file adpcm.c
+ * @file libavcodec/adpcm.c
  * ADPCM codecs.
  * First version by Francois Revol (revol@free.fr)
  * Fringe ADPCM codecs (e.g., DK3, DK4, Westwood)
@@ -105,11 +105,6 @@ static const int xa_adpcm_table[5][2] = {
 static const int ea_adpcm_table[] = {
     0, 240, 460, 392, 0, 0, -208, -220, 0, 1,
     3, 4, 7, 8, 10, 11, 0, -1, -3, -4
-};
-
-static const int ct_adpcm_table[8] = {
-    0x00E6, 0x00E6, 0x00E6, 0x00E6,
-    0x0133, 0x0199, 0x0200, 0x0266
 };
 
 // padded to zero where table size is less then 16
@@ -759,7 +754,7 @@ static inline short adpcm_ct_expand_nibble(ADPCMChannelStatus *c, char nibble)
     c->predictor = ((c->predictor * 254) >> 8) + (sign ? -diff : diff);
     c->predictor = av_clip_int16(c->predictor);
     /* calculate new step and clamp it to range 511..32767 */
-    new_step = (ct_adpcm_table[nibble & 7] * c->step) >> 8;
+    new_step = (AdaptationTable[nibble & 7] * c->step) >> 8;
     c->step = av_clip(new_step, 511, 32767);
 
     return (short)c->predictor;
@@ -1290,6 +1285,7 @@ static int adpcm_decode_frame(AVCodecContext *avctx,
         unsigned int channel;
         uint16_t *samplesC;
         const uint8_t *srcC;
+        const uint8_t *src_end = buf + buf_size;
 
         samples_in_chunk = (big_endian ? bytestream_get_be32(&src)
                                        : bytestream_get_le32(&src)) / 28;
@@ -1300,9 +1296,12 @@ static int adpcm_decode_frame(AVCodecContext *avctx,
         }
 
         for (channel=0; channel<avctx->channels; channel++) {
-            srcC = src + (big_endian ? bytestream_get_be32(&src)
-                                     : bytestream_get_le32(&src))
-                       + (avctx->channels-channel-1) * 4;
+            int32_t offset = (big_endian ? bytestream_get_be32(&src)
+                                         : bytestream_get_le32(&src))
+                           + (avctx->channels-channel-1) * 4;
+
+            if ((offset < 0) || (offset >= src_end - src - 4)) break;
+            srcC  = src + offset;
             samplesC = samples + channel;
 
             if (avctx->codec->id == CODEC_ID_ADPCM_EA_R1) {
@@ -1316,6 +1315,7 @@ static int adpcm_decode_frame(AVCodecContext *avctx,
             for (count1=0; count1<samples_in_chunk; count1++) {
                 if (*srcC == 0xEE) {  /* only seen in R2 and R3 */
                     srcC++;
+                    if (srcC > src_end - 30*2) break;
                     current_sample  = (int16_t)bytestream_get_be16(&srcC);
                     previous_sample = (int16_t)bytestream_get_be16(&srcC);
 
@@ -1328,6 +1328,7 @@ static int adpcm_decode_frame(AVCodecContext *avctx,
                     coeff2 = ea_adpcm_table[(*srcC>>4) + 4];
                     shift = (*srcC++ & 0x0F) + 8;
 
+                    if (srcC > src_end - 14) break;
                     for (count2=0; count2<28; count2++) {
                         if (count2 & 1)
                             next_sample = (int32_t)((*srcC++ & 0x0F) << 28) >> shift;

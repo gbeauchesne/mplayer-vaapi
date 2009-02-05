@@ -22,7 +22,7 @@
 #define AVCODEC_AVCODEC_H
 
 /**
- * @file avcodec.h
+ * @file libavcodec/avcodec.h
  * external API header
  */
 
@@ -30,7 +30,7 @@
 #include "libavutil/avutil.h"
 
 #define LIBAVCODEC_VERSION_MAJOR 52
-#define LIBAVCODEC_VERSION_MINOR 11
+#define LIBAVCODEC_VERSION_MINOR 12
 #define LIBAVCODEC_VERSION_MICRO  0
 
 #define LIBAVCODEC_VERSION_INT  AV_VERSION_INT(LIBAVCODEC_VERSION_MAJOR, \
@@ -190,6 +190,7 @@ enum CodecID {
     CODEC_ID_MOTIONPIXELS,
     CODEC_ID_TGV,
     CODEC_ID_TGQ,
+    CODEC_ID_TQI,
 
     /* various PCM "codecs" */
     CODEC_ID_PCM_S16LE= 0x10000,
@@ -2858,7 +2859,7 @@ int avcodec_encode_audio(AVCodecContext *avctx, uint8_t *buf, int buf_size,
  * @param[in] buf_size the size of the output buffer in bytes
  * @param[in] pict the input picture to encode
  * @return On error a negative value is returned, on success zero or the number
- * of bytes used from the input buffer.
+ * of bytes used from the output buffer.
  */
 int avcodec_encode_video(AVCodecContext *avctx, uint8_t *buf, int buf_size,
                          const AVFrame *pict);

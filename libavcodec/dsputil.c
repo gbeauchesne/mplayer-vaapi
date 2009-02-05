@@ -23,7 +23,7 @@
  */
 
 /**
- * @file dsputil.c
+ * @file libavcodec/dsputil.c
  * DSP utils
  */
 
@@ -4496,9 +4496,6 @@ void dsputil_init(DSPContext* c, AVCodecContext *avctx)
 #endif
 #if CONFIG_WMV2_DECODER || CONFIG_VC1_DECODER || CONFIG_WMV3_DECODER
     ff_intrax8dsp_init(c,avctx);
-#endif
-#if CONFIG_H264_ENCODER
-    ff_h264dspenc_init(c,avctx);
 #endif
 #if CONFIG_RV30_DECODER
     ff_rv30dsp_init(c,avctx);

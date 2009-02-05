@@ -1,7 +1,7 @@
 8
 
 dir
-28382
+28469
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/fr
 svn://svn.mplayerhq.hu/mplayer
 
@@ -39,19 +39,6 @@ a971c715713a45f0eb9c3632f6772754
 gpoirier
 has-props
 
-mencoder.xml
-file
-
-
-
-
-2009-01-29T11:50:45.000000Z
-4d56131bfac36d87f4ed4fa5fa022623
-2008-05-22T11:08:55.079898Z
-26852
-gpoirier
-has-props
-
 bugreports.xml
 file
 
@@ -63,6 +50,19 @@ b8e93d55a3ca6a739132260459a407d8
 2009-01-05T10:22:40.659632Z
 28260
 diego
+has-props
+
+mencoder.xml
+file
+
+
+
+
+2009-01-29T11:50:45.000000Z
+4d56131bfac36d87f4ed4fa5fa022623
+2008-05-22T11:08:55.079898Z
+26852
+gpoirier
 has-props
 
 radio.xml
@@ -103,19 +103,6 @@ a53f675ed3e91a562296b6ad53f322d4
 gpoirier
 has-props
 
-usage.xml
-file
-
-
-
-
-2009-01-29T11:50:45.000000Z
-59b2cd01becc6540988afeb10ef5ecef
-2008-05-22T11:08:55.079898Z
-26852
-gpoirier
-has-props
-
 skin.xml
 file
 
@@ -129,6 +116,19 @@ d000d4ded9e3b47c5b3438f785a0167a
 kraymer
 has-props
 
+usage.xml
+file
+
+
+
+
+2009-01-29T11:50:45.000000Z
+59b2cd01becc6540988afeb10ef5ecef
+2008-05-22T11:08:55.079898Z
+26852
+gpoirier
+has-props
+
 containers.xml
 file
 
@@ -139,19 +139,6 @@ file
 e95415bab1c2eb8047c442cbb717037e
 2008-06-20T20:11:57.279520Z
 27110
-gpoirier
-has-props
-
-video.xml
-file
-
-
-
-
-2009-01-29T11:50:45.000000Z
-37bd76eb563fef1eb0d566711f73c370
-2008-06-11T20:29:47.367332Z
-27051
 gpoirier
 has-props
 
@@ -168,16 +155,16 @@ ac275a79bc02e68d4dcaf169b7126fb5
 gpoirier
 has-props
 
-ports.xml
+video.xml
 file
 
 
 
 
 2009-01-29T11:50:45.000000Z
-3378fbaaad9aa4d99d63ee3462e97852
-2008-06-03T14:49:54.651794Z
-26974
+37bd76eb563fef1eb0d566711f73c370
+2008-06-11T20:29:47.367332Z
+27051
 gpoirier
 has-props
 
@@ -194,16 +181,16 @@ file
 diego
 has-props
 
-tvinput.xml
+ports.xml
 file
 
 
 
 
 2009-01-29T11:50:45.000000Z
-f2f5535a1de1dea2428cbb111ad06e7f
-2008-06-11T20:36:34.264302Z
-27053
+3378fbaaad9aa4d99d63ee3462e97852
+2008-06-03T14:49:54.651794Z
+26974
 gpoirier
 has-props
 
@@ -218,6 +205,19 @@ file
 2009-01-05T12:50:53.491468Z
 28266
 Gabrov
+has-props
+
+tvinput.xml
+file
+
+
+
+
+2009-01-29T11:50:45.000000Z
+f2f5535a1de1dea2428cbb111ad06e7f
+2008-06-11T20:36:34.264302Z
+27053
+gpoirier
 has-props
 
 Makefile

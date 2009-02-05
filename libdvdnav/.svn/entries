@@ -1,15 +1,15 @@
 8
 
 dir
-1166
+1167
 svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdnav/src
 svn://svn.mplayerhq.hu/dvdnav
 
 
 
-2009-01-12T12:10:32.987028Z
-1166
-diego
+2009-02-02T22:55:58.288786Z
+1167
+nicodvb
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -155,11 +155,11 @@ file
 
 
 
-2009-01-29T11:51:06.000000Z
-1b88dd35a1c4458f4f887c45df2252ad
-2008-12-30T14:48:46.622410Z
-1160
-reimar
+2009-02-05T14:32:47.000000Z
+82aa5e53a0c7d20b1d732689da8b92e4
+2009-02-02T22:55:58.288786Z
+1167
+nicodvb
 has-props
 
 dvdnav_internal.h

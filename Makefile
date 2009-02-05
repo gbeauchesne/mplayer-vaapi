@@ -851,7 +851,7 @@ codec-cfg.d: codecs.conf.h
 mpcommon.d vobsub.d gui/win32/gui.d libmpdemux/muxer_avi.d osdep/mplayer-rc.o stream/network.d stream/stream_cddb.d: version.h
 $(DEPS): help_mp.h
 
-libdvdcss/%.o libdvdcss/%.d: CFLAGS += -D__USE_UNIX98 -D_GNU_SOURCE -DVERSION=\"1.2.9\" $(CFLAGS_LIBDVDCSS)
+libdvdcss/%.o libdvdcss/%.d: CFLAGS += -D__USE_UNIX98 -D_GNU_SOURCE -DVERSION=\"1.2.10\" $(CFLAGS_LIBDVDCSS)
 libdvdnav/%.o libdvdnav/%.d: CFLAGS += -D__USE_UNIX98 -D_GNU_SOURCE -DHAVE_CONFIG_H -DVERSION=\"MPlayer-custom\"
 libdvdread4/%.o libdvdread4/%.d: CFLAGS += -D__USE_UNIX98 -D_GNU_SOURCE -DHAVE_CONFIG_H $(CFLAGS_LIBDVDCSS_DVDREAD)
 libfaad2/%.o libfaad2/%.d: CFLAGS += -Ilibfaad2 -D_GNU_SOURCE -DHAVE_CONFIG_H $(CFLAGS_FAAD_FIXED)
@@ -869,8 +869,8 @@ vidix/%: CFLAGS += $(CFLAGS_DHAHELPER) $(CFLAGS_SVGALIB_HELPER)
 VIDIX_PCI_FILES = vidix/pci_dev_ids.c vidix/pci_ids.h vidix/pci_names.c \
                   vidix/pci_names.h vidix/pci_vendors.h
 
-$(VIDIX_PCI_FILES): vidix/pci.db vidix/pci_db2c.awk
-	awk -f vidix/pci_db2c.awk $< $(VIDIX_PCIDB)
+$(VIDIX_PCI_FILES): vidix/pci_db2c.awk vidix/pci.db
+	awk -f $^ $(VIDIX_PCIDB)
 
 VIDIX_DEPS = $(filter vidix/%,$(SRCS_MPLAYER:.c=.d))
 VIDIX_OBJS = $(filter vidix/%,$(SRCS_MPLAYER:.c=.o))
@@ -903,7 +903,7 @@ install-mencoder-man-en: install-mplayer-man-en
 
 install-mplayer-man-en:
 	$(INSTALL) -d $(MANDIR)/man1
-	$(INSTALL) -c -m 644 DOCS/man/en/mplayer.1 $(MANDIR)/man1/
+	$(INSTALL) -m 644 DOCS/man/en/mplayer.1 $(MANDIR)/man1/
 
 define MENCODER_MAN_RULE
 install-mencoder-man-$(lang): install-mplayer-man-$(lang)
@@ -913,7 +913,7 @@ endef
 define MPLAYER_MAN_RULE
 install-mplayer-man-$(lang):
 	$(INSTALL) -d $(MANDIR)/$(lang)/man1
-	$(INSTALL) -c -m 644 DOCS/man/$(lang)/mplayer.1 $(MANDIR)/$(lang)/man1/
+	$(INSTALL) -m 644 DOCS/man/$(lang)/mplayer.1 $(MANDIR)/$(lang)/man1/
 endef
 
 $(foreach lang,$(filter-out en,$(MAN_LANG_ALL)),$(eval $(MENCODER_MAN_RULE)))
@@ -935,7 +935,7 @@ clean:
 distclean: clean testsclean toolsclean driversclean dhahelperclean dhahelperwinclean
 	rm -rf DOCS/tech/doxygen
 	rm -f $(foreach dir,$(DIRS),$(foreach suffix,/*.d, $(addsuffix $(suffix),$(dir))))
-	rm -f configure.log config.mak config.h	codecs.conf.h help_mp.h \
+	rm -f configure.log config.mak config.h codecs.conf.h help_mp.h \
            version.h $(VIDIX_PCI_FILES) \
            codec-cfg$(EXESUF) cpuinfo$(EXESUF) TAGS tags
 

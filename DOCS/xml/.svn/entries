@@ -1,15 +1,15 @@
 8
 
 dir
-28382
+28469
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-01-05T12:50:53.491468Z
-28266
-Gabrov
+2009-02-01T13:11:23.865134Z
+28432
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -106,9 +106,6 @@ dir
 cs
 dir
 
-xsl
-dir
-
 README.maintainers
 file
 
@@ -122,10 +119,13 @@ d6e00e9d4a8bf9add86bd157fb10dd08
 torinthiel
 has-props
 
-fr
+xsl
 dir
 
 es
+dir
+
+fr
 dir
 
 pl

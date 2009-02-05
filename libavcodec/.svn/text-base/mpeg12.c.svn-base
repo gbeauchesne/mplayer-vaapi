@@ -21,7 +21,7 @@
  */
 
 /**
- * @file mpeg12.c
+ * @file libavcodec/mpeg12.c
  * MPEG-1/2 decoder
  */
 
@@ -47,9 +47,6 @@
 #define MB_BTYPE_VLC_BITS 6
 
 static inline int mpeg1_decode_block_inter(MpegEncContext *s,
-                              DCTELEM *block,
-                              int n);
-static inline int mpeg1_decode_block_intra(MpegEncContext *s,
                               DCTELEM *block,
                               int n);
 static inline int mpeg1_fast_decode_block_inter(MpegEncContext *s, DCTELEM *block, int n);
@@ -327,7 +324,7 @@ static int mpeg_decode_mb(MpegEncContext *s,
             }
         } else {
             for(i=0;i<6;i++) {
-                if (mpeg1_decode_block_intra(s, s->pblocks[i], i) < 0)
+                if (ff_mpeg1_decode_block_intra(s, s->pblocks[i], i) < 0)
                     return -1;
             }
         }
@@ -614,7 +611,7 @@ static int mpeg_decode_motion(MpegEncContext *s, int fcode, int pred)
     return val;
 }
 
-static inline int mpeg1_decode_block_intra(MpegEncContext *s,
+inline int ff_mpeg1_decode_block_intra(MpegEncContext *s,
                                DCTELEM *block,
                                int n)
 {
@@ -633,7 +630,7 @@ static inline int mpeg1_decode_block_intra(MpegEncContext *s,
     dc = s->last_dc[component];
     dc += diff;
     s->last_dc[component] = dc;
-    block[0] = dc<<3;
+    block[0] = dc*quant_matrix[0];
     dprintf(s->avctx, "dc=%d diff=%d\n", dc, diff);
     i = 0;
     {

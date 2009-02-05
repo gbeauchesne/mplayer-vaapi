@@ -46,17 +46,17 @@ mp_input_lirc_init(void) {
     return -1;
   }
 
-  if(lirc_readconfig( lirc_configfile,&lirc_config,NULL )!=0 ){
-    mp_msg(MSGT_LIRC,MSGL_ERR,MSGTR_LIRCcfgerr,
-		    lirc_configfile == NULL ? "~/.lircrc" : lirc_configfile);
-    lirc_deinit();
-    return -1;
-  }
-
   mode = fcntl(lirc_sock, F_GETFL);
   if (mode < 0 || fcntl(lirc_sock, F_SETFL, mode | O_NONBLOCK) < 0) {
     mp_msg(MSGT_LIRC, MSGL_ERR, "setting non-blocking mode failed: %s\n",
 	strerror(errno));
+    lirc_deinit();
+    return -1;
+  }
+
+  if(lirc_readconfig( lirc_configfile,&lirc_config,NULL )!=0 ){
+    mp_msg(MSGT_LIRC,MSGL_ERR,MSGTR_LIRCcfgerr,
+		    lirc_configfile == NULL ? "~/.lircrc" : lirc_configfile);
     lirc_deinit();
     return -1;
   }
@@ -84,7 +84,7 @@ int mp_input_lirc_read(int fd,char* dest, int s) {
       
   // Nothing in the buffer, poll the lirc fd
   if(lirc_nextcode(&code) != 0) {
-    mp_msg(MSGT_INPUT,MSGL_ERR,"Lirc error :(\n");
+    mp_msg(MSGT_LIRC,MSGL_ERR,"Lirc error :(\n");
     return MP_INPUT_DEAD;
   }
 

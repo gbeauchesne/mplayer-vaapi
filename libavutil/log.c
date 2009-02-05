@@ -20,8 +20,8 @@
  */
 
 /**
- * @file log.c
- * log.
+ * @file libavutil/log.c
+ * logging functions
  */
 
 #include "avutil.h"

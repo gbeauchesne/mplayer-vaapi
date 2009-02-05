@@ -1,7 +1,7 @@
 8
 
 dir
-28382
+28469
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/ru
 svn://svn.mplayerhq.hu/mplayer
 
@@ -39,19 +39,6 @@ file
 voroshil
 has-props
 
-mencoder.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-de1e358b5e14a4d9fe1dd06b4c67a07d
-2008-05-21T17:12:57.693851Z
-26847
-voroshil
-has-props
-
 bugreports.xml
 file
 
@@ -65,6 +52,19 @@ file
 voroshil
 has-props
 
+mencoder.xml
+file
+
+
+
+
+2009-01-29T11:50:44.000000Z
+de1e358b5e14a4d9fe1dd06b4c67a07d
+2008-05-21T17:12:57.693851Z
+26847
+voroshil
+has-props
+
 radio.xml
 file
 
@@ -73,6 +73,19 @@ file
 
 2009-01-29T11:50:44.000000Z
 7e7c7c58ede339fd1926778c87ba2a33
+2007-06-11T07:39:06.223589Z
+23545
+voroshil
+has-props
+
+bugs.xml
+file
+
+
+
+
+2009-01-29T11:50:44.000000Z
+25b834efac7c5639f4967d1b53ff39d6
 2007-06-11T07:39:06.223589Z
 23545
 voroshil
@@ -91,19 +104,6 @@ file
 voroshil
 has-props
 
-bugs.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-25b834efac7c5639f4967d1b53ff39d6
-2007-06-11T07:39:06.223589Z
-23545
-voroshil
-has-props
-
 cd-dvd.xml
 file
 
@@ -114,19 +114,6 @@ file
 d40e494915d9ec831b8fc054b303d233
 2007-09-06T20:03:01.858135Z
 24354
-voroshil
-has-props
-
-usage.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-610af8c8cda5dd8418f9ce6b4c2e9502
-2007-11-28T15:29:00.673287Z
-25191
 voroshil
 has-props
 
@@ -143,6 +130,19 @@ file
 voroshil
 has-props
 
+usage.xml
+file
+
+
+
+
+2009-01-29T11:50:44.000000Z
+610af8c8cda5dd8418f9ce6b4c2e9502
+2007-11-28T15:29:00.673287Z
+25191
+voroshil
+has-props
+
 containers.xml
 file
 
@@ -151,19 +151,6 @@ file
 
 2009-01-29T11:50:44.000000Z
 646c2591e6da3e34b017d0b33ce9728f
-2007-08-22T09:56:42.756375Z
-24117
-voroshil
-has-props
-
-install.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-16f9af713d775c8bc177e30e1593ecc5
 2007-08-22T09:56:42.756375Z
 24117
 voroshil
@@ -182,16 +169,16 @@ ec9ec88270f31ffb6ab9f8d7dbcc9704
 voroshil
 has-props
 
-ports.xml
+install.xml
 file
 
 
 
 
 2009-01-29T11:50:44.000000Z
-71acfc2e30c4e7e7af0063c3e8a5b7ff
-2008-02-10T06:53:35.893540Z
-25971
+16f9af713d775c8bc177e30e1593ecc5
+2007-08-22T09:56:42.756375Z
+24117
 voroshil
 has-props
 
@@ -206,6 +193,19 @@ ebbcff606687164cad9e906ff8a4b688
 2009-01-04T23:10:47.157943Z
 28249
 diego
+has-props
+
+ports.xml
+file
+
+
+
+
+2009-01-29T11:50:44.000000Z
+71acfc2e30c4e7e7af0063c3e8a5b7ff
+2008-02-10T06:53:35.893540Z
+25971
+voroshil
 has-props
 
 documentation.xml

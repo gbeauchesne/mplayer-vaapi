@@ -22,7 +22,7 @@
  */
 
 /**
- * @file fft.c
+ * @file libavcodec/fft.c
  * FFT/IFFT transforms.
  */
 
@@ -42,7 +42,7 @@ DECLARE_ALIGNED_16(FFTSample, ff_cos_8192[4096]);
 DECLARE_ALIGNED_16(FFTSample, ff_cos_16384[8192]);
 DECLARE_ALIGNED_16(FFTSample, ff_cos_32768[16384]);
 DECLARE_ALIGNED_16(FFTSample, ff_cos_65536[32768]);
-static FFTSample *ff_cos_tabs[] = {
+FFTSample *ff_cos_tabs[] = {
     ff_cos_16, ff_cos_32, ff_cos_64, ff_cos_128, ff_cos_256, ff_cos_512, ff_cos_1024,
     ff_cos_2048, ff_cos_4096, ff_cos_8192, ff_cos_16384, ff_cos_32768, ff_cos_65536,
 };
@@ -206,7 +206,7 @@ void ff_fft_permute_c(FFTContext *s, FFTComplex *z)
     }
 }
 
-void ff_fft_end(FFTContext *s)
+av_cold void ff_fft_end(FFTContext *s)
 {
     av_freep(&s->revtab);
     av_freep(&s->exptab);

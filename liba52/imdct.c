@@ -11,7 +11,7 @@
  *
  * Modified for use with MPlayer, changes contained in liba52_changes.diff.
  * detailed changelog at http://svn.mplayerhq.hu/mplayer/trunk/
- * $Id: imdct.c 28370 2009-01-26 09:29:53Z diego $
+ * $Id: imdct.c 28396 2009-01-30 23:19:00Z diego $
  *
  * a52dec is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1287,7 +1287,7 @@ void a52_imdct_init (uint32_t mm_accel)
 	else
 #endif
 
-#if LIBA52_DJBFFT
+#ifdef LIBA52_DJBFFT
     if (mm_accel & MM_ACCEL_DJBFFT) {
 	fprintf (stderr, "Using djbfft for IMDCT transform\n");
 	ifft128 = (void (*) (complex_t *)) fftc4_un128;

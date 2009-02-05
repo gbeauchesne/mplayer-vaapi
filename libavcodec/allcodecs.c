@@ -20,7 +20,7 @@
  */
 
 /**
- * @file allcodecs.c
+ * @file libavcodec/allcodecs.c
  * Provides registration of all codecs, parsers and bitstream filters for libavcodec.
  */
 
@@ -71,6 +71,7 @@ void avcodec_register_all(void)
     REGISTER_DECODER (EACMV, eacmv);
     REGISTER_DECODER (EATGQ, eatgq);
     REGISTER_DECODER (EATGV, eatgv);
+    REGISTER_DECODER (EATQI, eatqi);
     REGISTER_DECODER (EIGHTBPS, eightbps);
     REGISTER_DECODER (EIGHTSVX_EXP, eightsvx_exp);
     REGISTER_DECODER (EIGHTSVX_FIB, eightsvx_fib);
@@ -174,7 +175,6 @@ void avcodec_register_all(void)
     REGISTER_DECODER (WNV1, wnv1);
     REGISTER_DECODER (XAN_WC3, xan_wc3);
     REGISTER_DECODER (XL, xl);
-    REGISTER_DECODER (XSUB, xsub);
     REGISTER_ENCDEC  (ZLIB, zlib);
     REGISTER_ENCDEC  (ZMBV, zmbv);
 
@@ -283,6 +283,7 @@ void avcodec_register_all(void)
     /* subtitles */
     REGISTER_ENCDEC  (DVBSUB, dvbsub);
     REGISTER_ENCDEC  (DVDSUB, dvdsub);
+    REGISTER_DECODER (XSUB, xsub);
 
     /* external libraries */
     REGISTER_ENCDEC  (LIBAMR_NB, libamr_nb);

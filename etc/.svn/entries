@@ -1,14 +1,14 @@
 8
 
 dir
-28382
+28469
 svn://svn.mplayerhq.hu/mplayer/trunk/etc
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-01-20T17:20:16.340031Z
-28346
+2009-01-29T15:17:22.579081Z
+28388
 compn
 
 
@@ -97,10 +97,10 @@ file
 
 
 
-2009-01-29T11:50:52.000000Z
-e6c3b86e11619ce9e5fbc5685ddac4e0
-2009-01-20T17:20:16.340031Z
-28346
+2009-02-05T14:32:29.000000Z
+f454ef0e524f00c4bbef5c20963cf477
+2009-01-29T15:17:22.579081Z
+28388
 compn
 has-props
 

@@ -8,7 +8,7 @@
  *
  * Modified for use with MPlayer, changes contained in liba52_changes.diff.
  * detailed changelog at http://svn.mplayerhq.hu/mplayer/trunk/
- * $Id: bitstream.h 28325 2009-01-16 09:21:21Z reimar $
+ * $Id: bitstream.h 28394 2009-01-30 22:27:04Z diego $
  *
  * a52dec is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@
 #define ALT_BITSTREAM_READER
 
 /* used to avoid misaligned exceptions on some archs (alpha, ...) */
-#if ARCH_X86 || defined(HAVE_ARMV6)
+#if ARCH_X86 || HAVE_ARMV6
 #    define unaligned32(a) (*(uint32_t*)(a))
 #else
 #    ifdef __GNUC__

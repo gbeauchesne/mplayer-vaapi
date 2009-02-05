@@ -167,18 +167,17 @@ static unsigned int id3v2_get_size(ByteIOContext *s, int len)
     return v;
 }
 
-static void id3v2_read_ttag(AVFormatContext *s, int taglen, char *dst, int dstlen)
+static void id3v2_read_ttag(AVFormatContext *s, int taglen, const char *key)
 {
-    char *q;
-    int len;
+    char *q, dst[512];
+    int len, dstlen = sizeof(dst) - 1;
+    unsigned genre;
 
-    if(dstlen > 0)
-        dst[0]= 0;
+    dst[0]= 0;
     if(taglen < 1)
         return;
 
     taglen--; /* account for encoding type byte */
-    dstlen--; /* Leave space for zero terminator */
 
     switch(get_byte(s->pb)) { /* encoding type */
 
@@ -197,6 +196,13 @@ static void id3v2_read_ttag(AVFormatContext *s, int taglen, char *dst, int dstle
         dst[len] = 0;
         break;
     }
+
+    if (!strcmp(key, "genre")
+        && sscanf(dst, "(%d)", &genre) == 1 && genre <= ID3v1_GENRE_MAX)
+        av_strlcpy(dst, id3v1_genre_str[genre], sizeof(dst));
+
+    if (*dst)
+        av_metadata_set(&s->metadata, key, dst);
 }
 
 /**
@@ -211,7 +217,6 @@ static void id3v2_parse(AVFormatContext *s, int len, uint8_t version, uint8_t fl
     int isv34, tlen;
     uint32_t tag;
     int64_t next;
-    char tmp[16];
     int taghdrlen;
     const char *reason;
 
@@ -263,28 +268,27 @@ static void id3v2_parse(AVFormatContext *s, int len, uint8_t version, uint8_t fl
         switch(tag) {
         case MKBETAG('T', 'I', 'T', '2'):
         case MKBETAG(0,   'T', 'T', '2'):
-            id3v2_read_ttag(s, tlen, s->title, sizeof(s->title));
+            id3v2_read_ttag(s, tlen, "title");
             break;
         case MKBETAG('T', 'P', 'E', '1'):
         case MKBETAG(0,   'T', 'P', '1'):
-            id3v2_read_ttag(s, tlen, s->author, sizeof(s->author));
+            id3v2_read_ttag(s, tlen, "author");
             break;
         case MKBETAG('T', 'A', 'L', 'B'):
         case MKBETAG(0,   'T', 'A', 'L'):
-            id3v2_read_ttag(s, tlen, s->album, sizeof(s->album));
+            id3v2_read_ttag(s, tlen, "album");
             break;
         case MKBETAG('T', 'C', 'O', 'N'):
         case MKBETAG(0,   'T', 'C', 'O'):
-            id3v2_read_ttag(s, tlen, s->genre, sizeof(s->genre));
+            id3v2_read_ttag(s, tlen, "genre");
             break;
         case MKBETAG('T', 'C', 'O', 'P'):
         case MKBETAG(0,   'T', 'C', 'R'):
-            id3v2_read_ttag(s, tlen, s->copyright, sizeof(s->copyright));
+            id3v2_read_ttag(s, tlen, "copyright");
             break;
         case MKBETAG('T', 'R', 'C', 'K'):
         case MKBETAG(0,   'T', 'R', 'K'):
-            id3v2_read_ttag(s, tlen, tmp, sizeof(tmp));
-            s->track = atoi(tmp);
+            id3v2_read_ttag(s, tlen, "track");
             break;
         case 0:
             /* padding, skip to end */
@@ -305,22 +309,25 @@ static void id3v2_parse(AVFormatContext *s, int len, uint8_t version, uint8_t fl
     url_fskip(s->pb, len);
 }
 
-static void id3v1_get_string(char *str, int str_size,
+static void id3v1_get_string(AVFormatContext *s, const char *key,
                              const uint8_t *buf, int buf_size)
 {
     int i, c;
-    char *q;
+    char *q, str[512];
 
     q = str;
     for(i = 0; i < buf_size; i++) {
         c = buf[i];
         if (c == '\0')
             break;
-        if ((q - str) >= str_size - 1)
+        if ((q - str) >= sizeof(str) - 1)
             break;
         *q++ = c;
     }
     *q = '\0';
+
+    if (*str)
+        av_metadata_set(&s->metadata, key, str);
 }
 
 /* 'buf' must be ID3v1_TAG_SIZE byte long */
@@ -333,17 +340,18 @@ static int id3v1_parse_tag(AVFormatContext *s, const uint8_t *buf)
           buf[1] == 'A' &&
           buf[2] == 'G'))
         return -1;
-    id3v1_get_string(s->title, sizeof(s->title), buf + 3, 30);
-    id3v1_get_string(s->author, sizeof(s->author), buf + 33, 30);
-    id3v1_get_string(s->album, sizeof(s->album), buf + 63, 30);
-    id3v1_get_string(str, sizeof(str), buf + 93, 4);
-    s->year = atoi(str);
-    id3v1_get_string(s->comment, sizeof(s->comment), buf + 97, 30);
-    if (buf[125] == 0 && buf[126] != 0)
-        s->track = buf[126];
+    id3v1_get_string(s, "title",   buf +  3, 30);
+    id3v1_get_string(s, "author",  buf + 33, 30);
+    id3v1_get_string(s, "album",   buf + 63, 30);
+    id3v1_get_string(s, "year",    buf + 93,  4);
+    id3v1_get_string(s, "comment", buf + 97, 30);
+    if (buf[125] == 0 && buf[126] != 0) {
+        snprintf(str, sizeof(str), "%d", buf[126]);
+        av_metadata_set(&s->metadata, "track", str);
+    }
     genre = buf[127];
     if (genre <= ID3v1_GENRE_MAX)
-        av_strlcpy(s->genre, id3v1_genre_str[genre], sizeof(s->genre));
+        av_metadata_set(&s->metadata, "genre", id3v1_genre_str[genre]);
     return 0;
 }
 
@@ -516,35 +524,44 @@ static int mp3_read_packet(AVFormatContext *s, AVPacket *pkt)
 }
 
 #if CONFIG_MP2_MUXER || CONFIG_MP3_MUXER
-static void id3v1_create_tag(AVFormatContext *s, uint8_t *buf)
+static int id3v1_set_string(AVFormatContext *s, const char *key,
+                            uint8_t *buf, int buf_size)
 {
-    int v, i;
+    AVMetadataTag *tag;
+    if ((tag = av_metadata_get(s->metadata, key, NULL, 0)))
+        strncpy(buf, tag->value, buf_size);
+    return !!tag;
+}
+
+static int id3v1_create_tag(AVFormatContext *s, uint8_t *buf)
+{
+    AVMetadataTag *tag;
+    int i, count = 0;
 
     memset(buf, 0, ID3v1_TAG_SIZE); /* fail safe */
     buf[0] = 'T';
     buf[1] = 'A';
     buf[2] = 'G';
-    strncpy(buf + 3, s->title, 30);
-    strncpy(buf + 33, s->author, 30);
-    strncpy(buf + 63, s->album, 30);
-    v = s->year;
-    if (v > 0) {
-        for(i = 0;i < 4; i++) {
-            buf[96 - i] = '0' + (v % 10);
-            v = v / 10;
-        }
-    }
-    strncpy(buf + 97, s->comment, 30);
-    if (s->track != 0) {
+    count += id3v1_set_string(s, "title",   buf +  3, 30);
+    count += id3v1_set_string(s, "author",  buf + 33, 30);
+    count += id3v1_set_string(s, "album",   buf + 63, 30);
+    count += id3v1_set_string(s, "year",    buf + 93,  4);
+    count += id3v1_set_string(s, "comment", buf + 97, 30);
+    if ((tag = av_metadata_get(s->metadata, "track", NULL, 0))) {
         buf[125] = 0;
-        buf[126] = s->track;
+        buf[126] = atoi(tag->value);
+        count++;
     }
-    for(i = 0; i <= ID3v1_GENRE_MAX; i++) {
-        if (!strcasecmp(s->genre, id3v1_genre_str[i])) {
-            buf[127] = i;
-            break;
+    if ((tag = av_metadata_get(s->metadata, "genre", NULL, 0))) {
+        for(i = 0; i <= ID3v1_GENRE_MAX; i++) {
+            if (!strcasecmp(tag->value, id3v1_genre_str[i])) {
+                buf[127] = i;
+                count++;
+                break;
+            }
         }
     }
+    return count;
 }
 
 /* simple formats */
@@ -574,22 +591,24 @@ static void id3v2_put_ttag(AVFormatContext *s, const char *string, uint32_t tag)
 
 static int mp3_write_header(struct AVFormatContext *s)
 {
+    AVMetadataTag *title, *author, *album, *genre, *copyright, *track, *year;
     int totlen = 0;
-    char tracktxt[10];
-    char yeartxt[10];
 
-    if(s->track)
-        snprintf(tracktxt, sizeof(tracktxt), "%d", s->track);
-    if(s->year)
-        snprintf( yeartxt, sizeof(yeartxt) , "%d", s->year );
+    title     = av_metadata_get(s->metadata, "title",     NULL, 0);
+    author    = av_metadata_get(s->metadata, "author",    NULL, 0);
+    album     = av_metadata_get(s->metadata, "album",     NULL, 0);
+    genre     = av_metadata_get(s->metadata, "genre",     NULL, 0);
+    copyright = av_metadata_get(s->metadata, "copyright", NULL, 0);
+    track     = av_metadata_get(s->metadata, "track",     NULL, 0);
+    year      = av_metadata_get(s->metadata, "year",      NULL, 0);
 
-    if(s->title[0])     totlen += 11 + strlen(s->title);
-    if(s->author[0])    totlen += 11 + strlen(s->author);
-    if(s->album[0])     totlen += 11 + strlen(s->album);
-    if(s->genre[0])     totlen += 11 + strlen(s->genre);
-    if(s->copyright[0]) totlen += 11 + strlen(s->copyright);
-    if(s->track)        totlen += 11 + strlen(tracktxt);
-    if(s->year)         totlen += 11 + strlen(yeartxt);
+    if(title)     totlen += 11 + strlen(title->value);
+    if(author)    totlen += 11 + strlen(author->value);
+    if(album)     totlen += 11 + strlen(album->value);
+    if(genre)     totlen += 11 + strlen(genre->value);
+    if(copyright) totlen += 11 + strlen(copyright->value);
+    if(track)     totlen += 11 + strlen(track->value);
+    if(year)      totlen += 11 + strlen(year->value);
     if(!(s->streams[0]->codec->flags & CODEC_FLAG_BITEXACT))
         totlen += strlen(LIBAVFORMAT_IDENT) + 11;
 
@@ -602,13 +621,13 @@ static int mp3_write_header(struct AVFormatContext *s)
 
     id3v2_put_size(s, totlen);
 
-    if(s->title[0])     id3v2_put_ttag(s, s->title,     MKBETAG('T', 'I', 'T', '2'));
-    if(s->author[0])    id3v2_put_ttag(s, s->author,    MKBETAG('T', 'P', 'E', '1'));
-    if(s->album[0])     id3v2_put_ttag(s, s->album,     MKBETAG('T', 'A', 'L', 'B'));
-    if(s->genre[0])     id3v2_put_ttag(s, s->genre,     MKBETAG('T', 'C', 'O', 'N'));
-    if(s->copyright[0]) id3v2_put_ttag(s, s->copyright, MKBETAG('T', 'C', 'O', 'P'));
-    if(s->track)        id3v2_put_ttag(s, tracktxt,     MKBETAG('T', 'R', 'C', 'K'));
-    if(s->year)         id3v2_put_ttag(s, yeartxt,      MKBETAG('T', 'Y', 'E', 'R'));
+    if(title)     id3v2_put_ttag(s, title->value,     MKBETAG('T', 'I', 'T', '2'));
+    if(author)    id3v2_put_ttag(s, author->value,    MKBETAG('T', 'P', 'E', '1'));
+    if(album)     id3v2_put_ttag(s, album->value,     MKBETAG('T', 'A', 'L', 'B'));
+    if(genre)     id3v2_put_ttag(s, genre->value,     MKBETAG('T', 'C', 'O', 'N'));
+    if(copyright) id3v2_put_ttag(s, copyright->value, MKBETAG('T', 'C', 'O', 'P'));
+    if(track)     id3v2_put_ttag(s, track->value,     MKBETAG('T', 'R', 'C', 'K'));
+    if(year)      id3v2_put_ttag(s, year->value,      MKBETAG('T', 'Y', 'E', 'R'));
     if(!(s->streams[0]->codec->flags & CODEC_FLAG_BITEXACT))
         id3v2_put_ttag(s, LIBAVFORMAT_IDENT,            MKBETAG('T', 'E', 'N', 'C'));
     return 0;
@@ -626,8 +645,7 @@ static int mp3_write_trailer(struct AVFormatContext *s)
     uint8_t buf[ID3v1_TAG_SIZE];
 
     /* write the id3v1 tag */
-    if (s->title[0] != '\0') {
-        id3v1_create_tag(s, buf);
+    if (id3v1_create_tag(s, buf) > 0) {
         put_buffer(s->pb, buf, ID3v1_TAG_SIZE);
         put_flush_packet(s->pb);
     }
@@ -652,11 +670,7 @@ AVOutputFormat mp2_muxer = {
     "mp2",
     NULL_IF_CONFIG_SMALL("MPEG audio layer 2"),
     "audio/x-mpeg",
-#if CONFIG_LIBMP3LAME
     "mp2,m2a",
-#else
-    "mp2,mp3,m2a",
-#endif
     0,
     CODEC_ID_MP2,
     CODEC_ID_NONE,

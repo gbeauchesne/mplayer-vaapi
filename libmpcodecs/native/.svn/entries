@@ -1,15 +1,15 @@
 8
 
 dir
-28382
+28469
 svn://svn.mplayerhq.hu/mplayer/trunk/libmpcodecs/native
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-01-16T12:37:56.705656Z
-28333
-gpoirier
+2009-02-03T00:12:19.865851Z
+28450
+reimar
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -109,11 +109,11 @@ file
 
 
 
-2009-01-29T11:50:41.000000Z
-00c17510eb1252f74a1494bc28d90ae5
-2008-04-28T14:50:24.146413Z
-26576
-diego
+2009-02-05T14:32:29.000000Z
+b2dafabee3baf207a7edaccc1cdb53c2
+2009-02-03T00:12:19.865851Z
+28450
+reimar
 has-props
 
 xa_gsm_int.h

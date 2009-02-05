@@ -1,14 +1,14 @@
 8
 
 dir
-16846
-svn://svn.mplayerhq.hu/ffmpeg/trunk/libavcodec/arm
-svn://svn.mplayerhq.hu/ffmpeg
+17003
+svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/arm
+svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-01-27T16:34:10.471227Z
-16824
+2009-01-30T23:13:19.090459Z
+16868
 mru
 
 
@@ -44,10 +44,10 @@ file
 
 
 
-2009-01-29T11:51:00.000000Z
-85622e769977dbf5a45f8620ed309777
-2009-01-25T13:04:45.701126Z
-16771
+2009-02-05T14:32:37.000000Z
+2b83d3ec1bf3ef511cf428cb8509b66b
+2009-01-30T23:13:19.090459Z
+16868
 mru
 
 dsputil_neon_s.S
@@ -56,10 +56,10 @@ file
 
 
 
-2009-01-29T11:51:00.000000Z
-452089c67a8767db74d832efd37c7ddd
-2008-12-26T19:52:52.242353Z
-16352
+2009-02-05T14:32:37.000000Z
+07a927e57a303d12ef930e5073aadaaf
+2009-01-30T23:13:19.090459Z
+16868
 mru
 
 simple_idct_arm.S

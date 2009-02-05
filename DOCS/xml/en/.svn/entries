@@ -1,15 +1,15 @@
 8
 
 dir
-28382
+28469
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/en
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-01-05T12:50:53.491468Z
-28266
-Gabrov
+2009-02-01T13:11:23.865134Z
+28432
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -84,11 +84,11 @@ file
 
 
 
-2009-01-29T11:50:44.000000Z
-945b81578ce1c7e0ed0d6493f388e2ba
-2008-12-14T11:18:23.866050Z
-28148
-rathann
+2009-02-05T14:32:29.000000Z
+2dba18b2d5c6a05bdc5b61c08c4dabbd
+2009-02-01T11:29:18.789708Z
+28422
+diego
 has-props
 
 video.xml
@@ -123,11 +123,11 @@ file
 
 
 
-2009-01-29T11:50:44.000000Z
-436f0df6e864360ffb34bdfe1ff291c4
-2008-12-14T11:18:23.866050Z
-28148
-rathann
+2009-02-05T14:32:29.000000Z
+3712f8d60ceea7a10f310cf75143efa3
+2009-02-01T13:11:23.865134Z
+28432
+diego
 has-props
 
 documentation.xml

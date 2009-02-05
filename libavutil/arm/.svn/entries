@@ -1,9 +1,9 @@
 8
 
 dir
-16846
-svn://svn.mplayerhq.hu/ffmpeg/trunk/libavutil/arm
-svn://svn.mplayerhq.hu/ffmpeg
+17003
+svn://svn.ffmpeg.org/ffmpeg/trunk/libavutil/arm
+svn://svn.ffmpeg.org/ffmpeg
 
 
 
