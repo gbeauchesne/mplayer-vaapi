@@ -28,7 +28,7 @@ static av_cold int decode_init(AVCodecContext *avctx) {
 }
 
 static const uint8_t tc_offsets[9] = { 0, 1, 3, 4, 6, 7, 9, 10, 11 };
-static const uint8_t tc_muls[9] = { 10, 6, 10, 6, 10, 6, 10, 10, 1 };
+static const uint8_t tc_muls[9] = { 10, 6, 10, 6, 10, 10, 10, 10, 1 };
 
 static uint64_t parse_timecode(const uint8_t *buf) {
     int i;
@@ -50,6 +50,8 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
     uint8_t *bitmap;
     int w, h, x, y, rlelen, i;
     GetBitContext gb;
+
+    sub->format = 0;
 
     // check that at least header fits
     if (buf_size < 27 + 7 * 2 + 4 * 3) {

@@ -1,4 +1,22 @@
-/* vo_xv.c, X11 Xv interface */
+/*
+ * X11 Xv interface
+ *
+ * This file is part of MPlayer.
+ *
+ * MPlayer is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MPlayer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with MPlayer; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
 // Number of buffers _FOR_DOUBLEBUFFERING_MODE_
 // Use option -double to enable double buffering! (default: single buffer)
@@ -88,7 +106,8 @@ static uint32_t image_format;
 
 static int int_pause;
 
-static uint32_t drwX, drwY;
+static struct vo_rect src_rect;
+static struct vo_rect dst_rect;
 static uint32_t max_width = 0, max_height = 0; // zero means: not set
 
 static void (*draw_alpha_fnc) (int x0, int y0, int w, int h,
@@ -139,6 +158,13 @@ static void draw_alpha_null(int x0, int y0, int w, int h,
 
 
 static void deallocate_xvimage(int foo);
+
+static void resize(void)
+{
+    calc_src_dst_rects(image_width, image_height, &src_rect, &dst_rect, NULL);
+    vo_x11_clearwindow_part(mDisplay, vo_window, dst_rect.width, dst_rect.height, 1);
+    vo_xv_draw_colorkey(dst_rect.left, dst_rect.top, dst_rect.width, dst_rect.height);
+}
 
 /*
  * connect to server, create and map window,
@@ -270,17 +296,8 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width,
     current_ip_buf = 0;
 
     if ((flags & VOFLAG_FULLSCREEN) && WinID <= 0) vo_fs = 1;
-    vo_calc_drwXY(&drwX, &drwY);
-
-    panscan_calc();
     
-    vo_xv_draw_colorkey(drwX - (vo_panscan_x >> 1),
-                        drwY - (vo_panscan_y >> 1),
-                        vo_dwidth + vo_panscan_x - 1,
-                        vo_dheight + vo_panscan_y - 1);
-
-    mp_msg(MSGT_VO, MSGL_V, "[xv] dx: %d dy: %d dw: %d dh: %d\n", drwX,
-           drwY, vo_dwidth, vo_dheight);
+    resize();
 
     return 0;
 }
@@ -353,19 +370,17 @@ static inline void put_xvimage( XvImage * xvi )
     if (Shmem_Flag)
     {
         XvShmPutImage(mDisplay, xv_port, vo_window, vo_gc,
-                      xvi, 0, 0, image_width,
-                      image_height, drwX - (vo_panscan_x >> 1),
-                      drwY - (vo_panscan_y >> 1), vo_dwidth + vo_panscan_x,
-                      vo_dheight + vo_panscan_y,
+                      xvi,
+                      src_rect.left, src_rect.top, src_rect.width, src_rect.height,
+                      dst_rect.left, dst_rect.top, dst_rect.width, dst_rect.height,
                       False);
     } else
 #endif
     {
         XvPutImage(mDisplay, xv_port, vo_window, vo_gc,
-                   xvi, 0, 0, image_width, image_height,
-                   drwX - (vo_panscan_x >> 1), drwY - (vo_panscan_y >> 1),
-                   vo_dwidth + vo_panscan_x,
-                   vo_dheight + vo_panscan_y);
+                   xvi,
+                   src_rect.left, src_rect.top, src_rect.width, src_rect.height,
+                   dst_rect.left, dst_rect.top, dst_rect.width, dst_rect.height);
     }
 }
 
@@ -373,17 +388,9 @@ static void check_events(void)
 {
     int e = vo_x11_check_events(mDisplay);
 
-    if (e & VO_EVENT_RESIZE)
-    {
-        vo_calc_drwXY(&drwX, &drwY);
-    }
-
     if (e & VO_EVENT_EXPOSE || e & VO_EVENT_RESIZE)
     {
-	vo_xv_draw_colorkey(drwX - (vo_panscan_x >> 1),
-			    drwY - (vo_panscan_y >> 1),
-			    vo_dwidth + vo_panscan_x - 1,
-			    vo_dheight + vo_panscan_y - 1);
+        resize();
     }
 
     if ((e & VO_EVENT_EXPOSE || e & VO_EVENT_RESIZE) && int_pause)
@@ -759,14 +766,7 @@ static int control(uint32_t request, void *data, ...)
 
                 if (old_y != vo_panscan_y)
                 {
-                    vo_x11_clearwindow_part(mDisplay, vo_window,
-                                            vo_dwidth + vo_panscan_x - 1,
-                                            vo_dheight + vo_panscan_y - 1,
-                                            1);
-		    vo_xv_draw_colorkey(drwX - (vo_panscan_x >> 1),
-					drwY - (vo_panscan_y >> 1),
-					vo_dwidth + vo_panscan_x - 1,
-					vo_dheight + vo_panscan_y - 1);
+                    resize();
                     flip_page();
                 }
             }

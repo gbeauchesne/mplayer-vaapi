@@ -112,6 +112,15 @@ enum {
 };
 
 /**
+ * SEI message types
+ */
+typedef enum {
+    SEI_TYPE_PIC_TIMING              =  1, ///< picture timing
+    SEI_TYPE_USER_DATA_UNREGISTERED  =  5, ///< unregistered user data
+    SEI_TYPE_RECOVERY_POINT          =  6  ///< recovery point (frame # to decoder sync)
+} SEI_Type;
+
+/**
  * pic_struct in picture timing SEI message
  */
 typedef enum {
@@ -490,6 +499,15 @@ typedef struct H264Context{
      * pic_struct in picture timing SEI message
      */
     SEI_PicStructType sei_pic_struct;
+
+    /**
+     * recovery_frame_cnt from SEI message
+     *
+     * Set to -1 if no recovery point SEI message found or to number of frames
+     * before playback synchronizes. Frames having recovery point are key
+     * frames.
+     */
+    int sei_recovery_frame_cnt;
 
     int is_complex;
 

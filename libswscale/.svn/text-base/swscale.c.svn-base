@@ -174,7 +174,7 @@ unsigned swscale_version(void)
 #define RV ( (int)(0.500*224/255*(1<<RGB2YUV_SHIFT)+0.5))
 #define RU (-(int)(0.169*224/255*(1<<RGB2YUV_SHIFT)+0.5))
 
-extern const int32_t Inverse_Table_6_9[8][4];
+extern const int32_t ff_yuv2rgb_coeffs[8][4];
 
 static const double rgb2yuv_table[8][9]={
     {0.7152, 0.0722, 0.2126, -0.386, 0.5, -0.115, -0.454, -0.046, 0.5},
@@ -2076,7 +2076,7 @@ static uint16_t roundToInt16(int64_t f){
 }
 
 /**
- * @param inv_table the yuv2rgb coefficients, normally Inverse_Table_6_9[x]
+ * @param inv_table the yuv2rgb coefficients, normally ff_yuv2rgb_coeffs[x]
  * @param fullRange if 1 then the luma range is 0..255 if 0 it is 16..235
  * @return -1 if not supported
  */
@@ -2133,12 +2133,12 @@ int sws_setColorspaceDetails(SwsContext *c, const int inv_table[4], int srcRange
     c->yuv2rgb_u2g_coeff= (int16_t)roundToInt16(cgu<<13);
     c->yuv2rgb_u2b_coeff= (int16_t)roundToInt16(cbu<<13);
 
-    yuv2rgb_c_init_tables(c, inv_table, srcRange, brightness, contrast, saturation);
+    sws_yuv2rgb_c_init_tables(c, inv_table, srcRange, brightness, contrast, saturation);
     //FIXME factorize
 
 #ifdef COMPILE_ALTIVEC
     if (c->flags & SWS_CPU_CAPS_ALTIVEC)
-        yuv2rgb_altivec_init_tables (c, inv_table, brightness, contrast, saturation);
+        sws_yuv2rgb_altivec_init_tables (c, inv_table, brightness, contrast, saturation);
 #endif
     return 0;
 }
@@ -2321,7 +2321,7 @@ SwsContext *sws_getContext(int srcW, int srcH, enum PixelFormat srcFormat, int d
     c->chrDstW= -((-dstW) >> c->chrDstHSubSample);
     c->chrDstH= -((-dstH) >> c->chrDstVSubSample);
 
-    sws_setColorspaceDetails(c, Inverse_Table_6_9[SWS_CS_DEFAULT], srcRange, Inverse_Table_6_9[SWS_CS_DEFAULT] /* FIXME*/, dstRange, 0, 1<<16, 1<<16);
+    sws_setColorspaceDetails(c, ff_yuv2rgb_coeffs[SWS_CS_DEFAULT], srcRange, ff_yuv2rgb_coeffs[SWS_CS_DEFAULT] /* FIXME*/, dstRange, 0, 1<<16, 1<<16);
 
     /* unscaled special cases */
     if (unscaled && !usesHFilter && !usesVFilter && (srcRange == dstRange || isBGR(dstFormat) || isRGB(dstFormat)))
@@ -2336,7 +2336,7 @@ SwsContext *sws_getContext(int srcW, int srcH, enum PixelFormat srcFormat, int d
         if ((srcFormat==PIX_FMT_YUV420P || srcFormat==PIX_FMT_YUV422P) && (isBGR(dstFormat) || isRGB(dstFormat))
             && !(flags & SWS_ACCURATE_RND) && !(dstH&1))
         {
-            c->swScale= yuv2rgb_get_func_ptr(c);
+            c->swScale= sws_yuv2rgb_get_func_ptr(c);
         }
 #endif
 
@@ -2396,6 +2396,7 @@ SwsContext *sws_getContext(int srcW, int srcH, enum PixelFormat srcFormat, int d
 
 #ifdef COMPILE_ALTIVEC
         if ((c->flags & SWS_CPU_CAPS_ALTIVEC) &&
+            !(c->flags & SWS_BITEXACT) &&
             srcFormat == PIX_FMT_YUV420P) {
           // unscaled YV12 -> packed YUV, we want speed
           if (dstFormat == PIX_FMT_YUYV422)
@@ -2820,13 +2821,12 @@ int sws_scale(SwsContext *c, uint8_t* src[], int srcStride[], int srcSliceY,
     }
 }
 
-/**
- * swscale wrapper, so we don't need to export the SwsContext.
- */
+#if LIBSWSCALE_VERSION_MAJOR < 1
 int sws_scale_ordered(SwsContext *c, uint8_t* src[], int srcStride[], int srcSliceY,
                       int srcSliceH, uint8_t* dst[], int dstStride[]){
     return sws_scale(c, src, srcStride, srcSliceY, srcSliceH, dst, dstStride);
 }
+#endif
 
 SwsFilter *sws_getDefaultFilter(float lumaGBlur, float chromaGBlur,
                                 float lumaSharpen, float chromaSharpen,
@@ -2880,16 +2880,12 @@ SwsFilter *sws_getDefaultFilter(float lumaGBlur, float chromaGBlur,
     sws_normalizeVec(filter->lumH, 1.0);
     sws_normalizeVec(filter->lumV, 1.0);
 
-    if (verbose) sws_printVec(filter->chrH);
-    if (verbose) sws_printVec(filter->lumH);
+    if (verbose) sws_printVec2(filter->chrH, NULL, AV_LOG_DEBUG);
+    if (verbose) sws_printVec2(filter->lumH, NULL, AV_LOG_DEBUG);
 
     return filter;
 }
 
-/**
- * Returns a normalized Gaussian curve used to filter stuff
- * quality=3 is high quality, lower is lower quality.
- */
 SwsVector *sws_getGaussianVec(double variance, double quality){
     const int length= (int)(variance*quality + 0.5) | 1;
     int i;
@@ -3072,7 +3068,7 @@ SwsVector *sws_cloneVec(SwsVector *a){
     return vec;
 }
 
-void sws_printVec(SwsVector *a){
+void sws_printVec2(SwsVector *a, AVClass *log_ctx, int log_level){
     int i;
     double max=0;
     double min=0;
@@ -3089,11 +3085,17 @@ void sws_printVec(SwsVector *a){
     for (i=0; i<a->length; i++)
     {
         int x= (int)((a->coeff[i]-min)*60.0/range +0.5);
-        av_log(NULL, AV_LOG_DEBUG, "%1.3f ", a->coeff[i]);
-        for (;x>0; x--) av_log(NULL, AV_LOG_DEBUG, " ");
-        av_log(NULL, AV_LOG_DEBUG, "|\n");
+        av_log(log_ctx, log_level, "%1.3f ", a->coeff[i]);
+        for (;x>0; x--) av_log(log_ctx, log_level, " ");
+        av_log(log_ctx, log_level, "|\n");
     }
 }
+
+#if LIBSWSCALE_VERSION_MAJOR < 1
+void sws_printVec(SwsVector *a){
+    sws_printVec2(a, NULL, AV_LOG_DEBUG);
+}
+#endif
 
 void sws_freeVec(SwsVector *a){
     if (!a) return;
@@ -3166,16 +3168,6 @@ void sws_freeContext(SwsContext *c){
     av_free(c);
 }
 
-/**
- * Checks if context is valid or reallocs a new one instead.
- * If context is NULL, just calls sws_getContext() to get a new one.
- * Otherwise, checks if the parameters are the ones already saved in context.
- * If that is the case, returns the current context.
- * Otherwise, frees context and gets a new one.
- *
- * Be warned that srcFilter, dstFilter are not checked, they are
- * asumed to remain valid.
- */
 struct SwsContext *sws_getCachedContext(struct SwsContext *context,
                                         int srcW, int srcH, enum PixelFormat srcFormat,
                                         int dstW, int dstH, enum PixelFormat dstFormat, int flags,

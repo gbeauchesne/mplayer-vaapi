@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision: 27843 $ -->
+<!-- $Revision: 28510 $ -->
 <chapter id="encoding-guide">
 <title>Encoding with <application>MEncoder</application></title>
 
@@ -3815,7 +3815,7 @@ and development advancements, you may get very different results.
 <systemitem class="library">x264</systemitem> is a free library for
 encoding H.264/AVC video streams.
 Before starting to encode, you need to
-<link linkend="codec-x264">set up <application>MEncoder</application> to support it</link>.
+<link linkend="x264">set up <application>MEncoder</application> to support it</link>.
 </para>
 
 <!-- ********** -->

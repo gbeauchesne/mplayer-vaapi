@@ -1,3 +1,20 @@
+/*
+ * This file is part of MPlayer.
+ *
+ * MPlayer is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MPlayer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with MPlayer; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -827,8 +844,12 @@ int vo_x11_check_events(Display * mydisplay)
 //         if (vo_fs && Event.xconfigure.width != vo_screenwidth && Event.xconfigure.height != vo_screenheight) break;
                 if (vo_window == None)
                     break;
-                vo_x11_update_geometry();
-                ret |= VO_EVENT_RESIZE;
+                {
+                    int old_w = vo_dwidth, old_h = vo_dheight;
+                    vo_x11_update_geometry();
+                    if (vo_dwidth != old_w || vo_dheight != old_h)
+                        ret |= VO_EVENT_RESIZE;
+                }
                 break;
             case KeyPress:
                 {
@@ -1853,23 +1874,6 @@ uint32_t vo_x11_get_equalizer(char *name, int *value)
     else
         return VO_NOTIMPL;
     return VO_TRUE;
-}
-
-void vo_calc_drwXY(uint32_t *drwX, uint32_t *drwY)
-{
-    *drwX = *drwY = 0;
-    if (vo_fs) {
-        aspect(&vo_dwidth, &vo_dheight, A_ZOOM);
-        vo_dwidth  = FFMIN(vo_dwidth, vo_screenwidth);
-        vo_dheight = FFMIN(vo_dheight, vo_screenheight);
-        *drwX      = (vo_screenwidth - vo_dwidth) / 2;
-        *drwY      = (vo_screenheight - vo_dheight) / 2;
-        mp_msg(MSGT_VO, MSGL_V, "[vo-fs] dx: %d dy: %d dw: %d dh: %d\n",
-               *drwX, *drwY, vo_dwidth, vo_dheight);
-    } else if (WinID == 0) {
-        *drwX = vo_dx;
-        *drwY = vo_dy;
-    }
 }
 
 #ifdef CONFIG_XV

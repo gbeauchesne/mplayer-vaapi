@@ -413,7 +413,7 @@ int av_open_input_stream(AVFormatContext **ic_ptr,
     }
 
     if(!ap->prealloced_context)
-        ic = av_alloc_format_context();
+        ic = avformat_alloc_context();
     else
         ic = *ic_ptr;
     if (!ic) {
@@ -2354,17 +2354,6 @@ AVProgram *av_new_program(AVFormatContext *ac, int id)
     return program;
 }
 
-void av_set_program_name(AVProgram *program, char *provider_name, char *name)
-{
-    assert(!provider_name == !name);
-    if(name){
-        av_free(program->provider_name);
-        av_free(program->         name);
-        program->provider_name = av_strdup(provider_name);
-        program->         name = av_strdup(         name);
-    }
-}
-
 AVChapter *ff_new_chapter(AVFormatContext *s, int id, AVRational time_base, int64_t start, int64_t end, const char *title)
 {
     AVChapter *chapter = NULL;
@@ -2457,6 +2446,10 @@ int av_write_header(AVFormatContext *s)
             }else
                 st->codec->codec_tag= av_codec_get_tag(s->oformat->codec_tag, st->codec->codec_id);
         }
+
+        if(s->oformat->flags & AVFMT_GLOBALHEADER &&
+            !(st->codec->flags & CODEC_FLAG_GLOBAL_HEADER))
+          av_log(s, AV_LOG_WARNING, "Codec for stream %d does not use global headers but container format requires global headers\n", i);
     }
 
     if (!s->priv_data && s->oformat->priv_data_size > 0) {
@@ -2908,6 +2901,9 @@ int64_t parse_date(const char *datestr, int duration)
     p = datestr;
     q = NULL;
     if (!duration) {
+        if (!strncasecmp(datestr, "now", len))
+            return (int64_t) now * 1000000;
+
         /* parse the year-month-day part */
         for (i = 0; i < FF_ARRAY_ELEMS(date_fmt); i++) {
             q = small_strptime(p, date_fmt[i], &dt);

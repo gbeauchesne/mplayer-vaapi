@@ -91,7 +91,6 @@ static int encode_frame(AVCodecContext *avctx, unsigned char *buf, int buf_size,
     AVFrame *pict = data;
     AVFrame * const p= (AVFrame*)&a->picture;
     int size;
-    int mb_x, mb_y;
 
     *p = *pict;
     p->pict_type= FF_I_TYPE;
@@ -151,7 +150,7 @@ AVCodec cljr_decoder = {
 AVCodec cljr_encoder = {
     "cljr",
     CODEC_TYPE_VIDEO,
-    CODEC_ID_cljr,
+    CODEC_ID_CLJR,
     sizeof(CLJRContext),
     encode_init,
     encode_frame,

@@ -34,7 +34,7 @@
 
 #define REGISTER_PROTOCOL(X,x) { \
     extern URLProtocol x##_protocol; \
-    if(CONFIG_##X##_PROTOCOL) register_protocol(&x##_protocol); }
+    if(CONFIG_##X##_PROTOCOL) av_register_protocol(&x##_protocol); }
 
 void av_register_all(void)
 {
@@ -126,6 +126,8 @@ void av_register_all(void)
     REGISTER_DEMUXER  (MTV, mtv);
     REGISTER_DEMUXER  (MVI, mvi);
     REGISTER_MUXDEMUX (MXF, mxf);
+    REGISTER_MUXER    (MXF_D10, mxf_d10);
+    REGISTER_DEMUXER  (NC, nc);
     REGISTER_DEMUXER  (NSV, nsv);
     REGISTER_MUXER    (NULL, null);
     REGISTER_MUXDEMUX (NUT, nut);
@@ -198,6 +200,7 @@ void av_register_all(void)
 
     /* protocols */
     REGISTER_PROTOCOL (FILE, file);
+    REGISTER_PROTOCOL (GOPHER, gopher);
     REGISTER_PROTOCOL (HTTP, http);
     REGISTER_PROTOCOL (PIPE, pipe);
     REGISTER_PROTOCOL (RTP, rtp);

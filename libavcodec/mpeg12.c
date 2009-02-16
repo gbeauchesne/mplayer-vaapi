@@ -35,6 +35,7 @@
 #include "mpeg12decdata.h"
 #include "bytestream.h"
 #include "vdpau_internal.h"
+#include "xvmc_internal.h"
 
 //#undef NDEBUG
 //#include <assert.h>
@@ -60,11 +61,6 @@ static inline int mpeg2_fast_decode_block_non_intra(MpegEncContext *s, DCTELEM *
 static inline int mpeg2_fast_decode_block_intra(MpegEncContext *s, DCTELEM *block, int n);
 static int mpeg_decode_motion(MpegEncContext *s, int fcode, int pred);
 static void exchange_uv(MpegEncContext *s);
-
-int XVMC_field_start(MpegEncContext *s, AVCodecContext *avctx);
-int XVMC_field_end(MpegEncContext *s);
-void XVMC_pack_pblocks(MpegEncContext *s,int cbp);
-void XVMC_init_block(MpegEncContext *s);//set s->block
 
 static const enum PixelFormat pixfmt_xvmc_mpg2_420[] = {
                                            PIX_FMT_XVMC_MPEG2_IDCT,
@@ -301,15 +297,13 @@ static int mpeg_decode_mb(MpegEncContext *s,
         }else
             memset(s->last_mv, 0, sizeof(s->last_mv)); /* reset mv prediction */
         s->mb_intra = 1;
-#if CONFIG_XVMC
         //if 1, we memcpy blocks in xvmcvideo
-        if(s->avctx->xvmc_acceleration > 1){
-            XVMC_pack_pblocks(s,-1);//inter are always full blocks
+        if(CONFIG_MPEG_XVMC_DECODER && s->avctx->xvmc_acceleration > 1){
+            ff_xvmc_pack_pblocks(s,-1);//inter are always full blocks
             if(s->swap_uv){
                 exchange_uv(s);
             }
         }
-#endif
 
         if (s->codec_id == CODEC_ID_MPEG2VIDEO) {
             if(s->flags2 & CODEC_FLAG2_FAST){
@@ -514,15 +508,13 @@ static int mpeg_decode_mb(MpegEncContext *s,
                 return -1;
             }
 
-#if CONFIG_XVMC
             //if 1, we memcpy blocks in xvmcvideo
-            if(s->avctx->xvmc_acceleration > 1){
-                XVMC_pack_pblocks(s,cbp);
+            if(CONFIG_MPEG_XVMC_DECODER && s->avctx->xvmc_acceleration > 1){
+                ff_xvmc_pack_pblocks(s,cbp);
                 if(s->swap_uv){
                     exchange_uv(s);
                 }
             }
-#endif
 
             if (s->codec_id == CODEC_ID_MPEG2VIDEO) {
                 if(s->flags2 & CODEC_FLAG2_FAST){
@@ -1648,12 +1640,11 @@ static int mpeg_field_start(MpegEncContext *s){
                 }
             }
     }
-#if CONFIG_XVMC
 // MPV_frame_start will call this function too,
 // but we need to call it on every field
-    if(s->avctx->xvmc_acceleration)
-         XVMC_field_start(s,avctx);
-#endif
+    if(CONFIG_MPEG_XVMC_DECODER && s->avctx->xvmc_acceleration)
+        if(ff_xvmc_field_start(s,avctx) < 0)
+            return -1;
 
     return 0;
 }
@@ -1739,11 +1730,9 @@ static int mpeg_decode_slice(Mpeg1Context *s1, int mb_y,
     }
 
     for(;;) {
-#if CONFIG_XVMC
         //If 1, we memcpy blocks in xvmcvideo.
-        if(s->avctx->xvmc_acceleration > 1)
-            XVMC_init_block(s);//set s->block
-#endif
+        if(CONFIG_MPEG_XVMC_DECODER && s->avctx->xvmc_acceleration > 1)
+            ff_xvmc_init_block(s);//set s->block
 
         if(mpeg_decode_mb(s, s->block) < 0)
             return -1;
@@ -1921,10 +1910,9 @@ static int slice_end(AVCodecContext *avctx, AVFrame *pict)
     if (!s1->mpeg_enc_ctx_allocated || !s->current_picture_ptr)
         return 0;
 
-#if CONFIG_XVMC
-    if(s->avctx->xvmc_acceleration)
-        XVMC_field_end(s);
-#endif
+    if(CONFIG_MPEG_XVMC_DECODER && s->avctx->xvmc_acceleration)
+        ff_xvmc_field_end(s);
+
     /* end of slice reached */
     if (/*s->mb_y<<field_pic == s->mb_height &&*/ !s->first_field) {
         /* end of image */
@@ -2390,9 +2378,9 @@ static int decode_chunks(AVCodecContext *avctx,
 
                 if(s2->first_slice){
                     s2->first_slice=0;
-                            if(mpeg_field_start(s2) < 0)
+                    if(mpeg_field_start(s2) < 0)
                         return -1;
-                    }
+                }
                 if(!s2->current_picture_ptr){
                     av_log(avctx, AV_LOG_ERROR, "current_picture not initialized\n");
                     return -1;
@@ -2487,7 +2475,7 @@ AVCodec mpegvideo_decoder = {
     .long_name= NULL_IF_CONFIG_SMALL("MPEG-1 video"),
 };
 
-#if CONFIG_XVMC
+#if CONFIG_MPEG_XVMC_DECODER
 static av_cold int mpeg_mc_decode_init(AVCodecContext *avctx){
     Mpeg1Context *s;
 

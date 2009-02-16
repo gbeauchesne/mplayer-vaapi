@@ -3542,6 +3542,23 @@ static void diff_bytes_c(uint8_t *dst, uint8_t *src1, uint8_t *src2, int w){
         dst[i+0] = src1[i+0]-src2[i+0];
 }
 
+static void add_hfyu_median_prediction_c(uint8_t *dst, uint8_t *src1, uint8_t *diff, int w, int *left, int *left_top){
+    int i;
+    uint8_t l, lt;
+
+    l= *left;
+    lt= *left_top;
+
+    for(i=0; i<w; i++){
+        l= mid_pred(l, src1[i], (l + src1[i] - lt)&0xFF) + diff[i];
+        lt= src1[i];
+        dst[i]= l;
+    }
+
+    *left= l;
+    *left_top= lt;
+}
+
 static void sub_hfyu_median_prediction_c(uint8_t *dst, uint8_t *src1, uint8_t *src2, int w, int *left, int *left_top){
     int i;
     uint8_t l, lt;
@@ -4554,6 +4571,7 @@ void dsputil_init(DSPContext* c, AVCodecContext *avctx)
     c->add_bytes= add_bytes_c;
     c->add_bytes_l2= add_bytes_l2_c;
     c->diff_bytes= diff_bytes_c;
+    c->add_hfyu_median_prediction= add_hfyu_median_prediction_c;
     c->sub_hfyu_median_prediction= sub_hfyu_median_prediction_c;
     c->bswap_buf= bswap_buf;
 #if CONFIG_PNG_DECODER
@@ -4578,6 +4596,9 @@ void dsputil_init(DSPContext* c, AVCodecContext *avctx)
     if (CONFIG_VP3_DECODER || CONFIG_THEORA_DECODER) {
         c->vp3_h_loop_filter= ff_vp3_h_loop_filter_c;
         c->vp3_v_loop_filter= ff_vp3_v_loop_filter_c;
+    }
+    if (CONFIG_VP6_DECODER) {
+        c->vp6_filter_diag4= ff_vp6_filter_diag4_c;
     }
 
     c->h261_loop_filter= h261_loop_filter_c;

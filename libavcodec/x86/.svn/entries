@@ -1,15 +1,15 @@
 8
 
 dir
-17003
+17373
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/x86
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-02-01T02:00:19.447756Z
-16912
-diego
+2009-02-13T00:57:22.577389Z
+17197
+astrange
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -45,11 +45,11 @@ file
 
 
 
-2009-01-29T11:51:00.000000Z
-4b16573b9c207c30d242a5a5d14fc168
-2008-12-19T03:01:08.471227Z
-16234
-darkshikari
+2009-02-16T15:28:16.000000Z
+a0e77f884fc49894d6cdc8103b893280
+2009-02-13T00:57:22.577389Z
+17197
+astrange
 
 motion_est_mmx.c
 file
@@ -102,6 +102,18 @@ file
 cehoyos
 has-props
 
+vp6dsp_mmx.c
+file
+
+
+
+
+2009-02-16T15:28:16.000000Z
+cbb750d67dbeccc052973b3dbe4be945
+2009-02-12T23:52:52.205274Z
+17194
+aurel
+
 cpuid.c
 file
 
@@ -140,6 +152,18 @@ file
 16270
 diego
 has-props
+
+vp6dsp_mmx.h
+file
+
+
+
+
+2009-02-16T15:28:16.000000Z
+320e92d10446b38ebf581397c27a0c67
+2009-02-12T23:52:52.205274Z
+17194
+aurel
 
 idct_sse2_xvid.c
 file
@@ -192,18 +216,29 @@ file
 aurel
 has-props
 
+vp6dsp_sse2.c
+file
+
+
+
+
+2009-02-16T15:28:16.000000Z
+ff23240ae388de4830a5f5fb13dd6eb1
+2009-02-13T00:02:33.268424Z
+17195
+aurel
+
 h264_idct_sse2.asm
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
+2009-02-16T15:28:16.000000Z
 dd2454eb5e036fbb62eccc72ec77ff38
-2009-01-03T00:46:17.994574Z
-16409
-darkshikari
-has-props
+2009-02-09T11:32:29.913157Z
+17098
+diego
 
 vp3dsp_sse2.h
 file
@@ -242,17 +277,29 @@ f9d46e16b88bc8673e3b3ad7a5030e91
 lorenm
 has-props
 
+vp6dsp_sse2.h
+file
+
+
+
+
+2009-02-16T15:28:16.000000Z
+05495abb74a11dc58180c50b9dd5788e
+2009-02-13T00:02:33.268424Z
+17195
+aurel
+
 cavsdsp_mmx.c
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
-f87e08a85809196d385a6e2e52680ace
-2008-12-16T00:47:59.682923Z
-16158
-conrad
+2009-02-16T15:28:16.000000Z
+6dac944bb7566c78bf6f2353cf21173c
+2009-02-12T23:48:07.818917Z
+17192
+aurel
 
 dnxhd_mmx.c
 file
@@ -279,19 +326,6 @@ file
 aurel
 has-props
 
-flacdsp_mmx.c
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-25e89d25fd4b589984fb16a4ed979586
-2008-10-16T13:34:09.085992Z
-15627
-flameeyes
-has-props
-
 dsputil_mmx_avg_template.c
 file
 
@@ -305,16 +339,29 @@ a712bfcb0fa79f7a0e2127a61c8752de
 diego
 has-props
 
-mpegvideo_mmx.c
+flacdsp_mmx.c
 file
 
 
 
 
 2009-01-29T11:51:00.000000Z
-5fa5b677409cc3f92b41aa97498be390
-2009-01-19T15:46:40.737658Z
-16684
+25e89d25fd4b589984fb16a4ed979586
+2008-10-16T13:34:09.085992Z
+15627
+flameeyes
+has-props
+
+vp3dsp_mmx.c
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+5055c8717e171101860c2d2aafbc606a
+2009-02-01T02:00:19.447756Z
+16912
 diego
 has-props
 
@@ -330,16 +377,16 @@ file
 16239
 darkshikari
 
-vp3dsp_mmx.c
+mpegvideo_mmx.c
 file
 
 
 
 
-2009-02-05T14:32:37.000000Z
-5055c8717e171101860c2d2aafbc606a
-2009-02-01T02:00:19.447756Z
-16912
+2009-01-29T11:51:00.000000Z
+5fa5b677409cc3f92b41aa97498be390
+2009-01-19T15:46:40.737658Z
+16684
 diego
 has-props
 
@@ -382,19 +429,6 @@ f7c2d8e6e855e6a53ed8b48a976fc290
 diego
 has-props
 
-dsputil_mmx.c
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-4020838615ea5c6cb2ed06e8905b3318
-2009-01-26T03:40:48.058958Z
-16797
-conrad
-has-props
-
 vp3dsp_mmx.h
 file
 
@@ -407,16 +441,29 @@ f6f54217aeb48c0a8ff9f5073c293da2
 16270
 diego
 
+dsputil_mmx.c
+file
+
+
+
+
+2009-02-16T15:28:16.000000Z
+27541ac4b6d6f543b4d56d68a01db0a4
+2009-02-13T00:02:33.268424Z
+17195
+aurel
+has-props
+
 dsputil_mmx.h
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
-b2c1fa744290faf087f020477bc37a9c
-2009-01-13T23:44:16.634366Z
-16590
+2009-02-16T15:28:16.000000Z
+b9c776b4abaf81e4d6472cd4e841c0dc
+2009-02-12T23:48:07.818917Z
+17192
 aurel
 
 h264dsp_mmx.c
@@ -425,11 +472,11 @@ file
 
 
 
-2009-01-29T11:51:00.000000Z
-23311a61402d7c1cc5069e9007f31241
-2009-01-13T23:44:16.634366Z
-16590
-aurel
+2009-02-16T15:28:16.000000Z
+cc8236a26dda191236a10d5a4d348aca
+2009-02-08T06:35:21.396182Z
+17046
+bcoudurier
 has-props
 
 dsputil_yasm.asm
@@ -438,11 +485,11 @@ file
 
 
 
-2009-01-29T11:51:00.000000Z
-99fc6231e7304eeb9f401676531259c9
-2008-12-19T03:01:08.471227Z
-16234
-darkshikari
+2009-02-16T15:28:16.000000Z
+91ef1c05463dd4689dea24db8af57811
+2009-02-08T17:45:30.925063Z
+17059
+lorenm
 
 x86inc.asm
 file
@@ -462,11 +509,11 @@ file
 
 
 
-2009-01-29T11:51:00.000000Z
-8e05e47654110c1855de40da9849308d
-2009-01-18T22:57:40.627338Z
-16681
-aurel
+2009-02-16T15:28:16.000000Z
+bda393cd0ce72b0f48c188163bd6417b
+2009-02-08T17:44:04.694061Z
+17058
+lorenm
 
 dsputil_mmx_qns_template.c
 file
@@ -487,11 +534,11 @@ file
 
 
 
-2009-01-29T11:51:00.000000Z
-4019561e2d047f58a7b55ea8c94dbb8a
-2009-01-03T00:46:17.994574Z
-16409
-darkshikari
+2009-02-16T15:28:16.000000Z
+4e391643ba04340f284842ea4ba4ad25
+2009-02-11T16:12:04.846930Z
+17158
+diego
 
 idct_xvid.h
 file

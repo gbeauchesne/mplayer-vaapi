@@ -30,7 +30,7 @@
 #include "libavutil/avutil.h"
 
 #define LIBAVCODEC_VERSION_MAJOR 52
-#define LIBAVCODEC_VERSION_MINOR 12
+#define LIBAVCODEC_VERSION_MINOR 15
 #define LIBAVCODEC_VERSION_MICRO  0
 
 #define LIBAVCODEC_VERSION_INT  AV_VERSION_INT(LIBAVCODEC_VERSION_MAJOR, \
@@ -960,6 +960,13 @@ typedef struct AVCodecContext {
      * decoder to draw a horizontal band. It improves cache usage. Not
      * all codecs can do that. You must check the codec capabilities
      * beforehand.
+     * The function is also used by hardware acceleration APIs.
+     * It is called at least once during frame decoding to pass
+     * the data needed for hardware render.
+     * In that mode instead of pixel data, AVFrame points to
+     * a structure specific to the acceleration API. The application
+     * reads the structure and can change some fields to indicate progress
+     * or mark state.
      * - encoding: unused
      * - decoding: Set by user.
      * @param height the height of the slice
@@ -1212,7 +1219,8 @@ typedef struct AVCodecContext {
     void (*release_buffer)(struct AVCodecContext *c, AVFrame *pic);
 
     /**
-     * If 1 the stream has a 1 frame delay during decoding.
+     * Size of the frame reordering buffer in the decoder.
+     * For MPEG-2 it is 1 IPB or 0 low delay IP.
      * - encoding: Set by libavcodec.
      * - decoding: Set by libavcodec.
      */
@@ -2442,13 +2450,75 @@ struct AVResampleContext;
 
 typedef struct ReSampleContext ReSampleContext;
 
-ReSampleContext *audio_resample_init(int output_channels, int input_channels,
-                                     int output_rate, int input_rate);
+#if LIBAVCODEC_VERSION_MAJOR < 53
+/**
+ * @deprecated Use av_audio_resample_init() instead.
+ */
+attribute_deprecated ReSampleContext *audio_resample_init(int output_channels, int input_channels,
+                                                          int output_rate, int input_rate);
+#endif
+/**
+ *  Initializes audio resampling context
+ *
+ * @param output_channels  number of output channels
+ * @param input_channels   number of input channels
+ * @param output_rate      output sample rate
+ * @param input_rate       input sample rate
+ * @param sample_fmt_out   requested output sample format
+ * @param sample_fmt_in    input sample format
+ * @param filter_length    length of each FIR filter in the filterbank relative to the cutoff freq
+ * @param log2_phase_count log2 of the number of entries in the polyphase filterbank
+ * @param linear           If 1 then the used FIR filter will be linearly interpolated
+                           between the 2 closest, if 0 the closest will be used
+ * @param cutoff           cutoff frequency, 1.0 corresponds to half the output sampling rate
+ * @return allocated ReSampleContext, NULL if error occured
+ */
+ReSampleContext *av_audio_resample_init(int output_channels, int input_channels,
+                                        int output_rate, int input_rate,
+                                        enum SampleFormat sample_fmt_out,
+                                        enum SampleFormat sample_fmt_in,
+                                        int filter_length, int log2_phase_count,
+                                        int linear, double cutoff);
+
 int audio_resample(ReSampleContext *s, short *output, short *input, int nb_samples);
 void audio_resample_close(ReSampleContext *s);
 
+
+/**
+ * Initializes an audio resampler.
+ * Note, if either rate is not an integer then simply scale both rates up so they are.
+ * @param filter_length length of each FIR filter in the filterbank relative to the cutoff freq
+ * @param log2_phase_count log2 of the number of entries in the polyphase filterbank
+ * @param linear If 1 then the used FIR filter will be linearly interpolated
+                 between the 2 closest, if 0 the closest will be used
+ * @param cutoff cutoff frequency, 1.0 corresponds to half the output sampling rate
+ */
 struct AVResampleContext *av_resample_init(int out_rate, int in_rate, int filter_length, int log2_phase_count, int linear, double cutoff);
+
+/**
+ * resamples.
+ * @param src an array of unconsumed samples
+ * @param consumed the number of samples of src which have been consumed are returned here
+ * @param src_size the number of unconsumed samples available
+ * @param dst_size the amount of space in samples available in dst
+ * @param update_ctx If this is 0 then the context will not be modified, that way several channels can be resampled with the same context.
+ * @return the number of samples written in dst or -1 if an error occurred
+ */
 int av_resample(struct AVResampleContext *c, short *dst, short *src, int *consumed, int src_size, int dst_size, int update_ctx);
+
+
+/**
+ * Compensates samplerate/timestamp drift. The compensation is done by changing
+ * the resampler parameters, so no audible clicks or similar distortions occur
+ * @param compensation_distance distance in output samples over which the compensation should be performed
+ * @param sample_delta number of output samples which should be output less
+ *
+ * example: av_resample_compensate(c, 10, 500)
+ * here instead of 510 samples only 500 samples would be output
+ *
+ * note, due to rounding the actual compensation might be slightly different,
+ * especially if the compensation_distance is large and the in_rate used during init is small
+ */
 void av_resample_compensate(struct AVResampleContext *c, int sample_delta, int compensation_distance);
 void av_resample_close(struct AVResampleContext *c);
 
@@ -2589,6 +2659,11 @@ int avpicture_deinterlace(AVPicture *dst, const AVPicture *src,
 
 /* external high level API */
 
+/**
+ * If c is NULL, returns the first registered codec,
+ * if c is non-NULL, returns the next registered codec after c,
+ * or NULL if c is the last one.
+ */
 AVCodec *av_codec_next(AVCodec *c);
 
 /**
@@ -2604,12 +2679,19 @@ unsigned avcodec_version(void);
  */
 void avcodec_init(void);
 
+#if LIBAVCODEC_VERSION_MAJOR < 53
+/**
+ * @deprecated Deprecated in favor of avcodec_register().
+ */
+attribute_deprecated void register_avcodec(AVCodec *codec);
+#endif
+
 /**
  * Register the codec \p codec and initialize libavcodec.
  *
  * @see avcodec_init()
  */
-void register_avcodec(AVCodec *codec);
+void avcodec_register(AVCodec *codec);
 
 /**
  * Finds a registered encoder with a matching codec ID.
@@ -2874,7 +2956,7 @@ int avcodec_close(AVCodecContext *avctx);
  * which formats you want to support, by using the individual registration
  * functions.
  *
- * @see register_avcodec
+ * @see avcodec_register
  * @see av_register_codec_parser
  * @see av_register_bitstream_filter
  */
@@ -3051,7 +3133,7 @@ int av_parse_video_frame_size(int *width_ptr, int *height_ptr, const char *str);
  *
  * @return 0 in case of a successful parsing, a negative value otherwise
  * @param[in] str the string to parse: it has to be a string in the format
- * <frame_rate_nom>/<frame_rate_den>, a float number or a valid video rate abbreviation
+ * <frame_rate_num>/<frame_rate_den>, a float number or a valid video rate abbreviation
  * @param[in,out] frame_rate pointer to the AVRational which will contain the detected
  * frame rate
  */

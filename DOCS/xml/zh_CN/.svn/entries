@@ -1,15 +1,15 @@
 8
 
 dir
-28469
+28611
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/zh_CN
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-01-05T12:50:53.491468Z
-28266
-Gabrov
+2009-02-09T23:23:36.887429Z
+28509
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -25,18 +25,6 @@ svn:special svn:externals svn:needs-lock
 
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
-
-bugs.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-06200158f0e209cea0696ca691cb9d6d
-2006-12-21T08:09:32.273927Z
-21712
-diego
 
 cd-dvd.xml
 file
@@ -56,11 +44,11 @@ file
 
 
 
-2009-01-29T11:50:44.000000Z
-e6f4b6920be4b1b69873f251a866e9da
-2009-01-05T12:50:53.491468Z
-28266
-Gabrov
+2009-02-16T15:28:14.000000Z
+2e6113c17be72ec43c85de4c0ae8d1f5
+2009-02-09T23:23:36.887429Z
+28509
+diego
 
 bugreports.xml
 file
@@ -68,10 +56,10 @@ file
 
 
 
-2009-01-29T11:50:44.000000Z
-7308c0f612a7c06b7512223cb92c012d
-2006-12-21T08:09:32.273927Z
-21712
+2009-02-16T15:28:14.000000Z
+6772de736acd5ef985f26c66a8221096
+2009-02-09T23:23:36.887429Z
+28509
 diego
 
 mencoder.xml

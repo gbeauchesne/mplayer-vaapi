@@ -77,6 +77,14 @@
 #endif
 #endif
 
+#ifndef av_flatten
+#if AV_GCC_VERSION_AT_LEAST(4,1)
+#    define av_flatten __attribute__((flatten))
+#else
+#    define av_flatten
+#endif
+#endif
+
 #ifndef attribute_deprecated
 #if AV_GCC_VERSION_AT_LEAST(3,1)
 #    define attribute_deprecated __attribute__((deprecated))
@@ -90,6 +98,14 @@
 #    define av_unused __attribute__((unused))
 #else
 #    define av_unused
+#endif
+#endif
+
+#ifndef av_uninit
+#if defined(__GNUC__) && !defined(__ICC)
+#    define av_uninit(x) x=x
+#else
+#    define av_uninit(x) x
 #endif
 #endif
 

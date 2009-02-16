@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision: 28422 $ -->
+<!-- $Revision: 28510 $ -->
 <chapter id="install">
 <title>Installation</title>
 
@@ -403,7 +403,7 @@ default as it offers better speed.
 
 <!-- ********** -->
 
-<sect2 id="codec-x264">
+<sect2 id="x264">
 <title><systemitem class="library">x264</systemitem></title>
 
 <para>

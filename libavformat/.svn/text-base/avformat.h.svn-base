@@ -22,7 +22,7 @@
 #define AVFORMAT_AVFORMAT_H
 
 #define LIBAVFORMAT_VERSION_MAJOR 52
-#define LIBAVFORMAT_VERSION_MINOR 25
+#define LIBAVFORMAT_VERSION_MINOR 29
 #define LIBAVFORMAT_VERSION_MICRO  0
 
 #define LIBAVFORMAT_VERSION_INT AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR, \
@@ -211,8 +211,7 @@ static inline void av_free_packet(AVPacket *pkt)
 /**
  * The exact value of the fractional number is: 'val + num / den'.
  * num is assumed to be 0 <= num < den.
- * @deprecated Use AVRational instead.
-*/
+ */
 typedef struct AVFrac {
     int64_t val, num, den;
 } AVFrac;
@@ -688,7 +687,18 @@ extern AVInputFormat *first_iformat;
 extern AVOutputFormat *first_oformat;
 #endif
 
+/**
+ * If f is NULL, returns the first registered input format,
+ * if f is non-NULL, returns the next registered input format after f,
+ * or NULL if f is the last one.
+ */
 AVInputFormat  *av_iformat_next(AVInputFormat  *f);
+
+/**
+ * If f is NULL, returns the first registered output format,
+ * if f is non-NULL, returns the next registered output format after f,
+ * or NULL if f is the last one.
+ */
 AVOutputFormat *av_oformat_next(AVOutputFormat *f);
 
 enum CodecID av_guess_image2_codec(const char *filename);
@@ -766,7 +776,7 @@ void av_pkt_dump_log(void *avcl, int level, AVPacket *pkt, int dump_payload);
  *
  * @see av_register_input_format()
  * @see av_register_output_format()
- * @see register_protocol()
+ * @see av_register_protocol()
  */
 void av_register_all(void);
 
@@ -813,12 +823,20 @@ int av_open_input_file(AVFormatContext **ic_ptr, const char *filename,
                        AVInputFormat *fmt,
                        int buf_size,
                        AVFormatParameters *ap);
+
+#if LIBAVFORMAT_VERSION_MAJOR < 53
+/**
+ * @deprecated Use avformat_alloc_context() instead.
+ */
+attribute_deprecated AVFormatContext *av_alloc_format_context(void);
+#endif
+
 /**
  * Allocate an AVFormatContext.
  * Can be freed with av_free() but do not forget to free everything you
  * explicitly allocated as well!
  */
-AVFormatContext *av_alloc_format_context(void);
+AVFormatContext *avformat_alloc_context(void);
 
 /**
  * Read packets of a media file to get stream information. This
@@ -881,6 +899,34 @@ int av_read_frame(AVFormatContext *s, AVPacket *pkt);
  */
 int av_seek_frame(AVFormatContext *s, int stream_index, int64_t timestamp,
                   int flags);
+
+/**
+ * Seek to timestamp ts.
+ * Seeking will be done so that the point from which all active streams
+ * can be presented successfully will be closest to ts and within min/max_ts.
+ * Active streams are all streams that have AVStream.discard < AVDISCARD_ALL.
+ *
+ * if flags contain AVSEEK_FLAG_BYTE then all timestamps are in byte and
+ * are the file position (this may not be supported by all demuxers).
+ * if flags contain AVSEEK_FLAG_FRAME then all timestamps are in frames
+ * in the stream with stream_index (this may not be supported by all demuxers).
+ * else all timestamps are in units of the stream selected by stream_index or
+ * if stream_index is -1, AV_TIME_BASE units.
+ * if flags contain AVSEEK_FLAG_ANY then non keyframes are treated as
+ * keyframes (this may not be supported by all demuxers).
+ *
+ * @param stream_index index of the stream which is used as timebase reference.
+ * @param min_ts smallest acceptable timestamp
+ * @param ts target timestamp
+ * @param max_ts largest acceptable timestamp
+ * @param flags flags
+ * @returns >=0 on success, error code otherwise
+ *
+ * @NOTE this is part of the new seek API which is still under construction
+ *       thus do not use this yet it may change any time, dont expect ABI
+ *       compatibility yet!
+ */
+int avformat_seek_file(AVFormatContext *s, int stream_index, int64_t min_ts, int64_t ts, int64_t max_ts, int flags);
 
 /**
  * Start playing a network based stream (e.g. RTSP stream) at the
@@ -1145,7 +1191,7 @@ int64_t av_gettime(void);
 /* ffm-specific for ffserver */
 #define FFM_PACKET_SIZE 4096
 int64_t ffm_read_write_index(int fd);
-void ffm_write_write_index(int fd, int64_t pos);
+int ffm_write_write_index(int fd, int64_t pos);
 void ffm_set_write_index(AVFormatContext *s, int64_t pos, int64_t file_size);
 
 /**

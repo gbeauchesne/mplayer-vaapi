@@ -1,15 +1,15 @@
 8
 
 dir
-28469
+28611
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/fr
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-01-05T12:50:53.491468Z
-28266
-Gabrov
+2009-02-09T23:43:36.848743Z
+28513
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,24 @@ file
 
 
 
-2009-01-29T11:50:45.000000Z
-a971c715713a45f0eb9c3632f6772754
-2008-09-10T19:57:06.075237Z
-27570
-gpoirier
+2009-02-16T15:28:14.000000Z
+d05cbe1d87fb228aab16dfc88075b37f
+2009-02-09T23:43:36.848743Z
+28513
+diego
+has-props
+
+mencoder.xml
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+83cb5307ede1fd5240156be986e9efd9
+2009-02-09T23:43:36.848743Z
+28513
+diego
 has-props
 
 bugreports.xml
@@ -52,19 +65,6 @@ b8e93d55a3ca6a739132260459a407d8
 diego
 has-props
 
-mencoder.xml
-file
-
-
-
-
-2009-01-29T11:50:45.000000Z
-4d56131bfac36d87f4ed4fa5fa022623
-2008-05-22T11:08:55.079898Z
-26852
-gpoirier
-has-props
-
 radio.xml
 file
 
@@ -77,19 +77,6 @@ caf211969a5686c0fa9ff2a303865130
 20537
 kraymer
 
-codecs.xml
-file
-
-
-
-
-2009-01-29T11:50:45.000000Z
-4c033882c22a27a0f2b726c78bfe7526
-2008-06-20T19:43:50.943535Z
-27105
-gpoirier
-has-props
-
 cd-dvd.xml
 file
 
@@ -100,6 +87,19 @@ file
 a53f675ed3e91a562296b6ad53f322d4
 2008-09-10T20:05:32.389337Z
 27572
+gpoirier
+has-props
+
+usage.xml
+file
+
+
+
+
+2009-01-29T11:50:45.000000Z
+59b2cd01becc6540988afeb10ef5ecef
+2008-05-22T11:08:55.079898Z
+26852
 gpoirier
 has-props
 
@@ -116,45 +116,6 @@ d000d4ded9e3b47c5b3438f785a0167a
 kraymer
 has-props
 
-usage.xml
-file
-
-
-
-
-2009-01-29T11:50:45.000000Z
-59b2cd01becc6540988afeb10ef5ecef
-2008-05-22T11:08:55.079898Z
-26852
-gpoirier
-has-props
-
-containers.xml
-file
-
-
-
-
-2009-01-29T11:50:45.000000Z
-e95415bab1c2eb8047c442cbb717037e
-2008-06-20T20:11:57.279520Z
-27110
-gpoirier
-has-props
-
-install.xml
-file
-
-
-
-
-2009-01-29T11:50:45.000000Z
-ac275a79bc02e68d4dcaf169b7126fb5
-2008-05-22T11:08:55.079898Z
-26852
-gpoirier
-has-props
-
 video.xml
 file
 
@@ -168,16 +129,16 @@ file
 gpoirier
 has-props
 
-faq.xml
+install.xml
 file
 
 
 
 
-2009-01-29T11:50:45.000000Z
-14d04483baa5e6712a1559081e121daa
-2009-01-04T23:10:47.157943Z
-28249
+2009-02-16T15:28:14.000000Z
+b49580b948fb3951c2be5558e71b8a95
+2009-02-09T23:43:36.848743Z
+28513
 diego
 has-props
 
@@ -187,24 +148,24 @@ file
 
 
 
-2009-01-29T11:50:45.000000Z
-3378fbaaad9aa4d99d63ee3462e97852
-2008-06-03T14:49:54.651794Z
-26974
-gpoirier
+2009-02-16T15:28:14.000000Z
+278150fc38c81ba05efe874335432a4c
+2009-02-09T22:51:32.103031Z
+28505
+diego
 has-props
 
-documentation.xml
+faq.xml
 file
 
 
 
 
-2009-01-29T11:50:45.000000Z
-1624b24303f55bc99755b1b6f8b5d11b
-2009-01-05T12:50:53.491468Z
-28266
-Gabrov
+2009-02-16T15:28:14.000000Z
+d786bcfdc21f2b04244c1aa9a404a8ed
+2009-02-09T23:43:36.848743Z
+28513
+diego
 has-props
 
 tvinput.xml
@@ -218,6 +179,19 @@ f2f5535a1de1dea2428cbb111ad06e7f
 2008-06-11T20:36:34.264302Z
 27053
 gpoirier
+has-props
+
+documentation.xml
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+c96f083ae36d97a7b025f6ba46d69236
+2009-02-09T23:43:36.848743Z
+28513
+diego
 has-props
 
 Makefile

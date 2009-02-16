@@ -96,7 +96,7 @@ static const uint8_t div6[52]={
 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8,
 };
 
-static const int left_block_options[4][8]={
+static const uint8_t left_block_options[4][8]={
     {0,1,2,3,7,10,8,11},
     {2,2,3,3,8,11,8,11},
     {0,0,1,1,7,10,7,10},
@@ -111,7 +111,7 @@ static void fill_caches(H264Context *h, int mb_type, int for_deblock){
     const int mb_xy= h->mb_xy;
     int topleft_xy, top_xy, topright_xy, left_xy[2];
     int topleft_type, top_type, topright_type, left_type[2];
-    const int * left_block;
+    const uint8_t * left_block;
     int topleft_partition= -1;
     int i;
 
@@ -2208,6 +2208,7 @@ static av_cold int decode_init(AVCodecContext *avctx){
     h->thread_context[0] = h;
     h->outputed_poc = INT_MIN;
     h->prev_poc_msb= 1<<16;
+    h->sei_recovery_frame_cnt = -1;
     return 0;
 }
 
@@ -3141,6 +3142,7 @@ static void flush_dpb(AVCodecContext *avctx){
     if(h->s.current_picture_ptr)
         h->s.current_picture_ptr->reference= 0;
     h->s.first_field= 0;
+    h->sei_recovery_frame_cnt = -1;
     ff_mpeg_flush(avctx);
 }
 
@@ -6848,6 +6850,15 @@ static int decode_unregistered_user_data(H264Context *h, int size){
     return 0;
 }
 
+static int decode_recovery_point(H264Context *h){
+    MpegEncContext * const s = &h->s;
+
+    h->sei_recovery_frame_cnt = get_ue_golomb(&s->gb);
+    skip_bits(&s->gb, 4);       /* 1b exact_match_flag, 1b broken_link_flag, 2b changing_slice_group_idc */
+
+    return 0;
+}
+
 static int decode_sei(H264Context *h){
     MpegEncContext * const s = &h->s;
 
@@ -6865,12 +6876,16 @@ static int decode_sei(H264Context *h){
         }while(get_bits(&s->gb, 8) == 255);
 
         switch(type){
-        case 1: // Picture timing SEI
+        case SEI_TYPE_PIC_TIMING: // Picture timing SEI
             if(decode_picture_timing(h) < 0)
                 return -1;
             break;
-        case 5:
+        case SEI_TYPE_USER_DATA_UNREGISTERED:
             if(decode_unregistered_user_data(h, size) < 0)
+                return -1;
+            break;
+        case SEI_TYPE_RECOVERY_POINT:
+            if(decode_recovery_point(h) < 0)
                 return -1;
             break;
         default:
@@ -7403,7 +7418,11 @@ static int decode_nal_units(H264Context *h, const uint8_t *buf, int buf_size){
         }
 
         if (h->is_avc && (nalsize != consumed)){
-            av_log(h->s.avctx, AV_LOG_ERROR, "AVC: Consumed only %d bytes instead of %d\n", consumed, nalsize);
+            int i, debug_level = AV_LOG_DEBUG;
+            for (i = consumed; i < nalsize; i++)
+                if (buf[buf_index+i])
+                    debug_level = AV_LOG_ERROR;
+            av_log(h->s.avctx, debug_level, "AVC: Consumed only %d bytes instead of %d\n", consumed, nalsize);
             consumed= nalsize;
         }
 
@@ -7431,7 +7450,9 @@ static int decode_nal_units(H264Context *h, const uint8_t *buf, int buf_size){
             if((err = decode_slice_header(hx, h)))
                break;
 
-            s->current_picture_ptr->key_frame|= (hx->nal_unit_type == NAL_IDR_SLICE);
+            s->current_picture_ptr->key_frame |=
+                    (hx->nal_unit_type == NAL_IDR_SLICE) ||
+                    (h->sei_recovery_frame_cnt >= 0);
             if(hx->redundant_pic_count==0 && hx->s.hurry_up < 5
                && (avctx->skip_frame < AVDISCARD_NONREF || hx->nal_ref_idc)
                && (avctx->skip_frame < AVDISCARD_BIDIR  || hx->slice_type_nos!=FF_B_TYPE)
@@ -7668,6 +7689,7 @@ static int decode_frame(AVCodecContext *avctx,
             ff_er_frame_end(s);
 
         MPV_frame_end(s);
+        h->sei_recovery_frame_cnt = -1;
 
         if (cur->field_poc[0]==INT_MAX || cur->field_poc[1]==INT_MAX) {
             /* Wait for second field. */

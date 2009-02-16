@@ -34,6 +34,7 @@
 #include "mjpegenc.h"
 #include "msmpeg4.h"
 #include "faandct.h"
+#include "xvmc_internal.h"
 #include <limits.h>
 
 //#undef NDEBUG
@@ -53,10 +54,6 @@ static void dct_unquantize_h263_intra_c(MpegEncContext *s,
                                   DCTELEM *block, int n, int qscale);
 static void dct_unquantize_h263_inter_c(MpegEncContext *s,
                                   DCTELEM *block, int n, int qscale);
-
-int  XVMC_field_start(MpegEncContext*s, AVCodecContext *avctx);
-void XVMC_field_end(MpegEncContext *s);
-void XVMC_decode_mb(MpegEncContext *s);
 
 
 /* enable all paranoid tests for rounding, overflows, etc... */
@@ -939,10 +936,9 @@ alloc:
         update_noise_reduction(s);
     }
 
-#if CONFIG_XVMC
-    if(s->avctx->xvmc_acceleration)
-        return XVMC_field_start(s, avctx);
-#endif
+    if(CONFIG_MPEG_XVMC_DECODER && s->avctx->xvmc_acceleration)
+        return ff_xvmc_field_start(s, avctx);
+
     return 0;
 }
 
@@ -951,13 +947,10 @@ void MPV_frame_end(MpegEncContext *s)
 {
     int i;
     /* draw edge for correct motion prediction if outside */
-#if CONFIG_XVMC
-//just to make sure that all data is rendered.
-    if(s->avctx->xvmc_acceleration){
-        XVMC_field_end(s);
-    }else
-#endif
-    if(!(s->avctx->codec->capabilities&CODEC_CAP_HWACCEL_VDPAU)
+    //just to make sure that all data is rendered.
+    if(CONFIG_MPEG_XVMC_DECODER && s->avctx->xvmc_acceleration){
+        ff_xvmc_field_end(s);
+    }else if(!(s->avctx->codec->capabilities&CODEC_CAP_HWACCEL_VDPAU)
        && s->unrestricted_mv
        && s->current_picture.reference
        && !s->intra_only
@@ -1736,12 +1729,10 @@ void MPV_decode_mb_internal(MpegEncContext *s, DCTELEM block[12][64],
 {
     int mb_x, mb_y;
     const int mb_xy = s->mb_y * s->mb_stride + s->mb_x;
-#if CONFIG_XVMC
-    if(s->avctx->xvmc_acceleration){
-        XVMC_decode_mb(s);//xvmc uses pblocks
+    if(CONFIG_MPEG_XVMC_DECODER && s->avctx->xvmc_acceleration){
+        ff_xvmc_decode_mb(s);//xvmc uses pblocks
         return;
     }
-#endif
 
     mb_x = s->mb_x;
     mb_y = s->mb_y;

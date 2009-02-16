@@ -28,6 +28,7 @@ Video codecs: (supported by RealPlayer8 for Linux)
 #include "config.h"
 #include "mp_msg.h"
 #include "help_mp.h"
+#include "mpbswap.h"
 
 #include "stream/stream.h"
 #include "demuxer.h"
@@ -95,8 +96,6 @@ typedef struct {
     int video_curpos; ///< Current file position for video demuxing
     int a_num_of_packets; ///< Number of audio packets
     int v_num_of_packets; ///< Number of video packets
-    int a_idx_ptr; ///< Audio index position pointer
-    int v_idx_ptr; ///< Video index position pointer
     int a_bitrate; ///< Audio bitrate
     int v_bitrate; ///< Video bitrate
     int stream_switch; ///< Flag used to switch audio/video demuxing
@@ -141,7 +140,7 @@ static void dump_index(demuxer_t *demuxer, int stream_id)
     real_index_table_t *index;
     int i, entries;
 
-    if ( mp_msg_test(MSGT_DEMUX,MSGL_V) )
+    if (!mp_msg_test(MSGT_DEMUX,MSGL_V))
 	return;
     
     if ((unsigned)stream_id >= MAX_STREAMS)
@@ -474,8 +473,9 @@ void hexdump(char *, unsigned long);
 #define SKIP_BITS(n) buffer<<=n
 #define SHOW_BITS(n) ((buffer)>>(32-(n)))
 
-static double real_fix_timestamp(real_priv_t* priv, unsigned char* s, unsigned int timestamp, double frametime, unsigned int format){
+double real_fix_timestamp(unsigned char *buf, unsigned int timestamp, unsigned int format, int64_t *kf_base, int *kf_pts, double *pts){
   double v_pts;
+  unsigned char *s = buf + 1 + (*buf+1)*8;
   uint32_t buffer= (s[0]<<24) + (s[1]<<16) + (s[2]<<8) + s[3];
   unsigned int kf=timestamp;
   int pict_type;
@@ -497,29 +497,29 @@ static double real_fix_timestamp(real_priv_t* priv, unsigned char* s, unsigned i
 //    if(pict_type==0)
     if(pict_type<=1){
       // I frame, sync timestamps:
-      priv->kf_base=(int64_t)timestamp-kf;
-      mp_msg(MSGT_DEMUX, MSGL_DBG2,"\nTS: base=%08"PRIX64"\n",priv->kf_base);
+      *kf_base=(int64_t)timestamp-kf;
+      mp_msg(MSGT_DEMUX, MSGL_DBG2,"\nTS: base=%08"PRIX64"\n",*kf_base);
       kf=timestamp;
     } else {
       // P/B frame, merge timestamps:
-      int64_t tmp=(int64_t)timestamp-priv->kf_base;
+      int64_t tmp=(int64_t)timestamp-*kf_base;
       kf|=tmp&(~0x1fff);	// combine with packet timestamp
       if(kf<tmp-4096) kf+=8192; else // workaround wrap-around problems
       if(kf>tmp+4096) kf-=8192;
-      kf+=priv->kf_base;
+      kf+=*kf_base;
     }
     if(pict_type != 3){ // P || I  frame -> swap timestamps
 	unsigned int tmp=kf;
-	kf=priv->kf_pts;
-	priv->kf_pts=tmp;
+	kf=*kf_pts;
+	*kf_pts=tmp;
 //	if(kf<=tmp) kf=0;
     }
-    mp_msg(MSGT_DEMUX, MSGL_DBG2,"\nTS: %08X -> %08X (%04X) %d %02X %02X %02X %02X %5u\n",timestamp,kf,orig_kf,pict_type,s[0],s[1],s[2],s[3],kf-(unsigned int)(1000.0*priv->v_pts));
+    mp_msg(MSGT_DEMUX, MSGL_DBG2,"\nTS: %08X -> %08X (%04X) %d %02X %02X %02X %02X %5u\n",timestamp,kf,orig_kf,pict_type,s[0],s[1],s[2],s[3],pts?kf-(unsigned int)(*pts*1000.0):0);
   }
 #endif
     v_pts=kf*0.001f;
-//    if(v_pts<priv->v_pts || !kf) v_pts=priv->v_pts+frametime;
-    priv->v_pts=v_pts;
+//    if(pts && (v_pts<*pts || !kf)) v_pts=*pts+frametime;
+    if(pts) *pts=v_pts;
     return v_pts;
 }
 
@@ -529,6 +529,29 @@ typedef struct dp_hdr_s {
     uint32_t len;	// length of actual data
     uint32_t chunktab;	// offset to chunk offset array
 } dp_hdr_t;
+
+static void queue_video_packet(real_priv_t *priv, demux_stream_t *ds, demux_packet_t *dp)
+{
+    dp_hdr_t hdr = *(dp_hdr_t*)dp->buffer;
+    unsigned char *tmp = malloc(8*(1+hdr.chunks));
+    memcpy(tmp, dp->buffer+hdr.chunktab, 8*(1+hdr.chunks));
+    memmove(dp->buffer+1+8*(1+hdr.chunks), dp->buffer+sizeof(dp_hdr_t), hdr.len);
+    memcpy(dp->buffer+1, tmp, 8*(1+hdr.chunks));
+    *dp->buffer = (uint8_t)hdr.chunks;
+    free(tmp);
+
+    if(priv->video_after_seek){
+        priv->kf_base = 0;
+        priv->kf_pts = hdr.timestamp;
+        priv->video_after_seek = 0;
+    }
+    if(hdr.len >= 3)  /* this check may be useless */
+        dp->pts = real_fix_timestamp(dp->buffer, hdr.timestamp,
+                                     ((sh_video_t *)ds->sh)->format,
+                                     &priv->kf_base, &priv->kf_pts,
+                                     &priv->v_pts);
+    ds_add_packet(ds, dp);
+}
 
 // return value:
 //     0 = EOF or no stream found
@@ -558,9 +581,9 @@ static int demux_real_fill_buffer(demuxer_t *demuxer, demux_stream_t *dsds)
 
     /* Handle audio/video demxing switch for multirate files (non-interleaved) */
     if (priv->is_multirate && priv->stream_switch) {
-        if (priv->a_idx_ptr >= priv->index_table_size[demuxer->audio->id])
+        if (priv->current_apacket >= priv->index_table_size[demuxer->audio->id])
             demuxer->audio->eof = 1;
-        if (priv->v_idx_ptr >= priv->index_table_size[demuxer->video->id])
+        if (priv->current_vpacket >= priv->index_table_size[demuxer->video->id])
             demuxer->video->eof = 1;
         if (demuxer->audio->eof && demuxer->video->eof)
             return 0;
@@ -568,8 +591,8 @@ static int demux_real_fill_buffer(demuxer_t *demuxer, demux_stream_t *dsds)
             stream_seek(demuxer->stream, priv->audio_curpos); // Get audio
         else if (demuxer->audio->eof && !demuxer->video->eof)
             stream_seek(demuxer->stream, priv->video_curpos); // Get video
-        else if (priv->index_table[demuxer->audio->id][priv->a_idx_ptr].timestamp <
-            priv->index_table[demuxer->video->id][priv->v_idx_ptr].timestamp)
+        else if (priv->index_table[demuxer->audio->id][priv->current_apacket].timestamp <
+            priv->index_table[demuxer->video->id][priv->current_vpacket].timestamp)
             stream_seek(demuxer->stream, priv->audio_curpos); // Get audio
         else
             stream_seek(demuxer->stream, priv->video_curpos); // Get video
@@ -804,18 +827,15 @@ got_audio:
         } // codec_id check, codec default case
 	}
 // we will not use audio index if we use -idx and have a video
-	if(!demuxer->video->sh && index_mode == 2 && (unsigned)demuxer->audio->id < MAX_STREAMS)
+	if(((!demuxer->video->sh && index_mode == 2) || priv->is_multirate) && (unsigned)demuxer->audio->id < MAX_STREAMS) {
 		while (priv->current_apacket + 1 < priv->index_table_size[demuxer->audio->id] &&
-		       timestamp > priv->index_table[demuxer->audio->id][priv->current_apacket].timestamp)
+		       timestamp > priv->index_table[demuxer->audio->id][priv->current_apacket].timestamp) {
 			priv->current_apacket += 1;
-	
-	if(priv->is_multirate)
-		while (priv->a_idx_ptr + 1 < priv->index_table_size[demuxer->audio->id] &&
-		       timestamp > priv->index_table[demuxer->audio->id][priv->a_idx_ptr + 1].timestamp) {
-			priv->a_idx_ptr++;
-			priv->audio_curpos = stream_tell(demuxer->stream);
 			priv->stream_switch = 1;
 		}
+		if (priv->stream_switch)
+			priv->audio_curpos = stream_tell(demuxer->stream);
+	}
 	
     // If we're reordering audio packets and we need more data get it
     if (audioreorder_getnextpk)
@@ -915,16 +935,7 @@ got_video:
 		    if(ds->asf_seq!=vpkg_seqnum){
 			// this fragment is for new packet, close the old one
 			mp_msg(MSGT_DEMUX,MSGL_DBG2, "closing probably incomplete packet, len: %d  \n",dp->len);
-			if(priv->video_after_seek){
-				priv->kf_base = 0;
-				priv->kf_pts = dp_hdr->timestamp;
-				dp->pts=
-				real_fix_timestamp(priv,dp_data,dp_hdr->timestamp,sh_video->frametime,sh_video->format);
-				priv->video_after_seek = 0;
-			} else if (dp_hdr->len >= 3)
-			    dp->pts =
-			    real_fix_timestamp(priv,dp_data,dp_hdr->timestamp,sh_video->frametime,sh_video->format);
-			ds_add_packet(ds,dp);
+			queue_video_packet(priv, ds, dp);
 			ds->asf_packet=NULL;
 		    } else {
 			// append data to it!
@@ -941,8 +952,8 @@ got_video:
 			    dp_data=dp->buffer+sizeof(dp_hdr_t);
 			    extra=(uint32_t*)(dp->buffer+dp_hdr->chunktab);
 			}
-			extra[2*dp_hdr->chunks+0]=1;
-			extra[2*dp_hdr->chunks+1]=dp_hdr->len;
+			extra[2*dp_hdr->chunks+0]=le2me_32(1);
+			extra[2*dp_hdr->chunks+1]=le2me_32(dp_hdr->len);
 			if(0x80==(vpkg_header&0xc0)){
 			    // last fragment!
 			    if(dp_hdr->len!=vpkg_length-vpkg_offset)
@@ -954,16 +965,7 @@ got_video:
 			    len-=vpkg_offset;
  			    mp_dbg(MSGT_DEMUX,MSGL_DBG2, "fragment (%d bytes) appended, %d bytes left\n",vpkg_offset,len);
 			    // we know that this is the last fragment -> we can close the packet!
-			    if(priv->video_after_seek){
-				    priv->kf_base = 0;
-				    priv->kf_pts = dp_hdr->timestamp;
-				    dp->pts=
-				    real_fix_timestamp(priv,dp_data,dp_hdr->timestamp,sh_video->frametime,sh_video->format);
-				    priv->video_after_seek = 0;
-			    } else if (dp_hdr->len >= 3)
-				dp->pts =
-				real_fix_timestamp(priv,dp_data,dp_hdr->timestamp,sh_video->frametime,sh_video->format);
-			    ds_add_packet(ds,dp);
+			    queue_video_packet(priv, ds, dp);
 			    ds->asf_packet=NULL;
 			    // continue parsing
 			    continue;
@@ -991,7 +993,7 @@ got_video:
 		dp_hdr->chunktab=sizeof(dp_hdr_t)+vpkg_length;
 		dp_data=dp->buffer+sizeof(dp_hdr_t);
 		extra=(uint32_t*)(dp->buffer+dp_hdr->chunktab);
-		extra[0]=1; extra[1]=0; // offset of the first chunk
+		extra[0]=le2me_32(1); extra[1]=0; // offset of the first chunk
 		if(0x00==(vpkg_header&0xc0)){
 		    // first fragment:
 		    if (len > dp->len - sizeof(dp_hdr_t)) len = dp->len - sizeof(dp_hdr_t);
@@ -999,13 +1001,6 @@ got_video:
 		    stream_read(demuxer->stream, dp_data, len);
 		    ds->asf_packet=dp;
 		    len=0;
-		    if(priv->video_after_seek){
-		        priv->kf_base = 0;
-		        priv->kf_pts = dp_hdr->timestamp;
-		        dp->pts=
-		        real_fix_timestamp(priv,dp_data,dp_hdr->timestamp,sh_video->frametime,sh_video->format);
-		        priv->video_after_seek = 0;
-		    }
 		    break;
 		}
 		// whole packet (not fragmented):
@@ -1020,16 +1015,7 @@ got_video:
 		}
 		dp_hdr->len=vpkg_length; len-=vpkg_length;
 		stream_read(demuxer->stream, dp_data, vpkg_length);
-		if(priv->video_after_seek){
-			priv->kf_base = 0;
-			priv->kf_pts = dp_hdr->timestamp;
-			dp->pts=
-			real_fix_timestamp(priv,dp_data,dp_hdr->timestamp,sh_video->frametime,sh_video->format);
-			priv->video_after_seek = 0;
-		} else if (dp_hdr->len >= 3)
-		    dp->pts =
-		    real_fix_timestamp(priv,dp_data,dp_hdr->timestamp,sh_video->frametime,sh_video->format);
-		ds_add_packet(ds,dp);
+		queue_video_packet(priv, ds, dp);
 
 	    } // while(len>0)
 	    
@@ -1038,19 +1024,16 @@ got_video:
 		if(len>0) stream_skip(demuxer->stream, len);
 	    }
 	}
-	if ((unsigned)demuxer->video->id < MAX_STREAMS)
+	if ((unsigned)demuxer->video->id < MAX_STREAMS) {
 		while (priv->current_vpacket + 1 < priv->index_table_size[demuxer->video->id] && 
-		       timestamp > priv->index_table[demuxer->video->id][priv->current_vpacket + 1].timestamp)
+		       timestamp > priv->index_table[demuxer->video->id][priv->current_vpacket + 1].timestamp) {
 			priv->current_vpacket += 1;
-
-	if(priv->is_multirate)
-		while (priv->v_idx_ptr + 1 < priv->index_table_size[demuxer->video->id] &&
-		       timestamp > priv->index_table[demuxer->video->id][priv->v_idx_ptr + 1].timestamp) {
-			priv->v_idx_ptr++;
-			priv->video_curpos = stream_tell(demuxer->stream);
 			priv->stream_switch = 1;
 		}
-	
+		if (priv->stream_switch)
+			priv->video_curpos = stream_tell(demuxer->stream);
+	}
+
 	return 1;
     }
 
@@ -1731,9 +1714,6 @@ header_end:
     	    break;
     }
 
-    if(priv->is_multirate)
-        demuxer->seekable = 0; // No seeking yet for multirate streams
-
     // detect streams:
     if(demuxer->video->id==-1 && v_streams>0){
 	// find the valid video stream:
@@ -1835,7 +1815,7 @@ static void demux_seek_real(demuxer_t *demuxer, float rel_seek_secs, float audio
 	    				break;
 	    		}
 	    	} 
-	    else if (rel_seek_secs < 0)
+	    else if (rel_seek_secs < 0) {
 	    	while ((cur_timestamp - priv->index_table[vid][priv->current_vpacket].timestamp) < - rel_seek_secs * 1000){
 	    		priv->current_vpacket -= 1;
 	    		if (priv->current_vpacket < 0) {
@@ -1843,12 +1823,16 @@ static void demux_seek_real(demuxer_t *demuxer, float rel_seek_secs, float audio
 	    			break;
 	    		}
 	    	}
-	    next_offset = priv->index_table[vid][priv->current_vpacket].offset;
-	    priv->audio_need_keyframe = 1;
+	    }
+	    priv->video_curpos = priv->index_table[vid][priv->current_vpacket].offset;
+	    priv->audio_need_keyframe = !priv->is_multirate;
 	    priv->video_after_seek = 1;
         }
-    	else if (streams & 2) {
-            cur_timestamp = priv->index_table[aid][priv->current_apacket].timestamp;
+    	if (streams & 2) {
+	    if (!(streams & 1)) {
+		cur_timestamp =
+		    priv->index_table[aid][priv->current_apacket].timestamp;
+	    }
 	    if (rel_seek_secs > 0)
 	    	while ((priv->index_table[aid][priv->current_apacket].timestamp - cur_timestamp) < rel_seek_secs * 1000){
 	    		priv->current_apacket += 1;
@@ -1865,9 +1849,10 @@ static void demux_seek_real(demuxer_t *demuxer, float rel_seek_secs, float audio
 	    			break;
 	    		}
 	    	}
-	    next_offset = priv->index_table[aid][priv->current_apacket].offset;
+	    priv->audio_curpos = priv->index_table[aid][priv->current_apacket].offset;
         }
 //    }
+    next_offset = streams & 1 ? priv->video_curpos : priv->audio_curpos;
 //    printf("seek: pos: %d, current packets: a: %d, v: %d\n",
 //	next_offset, priv->current_apacket, priv->current_vpacket);
     if (next_offset)

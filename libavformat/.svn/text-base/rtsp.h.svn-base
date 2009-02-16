@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include "avformat.h"
 #include "rtspcodes.h"
-#include "rtp.h"
+#include "rtpdec.h"
 #include "network.h"
 
 enum RTSPLowerTransport {
@@ -104,7 +104,7 @@ typedef struct RTSPState {
     enum RTSPLowerTransport lower_transport;
     enum RTSPServerType server_type;
     char last_reply[2048]; /* XXX: allocate ? */
-    void *cur_tx;
+    void *cur_transport_priv;
     int need_subscription;
     enum AVDiscard real_setup_cache[MAX_STREAMS];
     char last_subscription[1024];
@@ -112,7 +112,7 @@ typedef struct RTSPState {
 
 typedef struct RTSPStream {
     URLContext *rtp_handle; /* RTP stream handle */
-    void *tx_ctx; /* RTP/RDT parse context */
+    void *transport_priv; /* RTP/RDT parse context */
 
     int stream_index; /* corresponding stream index, if any. -1 if none (MPEG2TS case) */
     int interleaved_min, interleaved_max;  /* interleave ids, if TCP transport */
@@ -127,24 +127,6 @@ typedef struct RTSPStream {
     RTPDynamicProtocolHandler *dynamic_handler; ///< Only valid if it's a dynamic protocol. (This is the handler structure)
     PayloadContext *dynamic_protocol_context; ///< Only valid if it's a dynamic protocol. (This is any private data associated with the dynamic protocol)
 } RTSPStream;
-
-/** the callback can be used to extend the connection setup/teardown step */
-enum RTSPCallbackAction {
-    RTSP_ACTION_SERVER_SETUP,
-    RTSP_ACTION_SERVER_TEARDOWN,
-    RTSP_ACTION_CLIENT_SETUP,
-    RTSP_ACTION_CLIENT_TEARDOWN,
-};
-
-typedef struct RTSPActionServerSetup {
-    uint32_t ipaddr;
-    char transport_option[512];
-} RTSPActionServerSetup;
-
-typedef int FFRTSPCallback(enum RTSPCallbackAction action,
-                           const char *session_id,
-                           char *buf, int buf_size,
-                           void *arg);
 
 int rtsp_init(void);
 void rtsp_parse_line(RTSPHeader *reply, const char *buf);

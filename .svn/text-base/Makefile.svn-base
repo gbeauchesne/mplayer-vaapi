@@ -38,6 +38,7 @@ SRCS_COMMON = asxparser.c \
               cpudetect.c \
               edl.c \
               find_sub.c \
+              fmt-conversion.c \
               get_path.c \
               m_config.c \
               m_option.c \
@@ -211,7 +212,6 @@ SRCS_COMMON = asxparser.c \
               libmpdemux/video.c \
               libmpdemux/yuv4mpeg.c \
               libmpdemux/yuv4mpeg_ratio.c \
-              libvo/aclib.c \
               libvo/osd.c \
               libvo/sub.c \
               osdep/$(GETCH) \
@@ -297,6 +297,7 @@ SRCS_COMMON-$(FAAD_INTERNAL)         += libfaad2/bits.c \
                                         libfaad2/syntax.c \
                                         libfaad2/tns.c \
 
+SRCS_COMMON-$(FASTMEMCPY)            += libvo/aclib.c
 SRCS_COMMON-$(FREETYPE)              += libvo/font_load_ft.c
 SRCS_COMMON-$(FTP)                   += stream/stream_ftp.c
 SRCS_COMMON-$(GIF)                   += libmpdemux/demux_gif.c
@@ -433,6 +434,7 @@ SRCS_COMMON-$(NETWORK)               += stream/stream_netstream.c \
                                         stream/realrtsp/xbuffer.c \
 
 SRCS_COMMON-$(PNG)                   += libmpcodecs/vd_mpng.c
+SRCS_COMMON-$(PRIORITY)              += osdep/priority.c
 SRCS_COMMON-$(PVR)                   += stream/stream_pvr.c
 SRCS_COMMON-$(QTX_CODECS)            += libmpcodecs/ad_qtaudio.c \
                                         libmpcodecs/vd_qtvideo.c
@@ -928,16 +930,18 @@ uninstall:
 	rm -f $(MANDIR)/man1/mplayer.1 $(MANDIR)/man1/mencoder.1
 	rm -f $(foreach lang,$(MAN_LANGS),$(foreach man,mplayer.1 mencoder.1,$(MANDIR)/$(lang)/man1/$(man)))
 
+ADD_ALL_EXESUFS = $(foreach exesuf,$(EXESUFS_ALL),$(1) $(1)$(exesuf))
+
 clean:
-	rm -f $(foreach dir,$(DIRS),$(foreach suffix,/*.o /*.a /*.ho /*~, $(addsuffix $(suffix),$(dir))))
-	rm -f mplayer$(EXESUF) mencoder$(EXESUF)
+	-rm -f $(foreach dir,$(DIRS),$(foreach suffix,/*.o /*.a /*.ho /*~, $(addsuffix $(suffix),$(dir))))
+	-rm -f $(foreach file,mplayer mencoder,$(call ADD_ALL_EXESUFS,$(file)))
 
 distclean: clean testsclean toolsclean driversclean dhahelperclean dhahelperwinclean
-	rm -rf DOCS/tech/doxygen
-	rm -f $(foreach dir,$(DIRS),$(foreach suffix,/*.d, $(addsuffix $(suffix),$(dir))))
-	rm -f configure.log config.mak config.h codecs.conf.h help_mp.h \
-           version.h $(VIDIX_PCI_FILES) \
-           codec-cfg$(EXESUF) cpuinfo$(EXESUF) TAGS tags
+	-rm -rf DOCS/tech/doxygen
+	-rm -f $(foreach dir,$(DIRS),$(foreach suffix,/*.d, $(addsuffix $(suffix),$(dir))))
+	-rm -f configure.log config.mak config.h codecs.conf.h help_mp.h \
+           version.h $(VIDIX_PCI_FILES) TAGS tags
+	-rm -f $(foreach file,codec-cfg cpuinfo,$(call ADD_ALL_EXESUFS,$(file)))
 
 doxygen:
 	doxygen DOCS/tech/Doxyfile
@@ -971,43 +975,32 @@ loader/qtx/list$(EXESUF) loader/qtx/qtxload$(EXESUF): $(LOADER_TEST_OBJS)
 
 mp3lib/test$(EXESUF) mp3lib/test2$(EXESUF): $(filter mp3lib/%,$(SRCS_COMMON:.c=.o)) libvo/aclib.o cpudetect.o $(TEST_OBJS)
 
-TESTS = codecs2html$(EXESUF) codec-cfg-test$(EXESUF) \
-        liba52/test$(EXESUF) libvo/aspecttest$(EXESUF) \
-        mp3lib/test$(EXESUF) mp3lib/test2$(EXESUF)
+TESTS = codecs2html codec-cfg-test liba52/test libvo/aspecttest \
+        mp3lib/test mp3lib/test2
 
 ifdef ARCH_X86
-TESTS += loader/qtx/list$(EXESUF) loader/qtx/qtxload$(EXESUF)
+TESTS += loader/qtx/list loader/qtx/qtxload
 endif
 
-tests: $(TESTS)
+tests: $(addsuffix $(EXESUF),$(TESTS))
 
 testsclean:
-	rm -f $(TESTS)
+	-rm -f $(foreach file,$(TESTS),$(call ADD_ALL_EXESUFS,$(file)))
 
-TOOLS = TOOLS/alaw-gen$(EXESUF) \
-        TOOLS/asfinfo$(EXESUF) \
-        TOOLS/avi-fix$(EXESUF) \
-        TOOLS/avisubdump$(EXESUF) \
-        TOOLS/compare$(EXESUF) \
-        TOOLS/dump_mp4$(EXESUF) \
-        TOOLS/movinfo$(EXESUF) \
-        TOOLS/netstream$(EXESUF) \
-        TOOLS/subrip$(EXESUF) \
-        TOOLS/vivodump$(EXESUF) \
+TOOLS = $(addprefix TOOLS/,alaw-gen asfinfo avi-fix avisubdump compare dump_mp4 movinfo netstream subrip vivodump)
 
 ifdef ARCH_X86
-TOOLS += TOOLS/modify_reg$(EXESUF)
+TOOLS += TOOLS/modify_reg
 endif
 
-ALLTOOLS = $(TOOLS) \
-           TOOLS/bmovl-test$(EXESUF) \
-           TOOLS/vfw2menc$(EXESUF) \
+ALLTOOLS = $(TOOLS) TOOLS/bmovl-test TOOLS/vfw2menc
 
-tools: $(TOOLS)
-alltools: $(ALLTOOLS)
+tools: $(addsuffix $(EXESUF),$(TOOLS))
+alltools: $(addsuffix $(EXESUF),$(ALLTOOLS))
 
 toolsclean:
-	rm -f $(ALLTOOLS) TOOLS/fastmem*-* TOOLS/realcodecs/*.so.6.0
+	-rm -f $(foreach file,$(ALLTOOLS),$(call ADD_ALL_EXESUFSx,$(file)))
+	-rm -f TOOLS/fastmem*-* TOOLS/realcodecs/*.so.6.0
 
 TOOLS/bmovl-test$(EXESUF): -lSDL_image
 
@@ -1075,7 +1068,7 @@ install-drivers: $(DRIVER_OBJS)
 	-ln -s /dev/radeon_vid /dev/rage128_vid
 
 driversclean:
-	rm -f $(DRIVER_OBJS) drivers/*~
+	-rm -f $(DRIVER_OBJS) drivers/*~
 
 dhahelper: vidix/dhahelper/dhahelper.o vidix/dhahelper/test
 
@@ -1089,7 +1082,7 @@ install-dhahelper: vidix/dhahelper/dhahelper.o
 	-mknod /dev/dhahelper c 180 0
 
 dhahelperclean:
-	rm -f vidix/dhahelper/*.o vidix/dhahelper/*~ vidix/dhahelper/test
+	-rm -f vidix/dhahelper/*.o vidix/dhahelper/*~ vidix/dhahelper/test
 
 dhahelperwin: vidix/dhahelperwin/dhasetup.exe vidix/dhahelperwin/dhahelper.sys
 
@@ -1121,7 +1114,7 @@ install-dhahelperwin:
 	vidix/dhahelperwin/dhasetup.exe install
 
 dhahelperwinclean:
-	rm -f $(addprefix vidix/dhahelperwin/,*.o *~ dhahelper.sys dhasetup.exe base.tmp temp.exp)
+	-rm -f $(addprefix vidix/dhahelperwin/,*.o *~ dhahelper.sys dhasetup.exe base.tmp temp.exp)
 
 
 

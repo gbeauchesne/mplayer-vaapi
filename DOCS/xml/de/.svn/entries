@@ -1,15 +1,15 @@
 8
 
 dir
-28469
+28611
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/de
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-01-05T12:50:53.491468Z
-28266
-Gabrov
+2009-02-09T23:37:51.946937Z
+28511
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,23 @@ file
 
 
 
-2009-01-29T11:50:44.000000Z
-8ed0f8d602d48bba90a4ba6ad9bad67c
-2007-09-29T13:03:57.363751Z
-24657
-kraymer
+2009-02-16T15:28:14.000000Z
+6baf4c9886ea585c468a8ca615d2a4b4
+2009-02-09T22:42:17.610912Z
+28504
+diego
+
+mencoder.xml
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+2e4522ada0ab7f4f2b703d7ad628e6d9
+2009-02-09T22:42:17.610912Z
+28504
+diego
 
 bugreports.xml
 file
@@ -51,18 +63,6 @@ fb227c16f28453d877274a601f508cd9
 diego
 has-props
 
-mencoder.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-f87adf7419bacf44b0126340ce84cc6d
-2007-09-28T02:20:48.710232Z
-24644
-kraymer
-
 radio.xml
 file
 
@@ -74,19 +74,6 @@ file
 2007-09-28T02:10:17.278558Z
 24643
 kraymer
-has-props
-
-codecs.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-974827bb28323d1ac61bb55268be21f1
-2008-03-03T12:38:33.875195Z
-26146
-gpoirier
 has-props
 
 cd-dvd.xml
@@ -102,18 +89,6 @@ a20cf0b1fde002e528360683c6f53ba6
 kraymer
 has-props
 
-skin.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-03f01a8d071f3acaa029f50235cc1928
-2007-09-27T15:27:13.473609Z
-24630
-kraymer
-
 usage.xml
 file
 
@@ -127,30 +102,17 @@ file
 kraymer
 has-props
 
-containers.xml
+skin.xml
 file
 
 
 
 
 2009-01-29T11:50:44.000000Z
-f3a72c9e80502fab06c38c9cf0ac6abb
-2007-09-28T02:10:17.278558Z
-24643
+03f01a8d071f3acaa029f50235cc1928
+2007-09-27T15:27:13.473609Z
+24630
 kraymer
-
-install.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-21289565d9557b87a91770cfccaeb843
-2007-09-29T15:56:06.718267Z
-24660
-kraymer
-has-props
 
 video.xml
 file
@@ -164,16 +126,16 @@ file
 24709
 cehoyos
 
-faq.xml
+install.xml
 file
 
 
 
 
-2009-01-29T11:50:44.000000Z
-7978cddf92ae931fbfa9379f44d9082c
-2009-01-04T23:10:47.157943Z
-28249
+2009-02-16T15:28:14.000000Z
+de3d610204a3bba4192c0bca7aa921a8
+2009-02-09T23:37:51.946937Z
+28511
 diego
 has-props
 
@@ -183,23 +145,23 @@ file
 
 
 
-2009-01-29T11:50:44.000000Z
-984f1344ba759de9c293550e0026283e
-2007-09-28T02:10:17.278558Z
-24643
-kraymer
+2009-02-16T15:28:14.000000Z
+7c45d7802d8531a28cf49ae7205536a5
+2009-02-09T22:42:17.610912Z
+28504
+diego
 
-documentation.xml
+faq.xml
 file
 
 
 
 
-2009-01-29T11:50:44.000000Z
-3469f95dcc58c5144bd99c45f69048c2
-2009-01-05T12:50:53.491468Z
-28266
-Gabrov
+2009-02-16T15:28:14.000000Z
+8b8644af7eb4c9d5011def4d88d4e792
+2009-02-09T22:42:17.610912Z
+28504
+diego
 has-props
 
 tvinput.xml
@@ -213,6 +175,19 @@ file
 2007-09-29T15:56:06.718267Z
 24660
 kraymer
+has-props
+
+documentation.xml
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+1c038b36237aaccb80e5795f9af1ff88
+2009-02-09T22:42:17.610912Z
+28504
+diego
 has-props
 
 Makefile
