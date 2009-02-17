@@ -23,7 +23,7 @@
 ** For more info contact Ahead Software through Mpeg4AAClicense@nero.com.
 **
 ** Initially modified for use with MPlayer by Arpad Gereöffy on 2003/08/30
-** $Id: common.h 28371 2009-01-26 09:40:04Z diego $
+** $Id: common.h 28613 2009-02-16 17:05:58Z diego $
 ** detailed changelog at http://svn.mplayerhq.hu/mplayer/trunk/
 ** local_changes.diff contains the exact changes to this file.
 **/
@@ -69,7 +69,7 @@ extern "C" {
 /* Use if target platform has address generators with autoincrement */
 //#define PREFER_POINTERS
 
-#if defined(_WIN32_WCE) || defined(__arm__)
+#if defined(_WIN32_WCE) || defined(__arm__) || defined(__avr32__)
 #define FIXED_POINT
 #endif
 

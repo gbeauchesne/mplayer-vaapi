@@ -1,14 +1,14 @@
 8
 
 dir
-28611
+28624
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/ru
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-15T14:48:30.114248Z
-28593
+2009-02-16T20:07:52.208058Z
+28616
 bircoph
 has-props
 
@@ -37,45 +37,6 @@ file
 2009-02-10T00:23:50.870407Z
 28516
 diego
-has-props
-
-mencoder.xml
-file
-
-
-
-
-2009-02-16T15:28:14.000000Z
-7b89ff989f52a4f59b3ba9f49f347a45
-2009-02-10T00:23:50.870407Z
-28516
-diego
-has-props
-
-bugreports.xml
-file
-
-
-
-
-2009-02-16T15:28:14.000000Z
-10d94c53f7a94ba5ac762c3f92dcc78f
-2009-02-15T14:48:30.114248Z
-28593
-bircoph
-has-props
-
-radio.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-7e7c7c58ede339fd1926778c87ba2a33
-2007-06-11T07:39:06.223589Z
-23545
-voroshil
 has-props
 
 cd-dvd.xml
@@ -192,6 +153,45 @@ file
 8ca2a38fe75b5f2fd3cb1a05eb5365a6
 2007-09-28T01:27:32.285774Z
 24641
+voroshil
+has-props
+
+mencoder.xml
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+7b89ff989f52a4f59b3ba9f49f347a45
+2009-02-10T00:23:50.870407Z
+28516
+diego
+has-props
+
+bugreports.xml
+file
+
+
+
+
+2009-02-17T07:57:10.000000Z
+8f49b8f40914f81ff8fead213ac9c19e
+2009-02-16T20:07:52.208058Z
+28616
+bircoph
+has-props
+
+radio.xml
+file
+
+
+
+
+2009-01-29T11:50:44.000000Z
+7e7c7c58ede339fd1926778c87ba2a33
+2007-06-11T07:39:06.223589Z
+23545
 voroshil
 has-props
 

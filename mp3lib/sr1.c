@@ -19,14 +19,15 @@
 #include "mpg123.h"
 #include "huffman.h"
 #include "mp3.h"
-#include "libavutil/common.h"
-#include "libavutil/internal.h"
 #include "mpbswap.h"
 #include "cpudetect.h"
 //#include "liba52/mm_accel.h"
 #include "mp_msg.h"
 
 #include "libvo/fastmemcpy.h"
+
+#include "libavutil/common.h"
+#include "libavutil/internal.h"
 
 #undef fprintf
 #undef printf
@@ -72,7 +73,7 @@ int mp3_read(char *buf,int size);
 /*
  * Modified for use with MPlayer, for details see the changelog at
  * http://svn.mplayerhq.hu/mplayer/trunk/
- * $Id: sr1.c 28373 2009-01-26 09:55:59Z diego $
+ * $Id: sr1.c 28622 2009-02-17 03:08:56Z diego $
  */
 
 

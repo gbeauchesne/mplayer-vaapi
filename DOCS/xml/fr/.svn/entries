@@ -1,7 +1,7 @@
 8
 
 dir
-28611
+28624
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/fr
 svn://svn.mplayerhq.hu/mplayer
 
@@ -38,44 +38,6 @@ d05cbe1d87fb228aab16dfc88075b37f
 28513
 diego
 has-props
-
-mencoder.xml
-file
-
-
-
-
-2009-02-16T15:28:14.000000Z
-83cb5307ede1fd5240156be986e9efd9
-2009-02-09T23:43:36.848743Z
-28513
-diego
-has-props
-
-bugreports.xml
-file
-
-
-
-
-2009-01-29T11:50:45.000000Z
-b8e93d55a3ca6a739132260459a407d8
-2009-01-05T10:22:40.659632Z
-28260
-diego
-has-props
-
-radio.xml
-file
-
-
-
-
-2009-01-29T11:50:45.000000Z
-caf211969a5686c0fa9ff2a303865130
-2006-10-30T20:22:00.599808Z
-20537
-kraymer
 
 cd-dvd.xml
 file
@@ -193,6 +155,44 @@ c96f083ae36d97a7b025f6ba46d69236
 28513
 diego
 has-props
+
+mencoder.xml
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+83cb5307ede1fd5240156be986e9efd9
+2009-02-09T23:43:36.848743Z
+28513
+diego
+has-props
+
+bugreports.xml
+file
+
+
+
+
+2009-01-29T11:50:45.000000Z
+b8e93d55a3ca6a739132260459a407d8
+2009-01-05T10:22:40.659632Z
+28260
+diego
+has-props
+
+radio.xml
+file
+
+
+
+
+2009-01-29T11:50:45.000000Z
+caf211969a5686c0fa9ff2a303865130
+2006-10-30T20:22:00.599808Z
+20537
+kraymer
 
 Makefile
 file

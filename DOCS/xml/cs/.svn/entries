@@ -1,7 +1,7 @@
 8
 
 dir
-28611
+28624
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/cs
 svn://svn.mplayerhq.hu/mplayer
 
@@ -38,44 +38,6 @@ file
 28515
 diego
 has-props
-
-mencoder.xml
-file
-
-
-
-
-2009-02-16T15:28:14.000000Z
-31663e6282a0ee5c554e58e3cbb10fe7
-2009-02-10T00:15:44.865478Z
-28515
-diego
-has-props
-
-bugreports.xml
-file
-
-
-
-
-2009-02-16T15:28:14.000000Z
-8f2f27297507dc65668243db95173c1d
-2009-02-09T23:11:44.063824Z
-28508
-diego
-has-props
-
-radio.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-cd90464b889c6b9bd7a1e0030650763c
-2007-10-08T08:35:43.490335Z
-24737
-jheryan
 
 cd-dvd.xml
 file
@@ -193,6 +155,44 @@ file
 24737
 jheryan
 has-props
+
+mencoder.xml
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+31663e6282a0ee5c554e58e3cbb10fe7
+2009-02-10T00:15:44.865478Z
+28515
+diego
+has-props
+
+bugreports.xml
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+8f2f27297507dc65668243db95173c1d
+2009-02-09T23:11:44.063824Z
+28508
+diego
+has-props
+
+radio.xml
+file
+
+
+
+
+2009-01-29T11:50:44.000000Z
+cd90464b889c6b9bd7a1e0030650763c
+2007-10-08T08:35:43.490335Z
+24737
+jheryan
 
 Makefile
 file
