@@ -179,6 +179,7 @@ typedef struct SPS{
     int vcl_hrd_parameters_present_flag;
     int pic_struct_present_flag;
     int time_offset_length;
+    int initial_cpb_removal_delay_length; ///< initial_cpb_removal_delay_length_minus1 +1
     int cpb_removal_delay_length;      ///< cpb_removal_delay_length_minus1 + 1
     int dpb_output_delay_length;       ///< dpb_output_delay_length_minus1 + 1
     int bit_depth_luma;                ///< bit_depth_luma_minus8 + 8
@@ -499,6 +500,16 @@ typedef struct H264Context{
      * pic_struct in picture timing SEI message
      */
     SEI_PicStructType sei_pic_struct;
+
+    /**
+     * dpb_output_delay in picture timing SEI message, see H.264 C.2.2
+     */
+    int sei_dpb_output_delay;
+
+    /**
+     * cpb_removal_delay in picture timing SEI message, see H.264 C.1.2
+     */
+    int sei_cpb_removal_delay;
 
     /**
      * recovery_frame_cnt from SEI message

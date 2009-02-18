@@ -1,15 +1,15 @@
 8
 
 dir
-28624
+28645
 svn://svn.mplayerhq.hu/mplayer/trunk/help
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-15T00:46:09.429454Z
-28574
-bircoph
+2009-02-17T15:00:57.901411Z
+28635
+Gabrov
 
 
 svn:special svn:externals svn:needs-lock
@@ -26,17 +26,17 @@ svn:special svn:externals svn:needs-lock
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
 
-help_mp-es.h
+help_mp-mk.h
 file
 
 
 
 
 2009-01-29T11:50:49.000000Z
-519e8bf3cb5de99730717c0343319676
-2009-01-10T01:58:55.006269Z
-28288
-reynaldo
+f3787dc92d107aa7e063fd1861e4ac7e
+2008-08-03T15:21:40.607668Z
+27402
+diego
 has-props
 
 help_mp-fr.h
@@ -52,14 +52,27 @@ ba13a0c1fb5fa41dd7a7616bd3f93073
 diego
 has-props
 
-help_mp-mk.h
+help_mp-es.h
 file
 
 
 
 
 2009-01-29T11:50:49.000000Z
-f3787dc92d107aa7e063fd1861e4ac7e
+519e8bf3cb5de99730717c0343319676
+2009-01-10T01:58:55.006269Z
+28288
+reynaldo
+has-props
+
+help_mp-nl.h
+file
+
+
+
+
+2009-01-29T11:50:49.000000Z
+5db7e378da0a20f4c36f717bc36fa010
 2008-08-03T15:21:40.607668Z
 27402
 diego
@@ -78,19 +91,6 @@ f5fd078819b97893ae12f919db7d7af9
 diego
 has-props
 
-help_mp-nl.h
-file
-
-
-
-
-2009-01-29T11:50:49.000000Z
-5db7e378da0a20f4c36f717bc36fa010
-2008-08-03T15:21:40.607668Z
-27402
-diego
-has-props
-
 help_mp-pl.h
 file
 
@@ -104,32 +104,6 @@ bf2585a7cf729381847aae27f25e7444
 diego
 has-props
 
-help_create.sh
-file
-
-
-
-
-2009-02-05T14:32:29.000000Z
-4326d84faed0f8f4861b97f9c4ec8891
-2009-02-04T19:17:03.625978Z
-28467
-diego
-has-props
-
-help_mp-hu.h
-file
-
-
-
-
-2009-01-29T11:50:49.000000Z
-0e384dd094d29221b6fc16ea7afacac6
-2008-12-17T16:12:12.962117Z
-28161
-Gabrov
-has-props
-
 help_mp-it.h
 file
 
@@ -140,6 +114,32 @@ file
 59acc7ec93f19bb331431202bf9bdaf7
 2008-12-09T20:25:49.805760Z
 28122
+diego
+has-props
+
+help_mp-hu.h
+file
+
+
+
+
+2009-02-18T10:38:11.000000Z
+6ed166d99160a5e50aac2c4cbff629dd
+2009-02-17T15:00:57.901411Z
+28635
+Gabrov
+has-props
+
+help_create.sh
+file
+
+
+
+
+2009-02-05T14:32:29.000000Z
+4326d84faed0f8f4861b97f9c4ec8891
+2009-02-04T19:17:03.625978Z
+28467
 diego
 has-props
 

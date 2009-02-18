@@ -1,15 +1,15 @@
 8
 
 dir
-28624
+28645
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-16T23:05:18.669379Z
-28618
-cehoyos
+2009-02-18T10:32:07.593957Z
+28645
+diego
 
 
 svn:special svn:externals svn:needs-lock

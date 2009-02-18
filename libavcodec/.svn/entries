@@ -1,15 +1,15 @@
 8
 
 dir
-17388
+17427
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-02-16T22:46:30.775754Z
-17387
-iive
+2009-02-18T09:21:29.339733Z
+17427
+cehoyos
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -76,16 +76,16 @@ file
 diego
 has-props
 
-dvdsubdec.c
+dvdsub_parser.c
 file
 
 
 
 
-2009-02-16T15:28:16.000000Z
-2c7812521778a077e726986f20d4dd6b
-2009-02-12T01:27:56.418515Z
-17170
+2009-01-29T11:51:00.000000Z
+11c12e04dafbbeff763415791d5595b0
+2009-01-19T15:46:40.737658Z
+16684
 diego
 has-props
 
@@ -101,33 +101,21 @@ file
 16912
 diego
 
-dvdsub_parser.c
+dvdsubdec.c
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
-11c12e04dafbbeff763415791d5595b0
-2009-01-19T15:46:40.737658Z
-16684
+2009-02-16T15:28:16.000000Z
+2c7812521778a077e726986f20d4dd6b
+2009-02-12T01:27:56.418515Z
+17170
 diego
 has-props
 
 alpha
 dir
-
-nellymoserdec.c
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-74638078232249794961fe54346d74ac
-2009-02-01T02:00:19.447756Z
-16912
-diego
 
 intrax8huf.h
 file
@@ -141,18 +129,17 @@ a6b6ad22e4ae79a6cebbb6724762a5ea
 15120
 stefano
 
-vp3data.h
+nellymoserdec.c
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
-0a092ccbde351d9d8702dc17d4144ff2
-2008-10-01T14:40:29.076425Z
-15499
-conrad
-has-props
+2009-02-05T14:32:37.000000Z
+74638078232249794961fe54346d74ac
+2009-02-01T02:00:19.447756Z
+16912
+diego
 
 mjpeg.h
 file
@@ -167,17 +154,17 @@ file
 diego
 has-props
 
-nuv.c
+vp3data.h
 file
 
 
 
 
-2009-02-05T14:32:37.000000Z
-88ee27949fd38100bbb751bcb44858c1
-2009-02-02T20:16:00.296056Z
-16946
-reimar
+2009-01-29T11:51:00.000000Z
+0a092ccbde351d9d8702dc17d4144ff2
+2008-10-01T14:40:29.076425Z
+15499
+conrad
 has-props
 
 cavsdec.c
@@ -191,6 +178,19 @@ file
 2009-02-10T22:38:02.358797Z
 17138
 stefang
+
+nuv.c
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+88ee27949fd38100bbb751bcb44858c1
+2009-02-02T20:16:00.296056Z
+16946
+reimar
+has-props
 
 roqaudioenc.c
 file
@@ -337,10 +337,10 @@ file
 
 
 
-2009-02-05T14:32:37.000000Z
-51af69b92bfea7c05add4db2a649d88f
-2009-02-01T02:00:19.447756Z
-16912
+2009-02-18T10:38:12.000000Z
+aee26e3e4a4961c198b0bfe8b7fa076d
+2009-02-17T21:43:57.374299Z
+17398
 diego
 
 sparc
@@ -385,18 +385,17 @@ f231e2f30b46fe5be6c116e20f22ba94
 diego
 has-props
 
-aac_ac3_parser.h
+dnxhdenc.c
 file
 
 
 
 
 2009-01-29T11:51:00.000000Z
-80037cabb1ff9b6d0a55b38fb1194e65
-2009-01-19T15:46:40.737658Z
-16684
-diego
-has-props
+ab9811d001006adb41473a11b1662d66
+2009-01-13T23:44:16.634366Z
+16590
+aurel
 
 libvorbis.c
 file
@@ -411,17 +410,18 @@ file
 jbr
 has-props
 
-dnxhdenc.c
+aac_ac3_parser.h
 file
 
 
 
 
 2009-01-29T11:51:00.000000Z
-ab9811d001006adb41473a11b1662d66
-2009-01-13T23:44:16.634366Z
-16590
-aurel
+80037cabb1ff9b6d0a55b38fb1194e65
+2009-01-19T15:46:40.737658Z
+16684
+diego
+has-props
 
 intrax8.c
 file
@@ -473,26 +473,14 @@ d03ec74eb546c3b11f13a70b18859177
 16072
 bcoudurier
 
-intrax8.h
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-00c559a824731e7a6c73c18a161279ab
-2008-08-31T07:39:47.782626Z
-15120
-stefano
-
-adxenc.c
+qdm2data.h
 file
 
 
 
 
 2009-02-05T14:32:37.000000Z
-db9c3201b6d144617a804655dac26c69
+2ec6b4998c692c870c6016f01441f59b
 2009-02-01T02:00:19.447756Z
 16912
 diego
@@ -511,17 +499,42 @@ a068ee4c3362ae8ef0ef2e2d10492a19
 diego
 has-props
 
-qdm2data.h
+adxenc.c
 file
 
 
 
 
 2009-02-05T14:32:37.000000Z
-2ec6b4998c692c870c6016f01441f59b
+db9c3201b6d144617a804655dac26c69
 2009-02-01T02:00:19.447756Z
 16912
 diego
+has-props
+
+intrax8.h
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+00c559a824731e7a6c73c18a161279ab
+2008-08-31T07:39:47.782626Z
+15120
+stefano
+
+svq1_vlc.h
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+7dab8ca12ac177428346284464af42c9
+2008-08-31T07:39:47.782626Z
+15120
+stefano
 has-props
 
 h264pred.h
@@ -535,19 +548,6 @@ file
 2009-02-01T02:00:19.447756Z
 16912
 diego
-has-props
-
-svq1_vlc.h
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-7dab8ca12ac177428346284464af42c9
-2008-08-31T07:39:47.782626Z
-15120
-stefano
 has-props
 
 opt.h
@@ -582,11 +582,11 @@ file
 
 
 
-2009-02-05T14:32:37.000000Z
-50fbfff8831ff443b88eeab9d9abc174
-2009-02-04T16:16:53.197105Z
-16988
-romansh
+2009-02-18T10:38:12.000000Z
+4a012ed3965e10c1357769a9ea669cd5
+2009-02-17T12:03:10.159810Z
+17391
+diego
 has-props
 
 pngenc.c
@@ -608,11 +608,11 @@ file
 
 
 
-2009-02-17T07:57:11.000000Z
-3a655c0f645a9e5dab520f3fe2351782
-2009-02-16T22:46:30.775754Z
-17387
-iive
+2009-02-18T10:38:12.000000Z
+057a75b7e85012ace27515cd25b57836
+2009-02-17T23:51:28.172068Z
+17404
+diego
 has-props
 
 idcinvideo.c
@@ -641,6 +641,18 @@ file
 diego
 has-props
 
+dnxhddec.c
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+66329974b2c24bb55f7c637a90e2834e
+2009-01-19T15:46:40.737658Z
+16684
+diego
+
 h263data.h
 file
 
@@ -654,18 +666,6 @@ file
 diego
 has-props
 
-dnxhddec.c
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-66329974b2c24bb55f7c637a90e2834e
-2009-01-19T15:46:40.737658Z
-16684
-diego
-
 motion-test.c
 file
 
@@ -674,19 +674,6 @@ file
 
 2009-02-05T14:32:37.000000Z
 99a49212bd39277bec31254279340e03
-2009-02-01T02:00:19.447756Z
-16912
-diego
-has-props
-
-huffman.c
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-46c28966ed8fe17eb845dd0be3f94324
 2009-02-01T02:00:19.447756Z
 16912
 diego
@@ -705,17 +692,31 @@ file
 diego
 has-props
 
-escape124.c
+huffman.c
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
-cad9b2da31d2466dd3cd2bfafe52985b
-2008-06-12T21:50:13.979975Z
-13759
-stefano
+2009-02-05T14:32:37.000000Z
+46c28966ed8fe17eb845dd0be3f94324
+2009-02-01T02:00:19.447756Z
+16912
+diego
+has-props
+
+mdct.c
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+83bf02557146f6e37705023ea6954319
+2009-02-04T20:43:17.649236Z
+16994
+diego
+has-props
 
 rv40vlc2.h
 file
@@ -729,16 +730,28 @@ file
 16912
 diego
 
-mdct.c
+escape124.c
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+cad9b2da31d2466dd3cd2bfafe52985b
+2008-06-12T21:50:13.979975Z
+13759
+stefano
+
+adxdec.c
 file
 
 
 
 
 2009-02-05T14:32:37.000000Z
-83bf02557146f6e37705023ea6954319
-2009-02-04T20:43:17.649236Z
-16994
+96cd14c0536538d0bf3d20bd60ff59aa
+2009-02-01T02:00:19.447756Z
+16912
 diego
 has-props
 
@@ -755,18 +768,17 @@ file
 michael
 has-props
 
-adxdec.c
+huffman.h
 file
 
 
 
 
 2009-02-05T14:32:37.000000Z
-96cd14c0536538d0bf3d20bd60ff59aa
+8a83410c8136e7bfa7f0bb565df7b334
 2009-02-01T02:00:19.447756Z
 16912
 diego
-has-props
 
 wma.h
 file
@@ -780,18 +792,6 @@ file
 16684
 diego
 has-props
-
-huffman.h
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-8a83410c8136e7bfa7f0bb565df7b334
-2009-02-01T02:00:19.447756Z
-16912
-diego
 
 motionpixels.c
 file
@@ -1198,11 +1198,11 @@ file
 
 
 
-2009-01-29T11:51:00.000000Z
-893fd0a4e5d487a76ccf907dd0b7b68a
-2008-12-10T21:35:17.046094Z
-16045
-lorenm
+2009-02-18T10:38:12.000000Z
+78fb1a5e10d2d2072b8221788fe36c1f
+2009-02-17T12:03:10.159810Z
+17391
+diego
 
 kmvc.c
 file
@@ -1647,19 +1647,6 @@ f33a161d4563e5748ddbc47e95f24689
 16699
 cehoyos
 
-acelp_filters.h
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-602240e3ea901c315eb09509b4122707
-2008-10-24T21:29:23.425752Z
-15680
-diego
-has-props
-
 msmpeg4.h
 file
 
@@ -1672,17 +1659,17 @@ file
 16912
 diego
 
-h264.c
+acelp_filters.h
 file
 
 
 
 
-2009-02-16T15:28:16.000000Z
-3e2ffbeb92a6cdac9840e5c2a94e81a2
-2009-02-15T15:23:02.108145Z
-17327
-cehoyos
+2009-01-29T11:51:00.000000Z
+602240e3ea901c315eb09509b4122707
+2008-10-24T21:29:23.425752Z
+15680
+diego
 has-props
 
 tiertexseqv.c
@@ -1697,17 +1684,17 @@ file
 16912
 diego
 
-golomb.h
+h264.c
 file
 
 
 
 
-2009-02-05T14:32:37.000000Z
-e40ae88dc8ef5a8b205c4495449bbe4c
-2009-02-01T02:00:19.447756Z
-16912
-diego
+2009-02-18T10:38:12.000000Z
+0854789627c1050d98a8e49ef215cbcf
+2009-02-18T00:38:10.744332Z
+17413
+cehoyos
 has-props
 
 png.c
@@ -1720,6 +1707,19 @@ file
 21e8cf29782da9f305e5f516ad35de3b
 2009-01-19T15:46:40.737658Z
 16684
+diego
+has-props
+
+golomb.h
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+e40ae88dc8ef5a8b205c4495449bbe4c
+2009-02-01T02:00:19.447756Z
+16912
 diego
 has-props
 
@@ -1736,6 +1736,19 @@ file
 diego
 has-props
 
+h264.h
+file
+
+
+
+
+2009-02-18T10:38:12.000000Z
+c5c012c662db40c71f3d15a015270915
+2009-02-18T00:38:10.744332Z
+17413
+cehoyos
+has-props
+
 mlp.c
 file
 
@@ -1747,19 +1760,6 @@ efaae2f70e0e010614e29ff8e79cc4c1
 2009-01-30T18:38:25.340574Z
 16860
 diego
-
-h264.h
-file
-
-
-
-
-2009-02-16T15:28:16.000000Z
-128ce362bbf9ff8ea180737fc0157dbe
-2009-02-09T23:04:16.342409Z
-17109
-cehoyos
-has-props
 
 png.h
 file
@@ -1774,18 +1774,6 @@ d3a4022a1854c07684ba79eb608cfc75
 diego
 has-props
 
-eacmv.c
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-b0c379cb16eed0f5a2aa9adaab0f29fb
-2009-02-01T02:00:19.447756Z
-16912
-diego
-
 os2thread.c
 file
 
@@ -1799,6 +1787,31 @@ d63c1d2309921202f46ec0705ba6652d
 romansh
 has-props
 
+eacmv.c
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+b0c379cb16eed0f5a2aa9adaab0f29fb
+2009-02-01T02:00:19.447756Z
+16912
+diego
+
+Makefile
+file
+
+
+
+
+2009-02-18T10:38:12.000000Z
+5c6056ef0dbc797322ddbf0118aaacb5
+2009-02-18T00:11:49.777449Z
+17409
+diego
+has-props
+
 fft-test.c
 file
 
@@ -1809,19 +1822,6 @@ file
 76c521c40ba09df797d9214f74025a31
 2009-02-01T02:00:19.447756Z
 16912
-diego
-has-props
-
-Makefile
-file
-
-
-
-
-2009-02-16T15:28:16.000000Z
-db358e9c512ca2f3bf365f068e992449
-2009-02-16T10:38:23.968101Z
-17366
 diego
 has-props
 
@@ -1903,6 +1903,18 @@ file
 diego
 has-props
 
+8svx.c
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+3a8df477bd5584622c317d12b8c51033
+2009-02-01T02:00:19.447756Z
+16912
+diego
+
 mdec.c
 file
 
@@ -1915,18 +1927,6 @@ file
 16912
 diego
 has-props
-
-8svx.c
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-3a8df477bd5584622c317d12b8c51033
-2009-02-01T02:00:19.447756Z
-16912
-diego
 
 aacenc.c
 file
@@ -1978,18 +1978,6 @@ d81e6dde8bb02e36a4b3187afd74f660
 diego
 has-props
 
-qcelp_lsp.c
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-8f8506874dec8305ce9cb3d200500267
-2009-02-01T02:00:19.447756Z
-16912
-diego
-
 smc.c
 file
 
@@ -2002,6 +1990,18 @@ file
 16912
 diego
 has-props
+
+qcelp_lsp.c
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+8f8506874dec8305ce9cb3d200500267
+2009-02-01T02:00:19.447756Z
+16912
+diego
 
 tiff.c
 file
@@ -2052,39 +2052,14 @@ file
 16590
 aurel
 
-celp_math.c
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-3a88599ce45a174ebb6dcf11217f0993
-2008-10-31T19:31:36.400616Z
-15761
-mmu_man
-has-props
-
-dump_extradata_bsf.c
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-bb53c8e2305f935c3cd69de4da0c771a
-2007-05-19T00:35:27.881712Z
-9066
-aurel
-
-mpegvideo_common.h
+ratecontrol.c
 file
 
 
 
 
 2009-02-05T14:32:37.000000Z
-45462ccf61ba502a3f8ab090243aa87a
+bdf3830be12794613d618d3d57af432a
 2009-02-01T02:00:19.447756Z
 16912
 diego
@@ -2103,17 +2078,42 @@ file
 diego
 has-props
 
-ratecontrol.c
+mpegvideo_common.h
 file
 
 
 
 
 2009-02-05T14:32:37.000000Z
-bdf3830be12794613d618d3d57af432a
+45462ccf61ba502a3f8ab090243aa87a
 2009-02-01T02:00:19.447756Z
 16912
 diego
+has-props
+
+dump_extradata_bsf.c
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+bb53c8e2305f935c3cd69de4da0c771a
+2007-05-19T00:35:27.881712Z
+9066
+aurel
+
+celp_math.c
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+3a88599ce45a174ebb6dcf11217f0993
+2008-10-31T19:31:36.400616Z
+15761
+mmu_man
 has-props
 
 tiff.h
@@ -2128,27 +2128,14 @@ f21fc596a2e6fe43ba70e9f98b2492bd
 16912
 diego
 
-lsp.c
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-4f6765b6e867825b4cc30fcd5c761863
-2008-11-24T09:28:55.355505Z
-15921
-mru
-has-props
-
-h263_parser.c
+raw.h
 file
 
 
 
 
 2009-02-05T14:32:37.000000Z
-8ffb968c46c6cffbdcb0512aacbd36fa
+681564efdf4a604996def1cbe46731b1
 2009-02-01T02:00:19.447756Z
 16912
 diego
@@ -2166,17 +2153,30 @@ c002d3ac3d1ffddcdef85cc1cd4c0a9e
 13759
 stefano
 
-raw.h
+h263_parser.c
 file
 
 
 
 
 2009-02-05T14:32:37.000000Z
-681564efdf4a604996def1cbe46731b1
+8ffb968c46c6cffbdcb0512aacbd36fa
 2009-02-01T02:00:19.447756Z
 16912
 diego
+has-props
+
+lsp.c
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+4f6765b6e867825b4cc30fcd5c761863
+2008-11-24T09:28:55.355505Z
+15921
+mru
 has-props
 
 colorspace.h
@@ -2204,17 +2204,17 @@ a77807075d475ef51553b15babe206e6
 17108
 aurel
 
-celp_math.h
+ratecontrol.h
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
-799b03640ae78cc3de4ef5b77fc2435f
-2008-12-29T17:14:30.885512Z
-16391
-reynaldo
+2009-02-05T14:32:37.000000Z
+e0ee140518d80c1a85cb997fa9eda9b4
+2009-02-01T02:00:19.447756Z
+16912
+diego
 has-props
 
 parser.h
@@ -2229,30 +2229,17 @@ c2ec06627b4ea31e595cd93663867844
 16684
 diego
 
-ratecontrol.h
+celp_math.h
 file
 
 
 
 
-2009-02-05T14:32:37.000000Z
-e0ee140518d80c1a85cb997fa9eda9b4
-2009-02-01T02:00:19.447756Z
-16912
-diego
-has-props
-
-libxvid_internal.h
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-5e62832273c40f78949b53b65527a87d
-2009-02-01T02:00:19.447756Z
-16912
-diego
+2009-01-29T11:51:00.000000Z
+799b03640ae78cc3de4ef5b77fc2435f
+2008-12-29T17:14:30.885512Z
+16391
+reynaldo
 has-props
 
 audioconvert.c
@@ -2267,17 +2254,17 @@ file
 17110
 cehoyos
 
-lsp.h
+libxvid_internal.h
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
-167a77aefe7c3babc295201a87782c6d
-2008-08-31T07:39:47.782626Z
-15120
-stefano
+2009-02-05T14:32:37.000000Z
+5e62832273c40f78949b53b65527a87d
+2009-02-01T02:00:19.447756Z
+16912
+diego
 has-props
 
 h263_parser.h
@@ -2292,17 +2279,18 @@ file
 15120
 stefano
 
-bmpenc.c
+lsp.h
 file
 
 
 
 
 2009-01-29T11:51:00.000000Z
-a807f0bf05e4926c3e33ed544f0e96b8
-2008-06-12T21:50:13.979975Z
-13759
+167a77aefe7c3babc295201a87782c6d
+2008-08-31T07:39:47.782626Z
+15120
 stefano
+has-props
 
 roqvideodec.c
 file
@@ -2316,6 +2304,18 @@ file
 16912
 diego
 has-props
+
+bmpenc.c
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+a807f0bf05e4926c3e33ed544f0e96b8
+2008-06-12T21:50:13.979975Z
+13759
+stefano
 
 vp56.h
 file
@@ -2341,18 +2341,6 @@ file
 16912
 diego
 
-audioconvert.h
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-e776420d1432049904ab612ee300bede
-2009-02-01T02:00:19.447756Z
-16912
-diego
-
 noise_bsf.c
 file
 
@@ -2364,6 +2352,18 @@ file
 2008-01-08T00:25:25.950675Z
 11458
 michael
+
+audioconvert.h
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+e776420d1432049904ab612ee300bede
+2009-02-01T02:00:19.447756Z
+16912
+diego
 
 sgienc.c
 file
@@ -2377,18 +2377,6 @@ file
 13759
 stefano
 
-flac.h
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-0dffffe8bac9a372001e65b3675aef47
-2009-02-01T02:00:19.447756Z
-16912
-diego
-
 cinepak.c
 file
 
@@ -2401,6 +2389,18 @@ c5c2ffbc9cd62f86b07650f2855348fa
 16912
 diego
 has-props
+
+flac.h
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+0dffffe8bac9a372001e65b3675aef47
+2009-02-01T02:00:19.447756Z
+16912
+diego
 
 dxa.c
 file
@@ -2442,19 +2442,6 @@ b8054f482b6d7c9e2d5f37c1c7139dd8
 jbr
 has-props
 
-msrle.c
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-f726464cbb8f69584b424076818a7a52
-2009-02-01T14:44:51.607184Z
-16915
-kostya
-has-props
-
 vp6dsp.c
 file
 
@@ -2466,6 +2453,19 @@ fb02f32aad45a2fd49490e3e116f0953
 2009-02-09T23:37:31.429055Z
 17111
 aurel
+has-props
+
+msrle.c
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+f726464cbb8f69584b424076818a7a52
+2009-02-01T14:44:51.607184Z
+16915
+kostya
 has-props
 
 dpcm.c
@@ -2481,18 +2481,6 @@ a97f9783f2ef91bd71af58b0d8519b4a
 diego
 has-props
 
-mpc.h
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-77ce3f0386f2c7e0277c998e4d41d6a5
-2009-02-01T02:00:19.447756Z
-16912
-diego
-
 vp3_parser.c
 file
 
@@ -2505,16 +2493,16 @@ file
 13990
 aurel
 
-libspeexdec.c
+mpc.h
 file
 
 
 
 
-2009-02-16T15:28:16.000000Z
-b628c2b9110e4ac5c97811caf0936170
-2009-02-08T23:32:46.812768Z
-17084
+2009-02-05T14:32:37.000000Z
+77ce3f0386f2c7e0277c998e4d41d6a5
+2009-02-01T02:00:19.447756Z
+16912
 diego
 
 dca.c
@@ -2527,6 +2515,18 @@ file
 809a3050aabb48d73837e32a139f4e0f
 2009-02-01T02:00:19.447756Z
 16912
+diego
+
+libspeexdec.c
+file
+
+
+
+
+2009-02-16T15:28:16.000000Z
+b628c2b9110e4ac5c97811caf0936170
+2009-02-08T23:32:46.812768Z
+17084
 diego
 
 mjpegenc.c
@@ -2567,18 +2567,6 @@ file
 diego
 has-props
 
-dca.h
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-410e5cbada1cf715c47a36d6aaa2bf4b
-2008-11-29T10:06:37.718106Z
-15951
-kostya
-
 ws-snd1.c
 file
 
@@ -2592,17 +2580,17 @@ file
 diego
 has-props
 
-mjpegenc.h
+dca.h
 file
 
 
 
 
-2009-02-05T14:32:37.000000Z
-5c39eee6882d44b300e3cea064771360
-2009-02-01T02:00:19.447756Z
-16912
-diego
+2009-01-29T11:51:00.000000Z
+410e5cbada1cf715c47a36d6aaa2bf4b
+2008-11-29T10:06:37.718106Z
+15951
+kostya
 
 vorbis_data.c
 file
@@ -2616,6 +2604,18 @@ file
 15444
 superdump
 has-props
+
+mjpegenc.h
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+5c39eee6882d44b300e3cea064771360
+2009-02-01T02:00:19.447756Z
+16912
+diego
 
 sgidec.c
 file
@@ -2705,19 +2705,6 @@ c623d13931eb05ebf961462482ea2163
 diego
 has-props
 
-ulti.c
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-314c10968572fa1b021f16c96214b7cb
-2009-02-01T02:00:19.447756Z
-16912
-diego
-has-props
-
 vmdav.c
 file
 
@@ -2731,14 +2718,14 @@ file
 diego
 has-props
 
-mjpegdec.c
+ulti.c
 file
 
 
 
 
 2009-02-05T14:32:37.000000Z
-720b5c8a49a6c3a5b08f222cb0b0b61e
+314c10968572fa1b021f16c96214b7cb
 2009-02-01T02:00:19.447756Z
 16912
 diego
@@ -2756,17 +2743,17 @@ dbe78e2f0b5db7418ed2bdb1eb54ae2e
 17280
 diego
 
-indeo2data.h
+mjpegdec.c
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
-406e3800a957dc688ca93ca0ffaf995a
-2008-08-31T07:39:47.782626Z
-15120
-stefano
+2009-02-05T14:32:37.000000Z
+720b5c8a49a6c3a5b08f222cb0b0b61e
+2009-02-01T02:00:19.447756Z
+16912
+diego
 has-props
 
 vp3dsp.c
@@ -2782,6 +2769,19 @@ file
 diego
 has-props
 
+indeo2data.h
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+406e3800a957dc688ca93ca0ffaf995a
+2008-08-31T07:39:47.782626Z
+15120
+stefano
+has-props
+
 mjpegbdec.c
 file
 
@@ -2795,19 +2795,6 @@ ccd8986f63d2fe5ecd2b9845ee540d71
 diego
 has-props
 
-h264data.h
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-7c0538a87f1809769cc8665e5c278de9
-2009-02-01T02:00:19.447756Z
-16912
-diego
-has-props
-
 rl.h
 file
 
@@ -2816,6 +2803,19 @@ file
 
 2009-02-05T14:32:37.000000Z
 0e4014fea59380347b29fdc5762139ba
+2009-02-01T02:00:19.447756Z
+16912
+diego
+has-props
+
+h264data.h
+file
+
+
+
+
+2009-02-05T14:32:37.000000Z
+7c0538a87f1809769cc8665e5c278de9
 2009-02-01T02:00:19.447756Z
 16912
 diego
@@ -2961,6 +2961,18 @@ d94518e400cf4fcd2d52592ad908f1d9
 diego
 has-props
 
+vdpau.c
+file
+
+
+
+
+2009-02-18T10:38:12.000000Z
+45f60df0d3942153a0c2e3ab536b6453
+2009-02-18T09:21:29.339733Z
+17427
+cehoyos
+
 faxcompr.c
 file
 
@@ -2972,18 +2984,6 @@ c594fd4836f1e51d76bda564973a1e79
 2009-02-01T02:00:19.447756Z
 16912
 diego
-
-vdpau.c
-file
-
-
-
-
-2009-02-16T15:28:16.000000Z
-fcc4c48be444e0f2e5eab23ed5bd28a3
-2009-02-15T12:31:01.818850Z
-17320
-reimar
 
 aactab.h
 file
@@ -3010,19 +3010,6 @@ aff538274382f8215368380ab7f9a197
 diego
 has-props
 
-vc1data.c
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-569670bdf29fb7b7d85f1cf49719ed73
-2009-02-01T02:00:19.447756Z
-16912
-diego
-has-props
-
 wmadata.h
 file
 
@@ -3036,16 +3023,42 @@ file
 diego
 has-props
 
-faxcompr.h
+vc1data.c
 file
 
 
 
 
 2009-02-05T14:32:37.000000Z
-da5919286ba7556b6d7afbcfc2569c91
+569670bdf29fb7b7d85f1cf49719ed73
 2009-02-01T02:00:19.447756Z
 16912
+diego
+has-props
+
+vdpau.h
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+2dc8d14e2af32f676c91ce034dc8e5e4
+2009-02-14T13:37:18.562292Z
+17225
+diego
+has-props
+
+bytestream.h
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+c3fc35f99a67a432c6b8121048c720f5
+2009-01-25T19:11:10.598422Z
+16780
 diego
 
 aac.c
@@ -3060,30 +3073,17 @@ file
 17211
 alexc
 
-bytestream.h
+faxcompr.h
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
-c3fc35f99a67a432c6b8121048c720f5
-2009-01-25T19:11:10.598422Z
-16780
+2009-02-05T14:32:37.000000Z
+da5919286ba7556b6d7afbcfc2569c91
+2009-02-01T02:00:19.447756Z
+16912
 diego
-
-vdpau.h
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-2dc8d14e2af32f676c91ce034dc8e5e4
-2009-02-14T13:37:18.562292Z
-17225
-diego
-has-props
 
 truemotion1data.h
 file
@@ -3124,6 +3124,18 @@ f2faac1db4e16680d402f576a6df2564
 diego
 has-props
 
+aac.h
+file
+
+
+
+
+2009-02-18T10:38:12.000000Z
+7ec9dded4a61f0c61b028ec6ba01fbe2
+2009-02-17T21:43:57.374299Z
+17398
+diego
+
 avs.c
 file
 
@@ -3137,18 +3149,6 @@ file
 aurel
 has-props
 
-aac.h
-file
-
-
-
-
-2009-02-05T14:32:37.000000Z
-4ffa7713adaabd33c405f03881ad2391
-2009-02-02T10:31:51.392116Z
-16939
-superdump
-
 libdirac_libschro.c
 file
 
@@ -3159,18 +3159,6 @@ file
 4cbc5cf3c033a8c5410a1fe160396a5b
 2009-02-01T02:00:19.447756Z
 16912
-diego
-
-sunrast.c
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-6e6df09639590ffcaaadf70f9986b307
-2009-01-11T22:19:48.351410Z
-16556
 diego
 
 bitstream_filter.c
@@ -3184,6 +3172,18 @@ file
 2008-10-04T09:29:31.141647Z
 15548
 lu_zero
+
+sunrast.c
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+6e6df09639590ffcaaadf70f9986b307
+2009-01-11T22:19:48.351410Z
+16556
+diego
 
 jpeglsdec.c
 file
@@ -3987,11 +3987,11 @@ file
 
 
 
-2009-01-29T11:51:00.000000Z
-49553dfce5e3c38dedd40b649e2e2543
-2008-08-31T07:39:47.782626Z
-15120
-stefano
+2009-02-18T10:38:12.000000Z
+0fa64117256922f4b4aacf450a7ac129
+2009-02-17T12:03:10.159810Z
+17391
+diego
 
 msmpeg4data.c
 file
@@ -5037,11 +5037,11 @@ file
 
 
 
-2009-02-17T07:57:11.000000Z
-cbfc57a4b4690306425a1141c00b1243
-2009-02-16T18:19:48.081507Z
-17384
-iive
+2009-02-18T10:38:12.000000Z
+eaa0d24c78c874279c3afd6a19191a67
+2009-02-17T22:36:48.049388Z
+17400
+diego
 has-props
 
 aacpsy.h
@@ -5099,10 +5099,10 @@ file
 
 
 
-2009-02-05T14:32:38.000000Z
-9a75e06c89db5adea2333ebc965e26e5
-2009-02-01T02:00:19.447756Z
-16912
+2009-02-18T10:38:12.000000Z
+7d422f981632d92dd029110ec5a47a31
+2009-02-17T12:11:46.536907Z
+17392
 diego
 has-props
 

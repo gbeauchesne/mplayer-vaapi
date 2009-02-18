@@ -48,7 +48,7 @@ void ff_xvmc_init_block(MpegEncContext *s)
 
 /**
  * Fill individual block pointers, so there are no gaps in the data_block array
- * in case not all blocks in MB are coded.
+ * in case not all blocks in the macroblock are coded.
  */
 void ff_xvmc_pack_pblocks(MpegEncContext *s, int cbp)
 {
@@ -281,7 +281,7 @@ void ff_xvmc_decode_mb(MpegEncContext *s)
     if (s->flags & CODEC_FLAG_GRAY) {
         if (s->mb_intra) {                                   // intra frames are always full chroma blocks
             for (i = 4; i < blocks_per_mb; i++) {
-                memset(s->pblocks[i], 0, sizeof(short)*64);  // so we need to clear them
+                memset(s->pblocks[i], 0, sizeof(*s->pblocks[i])*64);  // so we need to clear them
                 if (!render->unsigned_intra)
                     s->pblocks[i][0] = 1 << 10;
             }
@@ -309,21 +309,18 @@ void ff_xvmc_decode_mb(MpegEncContext *s)
             // copy blocks only if the codec doesn't support pblocks reordering
             if (s->avctx->xvmc_acceleration == 1) {
                 memcpy(&render->data_blocks[render->next_free_data_block_num*64],
-                       s->pblocks[i], sizeof(short)*64);
+                       s->pblocks[i], sizeof(*s->pblocks[i])*64);
             }
             render->next_free_data_block_num++;
         }
     }
     render->filled_mv_blocks_num++;
 
-
-    if (render->filled_mv_blocks_num > render->allocated_mv_blocks)
-        av_log(s->avctx, AV_LOG_ERROR,
-               "Not enough space to store mv blocks allocated.\n");
-
-    if (render->next_free_data_block_num > render->allocated_data_blocks)
-        av_log(s->avctx, AV_LOG_ERROR,
-               "Offset to next data block exceeds number of allocated data blocks.\n");
+    assert(render->filled_mv_blocks_num     <= render->allocated_mv_blocks);
+    assert(render->next_free_data_block_num <= render->allocated_data_blocks);
+    /* The above conditions should not be able to fail as long as this function
+     * is used and the following 'if ()' automatically calls a callback to free
+     * blocks. */
 
 
     if (render->filled_mv_blocks_num == render->allocated_mv_blocks)

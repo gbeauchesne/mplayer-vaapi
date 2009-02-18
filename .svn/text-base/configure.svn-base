@@ -2061,6 +2061,7 @@ EOF
   avr32)
     _arch='AVR32'
     _target_arch='ARCH_AVR32 = yes'
+    def_fast_unaligned='#define HAVE_FAST_UNALIGNED 1'
     iproc='avr32'
     ;;
 
@@ -3149,10 +3150,10 @@ cc_check && _malloc=yes
 if test "$_malloc" = yes ; then
   def_malloc_h='#define HAVE_MALLOC_H 1'
 else
-  def_malloc_h='#undef HAVE_MALLOC_H'
+  def_malloc_h='#define HAVE_MALLOC_H 0'
 fi
 # malloc.h emits a warning in FreeBSD and OpenBSD
-freebsd || openbsd || dragonfly && def_malloc_h='#undef HAVE_MALLOC_H'
+freebsd || openbsd || dragonfly && def_malloc_h='#define HAVE_MALLOC_H 0'
 echores "$_malloc"
 
 
@@ -3168,7 +3169,7 @@ cc_check && _memalign=yes
 if test "$_memalign" = yes ; then
   def_memalign='#define HAVE_MEMALIGN 1'
 else
-  def_memalign='#undef HAVE_MEMALIGN'
+  def_memalign='#define HAVE_MEMALIGN 0'
   def_map_memalign='#define memalign(a,b) malloc(b)'
   darwin || def_memalign_hack='#define CONFIG_MEMALIGN_HACK 1'
 fi
@@ -8721,6 +8722,8 @@ $def_yasm
 #define HAVE_EBX_AVAILABLE 1
 #ifndef MP_DEBUG
 #define HAVE_EBP_AVAILABLE 1
+#else
+#define HAVE_EBP_AVAILABLE 0
 #endif
 
 /* External libraries used through libavcodec. */

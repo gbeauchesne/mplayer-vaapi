@@ -2209,6 +2209,8 @@ static av_cold int decode_init(AVCodecContext *avctx){
     h->outputed_poc = INT_MIN;
     h->prev_poc_msb= 1<<16;
     h->sei_recovery_frame_cnt = -1;
+    h->sei_dpb_output_delay = 0;
+    h->sei_cpb_removal_delay = -1;
     return 0;
 }
 
@@ -3046,6 +3048,11 @@ static void implicit_weight_table(H264Context *h){
     int ref0, ref1, i;
     int cur_poc = s->current_picture_ptr->poc;
 
+    for (i = 0; i < 2; i++) {
+        h->luma_weight_flag[i]   = 0;
+        h->chroma_weight_flag[i] = 0;
+    }
+
     if(   h->ref_count[0] == 1 && h->ref_count[1] == 1
        && h->ref_list[0][0].poc + h->ref_list[1][0].poc == 2*cur_poc){
         h->use_weight= 0;
@@ -3057,10 +3064,6 @@ static void implicit_weight_table(H264Context *h){
     h->use_weight_chroma= 2;
     h->luma_log2_weight_denom= 5;
     h->chroma_log2_weight_denom= 5;
-    for (i = 0; i < 2; i++) {
-        h->luma_weight_flag[i]   = 0;
-        h->chroma_weight_flag[i] = 0;
-    }
 
     for(ref0=0; ref0 < h->ref_count[0]; ref0++){
         int poc0 = h->ref_list[0][ref0].poc;
@@ -3143,6 +3146,8 @@ static void flush_dpb(AVCodecContext *avctx){
         h->s.current_picture_ptr->reference= 0;
     h->s.first_field= 0;
     h->sei_recovery_frame_cnt = -1;
+    h->sei_dpb_output_delay = 0;
+    h->sei_cpb_removal_delay = -1;
     ff_mpeg_flush(avctx);
 }
 
@@ -6266,7 +6271,7 @@ static void filter_mb_fast( H264Context *h, int mb_x, int mb_y, uint8_t *img_y, 
 }
 
 
-static void av_always_inline filter_mb_dir(H264Context *h, int mb_x, int mb_y, uint8_t *img_y, uint8_t *img_cb, uint8_t *img_cr, unsigned int linesize, unsigned int uvlinesize, int mb_xy, int mb_type, int mvy_limit, int first_vertical_edge_done, int dir) {
+static av_always_inline void filter_mb_dir(H264Context *h, int mb_x, int mb_y, uint8_t *img_y, uint8_t *img_cb, uint8_t *img_cr, unsigned int linesize, unsigned int uvlinesize, int mb_xy, int mb_type, int mvy_limit, int first_vertical_edge_done, int dir) {
     MpegEncContext * const s = &h->s;
     int edge;
     const int mbm_xy = dir == 0 ? mb_xy -1 : h->top_mb_xy;
@@ -6780,8 +6785,8 @@ static int decode_slice(struct AVCodecContext *avctx, void *arg){
 static int decode_picture_timing(H264Context *h){
     MpegEncContext * const s = &h->s;
     if(h->sps.nal_hrd_parameters_present_flag || h->sps.vcl_hrd_parameters_present_flag){
-        skip_bits(&s->gb, h->sps.cpb_removal_delay_length); /* cpb_removal_delay */
-        skip_bits(&s->gb, h->sps.dpb_output_delay_length);  /* dpb_output_delay */
+        h->sei_cpb_removal_delay = get_bits(&s->gb, h->sps.cpb_removal_delay_length);
+        h->sei_dpb_output_delay = get_bits(&s->gb, h->sps.dpb_output_delay_length);
     }
     if(h->sps.pic_struct_present_flag){
         unsigned int i, num_clock_ts;
@@ -6916,7 +6921,7 @@ static inline int decode_hrd_parameters(H264Context *h, SPS *sps){
         get_ue_golomb(&s->gb); /* cpb_size_value_minus1 */
         get_bits1(&s->gb);     /* cbr_flag */
     }
-    get_bits(&s->gb, 5); /* initial_cpb_removal_delay_length_minus1 */
+    sps->initial_cpb_removal_delay_length = get_bits(&s->gb, 5) + 1;
     sps->cpb_removal_delay_length = get_bits(&s->gb, 5) + 1;
     sps->dpb_output_delay_length = get_bits(&s->gb, 5) + 1;
     sps->time_offset_length = get_bits(&s->gb, 5);
@@ -7690,6 +7695,8 @@ static int decode_frame(AVCodecContext *avctx,
 
         MPV_frame_end(s);
         h->sei_recovery_frame_cnt = -1;
+        h->sei_dpb_output_delay = 0;
+        h->sei_cpb_removal_delay = -1;
 
         if (cur->field_poc[0]==INT_MAX || cur->field_poc[1]==INT_MAX) {
             /* Wait for second field. */

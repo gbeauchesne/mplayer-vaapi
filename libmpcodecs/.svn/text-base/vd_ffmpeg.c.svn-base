@@ -240,6 +240,7 @@ static int init(sh_video_t *sh){
     ctx->pic = avcodec_alloc_frame();
     ctx->avctx = avcodec_alloc_context();
     avctx = ctx->avctx;
+    avctx->opaque = sh;
 
 #if CONFIG_VDPAU
     if(lavc_codec->capabilities & CODEC_CAP_HWACCEL_VDPAU){
@@ -249,7 +250,6 @@ static int init(sh_video_t *sh){
     }
 #endif /* CONFIG_VDPAU */
 #if CONFIG_XVMC
-
     if(lavc_codec->capabilities & CODEC_CAP_HWACCEL){
         mp_msg(MSGT_DECVIDEO, MSGL_INFO, MSGTR_MPCODECS_XVMCAcceleratedCodec);
         assert(ctx->do_dr1);//these are must to!
@@ -576,6 +576,7 @@ static int get_buffer(AVCodecContext *avctx, AVFrame *pic){
 
     mpi= mpcodecs_get_image(sh, type, flags,
                         (width+align)&(~align), (height+align)&(~align));
+    if (!mpi) return -1;
 
     // ok, let's see what did we get:
     if(mpi->flags&MP_IMGFLAG_DRAW_CALLBACK &&
@@ -745,7 +746,6 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags){
 //ffmpeg interlace (mpeg2) bug have been fixed. no need of -noslices
     if (!dr1)
     avctx->draw_horiz_band=NULL;
-    avctx->opaque=sh;
     if(ctx->vo_initialized && !(flags&3) && !dr1){
         mpi=mpcodecs_get_image(sh, MP_IMGTYPE_EXPORT, MP_IMGFLAG_PRESERVE |
             (ctx->do_slices?MP_IMGFLAG_DRAW_CALLBACK:0),
@@ -921,5 +921,4 @@ static enum PixelFormat get_format(struct AVCodecContext *avctx,
     }
     return selected_format;
 }
-
 #endif /* CONFIG_XVMC || CONFIG_VDPAU */

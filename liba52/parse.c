@@ -8,7 +8,7 @@
  *
  * Modified for use with MPlayer, changes contained in liba52_changes.diff.
  * detailed changelog at http://svn.mplayerhq.hu/mplayer/trunk/
- * $Id: parse.c 20779 2006-11-08 14:48:36Z gpoirier $
+ * $Id: parse.c 28628 2009-02-17 10:41:13Z diego $
  *
  * a52dec is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@
 #include "mm_accel.h"
 #include "libavutil/avutil.h"
 
-#ifdef HAVE_MEMALIGN
+#if HAVE_MEMALIGN
 /* some systems have memalign() but no declaration for it */
 void * memalign (size_t align, size_t size);
 #endif

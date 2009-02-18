@@ -137,7 +137,7 @@ OBJS-$(CONFIG_MPC7_DECODER)            += mpc7.o mpc.o mpegaudiodec.o mpegaudiod
 OBJS-$(CONFIG_MPC8_DECODER)            += mpc8.o mpc.o mpegaudiodec.o mpegaudiodecheader.o mpegaudio.o mpegaudiodata.o
 OBJS-$(CONFIG_MPEG_VDPAU_DECODER)      += vdpau.o mpeg12.o mpeg12data.o mpegvideo.o error_resilience.o
 OBJS-$(CONFIG_MPEG1_VDPAU_DECODER)     += vdpau.o mpeg12.o mpeg12data.o mpegvideo.o error_resilience.o
-OBJS-$(CONFIG_MPEG_XVMC_DECODER)       += mpegvideo_xvmc.o
+OBJS-$(CONFIG_MPEG_XVMC_DECODER)       += mpegvideo_xvmc.o mpegvideo.o
 OBJS-$(CONFIG_MPEGVIDEO_DECODER)       += mpeg12.o mpeg12data.o mpegvideo.o error_resilience.o
 OBJS-$(CONFIG_MPEG1VIDEO_DECODER)      += mpeg12.o mpeg12data.o mpegvideo.o error_resilience.o
 OBJS-$(CONFIG_MPEG1VIDEO_ENCODER)      += mpeg12enc.o mpeg12data.o mpegvideo_enc.o motion_est.o ratecontrol.o mpeg12.o mpeg12data.o mpegvideo.o error_resilience.o
@@ -402,6 +402,12 @@ OBJS-$(HAVE_PTHREADS)                  += pthread.o
 OBJS-$(HAVE_W32THREADS)                += w32thread.o
 
 # processor-specific code
+FFT-OBJS-$(HAVE_AMD3DNOW)              += x86/fft_3dn.o
+FFT-OBJS-$(HAVE_AMD3DNOWEXT)           += x86/fft_3dn2.o
+FFT-OBJS-$(HAVE_SSE)                   += x86/fft_sse.o
+OBJS-$(CONFIG_FFT)                     += $(FFT-OBJS-yes)
+
+YASM-OBJS-$(CONFIG_FFT)                += x86/fft_mmx.o
 YASM-OBJS-$(CONFIG_GPL)                += x86/h264_deblock_sse2.o       \
                                           x86/h264_idct_sse2.o          \
 
@@ -434,11 +440,6 @@ OBJS-$(HAVE_MMX)                       += x86/cpuid.o                   \
                                           x86/mpegvideo_mmx.o           \
                                           x86/simple_idct_mmx.o         \
                                           $(MMX-OBJS-yes)
-
-OBJS-$(CONFIG_FFT_MMX)                 += x86/fft_3dn.o                 \
-                                          x86/fft_3dn2.o                \
-                                          x86/fft_mmx.o                 \
-                                          x86/fft_sse.o                 \
 
 OBJS-$(ARCH_ALPHA)                     += alpha/dsputil_alpha.o         \
                                           alpha/dsputil_alpha_asm.o     \
