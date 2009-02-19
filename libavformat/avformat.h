@@ -23,7 +23,7 @@
 
 #define LIBAVFORMAT_VERSION_MAJOR 52
 #define LIBAVFORMAT_VERSION_MINOR 29
-#define LIBAVFORMAT_VERSION_MICRO  0
+#define LIBAVFORMAT_VERSION_MICRO  1
 
 #define LIBAVFORMAT_VERSION_INT AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR, \
                                                LIBAVFORMAT_VERSION_MINOR, \
@@ -535,7 +535,7 @@ typedef struct AVChapter {
  * sizeof(AVFormatContext) must not be used outside libav*.
  */
 typedef struct AVFormatContext {
-    const AVClass *av_class; /**< Set by av_alloc_format_context. */
+    const AVClass *av_class; /**< Set by avformat_alloc_context. */
     /* Can only be iformat or oformat, not both at the same time. */
     struct AVInputFormat *iformat;
     struct AVOutputFormat *oformat;

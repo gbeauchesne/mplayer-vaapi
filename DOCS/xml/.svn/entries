@@ -1,14 +1,14 @@
 8
 
 dir
-28645
+28665
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-16T20:07:52.208058Z
-28616
+2009-02-19T05:09:46.884160Z
+28661
 bircoph
 has-props
 
@@ -106,9 +106,6 @@ dir
 cs
 dir
 
-xsl
-dir
-
 README.maintainers
 file
 
@@ -122,10 +119,13 @@ d6e00e9d4a8bf9add86bd157fb10dd08
 torinthiel
 has-props
 
-fr
+xsl
 dir
 
 es
+dir
+
+fr
 dir
 
 pl

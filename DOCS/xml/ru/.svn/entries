@@ -1,14 +1,14 @@
 8
 
 dir
-28645
+28665
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/ru
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-16T20:07:52.208058Z
-28616
+2009-02-19T05:09:46.884160Z
+28661
 bircoph
 has-props
 
@@ -45,11 +45,11 @@ file
 
 
 
-2009-01-29T11:50:44.000000Z
-d40e494915d9ec831b8fc054b303d233
-2007-09-06T20:03:01.858135Z
-24354
-voroshil
+2009-02-19T11:48:17.000000Z
+3db7f6a760e3759fc3c1bfddfdb5cefd
+2009-02-19T02:24:03.679065Z
+28656
+bircoph
 has-props
 
 usage.xml
@@ -123,11 +123,11 @@ file
 
 
 
-2009-02-16T15:28:14.000000Z
-4988713cf84763f58c0de299bf89521e
-2009-02-10T00:23:50.870407Z
-28516
-diego
+2009-02-19T11:48:17.000000Z
+a73d478ce9fd0c9335bc84bcf313d92c
+2009-02-19T05:09:46.884160Z
+28661
+bircoph
 has-props
 
 documentation.xml

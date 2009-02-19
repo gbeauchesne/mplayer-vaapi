@@ -1,14 +1,14 @@
 8
 
 dir
-28645
+28665
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-14T20:18:50.716796Z
-28567
+2009-02-18T23:16:31.113693Z
+28655
 stefano
 has-props
 
@@ -89,19 +89,6 @@ file
 diego
 has-props
 
-swscale_altivec_template.c
-file
-
-
-
-
-2009-02-16T15:28:15.000000Z
-f2a587fccf0ee1c736a3d349e88ac175
-2009-02-14T16:39:15.557792Z
-28556
-kostya
-has-props
-
 yuv2rgb_mlib.c
 file
 
@@ -112,6 +99,19 @@ file
 e71565f08de72f0ce6bca67e5dc90957
 2009-02-09T14:31:53.906337Z
 28496
+kostya
+has-props
+
+swscale_altivec_template.c
+file
+
+
+
+
+2009-02-16T15:28:15.000000Z
+f2a587fccf0ee1c736a3d349e88ac175
+2009-02-14T16:39:15.557792Z
+28556
 kostya
 has-props
 
@@ -134,10 +134,10 @@ file
 
 
 
-2009-02-16T15:28:15.000000Z
-f2e51e57bbcd5d5f345a021704e0b02c
-2009-02-14T20:14:28.280574Z
-28566
+2009-02-19T11:48:18.000000Z
+4872e59ddc89aa44ba4b981d2edbeeee
+2009-02-18T23:16:31.113693Z
+28655
 stefano
 has-props
 
