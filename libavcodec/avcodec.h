@@ -30,7 +30,7 @@
 #include "libavutil/avutil.h"
 
 #define LIBAVCODEC_VERSION_MAJOR 52
-#define LIBAVCODEC_VERSION_MINOR 16
+#define LIBAVCODEC_VERSION_MINOR 18
 #define LIBAVCODEC_VERSION_MICRO  0
 
 #define LIBAVCODEC_VERSION_INT  AV_VERSION_INT(LIBAVCODEC_VERSION_MAJOR, \
@@ -3005,6 +3005,18 @@ typedef struct AVCodecParserContext {
     int64_t next_frame_offset; /* offset of the next frame */
     /* video info */
     int pict_type; /* XXX: Put it back in AVCodecContext. */
+    /**
+     * This field is used for proper frame duration computation in lavf.
+     * It signals, how much longer the frame duration of the current frame
+     * is compared to normal frame duration.
+     *
+     * frame_duration = (2 + repeat_pict) / (2*fps)
+     *
+     * It is used by codecs like H.264 to display telecined material.
+     *
+     * @note This field can also be set to -1 for half-frame duration in case
+     *       of field pictures.
+     */
     int repeat_pict; /* XXX: Put it back in AVCodecContext. */
     int64_t pts;     /* pts of the current frame */
     int64_t dts;     /* dts of the current frame */
@@ -3033,6 +3045,23 @@ typedef struct AVCodecParserContext {
      * will be used.
      */
     int key_frame;
+
+    /**
+     * Time difference in stream time base units from the pts of this
+     * packet to the point at which the output from the decoder has converged
+     * independent from the availability of previous frames. That is, the
+     * frames are virtually identical no matter if decoding started from
+     * the very first frame or from this keyframe.
+     * Is AV_NOPTS_VALUE if unknown.
+     * This field is not the display duration of the current frame.
+     *
+     * The purpose of this field is to allow seeking in streams that have no
+     * keyframes in the conventional sense. It corresponds to the
+     * recovery point SEI in H.264 and match_time_delta in NUT. It is also
+     * essential for some types of subtitle streams to ensure that all
+     * subtitles are correctly displayed after seeking.
+     */
+    int64_t convergence_duration;
 } AVCodecParserContext;
 
 typedef struct AVCodecParser {
@@ -3164,6 +3193,7 @@ int av_parse_video_frame_rate(AVRational *frame_rate, const char *str);
 #define AVERROR_NOFMT       AVERROR(EILSEQ)  /**< unknown format */
 #define AVERROR_NOTSUPP     AVERROR(ENOSYS)  /**< Operation not supported. */
 #define AVERROR_NOENT       AVERROR(ENOENT)  /**< No such file or directory. */
+#define AVERROR_EOF         AVERROR(EPIPE)   /**< End of file. */
 #define AVERROR_PATCHWELCOME    -MKTAG('P','A','W','E') /**< Not yet implemented in FFmpeg. Patches welcome. */
 
 #endif /* AVCODEC_AVCODEC_H */

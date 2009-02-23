@@ -680,6 +680,8 @@ static void compute_frame_duration(int *pnum, int *pden, AVStream *st,
             *pnum = st->codec->time_base.num;
             *pden = st->codec->time_base.den;
             if (pc && pc->repeat_pict) {
+                // NOTE: repeat_pict can be also -1 for half-frame durations,
+                // e.g., in H.264 interlaced field picture stream
                 *pden *= 2;
                 *pnum = (*pnum) * (2 + pc->repeat_pict);
             }
@@ -810,7 +812,7 @@ static void compute_pkt_fields(AVFormatContext *s, AVStream *st,
     // we take the conservative approach and discard both
     // Note, if this is misbehaving for a H.264 file then possibly presentation_delayed is not set correctly.
     if(delay==1 && pkt->dts == pkt->pts && pkt->dts != AV_NOPTS_VALUE && presentation_delayed){
-        av_log(s, AV_LOG_ERROR, "invalid dts/pts combination\n");
+        av_log(s, AV_LOG_WARNING, "invalid dts/pts combination\n");
         pkt->dts= pkt->pts= AV_NOPTS_VALUE;
     }
 
@@ -909,6 +911,8 @@ static void compute_pkt_fields(AVFormatContext *s, AVStream *st,
         else if (pc->key_frame == -1 && pc->pict_type == FF_I_TYPE)
             pkt->flags |= PKT_FLAG_KEY;
     }
+    if (pc)
+        pkt->convergence_duration = pc->convergence_duration;
 }
 
 void av_destruct_packet_nofree(AVPacket *pkt)
@@ -2016,6 +2020,11 @@ int av_find_stream_info(AVFormatContext *ic)
     count = 0;
     read_size = 0;
     for(;;) {
+        if(url_interrupt_cb()){
+            ret= AVERROR(EINTR);
+            break;
+        }
+
         /* check if one codec still needs to be handled */
         for(i=0;i<ic->nb_streams;i++) {
             st = ic->streams[i];
@@ -2751,6 +2760,13 @@ void av_program_add_stream_index(AVFormatContext *ac, int progid, unsigned int i
     }
 }
 
+static void print_fps(double d, const char *postfix){
+    uint64_t v= lrintf(d*100);
+    if     (v% 100      ) av_log(NULL, AV_LOG_INFO, ", %3.2f %s", d, postfix);
+    else if(v%(100*1000)) av_log(NULL, AV_LOG_INFO, ", %1.0f %s", d, postfix);
+    else                  av_log(NULL, AV_LOG_INFO, ", %1.0fk %s", d/1000, postfix);
+}
+
 /* "user interface" functions */
 static void dump_stream_format(AVFormatContext *ic, int i, int index, int is_output)
 {
@@ -2781,11 +2797,11 @@ static void dump_stream_format(AVFormatContext *ic, int i, int index, int is_out
     }
     if(st->codec->codec_type == CODEC_TYPE_VIDEO){
         if(st->r_frame_rate.den && st->r_frame_rate.num)
-            av_log(NULL, AV_LOG_INFO, ", %5.2f tb(r)", av_q2d(st->r_frame_rate));
-/*      else if(st->time_base.den && st->time_base.num)
-            av_log(NULL, AV_LOG_INFO, ", %5.2f tb(m)", 1/av_q2d(st->time_base));*/
-        else
-            av_log(NULL, AV_LOG_INFO, ", %5.2f tb(c)", 1/av_q2d(st->codec->time_base));
+            print_fps(av_q2d(st->r_frame_rate), "tbr");
+        if(st->time_base.den && st->time_base.num)
+            print_fps(1/av_q2d(st->time_base), "tbn");
+        if(st->codec->time_base.den && st->codec->time_base.num)
+            print_fps(1/av_q2d(st->codec->time_base), "tbc");
     }
     av_log(NULL, AV_LOG_INFO, "\n");
 }

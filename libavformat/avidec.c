@@ -165,6 +165,9 @@ static int read_braindead_odml_indx(AVFormatContext *s, int frame_num){
 #ifdef DEBUG_SEEK
             av_log(s, AV_LOG_ERROR, "pos:%"PRId64", len:%X\n", pos, len);
 #endif
+            if(url_feof(pb))
+                return -1;
+
             if(last_pos == pos || pos == base - 8)
                 avi->non_interleaved= 1;
             if(last_pos != pos)
@@ -181,6 +184,10 @@ static int read_braindead_odml_indx(AVFormatContext *s, int frame_num){
             offset = get_le64(pb);
             get_le32(pb);       /* size */
             duration = get_le32(pb);
+
+            if(url_feof(pb))
+                return -1;
+
             pos = url_ftell(pb);
 
             url_fseek(pb, offset+8, SEEK_SET);
@@ -451,7 +458,7 @@ static int avi_read_header(AVFormatContext *s, AVFormatParameters *ap)
                     }
                     get_le32(pb); /* size */
                     st->codec->width = get_le32(pb);
-                    st->codec->height = get_le32(pb);
+                    st->codec->height = (int32_t)get_le32(pb);
                     get_le16(pb); /* panes */
                     st->codec->bits_per_coded_sample= get_le16(pb); /* depth */
                     tag1 = get_le32(pb);
@@ -499,6 +506,15 @@ static int avi_read_header(AVFormatContext *s, AVFormatParameters *ap)
                     st->codec->codec_tag = tag1;
                     st->codec->codec_id = codec_get_id(codec_bmp_tags, tag1);
                     st->need_parsing = AVSTREAM_PARSE_HEADERS; // This is needed to get the pict type which is necessary for generating correct pts.
+
+                    if(st->codec->codec_tag==0 && st->codec->height > 0 && st->codec->extradata_size < 1U<<30){
+                        st->codec->extradata_size+= 9;
+                        st->codec->extradata= av_realloc(st->codec->extradata, st->codec->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
+                        if(st->codec->extradata)
+                            memcpy(st->codec->extradata + st->codec->extradata_size - 9, "BottomUp", 9);
+                    }
+                    st->codec->height= FFABS(st->codec->height);
+
 //                    url_fskip(pb, size - 5 * 4);
                     break;
                 case CODEC_TYPE_AUDIO:
@@ -634,12 +650,13 @@ static int avi_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     AVIContext *avi = s->priv_data;
     ByteIOContext *pb = s->pb;
-    int n, d[8], size;
+    int n, d[8];
+    unsigned int size;
     int64_t i, sync;
     void* dstr;
 
     if (CONFIG_DV_DEMUXER && avi->dv_demux) {
-        size = dv_get_packet(avi->dv_demux, pkt);
+        int size = dv_get_packet(avi->dv_demux, pkt);
         if (size >= 0)
             return size;
     }
@@ -701,7 +718,7 @@ resync:
     if(avi->stream_index >= 0){
         AVStream *st= s->streams[ avi->stream_index ];
         AVIStream *ast= st->priv_data;
-        int size;
+        int size, err;
 
         if(ast->sample_size <= 1) // minorityreport.AVI block_align=1024 sample_size=1 IMA-ADPCM
             size= INT_MAX;
@@ -713,14 +730,19 @@ resync:
         if(size > ast->remaining)
             size= ast->remaining;
         avi->last_pkt_pos= url_ftell(pb);
-        av_get_packet(pb, pkt, size);
+        err= av_get_packet(pb, pkt, size);
+        if(err<0)
+            return err;
 
         if(ast->has_pal && pkt->data && pkt->size<(unsigned)INT_MAX/2){
+            void *ptr= av_realloc(pkt->data, pkt->size + 4*256 + FF_INPUT_BUFFER_PADDING_SIZE);
+            if(ptr){
             ast->has_pal=0;
             pkt->size += 4*256;
-            pkt->data = av_realloc(pkt->data, pkt->size + FF_INPUT_BUFFER_PADDING_SIZE);
-            if(pkt->data)
+            pkt->data= ptr;
                 memcpy(pkt->data + pkt->size - 4*256, ast->pal, 4*256);
+            }else
+                av_log(s, AV_LOG_ERROR, "Failed to append palette\n");
         }
 
         if (CONFIG_DV_DEMUXER && avi->dv_demux) {
@@ -779,7 +801,7 @@ resync:
 
         n= get_stream_idx(d+2);
 //av_log(s, AV_LOG_DEBUG, "%X %X %X %X %X %X %X %X %"PRId64" %d %d\n", d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], i, size, n);
-        if(i + size > avi->fsize || d[0]<0)
+        if(i + (uint64_t)size > avi->fsize || d[0]<0)
             continue;
 
         //parse ix##
@@ -870,7 +892,7 @@ resync:
         }
     }
 
-    return -1;
+    return AVERROR_EOF;
 }
 
 /* XXX: We make the implicit supposition that the positions are sorted
@@ -913,6 +935,9 @@ static int avi_read_idx1(AVFormatContext *s, int size)
 #if defined(DEBUG_SEEK)
         av_log(s, AV_LOG_DEBUG, "%d cum_len=%"PRId64"\n", len, ast->cum_len);
 #endif
+        if(url_feof(pb))
+            return -1;
+
         if(last_pos == pos)
             avi->non_interleaved= 1;
         else

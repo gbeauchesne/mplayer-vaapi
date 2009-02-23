@@ -1,4 +1,4 @@
-.\" $Revision: 28645 $
+.\" $Revision: 28696 $
 .\" MPlayer (C) 2000-2009 MPlayer Team
 .\" This man page was/is done by Gabucino, Diego Biurrun, Jonas Jermann
 .
@@ -5485,6 +5485,13 @@ Would playback audio file at 1.2x normal speed, with audio at normal pitch.
 Changing playback speed, would change pitch, leaving audio tempo at 1.2x.
 .RE
 .PD 1
+.
+.TP
+.B "stats\ \ "
+Collects and prints statistics about the audio stream, especially the volume.
+These statistics are especially intended to help adjusting the volume while
+avoiding clipping.
+The volumes are printed in dB and compatible with the volume audio filter.
 .
 .
 .
@@ -11170,7 +11177,7 @@ explains how to create useful bug reports.
 MPlayer was initially written by Arpad Gereoffy.
 See the AUTHORS file for a list of some of the many other contributors.
 .PP
-MPlayer is (C) 2000\-2008 The MPlayer Team
+MPlayer is (C) 2000\-2009 The MPlayer Team
 .PP
 This man page was written mainly by Gabucino, Jonas Jermann and Diego Biurrun.
 It is maintained by Diego Biurrun.

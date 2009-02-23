@@ -201,6 +201,7 @@ typedef struct MpegEncContext {
     int bit_rate;     ///< wanted bit rate
     enum OutputFormat out_format; ///< output format
     int h263_pred;    ///< use mpeg4/h263 ac/dc predictions
+    int pb_frame;     ///< PB frame mode (0 = none, 1 = base, 2 = improved)
 
 /* the following codec id fields are deprecated in favor of codec_id */
     int h263_plus;    ///< h263 plus headers
@@ -635,7 +636,7 @@ typedef struct MpegEncContext {
 
     uint8_t *ptr_lastgob;
     int swap_uv;//vcr2 codec is mpeg2 varint with UV swaped
-    short * pblocks[12];
+    DCTELEM (*pblocks[12])[64];
 
     DCTELEM (*block)[64]; ///< points to one of the following blocks
     DCTELEM (*blocks)[8][64]; // for HQ mode we need to keep the best block
