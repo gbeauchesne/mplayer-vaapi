@@ -1,7 +1,7 @@
 8
 
 dir
-17538
+17541
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/ppc
 svn://svn.ffmpeg.org/ffmpeg
 
@@ -76,18 +76,6 @@ file
 13098
 diego
 
-float_altivec.c
-file
-
-
-
-
-2009-01-29T11:50:59.000000Z
-7421826e8b6edc3ef783423e796d3813
-2009-01-06T23:03:33.381063Z
-16459
-gpoirier
-
 imgresample_altivec.c
 file
 
@@ -100,6 +88,18 @@ e1d45d2524f742a3f03ebcbd931ff4a5
 16912
 diego
 has-props
+
+float_altivec.c
+file
+
+
+
+
+2009-01-29T11:50:59.000000Z
+7421826e8b6edc3ef783423e796d3813
+2009-01-06T23:03:33.381063Z
+16459
+gpoirier
 
 gmc_altivec.c
 file
@@ -114,18 +114,6 @@ d631d3782aac037820fb4a350370ad77
 diego
 has-props
 
-types_altivec.h
-file
-
-
-
-
-2009-01-29T11:50:59.000000Z
-fb491083be42c9018809ff3eb7e9ef94
-2008-12-27T11:21:28.043715Z
-16357
-lu_zero
-
 mathops.h
 file
 
@@ -137,6 +125,18 @@ file
 2009-01-25T11:16:25.261169Z
 16769
 diego
+
+types_altivec.h
+file
+
+
+
+
+2009-01-29T11:50:59.000000Z
+fb491083be42c9018809ff3eb7e9ef94
+2008-12-27T11:21:28.043715Z
+16357
+lu_zero
 
 imgresample_altivec.h
 file
@@ -176,16 +176,16 @@ file
 lu_zero
 has-props
 
-mpegvideo_altivec.c
+fft_altivec.c
 file
 
 
 
 
 2009-01-29T11:50:59.000000Z
-b5a4d81b0eaa460d4f0110ee45a26c62
-2008-12-03T15:23:30.464225Z
-15990
+c6cc64fe55ee6a822bfc62507c2abd77
+2009-01-19T15:46:40.737658Z
+16684
 diego
 has-props
 
@@ -202,16 +202,16 @@ file
 diego
 has-props
 
-fft_altivec.c
+mpegvideo_altivec.c
 file
 
 
 
 
 2009-01-29T11:50:59.000000Z
-c6cc64fe55ee6a822bfc62507c2abd77
-2009-01-19T15:46:40.737658Z
-16684
+b5a4d81b0eaa460d4f0110ee45a26c62
+2008-12-03T15:23:30.464225Z
+15990
 diego
 has-props
 

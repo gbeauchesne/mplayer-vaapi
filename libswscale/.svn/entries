@@ -1,7 +1,7 @@
 8
 
 dir
-28709
+28712
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale
 svn://svn.mplayerhq.hu/mplayer
 
@@ -89,19 +89,6 @@ file
 diego
 has-props
 
-swscale_altivec_template.c
-file
-
-
-
-
-2009-02-16T15:28:15.000000Z
-f2a587fccf0ee1c736a3d349e88ac175
-2009-02-14T16:39:15.557792Z
-28556
-kostya
-has-props
-
 yuv2rgb_mlib.c
 file
 
@@ -112,6 +99,19 @@ file
 e71565f08de72f0ce6bca67e5dc90957
 2009-02-09T14:31:53.906337Z
 28496
+kostya
+has-props
+
+swscale_altivec_template.c
+file
+
+
+
+
+2009-02-16T15:28:15.000000Z
+f2a587fccf0ee1c736a3d349e88ac175
+2009-02-14T16:39:15.557792Z
+28556
 kostya
 has-props
 
@@ -178,6 +178,18 @@ b286afeba7486717040d9710d23dc026
 28496
 kostya
 
+yuv2rgb2.c
+file
+
+
+
+
+2009-02-23T08:37:40.000000Z
+ff09b62f8240854a8d2cfb5c649b0621
+2009-02-22T09:22:05.677697Z
+28700
+kostya
+
 rgb2rgb_template.c
 file
 
@@ -190,18 +202,6 @@ efccfc0d6426cefee607e08767192cc5
 28358
 diego
 has-props
-
-yuv2rgb2.c
-file
-
-
-
-
-2009-02-23T08:37:40.000000Z
-ff09b62f8240854a8d2cfb5c649b0621
-2009-02-22T09:22:05.677697Z
-28700
-kostya
 
 rgb2rgb.c
 file
