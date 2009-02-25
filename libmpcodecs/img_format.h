@@ -276,6 +276,26 @@ static inline int normalize_yuvp16(int fmt) {
 #define IMGFMT_XVMC_MOCO_MPEG2 (IMGFMT_XVMC|0x02)
 #define IMGFMT_XVMC_IDCT_MPEG2 (IMGFMT_XVMC|0x82)
 
+/* VA-API Formats */
+
+#define IMGFMT_VAAPI               0x56410000 /* 'VA'00 */
+#define IMGFMT_VAAPI_MASK          0xFFFF0000
+#define IMGFMT_IS_VAAPI(fmt)       (((fmt) & IMGFMT_VAAPI_MASK) == IMGFMT_VAAPI)
+#define IMGFMT_VAAPI_CODEC_MASK    0x000000F0
+#define IMGFMT_VAAPI_CODEC(fmt)    ((fmt) & IMGFMT_VAAPI_CODEC_MASK)
+#define IMGFMT_VAAPI_CODEC_MPEG2   (0x10)
+#define IMGFMT_VAAPI_CODEC_MPEG4   (0x20)
+#define IMGFMT_VAAPI_CODEC_H264    (0x30)
+#define IMGFMT_VAAPI_CODEC_VC1     (0x40)
+#define IMGFMT_VAAPI_MPEG2         (IMGFMT_VAAPI|IMGFMT_VAAPI_CODEC_MPEG2)
+#define IMGFMT_VAAPI_MPEG2_IDCT    (IMGFMT_VAAPI|IMGFMT_VAAPI_CODEC_MPEG2|1)
+#define IMGFMT_VAAPI_MPEG2_MOCO    (IMGFMT_VAAPI|IMGFMT_VAAPI_CODEC_MPEG2|2)
+#define IMGFMT_VAAPI_MPEG4         (IMGFMT_VAAPI|IMGFMT_VAAPI_CODEC_MPEG4)
+#define IMGFMT_VAAPI_H263          (IMGFMT_VAAPI|IMGFMT_VAAPI_CODEC_MPEG4|1)
+#define IMGFMT_VAAPI_H264          (IMGFMT_VAAPI|IMGFMT_VAAPI_CODEC_H264)
+#define IMGFMT_VAAPI_VC1           (IMGFMT_VAAPI|IMGFMT_VAAPI_CODEC_VC1)
+#define IMGFMT_VAAPI_WMV3          (IMGFMT_VAAPI|IMGFMT_VAAPI_CODEC_VC1|1)
+
 // VDPAU specific format.
 #define IMGFMT_VDPAU               0x1DC80000
 #define IMGFMT_VDPAU_MASK          0xFFFF0000
@@ -287,7 +307,9 @@ static inline int normalize_yuvp16(int fmt) {
 #define IMGFMT_VDPAU_VC1           (IMGFMT_VDPAU|0x05)
 #define IMGFMT_VDPAU_MPEG4         (IMGFMT_VDPAU|0x06)
 
-#define IMGFMT_IS_HWACCEL(fmt) (IMGFMT_IS_VDPAU(fmt) || IMGFMT_IS_XVMC(fmt))
+#define IMGFMT_IS_HWACCEL(fmt)     (IMGFMT_IS_VAAPI(fmt) || \
+                                    IMGFMT_IS_VDPAU(fmt) || \
+                                    IMGFMT_IS_XVMC(fmt))
 
 typedef struct {
     void* data;

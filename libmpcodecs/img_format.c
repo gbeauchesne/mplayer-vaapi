@@ -139,6 +139,14 @@ const char *vo_format_name(int format)
     case IMGFMT_VDPAU_MPEG4:     return "MPEG-4 Part 2 VDPAU acceleration";
     case IMGFMT_VDPAU_WMV3:      return "WMV3 VDPAU acceleration";
     case IMGFMT_VDPAU_VC1:       return "VC1 VDPAU acceleration";
+    case IMGFMT_VAAPI_MPEG2:     return "MPEG-2 VA-API Acceleration";
+    case IMGFMT_VAAPI_MPEG2_IDCT: return "MPEG-2 VA-API Acceleration (Motion Compensation and IDCT)";
+    case IMGFMT_VAAPI_MPEG2_MOCO: return "MPEG-2 VA-API Acceleration (Motion Compensation)";
+    case IMGFMT_VAAPI_MPEG4:     return "MPEG-4 VA-API Acceleration";
+    case IMGFMT_VAAPI_H263:      return "H.263 VA-API Acceleration";
+    case IMGFMT_VAAPI_H264:      return "H.264 VA-API Acceleration";
+    case IMGFMT_VAAPI_WMV3:      return "WMV3 VA-API Acceleration";
+    case IMGFMT_VAAPI_VC1:       return "VC-1 VA-API Acceleration";
     }
     snprintf(unknown_format,20,"Unknown 0x%04x",format);
     return unknown_format;
