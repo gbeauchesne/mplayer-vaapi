@@ -75,7 +75,7 @@ LIBVO_EXTERN(vdpau)
                message, vdp_get_error_string(vdp_st));
 
 /* number of video and output surfaces */
-#define NUM_OUTPUT_SURFACES                3
+#define NUM_OUTPUT_SURFACES                2
 #define MAX_VIDEO_SURFACES                 50
 
 /* number of palette entries */
@@ -128,7 +128,6 @@ static VdpPresentationQueueDisplay       *vdp_presentation_queue_display;
 static VdpPresentationQueueBlockUntilSurfaceIdle *vdp_presentation_queue_block_until_surface_idle;
 static VdpPresentationQueueTargetCreateX11       *vdp_presentation_queue_target_create_x11;
 
-/* output_surfaces[2] is used in composite-picture. */
 static VdpOutputSurfaceRenderOutputSurface       *vdp_output_surface_render_output_surface;
 static VdpOutputSurfacePutBitsIndexed            *vdp_output_surface_put_bits_indexed;
 static VdpOutputSurfaceRenderBitmapSurface       *vdp_output_surface_render_bitmap_surface;
@@ -142,7 +141,9 @@ static VdpDecoderDestroy                         *vdp_decoder_destroy;
 static VdpDecoderRender                          *vdp_decoder_render;
 
 static void                              *vdpau_lib_handle;
-static VdpOutputSurface                   output_surfaces[NUM_OUTPUT_SURFACES];
+/* output_surfaces[NUM_OUTPUT_SURFACES] is misused for OSD. */
+#define osd_surface output_surfaces[NUM_OUTPUT_SURFACES]
+static VdpOutputSurface                   output_surfaces[NUM_OUTPUT_SURFACES + 1];
 static int                                output_surface_width, output_surface_height;
 
 static VdpVideoMixer                      video_mixer;
@@ -150,6 +151,7 @@ static int                                deint;
 static int                                pullup;
 static float                              denoise;
 static float                              sharpen;
+static int                                top_field_first;
 
 static VdpDecoder                         decoder;
 static int                                decoder_max_refs;
@@ -200,24 +202,35 @@ static void video_to_output_surface(void)
 {
     VdpTime dummy;
     VdpStatus vdp_st;
-    VdpOutputSurface output_surface = output_surfaces[surface_num];
+    int i;
     if (vid_surface_num < 0)
         return;
 
-    vdp_st = vdp_presentation_queue_block_until_surface_idle(vdp_flip_queue,
-                                                             output_surface,
-                                                             &dummy);
-    CHECK_ST_WARNING("Error when calling vdp_presentation_queue_block_until_surface_idle")
+    // we would need to provide 2 past and 1 future frames to allow advanced
+    // deinterlacing, which is not really possible currently.
+    for (i = 0; i <= !!deint; i++) {
+        int field = VDP_VIDEO_MIXER_PICTURE_STRUCTURE_FRAME;
+        VdpOutputSurface output_surface;
+        if (i)
+            flip_page();
+        if (deint)
+            field = top_field_first == i ?
+                    VDP_VIDEO_MIXER_PICTURE_STRUCTURE_BOTTOM_FIELD:
+                    VDP_VIDEO_MIXER_PICTURE_STRUCTURE_TOP_FIELD;
+        output_surface = output_surfaces[surface_num];
+        vdp_st = vdp_presentation_queue_block_until_surface_idle(vdp_flip_queue,
+                                                                 output_surface,
+                                                                 &dummy);
+        CHECK_ST_WARNING("Error when calling vdp_presentation_queue_block_until_surface_idle")
 
-    // we would need to provide past and future frames to allow deinterlacing,
-    // which is not really possible currently. Deinterlacing is supposed to fall
-    // back to bob deinterlacing, but that seems not to work either.
-    vdp_st = vdp_video_mixer_render(video_mixer, VDP_INVALID_HANDLE, 0,
-                                    VDP_VIDEO_MIXER_PICTURE_STRUCTURE_FRAME,
-                                    0, NULL, surface_render[vid_surface_num].surface, 0, NULL, &src_rect_vid,
-                                    output_surface,
-                                    NULL, &out_rect_vid, 0, NULL);
-    CHECK_ST_WARNING("Error when calling vdp_video_mixer_render")
+        vdp_st = vdp_video_mixer_render(video_mixer, VDP_INVALID_HANDLE, 0,
+                                        field, 0, NULL,
+                                        surface_render[vid_surface_num].surface,
+                                        0, NULL, &src_rect_vid,
+                                        output_surface,
+                                        NULL, &out_rect_vid, 0, NULL);
+        CHECK_ST_WARNING("Error when calling vdp_video_mixer_render")
+    }
 }
 
 static void resize(void)
@@ -254,7 +267,7 @@ static void resize(void)
             output_surface_height = FFMAX(output_surface_height, vo_dheight);
         }
         // Creation of output_surfaces
-        for (i = 0; i < NUM_OUTPUT_SURFACES; i++) {
+        for (i = 0; i <= NUM_OUTPUT_SURFACES; i++) {
             if (output_surfaces[i] != VDP_INVALID_HANDLE)
                 vdp_output_surface_destroy(output_surfaces[i]);
             vdp_st = vdp_output_surface_create(vdp_device, VDP_RGBA_FORMAT_B8G8R8A8,
@@ -381,9 +394,9 @@ static int create_vdp_mixer(VdpChromaType vdp_chroma_type) {
         &vid_height,
         &vdp_chroma_type
     };
-    if (deint == 1)
-        features[feature_count++] = VDP_VIDEO_MIXER_FEATURE_DEINTERLACE_TEMPORAL;
     if (deint == 2)
+        features[feature_count++] = VDP_VIDEO_MIXER_FEATURE_DEINTERLACE_TEMPORAL;
+    if (deint == 3)
         features[feature_count++] = VDP_VIDEO_MIXER_FEATURE_DEINTERLACE_TEMPORAL_SPATIAL;
     if (pullup)
         features[feature_count++] = VDP_VIDEO_MIXER_FEATURE_INVERSE_TELECINE;
@@ -573,8 +586,8 @@ static void draw_osd_I8A8(int x0,int y0, int w,int h, unsigned char *src,
 
     pitch = w*2;
 
-    // write source_data to output_surfaces[2].
-    vdp_st = vdp_output_surface_put_bits_indexed(output_surfaces[2],
+    // write source_data to osd_surface.
+    vdp_st = vdp_output_surface_put_bits_indexed(osd_surface,
                                                  VDP_INDEXED_FORMAT_I8A8,
                                                  (const void *const*)&index_data,
                                                  &pitch,
@@ -593,7 +606,7 @@ static void draw_osd_I8A8(int x0,int y0, int w,int h, unsigned char *src,
 
     vdp_st = vdp_output_surface_render_output_surface(output_surface,
                                                       &output_indexed_rect_vid,
-                                                      output_surfaces[2],
+                                                      osd_surface,
                                                       &output_indexed_rect_vid,
                                                       NULL,
                                                       &blend_state,
@@ -735,7 +748,7 @@ static void flip_page(void)
                                             0);
     CHECK_ST_WARNING("Error when calling vdp_presentation_queue_display")
 
-    surface_num = !surface_num;
+    surface_num = (surface_num + 1) % NUM_OUTPUT_SURFACES;
     visible_buf = 1;
 }
 
@@ -817,6 +830,7 @@ static uint32_t draw_image(mp_image_t *mpi)
                                                     mpi->stride); // pitch
         CHECK_ST_ERROR("Error when calling vdp_video_surface_put_bits_y_cb_cr")
     }
+    top_field_first = !!(mpi->fields & MP_IMGFIELD_TOP_FIRST);
 
     video_to_output_surface();
     return VO_TRUE;
@@ -875,7 +889,7 @@ static void DestroyVdpauObjects(void)
     vdp_st = vdp_presentation_queue_target_destroy(vdp_flip_target);
     CHECK_ST_WARNING("Error when calling vdp_presentation_queue_target_destroy")
 
-    for (i = 0; i < NUM_OUTPUT_SURFACES; i++) {
+    for (i = 0; i <= NUM_OUTPUT_SURFACES; i++) {
         vdp_st = vdp_output_surface_destroy(output_surfaces[i]);
         output_surfaces[i] = VDP_INVALID_HANDLE;
         CHECK_ST_WARNING("Error when calling vdp_output_surface_destroy")
@@ -932,8 +946,9 @@ static const char help_msg[] =
     "\nOptions:\n"
     "  deint\n"
     "    0: no deinterlacing\n"
-    "    1: temporal deinterlacing (not yet working)\n"
-    "    2: temporal-spatial deinterlacing (not yet working)\n"
+    "    1: bob deinterlacing (current fallback)\n"
+    "    2: temporal deinterlacing (not yet working)\n"
+    "    3: temporal-spatial deinterlacing (not yet working)\n"
     "  pullup\n"
     "    Try to apply inverse-telecine (needs deinterlacing, not working)\n"
     "  denoise\n"

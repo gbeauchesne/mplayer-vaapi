@@ -1,7 +1,7 @@
 8
 
 dir
-17541
+17586
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/arm
 svn://svn.ffmpeg.org/ffmpeg
 
@@ -88,17 +88,17 @@ db8762191682cd15343c7971143ede22
 aurel
 has-props
 
-float_arm_vfp.c
+simple_idct_armv5te.S
 file
 
 
 
 
 2009-01-29T11:51:00.000000Z
-37d25fb02b63ac213556a8c5ba667a3a
-2009-01-13T23:44:16.634366Z
-16590
-aurel
+843fc6e74652edc84fb92d04c3d01ff1
+2008-12-17T00:54:54.689120Z
+16179
+mru
 
 dsputil_vfp.S
 file
@@ -112,29 +112,17 @@ file
 16590
 aurel
 
-simple_idct_armv5te.S
+float_arm_vfp.c
 file
 
 
 
 
 2009-01-29T11:51:00.000000Z
-843fc6e74652edc84fb92d04c3d01ff1
-2008-12-17T00:54:54.689120Z
-16179
-mru
-
-mathops.h
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-e5372e3d6369ec4617dc69cd775e0a93
-2009-01-27T16:06:38.671736Z
-16819
-mru
+37d25fb02b63ac213556a8c5ba667a3a
+2009-01-13T23:44:16.634366Z
+16590
+aurel
 
 jrevdct_arm.S
 file
@@ -148,6 +136,18 @@ f5112c74f1dfd2c3742f8047639ffb40
 16179
 mru
 has-props
+
+mathops.h
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+e5372e3d6369ec4617dc69cd775e0a93
+2009-01-27T16:06:38.671736Z
+16819
+mru
 
 mpegvideo_armv5te.c
 file
@@ -174,18 +174,6 @@ file
 diego
 has-props
 
-mpegvideo_armv5te_s.S
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-d5b7a353f6a81c7cb452a19df1d2051b
-2008-12-17T00:54:54.689120Z
-16179
-mru
-
 mpegvideo_iwmmxt.c
 file
 
@@ -198,6 +186,18 @@ f73f2d3646f3529cbbd29ff6aeb97e98
 16179
 mru
 has-props
+
+mpegvideo_armv5te_s.S
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+d5b7a353f6a81c7cb452a19df1d2051b
+2008-12-17T00:54:54.689120Z
+16179
+mru
 
 dsputil_arm_s.S
 file

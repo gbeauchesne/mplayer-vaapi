@@ -30,7 +30,7 @@
 #include "libavutil/avutil.h"
 
 #define LIBAVCODEC_VERSION_MAJOR 52
-#define LIBAVCODEC_VERSION_MINOR 18
+#define LIBAVCODEC_VERSION_MINOR 19
 #define LIBAVCODEC_VERSION_MICRO  0
 
 #define LIBAVCODEC_VERSION_INT  AV_VERSION_INT(LIBAVCODEC_VERSION_MAJOR, \
@@ -3098,12 +3098,9 @@ typedef struct AVCodecParserContext {
      * It signals, how much longer the frame duration of the current frame
      * is compared to normal frame duration.
      *
-     * frame_duration = (2 + repeat_pict) / (2*fps)
+     * frame_duration = (1 + repeat_pict) * time_base
      *
      * It is used by codecs like H.264 to display telecined material.
-     *
-     * @note This field can also be set to -1 for half-frame duration in case
-     *       of field pictures.
      */
     int repeat_pict; /* XXX: Put it back in AVCodecContext. */
     int64_t pts;     /* pts of the current frame */
@@ -3150,6 +3147,47 @@ typedef struct AVCodecParserContext {
      * subtitles are correctly displayed after seeking.
      */
     int64_t convergence_duration;
+
+    // Timestamp generation support:
+    /**
+     * Synchronization point for start of timestamp generation.
+     *
+     * Set to >0 for sync point, 0 for no sync point and <0 for undefined
+     * (default).
+     *
+     * For example, this corresponds to presence of H.264 buffering period
+     * SEI message.
+     */
+    int dts_sync_point;
+
+    /**
+     * Offset of the current timestamp against last timestamp sync point in
+     * units of AVCodecContext.time_base.
+     *
+     * Set to INT_MIN when dts_sync_point unused. Otherwise, it must
+     * contain a valid timestamp offset.
+     *
+     * Note that the timestamp of sync point has usually a nonzero
+     * dts_ref_dts_delta, which refers to the previous sync point. Offset of
+     * the next frame after timestamp sync point will be usually 1.
+     *
+     * For example, this corresponds to H.264 cpb_removal_delay.
+     */
+    int dts_ref_dts_delta;
+
+    /**
+     * Presentation delay of current frame in units of AVCodecContext.time_base.
+     *
+     * Set to INT_MIN when dts_sync_point unused. Otherwise, it must
+     * contain valid non-negative timestamp delta (presentation time of a frame
+     * must not lie in the past).
+     *
+     * This delay represents the difference between decoding and presentation
+     * time of the frame.
+     *
+     * For example, this corresponds to H.264 dpb_output_delay.
+     */
+    int pts_dts_delta;
 } AVCodecParserContext;
 
 typedef struct AVCodecParser {

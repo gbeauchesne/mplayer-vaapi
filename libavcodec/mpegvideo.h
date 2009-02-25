@@ -708,6 +708,8 @@ void ff_convert_matrix(DSPContext *dsp, int (*qmat)[64], uint16_t (*qmat16)[2][6
 void ff_init_block_index(MpegEncContext *s);
 void ff_copy_picture(Picture *dst, Picture *src);
 
+extern const enum PixelFormat ff_pixfmt_list_420[];
+
 static inline void ff_update_block_index(MpegEncContext *s){
     const int block_size= 8>>s->avctx->lowres;
 
@@ -836,6 +838,7 @@ void ff_clean_h263_qscales(MpegEncContext *s);
 int ff_mpeg4_decode_partitions(MpegEncContext *s);
 int ff_mpeg4_get_video_packet_prefix_length(MpegEncContext *s);
 int ff_h263_resync(MpegEncContext *s);
+const uint8_t *ff_h263_find_resync_marker(const uint8_t *p, const uint8_t *end);
 int ff_h263_get_gob_height(MpegEncContext *s);
 void ff_mpeg4_init_direct_mv(MpegEncContext *s);
 int ff_mpeg4_set_direct_mv(MpegEncContext *s, int mx, int my);

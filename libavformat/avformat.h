@@ -22,8 +22,8 @@
 #define AVFORMAT_AVFORMAT_H
 
 #define LIBAVFORMAT_VERSION_MAJOR 52
-#define LIBAVFORMAT_VERSION_MINOR 29
-#define LIBAVFORMAT_VERSION_MICRO  2
+#define LIBAVFORMAT_VERSION_MINOR 30
+#define LIBAVFORMAT_VERSION_MICRO  0
 
 #define LIBAVFORMAT_VERSION_INT AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR, \
                                                LIBAVFORMAT_VERSION_MINOR, \
@@ -265,6 +265,7 @@ typedef struct AVFormatParameters {
 #define AVFMT_NOTIMESTAMPS  0x0080 /**< Format does not need / have any timestamps. */
 #define AVFMT_GENERIC_INDEX 0x0100 /**< Use generic index building code. */
 #define AVFMT_TS_DISCONT    0x0200 /**< Format allows timestamp discontinuities. */
+#define AVFMT_VARIABLE_FPS  0x0400 /**< Format allows variable fps. */
 
 typedef struct AVOutputFormat {
     const char *name;
@@ -332,6 +333,8 @@ typedef struct AVInputFormat {
     /** Close the stream. The AVFormatContext and AVStreams are not
        freed by this function */
     int (*read_close)(struct AVFormatContext *);
+
+#if LIBAVFORMAT_VERSION_MAJOR < 53
     /**
      * Seek to a given timestamp relative to the frames in
      * stream component stream_index.
@@ -342,6 +345,7 @@ typedef struct AVInputFormat {
      */
     int (*read_seek)(struct AVFormatContext *,
                      int stream_index, int64_t timestamp, int flags);
+#endif
     /**
      * Gets the next timestamp in stream[stream_index].time_base units.
      * @return the timestamp or AV_NOPTS_VALUE if an error occurred
@@ -366,6 +370,14 @@ typedef struct AVInputFormat {
     int (*read_pause)(struct AVFormatContext *);
 
     const struct AVCodecTag * const *codec_tag;
+
+    /**
+     * Seek to timestamp ts.
+     * Seeking will be done so that the point from which all active streams
+     * can be presented successfully will be closest to ts and within min/max_ts.
+     * Active streams are all streams that have AVStream.discard < AVDISCARD_ALL.
+     */
+    int (*read_seek2)(struct AVFormatContext *s, int stream_index, int64_t min_ts, int64_t ts, int64_t max_ts, int flags);
 
     /* private fields */
     struct AVInputFormat *next;
@@ -493,6 +505,16 @@ typedef struct AVStream {
     const uint8_t *cur_ptr;
     int cur_len;
     AVPacket cur_pkt;
+
+    // Timestamp generation support:
+    /**
+     * Timestamp corresponding to the last dts sync point.
+     *
+     * Initialized when AVCodecParserContext.dts_sync_point >= 0 and
+     * a DTS is received from the underlying container. Otherwise set to
+     * AV_NOPTS_VALUE by default.
+     */
+    int64_t reference_dts;
 } AVStream;
 
 #define AV_PROGRAM_RUNNING 1

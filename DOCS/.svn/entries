@@ -1,15 +1,15 @@
 8
 
 dir
-28712
+28732
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-23T05:47:40.084768Z
-28709
-bircoph
+2009-02-25T09:32:32.035799Z
+28730
+Gabrov
 has-props
 
 svn:special svn:externals svn:needs-lock

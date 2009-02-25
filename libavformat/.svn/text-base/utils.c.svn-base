@@ -680,10 +680,7 @@ static void compute_frame_duration(int *pnum, int *pden, AVStream *st,
             *pnum = st->codec->time_base.num;
             *pden = st->codec->time_base.den;
             if (pc && pc->repeat_pict) {
-                // NOTE: repeat_pict can be also -1 for half-frame durations,
-                // e.g., in H.264 interlaced field picture stream
-                *pden *= 2;
-                *pnum = (*pnum) * (2 + pc->repeat_pict);
+                *pnum = (*pnum) * (1 + pc->repeat_pict);
             }
         }
         break;
@@ -835,6 +832,25 @@ static void compute_pkt_fields(AVFormatContext *s, AVStream *st,
             pkt->pts += offset;
         if(pkt->dts != AV_NOPTS_VALUE)
             pkt->dts += offset;
+    }
+
+    if (pc && pc->dts_sync_point >= 0) {
+        // we have synchronization info from the parser
+        int64_t den = st->codec->time_base.den * (int64_t) st->time_base.num;
+        if (den > 0) {
+            int64_t num = st->codec->time_base.num * (int64_t) st->time_base.den;
+            if (pkt->dts != AV_NOPTS_VALUE) {
+                // got DTS from the stream, update reference timestamp
+                st->reference_dts = pkt->dts - pc->dts_ref_dts_delta * num / den;
+                pkt->pts = pkt->dts + pc->pts_dts_delta * num / den;
+            } else if (st->reference_dts != AV_NOPTS_VALUE) {
+                // compute DTS based on reference timestamp
+                pkt->dts = st->reference_dts + pc->dts_ref_dts_delta * num / den;
+                pkt->pts = pkt->dts + pc->pts_dts_delta * num / den;
+            }
+            if (pc->dts_sync_point > 0)
+                st->reference_dts = pkt->dts; // new reference
+        }
     }
 
     /* This may be redundant, but it should not hurt. */
@@ -1160,6 +1176,7 @@ static void av_read_frame_flush(AVFormatContext *s)
         }
         st->last_IP_pts = AV_NOPTS_VALUE;
         st->cur_dts = AV_NOPTS_VALUE; /* we set the current DTS to an unspecified origin */
+        st->reference_dts = AV_NOPTS_VALUE;
         /* fail safe */
         st->cur_ptr = NULL;
         st->cur_len = 0;
@@ -1976,7 +1993,9 @@ static int tb_unreliable(AVCodecContext *c){
        || c->time_base.den <    5L*c->time_base.num
 /*       || c->codec_tag == AV_RL32("DIVX")
        || c->codec_tag == AV_RL32("XVID")*/
-       || c->codec_id == CODEC_ID_MPEG2VIDEO)
+       || c->codec_id == CODEC_ID_MPEG2VIDEO
+       || c->codec_id == CODEC_ID_H264
+       )
         return 1;
     return 0;
 }
@@ -2333,6 +2352,7 @@ AVStream *av_new_stream(AVFormatContext *s, int id)
     st->last_IP_pts = AV_NOPTS_VALUE;
     for(i=0; i<MAX_REORDER_DELAY+1; i++)
         st->pts_buffer[i]= AV_NOPTS_VALUE;
+    st->reference_dts = AV_NOPTS_VALUE;
 
     st->sample_aspect_ratio = (AVRational){0,1};
 

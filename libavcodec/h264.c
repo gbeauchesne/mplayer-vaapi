@@ -2178,12 +2178,11 @@ static av_cold int decode_init(AVCodecContext *avctx){
     s->quarter_sample = 1;
     s->low_delay= 1;
 
-    if(avctx->codec_id == CODEC_ID_SVQ3)
-        avctx->pix_fmt= PIX_FMT_YUVJ420P;
-    else if(s->avctx->codec->capabilities&CODEC_CAP_HWACCEL_VDPAU)
+    if(s->avctx->codec->capabilities&CODEC_CAP_HWACCEL_VDPAU)
         avctx->pix_fmt= PIX_FMT_VDPAU_H264;
     else
-        avctx->pix_fmt= PIX_FMT_YUV420P;
+        avctx->pix_fmt= avctx->get_format(avctx, avctx->codec->pix_fmts);
+    avctx->hwaccel = ff_find_hwaccel(avctx->codec->id, avctx->pix_fmt);
 
     decode_init_vlc();
 
@@ -3259,13 +3258,13 @@ static int execute_ref_pic_marking(H264Context *h, MMCO *mmco, int mmco_count){
     MpegEncContext * const s = &h->s;
     int i, j;
     int current_ref_assigned=0;
-    Picture *pic;
+    Picture *av_uninit(pic);
 
     if((s->avctx->debug&FF_DEBUG_MMCO) && mmco_count==0)
         av_log(h->s.avctx, AV_LOG_DEBUG, "no mmco here\n");
 
     for(i=0; i<mmco_count; i++){
-        int structure, frame_num;
+        int structure, av_uninit(frame_num);
         if(s->avctx->debug&FF_DEBUG_MMCO)
             av_log(h->s.avctx, AV_LOG_DEBUG, "mmco:%d %d %d\n", h->mmco[i].opcode, h->mmco[i].short_pic_num, h->mmco[i].long_arg);
 
@@ -3764,7 +3763,7 @@ static int decode_slice_header(H264Context *h, H264Context *h0){
             s->avctx->sample_aspect_ratio.den = 1;
 
         if(h->sps.timing_info_present_flag){
-            s->avctx->time_base= (AVRational){h->sps.num_units_in_tick * 2, h->sps.time_scale};
+            s->avctx->time_base= (AVRational){h->sps.num_units_in_tick, h->sps.time_scale};
             if(h->x264_build > 0 && h->x264_build < 44)
                 s->avctx->time_base.den *= 2;
             av_reduce(&s->avctx->time_base.num, &s->avctx->time_base.den,
@@ -8097,6 +8096,7 @@ AVCodec h264_decoder = {
     /*CODEC_CAP_DRAW_HORIZ_BAND |*/ CODEC_CAP_DR1 | CODEC_CAP_DELAY,
     .flush= flush_dpb,
     .long_name = NULL_IF_CONFIG_SMALL("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10"),
+    .pix_fmts= ff_pixfmt_list_420,
 };
 
 #if CONFIG_H264_VDPAU_DECODER

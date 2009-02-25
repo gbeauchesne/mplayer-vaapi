@@ -1,14 +1,14 @@
 8
 
 dir
-28712
+28732
 svn://svn.mplayerhq.hu/mplayer/trunk/libvo
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-23T09:22:57.636152Z
-28711
+2009-02-25T12:51:20.967282Z
+28732
 reimar
 has-props
 
@@ -65,19 +65,6 @@ file
 diego
 has-props
 
-vo_bl.c
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-51b84164cbb154e7e7b048ac21ec0b33
-2008-09-07T14:09:51.502620Z
-27541
-diego
-has-props
-
 vo_s3fb.c
 file
 
@@ -88,6 +75,44 @@ file
 a5d8480de55880c9f2f82d70c6e35083
 2009-01-05T14:48:03.147736Z
 28267
+diego
+has-props
+
+vo_bl.c
+file
+
+
+
+
+2009-02-25T14:09:00.000000Z
+30665096d0ea0de9e4e76f0d0bf3cd88
+2009-02-25T12:51:20.967282Z
+28732
+reimar
+has-props
+
+vo_direct3d.c
+file
+
+
+
+
+2009-02-18T10:38:11.000000Z
+c05a7bd9db70ecc1c41105ca0394a006
+2009-02-17T11:59:49.980985Z
+28633
+reimar
+
+font_load.c
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+725d477d5fbc29b2ac4ff43b9a749a8b
+2009-02-08T03:27:30.179806Z
+28481
 diego
 has-props
 
@@ -104,30 +129,18 @@ file
 diego
 has-props
 
-font_load.c
+vo_mga.c
 file
 
 
 
 
 2009-02-16T15:28:14.000000Z
-725d477d5fbc29b2ac4ff43b9a749a8b
+ad2bd2b9870eae8d6cf87ba14138e714
 2009-02-08T03:27:30.179806Z
 28481
 diego
 has-props
-
-vo_direct3d.c
-file
-
-
-
-
-2009-02-18T10:38:11.000000Z
-c05a7bd9db70ecc1c41105ca0394a006
-2009-02-17T11:59:49.980985Z
-28633
-reimar
 
 vo_3dfx.c
 file
@@ -142,14 +155,14 @@ d8eee31ef85309f8c73174dbc2bb216f
 diego
 has-props
 
-vo_mga.c
+vo_ggi.c
 file
 
 
 
 
 2009-02-16T15:28:14.000000Z
-ad2bd2b9870eae8d6cf87ba14138e714
+f37a52672df1bb93e4179ecf91f41344
 2009-02-08T03:27:30.179806Z
 28481
 diego
@@ -168,27 +181,14 @@ file
 diego
 has-props
 
-vo_ggi.c
+aspect.c
 file
 
 
 
 
 2009-02-16T15:28:14.000000Z
-f37a52672df1bb93e4179ecf91f41344
-2009-02-08T03:27:30.179806Z
-28481
-diego
-has-props
-
-vo_xvidix.c
-file
-
-
-
-
-2009-02-16T15:28:14.000000Z
-96a57a90d9fce3d75f7f3ce86cf6ba0a
+ad9554f65c79f2b2e9a835e39636aec1
 2009-02-08T03:27:30.179806Z
 28481
 diego
@@ -207,14 +207,14 @@ file
 diego
 has-props
 
-aspect.c
+vo_xvidix.c
 file
 
 
 
 
 2009-02-16T15:28:14.000000Z
-ad9554f65c79f2b2e9a835e39636aec1
+96a57a90d9fce3d75f7f3ce86cf6ba0a
 2009-02-08T03:27:30.179806Z
 28481
 diego
@@ -415,19 +415,6 @@ file
 diego
 has-props
 
-spuenc.h
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-827d6b82286bcc5f90fc5ca893d50085
-2008-05-14T17:22:53.404713Z
-26771
-diego
-has-props
-
 video_out.h
 file
 
@@ -441,6 +428,19 @@ file
 reimar
 has-props
 
+spuenc.h
+file
+
+
+
+
+2009-01-29T11:50:44.000000Z
+827d6b82286bcc5f90fc5ca893d50085
+2008-05-14T17:22:53.404713Z
+26771
+diego
+has-props
+
 vo_macosx.h
 file
 
@@ -449,6 +449,19 @@ file
 
 2009-02-16T15:28:14.000000Z
 eda4d960b81a30f67342b25144b55a17
+2009-02-08T03:27:30.179806Z
+28481
+diego
+has-props
+
+vo_mpegpes.c
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+29d4a12ea53c4238579eb2a0d0d28b48
 2009-02-08T03:27:30.179806Z
 28481
 diego
@@ -465,19 +478,6 @@ file
 2009-01-05T14:48:03.147736Z
 28267
 diego
-
-vo_mpegpes.c
-file
-
-
-
-
-2009-02-16T15:28:14.000000Z
-29d4a12ea53c4238579eb2a0d0d28b48
-2009-02-08T03:27:30.179806Z
-28481
-diego
-has-props
 
 vosub_vidix.h
 file
@@ -531,18 +531,17 @@ a215f298ae30c3f90a180e3f5c01d811
 diego
 has-props
 
-vesa_lvo.h
+vo_vdpau.c
 file
 
 
 
 
-2009-01-29T11:50:44.000000Z
-58497482423719e7cf2bd89b60dabd45
-2008-09-07T14:09:51.502620Z
-27541
-diego
-has-props
+2009-02-25T14:09:00.000000Z
+f30ea7c837e04e748949336b51a95d17
+2009-02-25T12:01:00.622028Z
+28731
+reimar
 
 vo_dxr2.c
 file
@@ -557,17 +556,18 @@ file
 diego
 has-props
 
-vo_vdpau.c
+vesa_lvo.h
 file
 
 
 
 
-2009-02-23T14:14:58.000000Z
-8c664c3d98e259139e80c319f5234e12
-2009-02-23T09:22:57.636152Z
-28711
-reimar
+2009-01-29T11:50:44.000000Z
+58497482423719e7cf2bd89b60dabd45
+2008-09-07T14:09:51.502620Z
+27541
+diego
+has-props
 
 osd.c
 file
@@ -621,19 +621,6 @@ file
 diego
 has-props
 
-vo_caca.c
-file
-
-
-
-
-2009-02-16T15:28:14.000000Z
-41217f45d22a9bd8a8704c78680bcd22
-2009-02-08T03:27:30.179806Z
-28481
-diego
-has-props
-
 vo_gif89a.c
 file
 
@@ -647,14 +634,14 @@ file
 diego
 has-props
 
-font_load_ft.c
+vo_caca.c
 file
 
 
 
 
 2009-02-16T15:28:14.000000Z
-f9242afa0208dce2c5ad01c829c8c7ef
+41217f45d22a9bd8a8704c78680bcd22
 2009-02-08T03:27:30.179806Z
 28481
 diego
@@ -670,6 +657,19 @@ file
 4f4316b7f841b38078451d578b9d629e
 2008-09-07T13:57:35.615400Z
 27539
+diego
+has-props
+
+font_load_ft.c
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+f9242afa0208dce2c5ad01c829c8c7ef
+2009-02-08T03:27:30.179806Z
+28481
 diego
 has-props
 
@@ -699,19 +699,6 @@ f9e91a53c00a59fa0be46e5d60e4355f
 diego
 has-props
 
-aclib.c
-file
-
-
-
-
-2009-02-16T15:28:14.000000Z
-dd833aacd02c0adbbe74388f8aaf2587
-2009-02-08T03:42:00.039782Z
-28483
-diego
-has-props
-
 jpeg_enc.c
 file
 
@@ -722,6 +709,19 @@ file
 33e66dec491a25d73bff0ac69e802593
 2008-11-04T21:00:29.682809Z
 27896
+diego
+has-props
+
+aclib.c
+file
+
+
+
+
+2009-02-16T15:28:14.000000Z
+dd833aacd02c0adbbe74388f8aaf2587
+2009-02-08T03:42:00.039782Z
+28483
 diego
 has-props
 
@@ -777,19 +777,6 @@ file
 diego
 has-props
 
-vo_zr2.c
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-a697685cae515d4333dbfd5a3d38806a
-2008-09-07T14:09:51.502620Z
-27541
-diego
-has-props
-
 vo_xvmc.c
 file
 
@@ -803,17 +790,30 @@ aad3d66790fdac4b8d558d678a4fef92
 iive
 has-props
 
+vo_zr2.c
+file
+
+
+
+
+2009-01-29T11:50:44.000000Z
+a697685cae515d4333dbfd5a3d38806a
+2008-09-07T14:09:51.502620Z
+27541
+diego
+has-props
+
 w32_common.c
 file
 
 
 
 
-2009-02-16T15:28:14.000000Z
-438a56da250c2b542ff00449e6efd25c
-2009-02-08T03:27:30.179806Z
-28481
-diego
+2009-02-25T14:09:00.000000Z
+bbfbdf9cd1d096ab472fcb3182d101bf
+2009-02-23T21:40:02.850950Z
+28713
+reimar
 has-props
 
 vo_yuv4mpeg.c
