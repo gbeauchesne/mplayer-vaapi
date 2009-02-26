@@ -1,15 +1,15 @@
 8
 
 dir
-28732
+28734
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man/de
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-25T09:08:58.516430Z
-28729
-Gabrov
+2009-02-25T14:23:07.763210Z
+28733
+kraymer
 
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-02-25T14:09:00.000000Z
-18fd934bb00f9485373453a885a3528a
-2009-02-25T09:08:58.516430Z
-28729
-Gabrov
+2009-02-26T08:18:03.000000Z
+543cc889eb0072c216e0c2760de78c5d
+2009-02-25T14:23:07.763210Z
+28733
+kraymer
 has-props
 

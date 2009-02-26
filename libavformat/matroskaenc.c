@@ -24,6 +24,7 @@
 #include "isom.h"
 #include "matroska.h"
 #include "avc.h"
+#include "flacenc.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/md5.h"
 #include "libavcodec/xiph.h"
@@ -420,28 +421,6 @@ static int put_xiph_codecpriv(AVFormatContext *s, ByteIOContext *pb, AVCodecCont
     return 0;
 }
 
-#define FLAC_STREAMINFO_SIZE 34
-
-static int put_flac_codecpriv(AVFormatContext *s, ByteIOContext *pb, AVCodecContext *codec)
-{
-    // if the extradata_size is greater than FLAC_STREAMINFO_SIZE,
-    // assume that it's in Matroska format already
-    if (codec->extradata_size < FLAC_STREAMINFO_SIZE) {
-        av_log(s, AV_LOG_ERROR, "Invalid FLAC extradata\n");
-        return -1;
-    } else if (codec->extradata_size == FLAC_STREAMINFO_SIZE) {
-        // only the streaminfo packet
-        put_buffer(pb, "fLaC", 4);
-        put_byte(pb, 0x80);
-        put_be24(pb, FLAC_STREAMINFO_SIZE);
-    } else if(memcmp("fLaC", codec->extradata, 4)) {
-        av_log(s, AV_LOG_ERROR, "Invalid FLAC extradata\n");
-        return -1;
-    }
-    put_buffer(pb, codec->extradata, codec->extradata_size);
-    return 0;
-}
-
 static void get_aac_sample_rates(AVFormatContext *s, AVCodecContext *codec, int *sample_rate, int *output_sample_rate)
 {
     int sri;
@@ -483,7 +462,7 @@ static int mkv_write_codecprivate(AVFormatContext *s, ByteIOContext *pb, AVCodec
         if (codec->codec_id == CODEC_ID_VORBIS || codec->codec_id == CODEC_ID_THEORA)
             ret = put_xiph_codecpriv(s, dyn_cp, codec);
         else if (codec->codec_id == CODEC_ID_FLAC)
-            ret = put_flac_codecpriv(s, dyn_cp, codec);
+            ret = ff_flac_write_header(dyn_cp, codec);
         else if (codec->codec_id == CODEC_ID_H264)
             ret = ff_isom_write_avcc(dyn_cp, codec->extradata, codec->extradata_size);
         else if (codec->extradata_size)

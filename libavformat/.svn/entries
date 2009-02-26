@@ -1,15 +1,15 @@
 8
 
 dir
-17586
+17606
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavformat
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-02-25T10:45:08.119595Z
-17586
-michael
+2009-02-26T02:41:53.043604Z
+17606
+jbr
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -69,11 +69,11 @@ file
 
 
 
-2009-02-16T15:28:17.000000Z
-e5bc8605bc037b5dbebcb96b3a833e02
-2009-02-08T21:14:46.899979Z
-17070
-bcoudurier
+2009-02-26T08:18:07.000000Z
+a17eaf685682c7741198233529f8a644
+2009-02-26T02:29:24.104138Z
+17602
+jbr
 
 mpc8.c
 file
@@ -93,11 +93,11 @@ file
 
 
 
-2009-02-25T14:09:02.000000Z
-ec5f493a62b0935bd30f0635aea224f3
-2009-02-24T15:04:18.916100Z
-17554
-michael
+2009-02-26T08:18:07.000000Z
+7a02803de7a67aea79cdd7f1de5426b2
+2009-02-26T02:41:53.043604Z
+17606
+jbr
 
 isom.c
 file
@@ -213,19 +213,6 @@ file
 14731
 diego
 
-electronicarts.c
-file
-
-
-
-
-2009-02-16T15:28:17.000000Z
-e98e61f4918257e67df483da24ad64f8
-2009-02-11T15:01:52.123958Z
-17157
-diego
-has-props
-
 adtsenc.c
 file
 
@@ -237,6 +224,19 @@ file
 2009-02-13T23:02:05.275080Z
 17220
 superdump
+has-props
+
+electronicarts.c
+file
+
+
+
+
+2009-02-16T15:28:17.000000Z
+e98e61f4918257e67df483da24ad64f8
+2009-02-11T15:01:52.123958Z
+17157
+diego
 has-props
 
 mpjpeg.c
@@ -302,18 +302,17 @@ ea5310de6f40c98823fa50c4895acc58
 pross
 has-props
 
-rtpproto.c
+rdt.c
 file
 
 
 
 
-2009-02-05T14:32:41.000000Z
-3d6b3a9dc21713dc0d51a054c221e30f
-2009-02-01T02:00:19.447756Z
-16912
-diego
-has-props
+2009-02-16T15:28:17.000000Z
+809cbd99b8b4aee9e70a9d9ca900bbba
+2009-02-06T10:35:52.387101Z
+17016
+lucabe
 
 avs.c
 file
@@ -328,29 +327,17 @@ file
 aurel
 has-props
 
-rdt.c
+rtpproto.c
 file
 
 
 
 
-2009-02-16T15:28:17.000000Z
-809cbd99b8b4aee9e70a9d9ca900bbba
-2009-02-06T10:35:52.387101Z
-17016
-lucabe
-
-rtpenc.c
-file
-
-
-
-
-2009-02-16T15:28:17.000000Z
-84f3cc65fb4a5fbb864c052db404da79
-2009-02-16T09:36:21.363433Z
-17364
-lucabe
+2009-02-05T14:32:41.000000Z
+3d6b3a9dc21713dc0d51a054c221e30f
+2009-02-01T02:00:19.447756Z
+16912
+diego
 has-props
 
 asfcrypt.c
@@ -365,6 +352,19 @@ file
 16970
 reimar
 
+rtpenc.c
+file
+
+
+
+
+2009-02-16T15:28:17.000000Z
+84f3cc65fb4a5fbb864c052db404da79
+2009-02-16T09:36:21.363433Z
+17364
+lucabe
+has-props
+
 oggparsevorbis.c
 file
 
@@ -378,17 +378,17 @@ b8444e0e8f1ef3b8f8764cbbca990d22
 jbr
 has-props
 
-matroskadec.c
+oggparseflac.c
 file
 
 
 
 
-2009-02-23T08:37:42.000000Z
-88b4ea2123e9ce6c0b10ca9580478527
-2009-02-19T21:01:45.603495Z
-17460
-aurel
+2009-01-29T11:50:56.000000Z
+265983a0812df6467aae2c5f57601eb7
+2009-01-25T01:21:10.982229Z
+16767
+jbr
 has-props
 
 oggdec.h
@@ -404,17 +404,17 @@ file
 diego
 has-props
 
-oggparseflac.c
+matroskadec.c
 file
 
 
 
 
-2009-01-29T11:50:56.000000Z
-265983a0812df6467aae2c5f57601eb7
-2009-01-25T01:21:10.982229Z
-16767
-jbr
+2009-02-23T08:37:42.000000Z
+88b4ea2123e9ce6c0b10ca9580478527
+2009-02-19T21:01:45.603495Z
+17460
+aurel
 has-props
 
 rdt.h
@@ -809,19 +809,6 @@ file
 benoit
 has-props
 
-oggparsetheora.c
-file
-
-
-
-
-2009-01-29T11:50:56.000000Z
-d9c067e678a89c2e4a137261879f4810
-2008-11-06T01:57:17.778931Z
-15785
-mru
-has-props
-
 oggparseogm.c
 file
 
@@ -835,17 +822,18 @@ file
 mru
 has-props
 
-ncdec.c
+oggparsetheora.c
 file
 
 
 
 
-2009-02-16T15:28:17.000000Z
-3c16f95b60de577853e47e3e68eac860
-2009-02-08T21:42:06.465655Z
-17075
-vitor
+2009-01-29T11:50:56.000000Z
+d9c067e678a89c2e4a137261879f4810
+2008-11-06T01:57:17.778931Z
+15785
+mru
+has-props
 
 assenc.c
 file
@@ -858,6 +846,18 @@ a0443fad0fdc19694d60d9381e3246a0
 2008-09-26T19:42:21.727441Z
 15430
 michael
+
+ncdec.c
+file
+
+
+
+
+2009-02-16T15:28:17.000000Z
+3c16f95b60de577853e47e3e68eac860
+2009-02-08T21:42:06.465655Z
+17075
+vitor
 
 flvenc.c
 file
@@ -1032,19 +1032,6 @@ file
 15784
 mru
 
-amr.c
-file
-
-
-
-
-2009-01-29T11:50:56.000000Z
-50fc6296463da12352b8d1e70382d80d
-2009-01-13T23:44:16.634366Z
-16590
-aurel
-has-props
-
 mmf.c
 file
 
@@ -1056,6 +1043,19 @@ e887f8b4965c1d41e70a676274a7f346
 2009-02-12T17:26:06.440962Z
 17184
 diego
+has-props
+
+amr.c
+file
+
+
+
+
+2009-01-29T11:50:56.000000Z
+50fc6296463da12352b8d1e70382d80d
+2009-01-13T23:44:16.634366Z
+16590
+aurel
 has-props
 
 mxfenc.c
@@ -1076,11 +1076,11 @@ file
 
 
 
-2009-02-25T14:09:02.000000Z
-5571f839e20ef87b269fd7da497f3497
-2009-02-25T10:45:08.119595Z
-17586
-michael
+2009-02-26T08:18:07.000000Z
+c2d58fbc7cbd0ebc657f40a460e7374e
+2009-02-25T19:10:39.343050Z
+17589
+diego
 has-props
 
 riff.c
@@ -1107,6 +1107,18 @@ file
 16688
 alexc
 
+r3d.c
+file
+
+
+
+
+2009-01-29T11:50:56.000000Z
+6a7e4babdb29c0b5737fdf9ef34735dc
+2009-01-20T07:42:14.026678Z
+16692
+bcoudurier
+
 rtsp.c
 file
 
@@ -1120,17 +1132,17 @@ file
 rbultje
 has-props
 
-r3d.c
+riff.h
 file
 
 
 
 
-2009-01-29T11:50:56.000000Z
-6a7e4babdb29c0b5737fdf9ef34735dc
-2009-01-20T07:42:14.026678Z
-16692
-bcoudurier
+2009-02-05T14:32:41.000000Z
+cd355bf328c2692e24acfdb72764dc5b
+2009-02-01T02:00:19.447756Z
+16912
+diego
 
 options.c
 file
@@ -1144,18 +1156,6 @@ file
 17047
 stefano
 has-props
-
-riff.h
-file
-
-
-
-
-2009-02-05T14:32:41.000000Z
-cd355bf328c2692e24acfdb72764dc5b
-2009-02-01T02:00:19.447756Z
-16912
-diego
 
 id3v2.h
 file
@@ -1233,6 +1233,18 @@ file
 aurel
 has-props
 
+nut.c
+file
+
+
+
+
+2009-01-29T11:50:56.000000Z
+49f492d0a106210707e91cdf5ea1cbb8
+2008-12-11T19:06:24.961816Z
+16057
+michael
+
 mxfdec.c
 file
 
@@ -1245,18 +1257,6 @@ f0221d093847bc787450a6522a4210ae
 17042
 bcoudurier
 has-props
-
-nut.c
-file
-
-
-
-
-2009-01-29T11:50:56.000000Z
-49f492d0a106210707e91cdf5ea1cbb8
-2008-12-11T19:06:24.961816Z
-16057
-michael
 
 dsicin.c
 file
@@ -1347,30 +1347,6 @@ ef0f91686b07ff4d3d263758f7389d8a
 diego
 has-props
 
-gopher.c
-file
-
-
-
-
-2009-02-16T15:28:17.000000Z
-67a5d414065a171266d0f844e084ff04
-2009-02-11T16:28:46.421551Z
-17159
-diego
-
-gxf.c
-file
-
-
-
-
-2009-01-29T11:50:56.000000Z
-40aaa9a6ef60f69fe45acfed9d3ebf79
-2009-01-19T15:46:40.737658Z
-16684
-diego
-
 avi.h
 file
 
@@ -1384,17 +1360,29 @@ file
 stefano
 has-props
 
-sdp.c
+gxf.c
+file
+
+
+
+
+2009-01-29T11:50:56.000000Z
+40aaa9a6ef60f69fe45acfed9d3ebf79
+2009-01-19T15:46:40.737658Z
+16684
+diego
+
+gopher.c
 file
 
 
 
 
 2009-02-16T15:28:17.000000Z
-74657816abc10b5e6b824a0f21145fa5
-2009-02-16T09:36:21.363433Z
-17364
-lucabe
+67a5d414065a171266d0f844e084ff04
+2009-02-11T16:28:46.421551Z
+17159
+diego
 
 matroska.h
 file
@@ -1409,6 +1397,18 @@ d97eb9c6bc4839f6150aefc8ec7e2ac6
 aurel
 has-props
 
+sdp.c
+file
+
+
+
+
+2009-02-16T15:28:17.000000Z
+74657816abc10b5e6b824a0f21145fa5
+2009-02-16T09:36:21.363433Z
+17364
+lucabe
+
 udp.c
 file
 
@@ -1422,18 +1422,6 @@ file
 diego
 has-props
 
-vc1test.c
-file
-
-
-
-
-2009-02-05T14:32:41.000000Z
-739d4cd4b8104e67ce5287ea2bc3cab1
-2009-02-01T02:00:19.447756Z
-16912
-diego
-
 gxf.h
 file
 
@@ -1446,18 +1434,17 @@ file
 16112
 reimar
 
-rmdec.c
+vc1test.c
 file
 
 
 
 
-2009-02-18T10:38:13.000000Z
-45210a2e81175a27ef11a61d353482d8
-2009-02-17T21:41:50.556380Z
-17397
-aurel
-has-props
+2009-02-05T14:32:41.000000Z
+739d4cd4b8104e67ce5287ea2bc3cab1
+2009-02-01T02:00:19.447756Z
+16912
+diego
 
 mxf.c
 file
@@ -1472,17 +1459,18 @@ a90182aaa185fb2c8371f276b33fe3e1
 bcoudurier
 has-props
 
-thp.c
+rmdec.c
 file
 
 
 
 
-2009-01-29T11:50:56.000000Z
-567192c26e8f49c710ed91464b7d0f7f
-2009-01-19T15:46:40.737658Z
-16684
-diego
+2009-02-18T10:38:13.000000Z
+45210a2e81175a27ef11a61d353482d8
+2009-02-17T21:41:50.556380Z
+17397
+aurel
+has-props
 
 mvi.c
 file
@@ -1496,6 +1484,31 @@ f5f2b7aefa631cededb752592df49378
 15262
 michael
 
+thp.c
+file
+
+
+
+
+2009-01-29T11:50:56.000000Z
+567192c26e8f49c710ed91464b7d0f7f
+2009-01-19T15:46:40.737658Z
+16684
+diego
+
+Makefile
+file
+
+
+
+
+2009-02-26T08:18:07.000000Z
+03d430e7b245e988c6bef7c770f49b6b
+2009-02-26T02:41:53.043604Z
+17606
+jbr
+has-props
+
 flv.h
 file
 
@@ -1507,31 +1520,6 @@ file
 2009-02-01T02:00:19.447756Z
 16912
 diego
-
-Makefile
-file
-
-
-
-
-2009-02-23T08:37:42.000000Z
-dfc88af88d6195fc1a9030774f17c1c7
-2009-02-21T10:34:29.834416Z
-17473
-stefang
-has-props
-
-rpl.c
-file
-
-
-
-
-2009-01-29T11:50:56.000000Z
-5ad2f4afb87a4ff0c72e6576bb0069e7
-2008-09-08T14:24:59.017409Z
-15262
-michael
 
 msnwc_tcp.c
 file
@@ -1545,29 +1533,29 @@ f1615000ab9458159ddfbdef59744ffe
 13649
 diego
 
-txd.c
-file
-
-
-
-
-2009-02-16T15:28:17.000000Z
-32df440124889a5f2aad7882b90f9914
-2009-02-12T17:26:06.440962Z
-17184
-diego
-
-dvenc.c
+rpl.c
 file
 
 
 
 
 2009-01-29T11:50:56.000000Z
-e9e6763fb94dc96b7e29ea8e8a899f61
-2009-01-19T15:46:40.737658Z
-16684
-diego
+5ad2f4afb87a4ff0c72e6576bb0069e7
+2008-09-08T14:24:59.017409Z
+15262
+michael
+
+mxf.h
+file
+
+
+
+
+2009-02-16T15:28:17.000000Z
+e1f4d1acfa7417a7179b4db331ea5fda
+2009-02-08T05:12:30.969484Z
+17042
+bcoudurier
 has-props
 
 mp3.c
@@ -1583,17 +1571,42 @@ file
 alexc
 has-props
 
-mxf.h
+dvenc.c
+file
+
+
+
+
+2009-01-29T11:50:56.000000Z
+e9e6763fb94dc96b7e29ea8e8a899f61
+2009-01-19T15:46:40.737658Z
+16684
+diego
+has-props
+
+txd.c
 file
 
 
 
 
 2009-02-16T15:28:17.000000Z
-e1f4d1acfa7417a7179b4db331ea5fda
-2009-02-08T05:12:30.969484Z
-17042
-bcoudurier
+32df440124889a5f2aad7882b90f9914
+2009-02-12T17:26:06.440962Z
+17184
+diego
+
+qtpalette.h
+file
+
+
+
+
+2009-01-29T11:50:56.000000Z
+14f6571c8160e3533de3b26b4a65c5de
+2008-08-31T07:39:47.782626Z
+15120
+stefano
 has-props
 
 4xm.c
@@ -1607,19 +1620,6 @@ d02c062c0e6918bfa7a4d11e31d59396
 2009-02-01T02:00:19.447756Z
 16912
 diego
-has-props
-
-qtpalette.h
-file
-
-
-
-
-2009-01-29T11:50:56.000000Z
-14f6571c8160e3533de3b26b4a65c5de
-2008-08-31T07:39:47.782626Z
-15120
-stefano
 has-props
 
 asf.c
@@ -1769,11 +1769,24 @@ file
 
 
 
-2009-02-23T08:37:42.000000Z
-3629055a030908d0a024f17fb1142fe3
-2009-02-22T14:27:50.252102Z
-17527
-stefang
+2009-02-26T08:18:07.000000Z
+5c0f2147a15fc3a6aab3da8e7df3befc
+2009-02-26T02:21:43.558073Z
+17601
+jbr
+has-props
+
+flacenc.c
+file
+
+
+
+
+2009-02-26T08:18:07.000000Z
+d527524df7acbb065355502ed546c2b1
+2009-02-26T02:41:53.043604Z
+17606
+jbr
 has-props
 
 sierravmd.c
@@ -1863,6 +1876,19 @@ file
 2009-02-15T14:25:23.045167Z
 17322
 stefano
+has-props
+
+flacenc.h
+file
+
+
+
+
+2009-02-26T08:18:07.000000Z
+5af5c56b968eb9cb414f17e97d57b2e2
+2009-02-26T02:41:53.043604Z
+17606
+jbr
 has-props
 
 psxstr.c
