@@ -2201,6 +2201,7 @@ static av_cold int decode_init(AVCodecContext *avctx){
     h->sei_dpb_output_delay = 0;
     h->sei_cpb_removal_delay = -1;
     h->sei_buffering_period_present = 0;
+    avctx->ticks_per_frame = 2;
     return 0;
 }
 
@@ -3768,6 +3769,9 @@ static int decode_slice_header(H264Context *h, H264Context *h0){
                 s->avctx->time_base.den *= 2;
             av_reduce(&s->avctx->time_base.num, &s->avctx->time_base.den,
                       s->avctx->time_base.num, s->avctx->time_base.den, 1<<30);
+        }else if(!h->sps.time_scale && !s->avctx->frame_number){
+            s->avctx->time_base.den *=2;
+            h->sps.time_scale= s->avctx->time_base.den;
         }
     }
 

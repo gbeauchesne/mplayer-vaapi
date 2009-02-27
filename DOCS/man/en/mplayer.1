@@ -1,4 +1,4 @@
-.\" $Revision: 28727 $
+.\" $Revision: 28736 $
 .\" MPlayer (C) 2000-2009 MPlayer Team
 .\" This man page was/is done by Gabucino, Diego Biurrun, Jonas Jermann
 .
@@ -285,7 +285,7 @@ Start/stop taking screenshots.
 Show filename on the OSD.
 .IPs "! and @"
 Seek to the beginning of the previous/next chapter.
-.IPs "D (\-vo xvmc, \-vf yadif, \-vf kerndeint only)"
+.IPs "D (\-vo xvmc, \-vo vdpau, \-vf yadif, \-vf kerndeint only)"
 Activate/deactivate deinterlacer.
 .IPs "A"
 Cycle through the available DVD angles.
@@ -4408,7 +4408,7 @@ Disable automatic movie aspect ratio compensation.
 .B "\-field\-dominance <\-1\-1>"
 Set first field for interlaced content.
 Useful for deinterlacers that double the framerate: \-vf tfields=1,
-\-vf yadif=1 and \-vo xvmc:bobdeint.
+\-vf yadif=1, \-vo vdpau:deint and \-vo xvmc:bobdeint.
 .PD 0
 .RSs
 .IPs \-1
