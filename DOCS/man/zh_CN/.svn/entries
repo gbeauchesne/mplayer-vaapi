@@ -1,15 +1,15 @@
 8
 
 dir
-28738
+28800
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man/zh_CN
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-25T09:08:58.516430Z
-28729
-Gabrov
+2009-03-01T06:45:27.974139Z
+28765
+jrash
 
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-02-25T14:09:00.000000Z
-683925a6186902152c35b2b7b18f3bc4
-2009-02-25T09:08:58.516430Z
-28729
-Gabrov
+2009-03-03T09:56:29.000000Z
+24725e26accb4b1ad29d15e86314ca61
+2009-03-01T06:45:27.974139Z
+28765
+jrash
 has-props
 

@@ -467,6 +467,10 @@ static int x2scr(double x) {
 	return x*frame_context.orig_width_nocrop / frame_context.track->PlayResX +
 		FFMAX(global_settings->left_margin, 0);
 }
+static int x2scr_pos(double x) {
+	return x*frame_context.orig_width / frame_context.track->PlayResX +
+		global_settings->left_margin;
+}
 /**
  * \brief Mapping between script and screen coordinates
  */
@@ -581,12 +585,9 @@ static void change_border(double border)
 	if (!render_context.font) return;
 
 	if (border < 0) {
-		if (render_context.style->BorderStyle == 1) {
-			if (render_context.style->Outline == 0 && render_context.style->Shadow > 0)
-				border = 1.;
-			else
-				border = render_context.style->Outline;
-		} else
+		if (render_context.style->BorderStyle == 1)
+			border = render_context.style->Outline;
+		else
 			border = 1.;
 	}
 	render_context.border = border;
@@ -705,31 +706,31 @@ static char* parse_tag(char* p, double pwr) {
 			mp_msg(MSGT_ASS, MSGL_V, "stub: \\ybord%.2f\n", val);
 	} else if (mystrcmp(&p, "xshad")) {
 		int val;
-		if (mystrtoi(&p, 10, &val))
+		if (mystrtoi(&p, &val))
 			mp_msg(MSGT_ASS, MSGL_V, "stub: \\xshad%d\n", val);
 	} else if (mystrcmp(&p, "yshad")) {
 		int val;
-		if (mystrtoi(&p, 10, &val))
+		if (mystrtoi(&p, &val))
 			mp_msg(MSGT_ASS, MSGL_V, "stub: \\yshad%d\n", val);
 	} else if (mystrcmp(&p, "fax")) {
 		int val;
-		if (mystrtoi(&p, 10, &val))
+		if (mystrtoi(&p, &val))
 			mp_msg(MSGT_ASS, MSGL_V, "stub: \\fax%d\n", val);
 	} else if (mystrcmp(&p, "fay")) {
 		int val;
-		if (mystrtoi(&p, 10, &val))
+		if (mystrtoi(&p, &val))
 			mp_msg(MSGT_ASS, MSGL_V, "stub: \\fay%d\n", val);
 	} else if (mystrcmp(&p, "iclip")) {
 		int x0, y0, x1, y1;
 		int res = 1;
 		skip('(');
-		res &= mystrtoi(&p, 10, &x0);
+		res &= mystrtoi(&p, &x0);
 		skip(',');
-		res &= mystrtoi(&p, 10, &y0);
+		res &= mystrtoi(&p, &y0);
 		skip(',');
-		res &= mystrtoi(&p, 10, &x1);
+		res &= mystrtoi(&p, &x1);
 		skip(',');
-		res &= mystrtoi(&p, 10, &y1);
+		res &= mystrtoi(&p, &y1);
 		skip(')');
 		mp_msg(MSGT_ASS, MSGL_V, "stub: \\iclip(%d,%d,%d,%d)\n", x0, y0, x1, y1);
 	} else if (mystrcmp(&p, "blur")) {
@@ -784,18 +785,18 @@ static char* parse_tag(char* p, double pwr) {
 		double x, y;
 		double k;
 		skip('(');
-		x1 = strtol(p, &p, 10);
+		mystrtoi(&p, &x1);
 		skip(',');
-		y1 = strtol(p, &p, 10);
+		mystrtoi(&p, &y1);
 		skip(',');
-		x2 = strtol(p, &p, 10);
+		mystrtoi(&p, &x2);
 		skip(',');
-		y2 = strtol(p, &p, 10);
+		mystrtoi(&p, &y2);
 		if (*p == ',') {
 			skip(',');
-			t1 = strtoll(p, &p, 10);
+			mystrtoll(&p, &t1);
 			skip(',');
-			t2 = strtoll(p, &p, 10);
+			mystrtoll(&p, &t2);
 			mp_msg(MSGT_ASS, MSGL_DBG2, "movement6: (%d, %d) -> (%d, %d), (%" PRId64 " .. %" PRId64 ")\n", 
 				x1, y1, x2, y2, (int64_t)t1, (int64_t)t2);
 		} else {
@@ -870,7 +871,7 @@ static char* parse_tag(char* p, double pwr) {
 		// FIXME: simplify
 	} else if (mystrcmp(&p, "an")) {
 		int val;
-		if (mystrtoi(&p, 10, &val) && val) {
+		if (mystrtoi(&p, &val) && val) {
 			int v = (val - 1) / 3; // 0, 1 or 2 for vertical alignment
 			mp_msg(MSGT_ASS, MSGL_DBG2, "an %d\n", val);
 			if (v != 0) v = 3 - v;
@@ -882,16 +883,16 @@ static char* parse_tag(char* p, double pwr) {
 			render_context.alignment = render_context.style->Alignment;
 	} else if (mystrcmp(&p, "a")) {
 		int val;
-		if (mystrtoi(&p, 10, &val) && val)
+		if (mystrtoi(&p, &val) && val)
 			render_context.alignment = val;
 		else
 			render_context.alignment = render_context.style->Alignment;
 	} else if (mystrcmp(&p, "pos")) {
 		int v1, v2;
 		skip('(');
-		v1 = strtol(p, &p, 10);
+		mystrtoi(&p, &v1);
 		skip(',');
-		v2 = strtol(p, &p, 10);
+		mystrtoi(&p, &v2);
 		skip(')');
 		mp_msg(MSGT_ASS, MSGL_DBG2, "pos(%d, %d)\n", v1, v2);
 		if (render_context.evt_type != EVENT_POSITIONED) {
@@ -905,9 +906,9 @@ static char* parse_tag(char* p, double pwr) {
 		long long t1, t2, t3, t4;
 		if (*p == 'e') ++p; // either \fad or \fade
 		skip('(');
-		a1 = strtol(p, &p, 10);
+		mystrtoi(&p, &a1);
 		skip(',');
-		a2 = strtol(p, &p, 10);
+		mystrtoi(&p, &a2);
 		if (*p == ')') {
 			// 2-argument version (\fad, according to specs)
 			// a1 and a2 are fade-in and fade-out durations
@@ -922,24 +923,24 @@ static char* parse_tag(char* p, double pwr) {
 			// 6-argument version (\fade)
 			// a1 and a2 (and a3) are opacity values
 			skip(',');
-			a3 = strtol(p, &p, 10);
+			mystrtoi(&p, &a3);
 			skip(',');
-			t1 = strtoll(p, &p, 10);
+			mystrtoll(&p, &t1);
 			skip(',');
-			t2 = strtoll(p, &p, 10);
+			mystrtoll(&p, &t2);
 			skip(',');
-			t3 = strtoll(p, &p, 10);
+			mystrtoll(&p, &t3);
 			skip(',');
-			t4 = strtoll(p, &p, 10);
+			mystrtoll(&p, &t4);
 		}
 		skip(')');
 		render_context.fade = interpolate_alpha(frame_context.time - render_context.event->Start, t1, t2, t3, t4, a1, a2, a3);
 	} else if (mystrcmp(&p, "org")) {
 		int v1, v2;
 		skip('(');
-		v1 = strtol(p, &p, 10);
+		mystrtoi(&p, &v1);
 		skip(',');
-		v2 = strtol(p, &p, 10);
+		mystrtoi(&p, &v2);
 		skip(')');
 		mp_msg(MSGT_ASS, MSGL_DBG2, "org(%d, %d)\n", v1, v2);
 		//				render_context.evt_type = EVENT_POSITIONED;
@@ -993,13 +994,13 @@ static char* parse_tag(char* p, double pwr) {
 		int x0, y0, x1, y1;
 		int res = 1;
 		skip('(');
-		res &= mystrtoi(&p, 10, &x0);
+		res &= mystrtoi(&p, &x0);
 		skip(',');
-		res &= mystrtoi(&p, 10, &y0);
+		res &= mystrtoi(&p, &y0);
 		skip(',');
-		res &= mystrtoi(&p, 10, &x1);
+		res &= mystrtoi(&p, &x1);
 		skip(',');
-		res &= mystrtoi(&p, 10, &y1);
+		res &= mystrtoi(&p, &y1);
 		skip(')');
 		if (res) {
 			render_context.clip_x0 = render_context.clip_x0 * (1-pwr) + x0 * pwr;
@@ -1042,7 +1043,7 @@ static char* parse_tag(char* p, double pwr) {
 		reset_render_context();
 	} else if (mystrcmp(&p, "be")) {
 		int val;
-		if (mystrtoi(&p, 10, &val)) {
+		if (mystrtoi(&p, &val)) {
 			// Clamp to 10, since high values need excessive CPU
 			val = (val < 0) ? 0 : val;
 			val = (val > 10) ? 10 : val;
@@ -1051,7 +1052,7 @@ static char* parse_tag(char* p, double pwr) {
 			render_context.be = 0;
 	} else if (mystrcmp(&p, "b")) {
 		int b;
-		if (mystrtoi(&p, 10, &b)) {
+		if (mystrtoi(&p, &b)) {
 			if (pwr >= .5)
 				render_context.bold = b;
 		} else
@@ -1059,41 +1060,45 @@ static char* parse_tag(char* p, double pwr) {
 		update_font();
 	} else if (mystrcmp(&p, "i")) {
 		int i;
-		if (mystrtoi(&p, 10, &i)) {
+		if (mystrtoi(&p, &i)) {
 			if (pwr >= .5)
 				render_context.italic = i;
 		} else
 			render_context.italic = render_context.style->Italic;
 		update_font();
 	} else if (mystrcmp(&p, "kf") || mystrcmp(&p, "K")) {
-		int val = strtol(p, &p, 10);
+		int val = 0;
+		mystrtoi(&p, &val);
 		render_context.effect_type = EF_KARAOKE_KF;
 		if (render_context.effect_timing)
 			render_context.effect_skip_timing += render_context.effect_timing;
 		render_context.effect_timing = val * 10;
 	} else if (mystrcmp(&p, "ko")) {
-		int val = strtol(p, &p, 10);
+		int val = 0;
+		mystrtoi(&p, &val);
 		render_context.effect_type = EF_KARAOKE_KO;
 		if (render_context.effect_timing)
 			render_context.effect_skip_timing += render_context.effect_timing;
 		render_context.effect_timing = val * 10;
 	} else if (mystrcmp(&p, "k")) {
-		int val = strtol(p, &p, 10);
+		int val = 0;
+		mystrtoi(&p, &val);
 		render_context.effect_type = EF_KARAOKE;
 		if (render_context.effect_timing)
 			render_context.effect_skip_timing += render_context.effect_timing;
 		render_context.effect_timing = val * 10;
 	} else if (mystrcmp(&p, "shad")) {
 		int val;
-		if (mystrtoi(&p, 10, &val))
+		if (mystrtoi(&p, &val))
 			render_context.shadow = val;
 		else
 			render_context.shadow = render_context.style->Shadow;
 	} else if (mystrcmp(&p, "pbo")) {
-		(void)strtol(p, &p, 10); // ignored
+		int val = 0;
+		mystrtoi(&p, &val); // ignored
 	} else if (mystrcmp(&p, "p")) {
 		int val;
-		if (!mystrtoi(&p, 10, &val))
+		if (!mystrtoi(&p, &val))
 			val = 0;
 		render_context.drawing_mode = !!val;
 	}
@@ -1147,7 +1152,7 @@ static unsigned get_next_char(char** str)
 			return ' ';
 		}
 	}
-	chr = utf8_get_char(&p);
+	chr = utf8_get_char((const char **)&p);
 	*str = p;
 	return chr;
 }
@@ -1309,7 +1314,7 @@ static void get_outline_glyph(int symbol, glyph_info_t* info, FT_Vector* advance
 	key.italic = render_context.italic;
 	key.outline = render_context.border * 0xFFFF;
 
-	info->glyph = info->outline_glyph = 0;
+	memset(info, 0, sizeof(glyph_info_t));
 
 	val = cache_find_glyph(&key);
 	if (val) {
@@ -2013,7 +2018,7 @@ static int ass_render_event(ass_event_t* event, event_images_t* event_images)
 		int base_y = 0;
 		mp_msg(MSGT_ASS, MSGL_DBG2, "positioned event at %f, %f\n", render_context.pos_x, render_context.pos_y);
 		get_base_point(bbox, alignment, &base_x, &base_y);
-		device_x = x2scr(render_context.pos_x) - base_x;
+		device_x = x2scr_pos(render_context.pos_x) - base_x;
 		device_y = y2scr(render_context.pos_y) - base_y;
 	}
 	
@@ -2046,7 +2051,7 @@ static int ass_render_event(ass_event_t* event, event_images_t* event_images)
 			center.x = x2scr(render_context.org_x);
 			center.y = y2scr(render_context.org_y);
 		} else {
-			int bx, by;
+			int bx = 0, by = 0;
 			get_base_point(bbox, alignment, &bx, &by);
 			center.x = device_x + bx;
 			center.y = device_y + by;

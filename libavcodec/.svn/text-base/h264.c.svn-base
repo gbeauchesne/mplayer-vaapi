@@ -2161,6 +2161,18 @@ static av_cold void common_init(H264Context *h){
     memset(h->pps.scaling_matrix8, 16, 2*64*sizeof(uint8_t));
 }
 
+/**
+ * Reset SEI values at the beginning of the frame.
+ *
+ * @param h H.264 context.
+ */
+static void reset_sei(H264Context *h) {
+    h->sei_recovery_frame_cnt       = -1;
+    h->sei_dpb_output_delay         =  0;
+    h->sei_cpb_removal_delay        = -1;
+    h->sei_buffering_period_present =  0;
+}
+
 static av_cold int decode_init(AVCodecContext *avctx){
     H264Context *h= avctx->priv_data;
     MpegEncContext * const s = &h->s;
@@ -2176,6 +2188,7 @@ static av_cold int decode_init(AVCodecContext *avctx){
     // set defaults
 //    s->decode_mb= ff_h263_decode_mb;
     s->quarter_sample = 1;
+    if(!avctx->has_b_frames)
     s->low_delay= 1;
 
     if(s->avctx->codec->capabilities&CODEC_CAP_HWACCEL_VDPAU)
@@ -2197,11 +2210,13 @@ static av_cold int decode_init(AVCodecContext *avctx){
     h->thread_context[0] = h;
     h->outputed_poc = INT_MIN;
     h->prev_poc_msb= 1<<16;
-    h->sei_recovery_frame_cnt = -1;
-    h->sei_dpb_output_delay = 0;
-    h->sei_cpb_removal_delay = -1;
-    h->sei_buffering_period_present = 0;
-    avctx->ticks_per_frame = 2;
+    reset_sei(h);
+    if(avctx->codec_id == CODEC_ID_H264){
+        if(avctx->ticks_per_frame == 1){
+            s->avctx->time_base.den *=2;
+        }
+        avctx->ticks_per_frame = 2;
+    }
     return 0;
 }
 
@@ -3136,10 +3151,7 @@ static void flush_dpb(AVCodecContext *avctx){
     if(h->s.current_picture_ptr)
         h->s.current_picture_ptr->reference= 0;
     h->s.first_field= 0;
-    h->sei_recovery_frame_cnt = -1;
-    h->sei_dpb_output_delay = 0;
-    h->sei_cpb_removal_delay = -1;
-    h->sei_buffering_period_present = 0;
+    reset_sei(h);
     ff_mpeg_flush(avctx);
 }
 
@@ -3769,9 +3781,6 @@ static int decode_slice_header(H264Context *h, H264Context *h0){
                 s->avctx->time_base.den *= 2;
             av_reduce(&s->avctx->time_base.num, &s->avctx->time_base.den,
                       s->avctx->time_base.num, s->avctx->time_base.den, 1<<30);
-        }else if(!h->sps.time_scale && !s->avctx->frame_number){
-            s->avctx->time_base.den *=2;
-            h->sps.time_scale= s->avctx->time_base.den;
         }
     }
 
@@ -4178,17 +4187,16 @@ static int decode_residual(H264Context *h, GetBitContext *gb, DCTELEM *block, in
             //first coefficient has suffix_length equal to 0 or 1
             if(prefix<14){ //FIXME try to build a large unified VLC table for all this
                 if(suffix_length)
-                    level_code= (prefix<<suffix_length) + get_bits(gb, suffix_length); //part
+                    level_code= (prefix<<1) + get_bits1(gb); //part
                 else
-                    level_code= (prefix<<suffix_length); //part
+                    level_code= prefix; //part
             }else if(prefix==14){
                 if(suffix_length)
-                    level_code= (prefix<<suffix_length) + get_bits(gb, suffix_length); //part
+                    level_code= (prefix<<1) + get_bits1(gb); //part
                 else
                     level_code= prefix + get_bits(gb, 4); //part
             }else{
-                level_code= (15<<suffix_length) + get_bits(gb, prefix-3); //part
-                if(suffix_length==0) level_code+=15; //FIXME doesn't make (much)sense
+                level_code= 30 + get_bits(gb, prefix-3); //part
                 if(prefix>=16)
                     level_code += (1<<(prefix-3))-4096;
             }
@@ -7406,6 +7414,7 @@ static int decode_nal_units(H264Context *h, const uint8_t *buf, int buf_size){
         h->current_slice = 0;
         if (!s->first_field)
             s->current_picture_ptr= NULL;
+        reset_sei(h);
     }
 
     for(;;){
@@ -7489,6 +7498,11 @@ static int decode_nal_units(H264Context *h, const uint8_t *buf, int buf_size){
 
             if((err = decode_slice_header(hx, h)))
                break;
+
+            if (s->avctx->hwaccel && h->current_slice == 1) {
+                if (s->avctx->hwaccel->start_frame(s->avctx, NULL, 0) < 0)
+                    return -1;
+            }
 
             s->current_picture_ptr->key_frame |=
                     (hx->nal_unit_type == NAL_IDR_SLICE) ||
@@ -7714,6 +7728,11 @@ static int decode_frame(AVCodecContext *avctx,
         h->prev_frame_num_offset= h->frame_num_offset;
         h->prev_frame_num= h->frame_num;
 
+        if (avctx->hwaccel) {
+            if (avctx->hwaccel->end_frame(avctx) < 0)
+                av_log(avctx, AV_LOG_ERROR, "hardware accelerator failed to decode picture\n");
+        }
+
         if (CONFIG_H264_VDPAU_DECODER && s->avctx->codec->capabilities&CODEC_CAP_HWACCEL_VDPAU)
             ff_vdpau_h264_picture_complete(s);
 
@@ -7733,10 +7752,6 @@ static int decode_frame(AVCodecContext *avctx,
             ff_er_frame_end(s);
 
         MPV_frame_end(s);
-        h->sei_recovery_frame_cnt = -1;
-        h->sei_dpb_output_delay = 0;
-        h->sei_cpb_removal_delay = -1;
-        h->sei_buffering_period_present = 0;
 
         if (cur->field_poc[0]==INT_MAX || cur->field_poc[1]==INT_MAX) {
             /* Wait for second field. */
@@ -8104,7 +8119,7 @@ AVCodec h264_decoder = {
     /*CODEC_CAP_DRAW_HORIZ_BAND |*/ CODEC_CAP_DR1 | CODEC_CAP_DELAY,
     .flush= flush_dpb,
     .long_name = NULL_IF_CONFIG_SMALL("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10"),
-    .pix_fmts= ff_pixfmt_list_420,
+    .pix_fmts= ff_hwaccel_pixfmt_list_420,
 };
 
 #if CONFIG_H264_VDPAU_DECODER

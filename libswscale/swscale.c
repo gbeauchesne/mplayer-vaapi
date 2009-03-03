@@ -922,12 +922,12 @@ static inline void yuv2rgbXinC_full(SwsContext *c, int16_t *lumFilter, int16_t *
     switch(c->dstFormat){
     case PIX_FMT_ARGB:
         dest++;
-        aidx= 0;
+        aidx= -1;
     case PIX_FMT_RGB24:
         aidx--;
     case PIX_FMT_RGBA:
         YSCALE_YUV_2_RGBX_FULL_C(1<<21)
-            dest[aidx]= 0;
+            dest[aidx]= 255;
             dest[0]= R>>22;
             dest[1]= G>>22;
             dest[2]= B>>22;
@@ -936,12 +936,12 @@ static inline void yuv2rgbXinC_full(SwsContext *c, int16_t *lumFilter, int16_t *
         break;
     case PIX_FMT_ABGR:
         dest++;
-        aidx= 0;
+        aidx= -1;
     case PIX_FMT_BGR24:
         aidx--;
     case PIX_FMT_BGRA:
         YSCALE_YUV_2_RGBX_FULL_C(1<<21)
-            dest[aidx]= 0;
+            dest[aidx]= 255;
             dest[0]= B>>22;
             dest[1]= G>>22;
             dest[2]= R>>22;
@@ -2327,12 +2327,12 @@ SwsContext *sws_getContext(int srcW, int srcH, enum PixelFormat srcFormat, int d
     if (unscaled && !usesHFilter && !usesVFilter && (srcRange == dstRange || isBGR(dstFormat) || isRGB(dstFormat)))
     {
         /* yv12_to_nv12 */
-        if (srcFormat == PIX_FMT_YUV420P && (dstFormat == PIX_FMT_NV12 || dstFormat == PIX_FMT_NV21))
+        if ((srcFormat == PIX_FMT_YUV420P || srcFormat == PIX_FMT_YUVA420P) && (dstFormat == PIX_FMT_NV12 || dstFormat == PIX_FMT_NV21))
         {
             c->swScale= PlanarToNV12Wrapper;
         }
         /* yuv2bgr */
-        if ((srcFormat==PIX_FMT_YUV420P || srcFormat==PIX_FMT_YUV422P) && (isBGR(dstFormat) || isRGB(dstFormat))
+        if ((srcFormat==PIX_FMT_YUV420P || srcFormat==PIX_FMT_YUV422P || srcFormat==PIX_FMT_YUVA420P) && (isBGR(dstFormat) || isRGB(dstFormat))
             && !(flags & SWS_ACCURATE_RND) && !(dstH&1))
         {
             c->swScale= sws_yuv2rgb_get_func_ptr(c);
@@ -2383,7 +2383,7 @@ SwsContext *sws_getContext(int srcW, int srcH, enum PixelFormat srcFormat, int d
         /* LQ converters if -sws 0 or -sws 4*/
         if (c->flags&(SWS_FAST_BILINEAR|SWS_POINT)){
             /* yv12_to_yuy2 */
-            if (srcFormat == PIX_FMT_YUV420P)
+            if (srcFormat == PIX_FMT_YUV420P || srcFormat == PIX_FMT_YUVA420P)
             {
                 if (dstFormat == PIX_FMT_YUYV422)
                     c->swScale= PlanarToYuy2Wrapper;
@@ -2406,6 +2406,7 @@ SwsContext *sws_getContext(int srcW, int srcH, enum PixelFormat srcFormat, int d
 
         /* simple copy */
         if (  srcFormat == dstFormat
+            || (srcFormat == PIX_FMT_YUVA420P && dstFormat == PIX_FMT_YUV420P)
             || (isPlanarYUV(srcFormat) && isGray(dstFormat))
             || (isPlanarYUV(dstFormat) && isGray(srcFormat)))
         {

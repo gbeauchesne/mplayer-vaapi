@@ -22,8 +22,8 @@
 #define AVFORMAT_AVFORMAT_H
 
 #define LIBAVFORMAT_VERSION_MAJOR 52
-#define LIBAVFORMAT_VERSION_MINOR 30
-#define LIBAVFORMAT_VERSION_MICRO  1
+#define LIBAVFORMAT_VERSION_MINOR 31
+#define LIBAVFORMAT_VERSION_MICRO  0
 
 #define LIBAVFORMAT_VERSION_INT AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR, \
                                                LIBAVFORMAT_VERSION_MINOR, \
@@ -46,10 +46,11 @@ unsigned avformat_version(void);
 
 #include "avio.h"
 
+struct AVFormatContext;
+
 
 /*
  * Public Metadata API.
- * !!WARNING!! This is a work in progress. Don't use outside FFmpeg for now.
  * The metadata API allows libavformat to export metadata tags to a client
  * application using a sequence of key/value pairs.
  * Important concepts to keep in mind:
@@ -77,6 +78,7 @@ typedef struct {
 }AVMetadataTag;
 
 typedef struct AVMetadata AVMetadata;
+typedef struct AVMetadataConv AVMetadataConv;
 
 /**
  * Gets a metadata element with matching key.
@@ -94,6 +96,15 @@ av_metadata_get(AVMetadata *m, const char *key, const AVMetadataTag *prev, int f
  * @return >= 0 on success otherwise an error code <0
  */
 int av_metadata_set(AVMetadata **pm, const char *key, const char *value);
+
+/**
+ * Convert all the metadata sets from ctx according to the source and
+ * destination conversion tables.
+ * @param d_conv destination tags format conversion table
+ * @param s_conv source tags format conversion table
+ */
+void av_metadata_conv(struct AVFormatContext *ctx,const AVMetadataConv *d_conv,
+                                                  const AVMetadataConv *s_conv);
 
 /**
  * Frees all the memory allocated for an AVMetadata struct.
@@ -220,8 +231,6 @@ typedef struct AVFrac {
 
 struct AVCodecTag;
 
-struct AVFormatContext;
-
 /** This structure contains the data a format has to probe a file. */
 typedef struct AVProbeData {
     const char *filename;
@@ -298,6 +307,8 @@ typedef struct AVOutputFormat {
     const struct AVCodecTag * const *codec_tag;
 
     enum CodecID subtitle_codec; /**< default subtitle codec */
+
+    const AVMetadataConv *metadata_conv;
 
     /* private fields */
     struct AVOutputFormat *next;
@@ -377,6 +388,8 @@ typedef struct AVInputFormat {
      * Active streams are all streams that have AVStream.discard < AVDISCARD_ALL.
      */
     int (*read_seek2)(struct AVFormatContext *s, int stream_index, int64_t min_ts, int64_t ts, int64_t max_ts, int flags);
+
+    const AVMetadataConv *metadata_conv;
 
     /* private fields */
     struct AVInputFormat *next;
@@ -462,7 +475,9 @@ typedef struct AVStream {
      */
     int64_t duration;
 
+#if LIBAVFORMAT_VERSION_INT < (53<<16)
     char language[4]; /** ISO 639 3-letter language code (empty string if undefined) */
+#endif
 
     /* av_read_frame() support */
     enum AVStreamParseType need_parsing;
@@ -481,9 +496,9 @@ typedef struct AVStream {
 
 #if LIBAVFORMAT_VERSION_INT < (53<<16)
     int64_t unused[4+1];
-#endif
 
     char *filename; /**< source filename of the stream */
+#endif
 
     int disposition; /**< AV_DISPOSITION_* bit field */
 
@@ -526,8 +541,10 @@ typedef struct AVStream {
  */
 typedef struct AVProgram {
     int            id;
+#if LIBAVFORMAT_VERSION_INT < (53<<16)
     char           *provider_name; ///< network name for DVB streams
     char           *name;          ///< service name for DVB streams
+#endif
     int            flags;
     enum AVDiscard discard;        ///< selects which program to discard and which to feed to the caller
     unsigned int   *stream_index;
@@ -542,7 +559,9 @@ typedef struct AVChapter {
     int id;                 ///< unique ID to identify the chapter
     AVRational time_base;   ///< time base in which the start/end timestamps are specified
     int64_t start, end;     ///< chapter start/end time in time_base units
+#if LIBAVFORMAT_VERSION_INT < (53<<16)
     char *title;            ///< chapter title
+#endif
     AVMetadata *metadata;
 } AVChapter;
 
@@ -567,6 +586,7 @@ typedef struct AVFormatContext {
     char filename[1024]; /**< input or output filename */
     /* stream info */
     int64_t timestamp;
+#if LIBAVFORMAT_VERSION_INT < (53<<16)
     char title[512];
     char author[512];
     char copyright[512];
@@ -575,6 +595,7 @@ typedef struct AVFormatContext {
     int year;  /**< ID3 year, 0 if none */
     int track; /**< track number, 0 if none */
     char genre[32]; /**< ID3 genre */
+#endif
 
     int ctx_flags; /**< Format-specific flags, see AVFMTCTX_xx */
     /* private data for pts handling (do not modify directly). */

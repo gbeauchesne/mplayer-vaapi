@@ -49,6 +49,7 @@
 #include "gui/interface.h"
 
 #include "libavutil/common.h"
+#include "libavutil/mathematics.h"
 
 #include "libass/ass.h"
 #include "libass/ass_mp.h"
@@ -140,6 +141,8 @@ static VdpDecoderCreate                          *vdp_decoder_create;
 static VdpDecoderDestroy                         *vdp_decoder_destroy;
 static VdpDecoderRender                          *vdp_decoder_render;
 
+static VdpGenerateCSCMatrix                      *vdp_generate_csc_matrix;
+
 static void                              *vdpau_lib_handle;
 /* output_surfaces[NUM_OUTPUT_SURFACES] is misused for OSD. */
 #define osd_surface output_surfaces[NUM_OUTPUT_SURFACES]
@@ -148,6 +151,7 @@ static int                                output_surface_width, output_surface_h
 
 static VdpVideoMixer                      video_mixer;
 static int                                deint;
+static int                                deint_type;
 static int                                pullup;
 static float                              denoise;
 static float                              sharpen;
@@ -192,6 +196,9 @@ struct {
 static int eosd_render_count;
 static int eosd_surface_count;
 
+// Video equalizer
+static VdpProcamp procamp;
+
 /*
  * X11 specific
  */
@@ -208,11 +215,13 @@ static void video_to_output_surface(void)
 
     // we would need to provide 2 past and 1 future frames to allow advanced
     // deinterlacing, which is not really possible currently.
-    for (i = 0; i <= !!deint; i++) {
+    for (i = 0; i <= !!(deint > 1); i++) {
         int field = VDP_VIDEO_MIXER_PICTURE_STRUCTURE_FRAME;
         VdpOutputSurface output_surface;
-        if (i)
+        if (i) {
+            draw_osd();
             flip_page();
+        }
         if (deint)
             field = top_field_first == i ?
                     VDP_VIDEO_MIXER_PICTURE_STRUCTURE_BOTTOM_FIELD:
@@ -336,6 +345,7 @@ static int win_x11_init_vdpau_procs(void)
                         &vdp_bitmap_surface_putbits_native},
         {VDP_FUNC_ID_OUTPUT_SURFACE_RENDER_BITMAP_SURFACE,
                         &vdp_output_surface_render_bitmap_surface},
+        {VDP_FUNC_ID_GENERATE_CSC_MATRIX,       &vdp_generate_csc_matrix},
         {0, NULL}
     };
 
@@ -394,9 +404,9 @@ static int create_vdp_mixer(VdpChromaType vdp_chroma_type) {
         &vid_height,
         &vdp_chroma_type
     };
-    if (deint == 2)
-        features[feature_count++] = VDP_VIDEO_MIXER_FEATURE_DEINTERLACE_TEMPORAL;
     if (deint == 3)
+        features[feature_count++] = VDP_VIDEO_MIXER_FEATURE_DEINTERLACE_TEMPORAL;
+    if (deint == 4)
         features[feature_count++] = VDP_VIDEO_MIXER_FEATURE_DEINTERLACE_TEMPORAL_SPATIAL;
     if (pullup)
         features[feature_count++] = VDP_VIDEO_MIXER_FEATURE_INVERSE_TELECINE;
@@ -784,6 +794,11 @@ static int draw_slice(uint8_t *image[], int stride[], int w, int h,
         }
         vdp_st = vdp_decoder_create(vdp_device, vdp_decoder_profile, vid_width, vid_height, max_refs, &decoder);
         CHECK_ST_WARNING("Failed creating VDPAU decoder");
+        if (vdp_st != VDP_STATUS_OK) {
+            decoder = VDP_INVALID_HANDLE;
+            decoder_max_refs = 0;
+            return VO_FALSE;
+        }
         decoder_max_refs = max_refs;
     }
     vdp_st = vdp_decoder_render(decoder, rndr->surface, (void *)&rndr->info, rndr->bitstream_buffers_used, rndr->bitstream_buffers);
@@ -944,11 +959,12 @@ static const char help_msg[] =
     "\n-vo vdpau command line help:\n"
     "Example: mplayer -vo vdpau:deint=2\n"
     "\nOptions:\n"
-    "  deint\n"
+    "  deint (all modes > 0 respect -field-dominance)\n"
     "    0: no deinterlacing\n"
-    "    1: bob deinterlacing (current fallback)\n"
-    "    2: temporal deinterlacing (not yet working)\n"
-    "    3: temporal-spatial deinterlacing (not yet working)\n"
+    "    1: only show first field\n"
+    "    2: bob deinterlacing (current fallback)\n"
+    "    3: temporal deinterlacing (not yet working)\n"
+    "    4: temporal-spatial deinterlacing (not yet working)\n"
     "  pullup\n"
     "    Try to apply inverse-telecine (needs deinterlacing, not working)\n"
     "  denoise\n"
@@ -964,6 +980,7 @@ static int preinit(const char *arg)
     static const char *vdpau_device_create = "vdp_device_create_x11";
 
     deint = 0;
+    deint_type = 3;
     pullup = 0;
     denoise = 0;
     sharpen = 0;
@@ -971,6 +988,8 @@ static int preinit(const char *arg)
         mp_msg(MSGT_VO, MSGL_FATAL, help_msg);
         return -1;
     }
+    if (deint)
+        deint_type = deint;
 
     vdpau_lib_handle = dlopen(vdpaulibrary, RTLD_LAZY);
     if (!vdpau_lib_handle) {
@@ -1006,7 +1025,53 @@ static int preinit(const char *arg)
     eosd_surfaces = NULL;
     eosd_targets  = NULL;
 
+    procamp.struct_version = VDP_PROCAMP_VERSION;
+    procamp.brightness = 0.0;
+    procamp.contrast   = 1.0;
+    procamp.saturation = 1.0;
+    procamp.hue        = 0.0;
+
     return 0;
+}
+
+static int get_equalizer(char *name, int *value) {
+    if (!strcasecmp(name, "brightness"))
+        *value = procamp.brightness * 100;
+    else if (!strcasecmp(name, "contrast"))
+        *value = (procamp.contrast-1.0) * 100;
+    else if (!strcasecmp(name, "saturation"))
+        *value = (procamp.saturation-1.0) * 100;
+    else if (!strcasecmp(name, "hue"))
+        *value = procamp.hue * 100 / M_PI;
+    else
+        return VO_NOTIMPL;
+    return VO_TRUE;
+}
+
+static int set_equalizer(char *name, int value) {
+    VdpStatus vdp_st;
+    VdpCSCMatrix matrix;
+    static const VdpVideoMixerAttribute attributes[] = {VDP_VIDEO_MIXER_ATTRIBUTE_CSC_MATRIX};
+    const void *attribute_values[] = {&matrix};
+
+    if (!strcasecmp(name, "brightness"))
+        procamp.brightness = value / 100.0;
+    else if (!strcasecmp(name, "contrast"))
+        procamp.contrast = value / 100.0 + 1.0;
+    else if (!strcasecmp(name, "saturation"))
+        procamp.saturation = value / 100.0 + 1.0;
+    else if (!strcasecmp(name, "hue"))
+        procamp.hue = value / 100.0 * M_PI;
+    else
+        return VO_NOTIMPL;
+
+    vdp_st = vdp_generate_csc_matrix(&procamp, VDP_COLOR_STANDARD_ITUR_BT_601,
+                                     &matrix);
+    CHECK_ST_WARNING("Error when generating CSC matrix")
+    vdp_st = vdp_video_mixer_set_attribute_values(video_mixer, 1, attributes,
+                                                  attribute_values);
+    CHECK_ST_WARNING("Error when setting CSC matrix")
+    return VO_TRUE;
 }
 
 static int control(uint32_t request, void *data, ...)
@@ -1017,6 +1082,8 @@ static int control(uint32_t request, void *data, ...)
             return VO_TRUE;
         case VOCTRL_SET_DEINTERLACE:
             deint = *(int*)data;
+            if (deint)
+                deint = deint_type;
             return VO_TRUE;
         case VOCTRL_PAUSE:
             return (int_pause = 1);
@@ -1051,7 +1118,7 @@ static int control(uint32_t request, void *data, ...)
             value = va_arg(ap, int);
 
             va_end(ap);
-            return vo_x11_set_equalizer(data, value);
+            return set_equalizer(data, value);
         }
         case VOCTRL_GET_EQUALIZER: {
             va_list ap;
@@ -1061,7 +1128,7 @@ static int control(uint32_t request, void *data, ...)
             value = va_arg(ap, int *);
 
             va_end(ap);
-            return vo_x11_get_equalizer(data, value);
+            return get_equalizer(data, value);
         }
         case VOCTRL_ONTOP:
             vo_x11_ontop();

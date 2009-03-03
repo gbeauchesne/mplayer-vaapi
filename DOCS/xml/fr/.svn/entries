@@ -1,15 +1,15 @@
 8
 
 dir
-28738
+28800
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/fr
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-09T23:43:36.848743Z
-28513
-diego
+2009-03-02T19:52:52.867891Z
+28798
+gpoirier
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -110,11 +110,11 @@ file
 
 
 
-2009-02-16T15:28:14.000000Z
-278150fc38c81ba05efe874335432a4c
-2009-02-09T22:51:32.103031Z
-28505
-diego
+2009-03-03T09:56:28.000000Z
+57f07d3cf365f12d11460db1a4b2cb15
+2009-03-02T19:42:11.126592Z
+28797
+gpoirier
 has-props
 
 faq.xml
@@ -123,11 +123,11 @@ file
 
 
 
-2009-02-16T15:28:14.000000Z
-d786bcfdc21f2b04244c1aa9a404a8ed
-2009-02-09T23:43:36.848743Z
-28513
-diego
+2009-03-03T09:56:28.000000Z
+654a43dbe7daef9537b1fc2394ea710c
+2009-03-02T19:52:52.867891Z
+28798
+gpoirier
 has-props
 
 tvinput.xml
@@ -188,11 +188,11 @@ file
 
 
 
-2009-01-29T11:50:45.000000Z
-caf211969a5686c0fa9ff2a303865130
-2006-10-30T20:22:00.599808Z
-20537
-kraymer
+2009-03-03T09:56:28.000000Z
+ba9c1926aca52b0686a6675ecf0254f2
+2009-03-02T17:15:46.843983Z
+28796
+gpoirier
 
 Makefile
 file

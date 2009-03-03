@@ -2196,7 +2196,7 @@ static void mpeg_decode_gop(AVCodecContext *avctx,
  * Finds the end of the current frame in the bitstream.
  * @return the position of the first byte of the next frame, or -1
  */
-int ff_mpeg1_find_frame_end(ParseContext *pc, const uint8_t *buf, int buf_size)
+int ff_mpeg1_find_frame_end(ParseContext *pc, const uint8_t *buf, int buf_size, AVCodecParserContext *s)
 {
     int i;
     uint32_t state= pc->state;
@@ -2244,6 +2244,9 @@ int ff_mpeg1_find_frame_end(ParseContext *pc, const uint8_t *buf, int buf_size)
                     return i-3;
                 }
             }
+            if(s && state == PICTURE_START_CODE){
+                ff_fetch_timestamp(s, i-4, 1);
+            }
         }
     }
     pc->state= state;
@@ -2276,7 +2279,7 @@ static int mpeg_decode_frame(AVCodecContext *avctx,
     }
 
     if(s2->flags&CODEC_FLAG_TRUNCATED){
-        int next= ff_mpeg1_find_frame_end(&s2->parse_context, buf, buf_size);
+        int next= ff_mpeg1_find_frame_end(&s2->parse_context, buf, buf_size, NULL);
 
         if( ff_combine_frame(&s2->parse_context, next, (const uint8_t **)&buf, &buf_size) < 0 )
             return buf_size;
@@ -2508,8 +2511,6 @@ AVCodec mpegvideo_decoder = {
 
 #if CONFIG_MPEG_XVMC_DECODER
 static av_cold int mpeg_mc_decode_init(AVCodecContext *avctx){
-    Mpeg1Context *s;
-
     if( avctx->thread_count > 1)
         return -1;
     if( !(avctx->slice_flags & SLICE_FLAG_CODED_ORDER) )
@@ -2518,7 +2519,6 @@ static av_cold int mpeg_mc_decode_init(AVCodecContext *avctx){
         dprintf(avctx, "mpeg12.c: XvMC decoder will work better if SLICE_FLAG_ALLOW_FIELD is set\n");
     }
     mpeg_decode_init(avctx);
-    s = avctx->priv_data;
 
     avctx->pix_fmt = PIX_FMT_XVMC_MPEG2_IDCT;
     avctx->xvmc_acceleration = 2;//2 - the blocks are packed!
@@ -2537,7 +2537,7 @@ AVCodec mpeg_xvmc_decoder = {
     mpeg_decode_frame,
     CODEC_CAP_DRAW_HORIZ_BAND | CODEC_CAP_DR1 | CODEC_CAP_TRUNCATED| CODEC_CAP_HWACCEL | CODEC_CAP_DELAY,
     .flush= ff_mpeg_flush,
-    .long_name = NULL_IF_CONFIG_SMALL("MPEG-1 video XvMC (X-Video Motion Compensation)"),
+    .long_name = NULL_IF_CONFIG_SMALL("MPEG-1/2 video XvMC (X-Video Motion Compensation)"),
 };
 
 #endif

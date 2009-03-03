@@ -1,15 +1,15 @@
 8
 
 dir
-28738
+28800
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-26T23:32:37.983175Z
-28738
-kraymer
+2009-03-03T09:19:35.102142Z
+28800
+Gabrov
 has-props
 
 svn:special svn:externals svn:needs-lock

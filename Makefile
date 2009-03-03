@@ -546,6 +546,7 @@ SRCS_MPLAYER-$(BL)           += libvo/vo_bl.c
 SRCS_MPLAYER-$(CACA)         += libvo/vo_caca.c
 SRCS_MPLAYER-$(COREAUDIO)    += libao2/ao_macosx.c
 SRCS_MPLAYER-$(COREVIDEO)    += libvo/vo_macosx.m
+SRCS_MPLAYER-$(DART)         += libao2/ao_dart.c
 SRCS_MPLAYER-$(DFBMGA)       += libvo/vo_dfbmga.c
 SRCS_MPLAYER-$(DGA)          += libvo/vo_dga.c
 SRCS_MPLAYER-$(DIRECT3D)     += libvo/vo_direct3d.c libvo/w32_common.c
@@ -823,7 +824,7 @@ mencoder$(EXESUF): $(MENCODER_DEPS)
 mplayer$(EXESUF): $(MPLAYER_DEPS)
 	$(CC) -o $@ $^ $(LDFLAGS_MPLAYER)
 
-codec-cfg$(EXESUF): codec-cfg.c codec-cfg.h help_mp.h
+codec-cfg$(EXESUF): codec-cfg.c help_mp.h
 	$(HOST_CC) -O -DCODECS2HTML $(EXTRA_INC) -o $@ $<
 
 codecs.conf.h: codec-cfg$(EXESUF) etc/codecs.conf
@@ -851,9 +852,8 @@ version.h: version.sh
 
 ###### dependency declarations / specific CFLAGS ######
 
-codec-cfg.d: codecs.conf.h
-mpcommon.d vobsub.d gui/win32/gui.d libmpdemux/muxer_avi.d osdep/mplayer-rc.o stream/network.d stream/stream_cddb.d: version.h
-$(DEPS): help_mp.h
+# Make sure all generated header files are created.
+$(DEPS) $(MENCODER_DEPS) $(MPLAYER_DEPS): codecs.conf.h help_mp.h version.h
 
 libdvdcss/%.o libdvdcss/%.d: CFLAGS += -D__USE_UNIX98 -D_GNU_SOURCE -DVERSION=\"1.2.10\" $(CFLAGS_LIBDVDCSS)
 libdvdnav/%.o libdvdnav/%.d: CFLAGS += -D__USE_UNIX98 -D_GNU_SOURCE -DHAVE_CONFIG_H -DVERSION=\"MPlayer-custom\"
@@ -960,10 +960,10 @@ tags:
 
 TEST_OBJS = mp_msg-mencoder.o mp_fifo.o osdep/$(GETCH) osdep/$(TIMER) -ltermcap -lm
 
-codec-cfg-test$(EXESUF): codec-cfg.c codecs.conf.h codec-cfg.h $(TEST_OBJS)
+codec-cfg-test$(EXESUF): codec-cfg.c codecs.conf.h help_mp.h $(TEST_OBJS)
 	$(CC) -I. -DTESTING -o $@ $^
 
-codecs2html$(EXESUF): codec-cfg.c $(TEST_OBJS)
+codecs2html$(EXESUF): codec-cfg.c help_mp.h $(TEST_OBJS)
 	$(CC) -I. -DCODECS2HTML -o $@ $^
 
 liba52/test$(EXESUF): cpudetect.o $(filter liba52/%,$(SRCS_COMMON:.c=.o)) -lm
@@ -1001,7 +1001,7 @@ tools: $(addsuffix $(EXESUF),$(TOOLS))
 alltools: $(addsuffix $(EXESUF),$(ALLTOOLS))
 
 toolsclean:
-	-rm -f $(foreach file,$(ALLTOOLS),$(call ADD_ALL_EXESUFSx,$(file)))
+	-rm -f $(foreach file,$(ALLTOOLS),$(call ADD_ALL_EXESUFS,$(file)))
 	-rm -f TOOLS/fastmem*-* TOOLS/realcodecs/*.so.6.0
 
 TOOLS/bmovl-test$(EXESUF): -lSDL_image
