@@ -3269,7 +3269,7 @@ static void print_long_term(H264Context *h) {
  */
 static int execute_ref_pic_marking(H264Context *h, MMCO *mmco, int mmco_count){
     MpegEncContext * const s = &h->s;
-    int i, j;
+    int i, av_uninit(j);
     int current_ref_assigned=0;
     Picture *av_uninit(pic);
 
@@ -3277,7 +3277,7 @@ static int execute_ref_pic_marking(H264Context *h, MMCO *mmco, int mmco_count){
         av_log(h->s.avctx, AV_LOG_DEBUG, "no mmco here\n");
 
     for(i=0; i<mmco_count; i++){
-        int structure, av_uninit(frame_num);
+        int av_uninit(structure), av_uninit(frame_num);
         if(s->avctx->debug&FF_DEBUG_MMCO)
             av_log(h->s.avctx, AV_LOG_DEBUG, "mmco:%d %d %d\n", h->mmco[i].opcode, h->mmco[i].short_pic_num, h->mmco[i].long_arg);
 
@@ -3708,13 +3708,13 @@ static int decode_slice_header(H264Context *h, H264Context *h0){
         return -1;
     }
     if(!h0->pps_buffers[pps_id]) {
-        av_log(h->s.avctx, AV_LOG_ERROR, "non-existing PPS referenced\n");
+        av_log(h->s.avctx, AV_LOG_ERROR, "non-existing PPS %u referenced\n", pps_id);
         return -1;
     }
     h->pps= *h0->pps_buffers[pps_id];
 
     if(!h0->sps_buffers[h->pps.sps_id]) {
-        av_log(h->s.avctx, AV_LOG_ERROR, "non-existing SPS referenced\n");
+        av_log(h->s.avctx, AV_LOG_ERROR, "non-existing SPS %u referenced\n", h->pps.sps_id);
         return -1;
     }
     h->sps = *h0->sps_buffers[h->pps.sps_id];
@@ -6493,7 +6493,7 @@ static void filter_mb( H264Context *h, int mb_x, int mb_y, uint8_t *img_y, uint8
         int qp = s->current_picture.qscale_table[mb_xy];
         if(qp <= qp_thresh
            && (mb_x == 0 || ((qp + s->current_picture.qscale_table[mb_xy-1] + 1)>>1) <= qp_thresh)
-           && (mb_y == 0 || ((qp + s->current_picture.qscale_table[h->top_mb_xy] + 1)>>1) <= qp_thresh)){
+           && (h->top_mb_xy < 0 || ((qp + s->current_picture.qscale_table[h->top_mb_xy] + 1)>>1) <= qp_thresh)){
             return;
         }
     }
@@ -6795,6 +6795,7 @@ static int decode_picture_timing(H264Context *h){
     if(h->sps.pic_struct_present_flag){
         unsigned int i, num_clock_ts;
         h->sei_pic_struct = get_bits(&s->gb, 4);
+        h->sei_ct_type    = 0;
 
         if (h->sei_pic_struct > SEI_PIC_STRUCT_FRAME_TRIPLING)
             return -1;
@@ -6804,7 +6805,7 @@ static int decode_picture_timing(H264Context *h){
         for (i = 0 ; i < num_clock_ts ; i++){
             if(get_bits(&s->gb, 1)){                  /* clock_timestamp_flag */
                 unsigned int full_timestamp_flag;
-                skip_bits(&s->gb, 2);                 /* ct_type */
+                h->sei_ct_type |= 1<<get_bits(&s->gb, 2);
                 skip_bits(&s->gb, 1);                 /* nuit_field_based_flag */
                 skip_bits(&s->gb, 5);                 /* counting_type */
                 full_timestamp_flag = get_bits(&s->gb, 1);
@@ -7762,24 +7763,19 @@ static int decode_frame(AVCodecContext *avctx,
 
             /* Signal interlacing information externally. */
             /* Prioritize picture timing SEI information over used decoding process if it exists. */
+            if (h->sei_ct_type)
+                cur->interlaced_frame = (h->sei_ct_type & (1<<1)) != 0;
+            else
+                cur->interlaced_frame = FIELD_OR_MBAFF_PICTURE;
+
             if(h->sps.pic_struct_present_flag){
                 switch (h->sei_pic_struct)
                 {
-                case SEI_PIC_STRUCT_FRAME:
-                    cur->interlaced_frame = 0;
-                    break;
-                case SEI_PIC_STRUCT_TOP_FIELD:
-                case SEI_PIC_STRUCT_BOTTOM_FIELD:
-                case SEI_PIC_STRUCT_TOP_BOTTOM:
-                case SEI_PIC_STRUCT_BOTTOM_TOP:
-                    cur->interlaced_frame = 1;
-                    break;
                 case SEI_PIC_STRUCT_TOP_BOTTOM_TOP:
                 case SEI_PIC_STRUCT_BOTTOM_TOP_BOTTOM:
                     // Signal the possibility of telecined film externally (pic_struct 5,6)
                     // From these hints, let the applications decide if they apply deinterlacing.
                     cur->repeat_pict = 1;
-                    cur->interlaced_frame = FIELD_OR_MBAFF_PICTURE;
                     break;
                 case SEI_PIC_STRUCT_FRAME_DOUBLING:
                     // Force progressive here, as doubling interlaced frame is a bad idea.

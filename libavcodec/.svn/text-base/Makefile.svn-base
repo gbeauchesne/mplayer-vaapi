@@ -29,7 +29,6 @@ OBJS-$(CONFIG_ENCODERS)                += faandct.o jfdctfst.o jfdctint.o
 OBJS-$(CONFIG_FFT)                     += fft.o
 OBJS-$(CONFIG_GOLOMB)                  += golomb.o
 OBJS-$(CONFIG_MDCT)                    += mdct.o
-OBJS-$(CONFIG_OLDSCALER)               += imgresample.o
 OBJS-$(CONFIG_RDFT)                    += rdft.o
 
 # decoders/encoders
@@ -345,6 +344,7 @@ OBJS-$(CONFIG_ADPCM_YAMAHA_ENCODER)       += adpcm.o
 
 # libavformat dependencies
 OBJS-$(CONFIG_EAC3_DEMUXER)            += ac3_parser.o ac3tab.o aac_ac3_parser.o
+OBJS-$(CONFIG_FLAC_DEMUXER)            += flacdec.o
 OBJS-$(CONFIG_FLAC_MUXER)              += flacdec.o
 OBJS-$(CONFIG_GXF_DEMUXER)             += mpeg12data.o
 OBJS-$(CONFIG_MATROSKA_AUDIO_MUXER)    += xiph.o mpeg4audio.o flacdec.o
@@ -494,7 +494,6 @@ OBJS-$(ARCH_BFIN)                      += bfin/dsputil_bfin.o           \
 OBJS-$(ARCH_PPC)                       += ppc/dsputil_ppc.o             \
 
 ALTIVEC-OBJS-$(CONFIG_H264_DECODER)    += ppc/h264_altivec.o
-ALTIVEC-OBJS-$(CONFIG_OLDSCALER)       += ppc/imgresample_altivec.o
 ALTIVEC-OBJS-$(CONFIG_SNOW_DECODER)    += ppc/snow_altivec.o
 ALTIVEC-OBJS-$(CONFIG_VC1_DECODER)     += ppc/vc1dsp_altivec.o
 ALTIVEC-OBJS-$(CONFIG_WMV3_DECODER)    += ppc/vc1dsp_altivec.o
@@ -525,7 +524,6 @@ OBJS-$(HAVE_VIS)                       += sparc/dsputil_vis.o           \
 
 
 TESTS = $(addsuffix -test$(EXESUF), cabac dct eval fft h264 rangecoder snow)
-TESTS-$(CONFIG_OLDSCALER) += imgresample-test$(EXESUF)
 TESTS-$(ARCH_X86) += x86/cpuid-test$(EXESUF) motion-test$(EXESUF)
 
 CLEANFILES = apiexample$(EXESUF)
