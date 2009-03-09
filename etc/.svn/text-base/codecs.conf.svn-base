@@ -3,7 +3,7 @@
 ;  Before editing this file, please read DOCS/tech/codecs.conf.txt !
 ;=============================================================================
 
-release 20070930
+release 20090308
 
 ;=============================================================================
 ;                   VIDEO CODECS
@@ -318,14 +318,6 @@ videocodec ffnuv
   driver ffmpeg
   dll nuv
   out I420
-
-videocodec nuv
-  info "NuppelVideo"
-  status working
-  fourcc NUV1 ; NUV1 is an internal MPlayer FOURCC
-  fourcc RJPG
-  driver nuv
-  out I420,IYUV
 
 videocodec ffbmp
   info "FFmpeg BMP"

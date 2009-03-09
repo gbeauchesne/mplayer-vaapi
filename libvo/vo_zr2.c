@@ -20,7 +20,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* $Id: vo_zr2.c 27541 2008-09-07 14:09:51Z diego $ */
+/* $Id: vo_zr2.c 28863 2009-03-07 08:51:40Z reimar $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -209,7 +209,7 @@ static int preinit(const char *arg) {
 	const char *dev = NULL;
 	char *dev_arg = NULL, *norm_arg = NULL;
 	int norm = VIDEO_MODE_AUTO, prebuf = 0;
-	opt_t subopts[] = { /* don't want warnings with -Wall... */
+	const opt_t subopts[] = { /* don't want warnings with -Wall... */
 		{ "dev",    OPT_ARG_MSTRZ, &dev_arg,   NULL, 	        0 },
 		{ "prebuf", OPT_ARG_BOOL,  &prebuf,    (opt_test_f)pbc, 0 },
 		{ "norm",   OPT_ARG_MSTRZ, &norm_arg,  (opt_test_f)nc,  0 },

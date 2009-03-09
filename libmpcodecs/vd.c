@@ -35,7 +35,6 @@ extern vd_functions_t mpcodecs_vd_vfwex;
 extern vd_functions_t mpcodecs_vd_raw;
 extern vd_functions_t mpcodecs_vd_hmblck;
 extern vd_functions_t mpcodecs_vd_xanim;
-extern vd_functions_t mpcodecs_vd_nuv;
 extern vd_functions_t mpcodecs_vd_mpng;
 extern vd_functions_t mpcodecs_vd_ijpg;
 extern vd_functions_t mpcodecs_vd_mtga;
@@ -53,7 +52,7 @@ extern vd_functions_t mpcodecs_vd_qtvideo;
  * decoder, add it to libavcodec, except for wrappers around external
  * libraries and decoders requiring binary support. */
 
-vd_functions_t* mpcodecs_vd_drivers[] = {
+const vd_functions_t * const mpcodecs_vd_drivers[] = {
         &mpcodecs_vd_null,
 #ifdef CONFIG_LIBAVCODEC
         &mpcodecs_vd_ffmpeg,
@@ -70,7 +69,6 @@ vd_functions_t* mpcodecs_vd_drivers[] = {
         &mpcodecs_vd_lzo,
         &mpcodecs_vd_raw,
         &mpcodecs_vd_hmblck,
-        &mpcodecs_vd_nuv,
 #ifdef CONFIG_XANIM
         &mpcodecs_vd_xanim,
 #endif

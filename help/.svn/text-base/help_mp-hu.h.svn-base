@@ -3,13 +3,13 @@
 //... Okay enough of the hw, now send the other two!
 //
 // Updated by: Gabrov <gabrov@freemail.hu>
-// Sync'ed with help_mp-en.h r28122 (2008. 12. 17.)
+// Sync'ed with help_mp-en.h r28860 (2009. 03. 09.)
 
 
 // ========================= MPlayer help ===========================
 
 #ifdef HELP_MP_DEFINE_STATIC
-static char help_text[]=
+static const char help_text[]=
 "Indítás:   mplayer [opciók] [url|útvonal/]fájlnév\n"
 "\n"
 "Alapvető opciók: (az összes opció listájához lásd a man lapot)\n"

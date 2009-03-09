@@ -31,21 +31,27 @@
 typedef struct AVFifoBuffer {
     uint8_t *buffer;
     uint8_t *rptr, *wptr, *end;
+    uint32_t rndx, wndx;
 } AVFifoBuffer;
 
 /**
  * Initializes an AVFifoBuffer.
- * @param *f AVFifoBuffer to initialize
  * @param size of FIFO
- * @return <0 for failure >=0 otherwise
+ * @return AVFifoBuffer or NULL if mem allocation failure
  */
-int av_fifo_init(AVFifoBuffer *f, unsigned int size);
+AVFifoBuffer *av_fifo_alloc(unsigned int size);
 
 /**
  * Frees an AVFifoBuffer.
  * @param *f AVFifoBuffer to free
  */
 void av_fifo_free(AVFifoBuffer *f);
+
+/**
+ * Resets the AVFifoBuffer to the state right after av_fifo_alloc, in particular it is emptied.
+ * @param *f AVFifoBuffer to reset
+ */
+void av_fifo_reset(AVFifoBuffer *f);
 
 /**
  * Returns the amount of data in bytes in the AVFifoBuffer, that is the
@@ -56,14 +62,6 @@ void av_fifo_free(AVFifoBuffer *f);
 int av_fifo_size(AVFifoBuffer *f);
 
 /**
- * Reads data from an AVFifoBuffer.
- * @param *f AVFifoBuffer to read from
- * @param *buf data destination
- * @param buf_size number of bytes to read
- */
-int av_fifo_read(AVFifoBuffer *f, uint8_t *buf, int buf_size);
-
-/**
  * Feeds data from an AVFifoBuffer to a user-supplied callback.
  * @param *f AVFifoBuffer to read from
  * @param buf_size number of bytes to read
@@ -71,16 +69,6 @@ int av_fifo_read(AVFifoBuffer *f, uint8_t *buf, int buf_size);
  * @param *dest data destination
  */
 int av_fifo_generic_read(AVFifoBuffer *f, int buf_size, void (*func)(void*, void*, int), void* dest);
-
-#if LIBAVUTIL_VERSION_MAJOR < 50
-/**
- * Writes data into an AVFifoBuffer.
- * @param *f AVFifoBuffer to write to
- * @param *buf data source
- * @param size data size
- */
-attribute_deprecated void av_fifo_write(AVFifoBuffer *f, const uint8_t *buf, int size);
-#endif
 
 /**
  * Feeds data from a user-supplied callback to an AVFifoBuffer.
@@ -95,16 +83,6 @@ attribute_deprecated void av_fifo_write(AVFifoBuffer *f, const uint8_t *buf, int
  * @return the number of bytes written to the FIFO
  */
 int av_fifo_generic_write(AVFifoBuffer *f, void *src, int size, int (*func)(void*, void*, int));
-
-#if LIBAVUTIL_VERSION_MAJOR < 50
-/**
- * Resizes an AVFifoBuffer.
- * @param *f AVFifoBuffer to resize
- * @param size new AVFifoBuffer size in bytes
- * @see av_fifo_realloc2()
- */
-attribute_deprecated void av_fifo_realloc(AVFifoBuffer *f, unsigned int size);
-#endif
 
 /**
  * Resizes an AVFifoBuffer.

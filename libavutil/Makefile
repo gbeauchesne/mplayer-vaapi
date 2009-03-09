@@ -16,7 +16,6 @@ HEADERS = adler32.h                                                     \
           md5.h                                                         \
           mem.h                                                         \
           pixfmt.h                                                      \
-          random.h                                                      \
           rational.h                                                    \
           sha1.h
 
@@ -36,6 +35,7 @@ OBJS = adler32.o                                                        \
        md5.o                                                            \
        mem.o                                                            \
        random.o                                                         \
+       random_seed.o                                                    \
        rational.o                                                       \
        rc4.o                                                            \
        sha1.o                                                           \

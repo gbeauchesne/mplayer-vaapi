@@ -583,6 +583,7 @@ static mp_cmd_t* ar_cmd = NULL;
 static unsigned int ar_delay = 100, ar_rate = 8, last_ar = 0;
 
 static int use_joystick = 1, use_lirc = 1, use_lircc = 1;
+static int default_binds = 1;
 static char* config_file = "input.conf";
 
 /* Apple Remote */
@@ -611,6 +612,8 @@ static m_option_t input_conf[] = {
   { "cmdlist", mp_input_print_cmd_list, CONF_TYPE_FUNC, CONF_GLOBAL, 0, 0, NULL },
   { "js-dev", &js_dev, CONF_TYPE_STRING, CONF_GLOBAL, 0, 0, NULL },
   { "file", &in_file, CONF_TYPE_STRING, CONF_GLOBAL, 0, 0, NULL },
+  { "default-binds", &default_binds, CONF_TYPE_FLAG, CONF_GLOBAL, 0, 1, NULL },
+  { "nodefault-binds", &default_binds, CONF_TYPE_FLAG, CONF_GLOBAL, 1, 0, NULL },
   { NULL, NULL, 0, 0, 0, 0, NULL}
 };
 
@@ -767,7 +770,7 @@ int mp_input_parse_and_queue_cmds(const char *str) {
 mp_cmd_t*
 mp_input_parse_cmd(char* str) {
   int i,l;
-  int pausing = 0;
+  int pausing = -1;
   char *ptr,*e;
   mp_cmd_t *cmd;
   const mp_cmd_t *cmd_def;
@@ -817,6 +820,15 @@ mp_input_parse_cmd(char* str) {
   cmd = calloc(1, sizeof(mp_cmd_t));
   cmd->id = cmd_def->id;
   cmd->name = strdup(cmd_def->name);
+  if (pausing == -1) {
+    switch (cmd->id) {
+      case MP_CMD_KEYDOWN_EVENTS:
+      case MP_CMD_SET_MOUSE_POS:
+        pausing = 4; break;
+      default:
+        pausing = 0; break;
+    }
+  }
   cmd->pausing = pausing;
 
   ptr = str;
@@ -1069,7 +1081,7 @@ mp_input_get_cmd_from_keys(int n,int* keys, int paused) {
     cmd = mp_input_find_bind_for_key(cmd_binds,n,keys);
   if(cmd_binds_default && cmd == NULL)
     cmd = mp_input_find_bind_for_key(cmd_binds_default,n,keys);
-  if(cmd == NULL)
+  if(default_binds && cmd == NULL)
     cmd = mp_input_find_bind_for_key(def_cmd_binds,n,keys);
 
   if(cmd == NULL) {

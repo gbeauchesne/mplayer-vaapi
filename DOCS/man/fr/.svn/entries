@@ -1,14 +1,14 @@
 8
 
 dir
-28835
+28915
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man/fr
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-03-02T21:01:46.641997Z
-28799
+2009-03-08T20:27:31.770237Z
+28898
 gpoirier
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2009-03-03T09:56:29.000000Z
-f3b3f958612dcae7c64e1ced8fd21605
-2009-03-02T21:01:46.641997Z
-28799
+2009-03-09T16:00:02.000000Z
+feec5b4ef6797d10ea2da73085d61901
+2009-03-08T20:27:31.770237Z
+28898
 gpoirier
 has-props
 

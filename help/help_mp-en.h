@@ -1,4 +1,4 @@
-// $Revision: 28122 $
+// $Revision: 28860 $
 // MASTER FILE. Use this file as base for translations.
 // Translated files should be sent to the mplayer-DOCS mailing list or
 // to the help messages maintainer, see DOCS/tech/MAINTAINERS.
@@ -13,7 +13,7 @@
 // ========================= MPlayer help ===========================
 
 #ifdef HELP_MP_DEFINE_STATIC
-static char help_text[]=
+static const char help_text[]=
 "Usage:   mplayer [options] [url|path/]filename\n"
 "\n"
 "Basic options: (complete list in the man page)\n"

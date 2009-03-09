@@ -205,6 +205,8 @@ static VdpProcamp procamp;
 static int                                visible_buf;
 static int                                int_pause;
 
+static void draw_eosd(void);
+
 static void video_to_output_surface(void)
 {
     VdpTime dummy;
@@ -219,6 +221,7 @@ static void video_to_output_surface(void)
         int field = VDP_VIDEO_MIXER_PICTURE_STRUCTURE_FRAME;
         VdpOutputSurface output_surface;
         if (i) {
+            draw_eosd();
             draw_osd();
             flip_page();
         }
@@ -742,7 +745,6 @@ static void draw_osd(void)
 {
     mp_msg(MSGT_VO, MSGL_DBG2, "DRAW_OSD\n");
 
-    draw_eosd();
     vo_draw_text_ext(vo_dwidth, vo_dheight, border_x, border_y, border_x, border_y,
                      vid_width, vid_height, draw_osd_I8A8);
 }
@@ -947,7 +949,7 @@ static void uninit(void)
     dlclose(vdpau_lib_handle);
 }
 
-static opt_t subopts[] = {
+static const opt_t subopts[] = {
     {"deint",   OPT_ARG_INT,   &deint,   (opt_test_f)int_non_neg},
     {"pullup",  OPT_ARG_BOOL,  &pullup,  NULL},
     {"denoise", OPT_ARG_FLOAT, &denoise, NULL},
@@ -1140,6 +1142,7 @@ static int control(uint32_t request, void *data, ...)
             if (!data)
                 return VO_FALSE;
             generate_eosd(data);
+            draw_eosd();
             return VO_TRUE;
         case VOCTRL_GET_EOSD_RES: {
             mp_eosd_res_t *r = data;
