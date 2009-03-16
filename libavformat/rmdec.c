@@ -440,7 +440,19 @@ static int sync(AVFormatContext *s, int64_t *timestamp, int *flags, int *stream_
             state= (state<<8) + get_byte(pb);
 
             if(state == MKBETAG('I', 'N', 'D', 'X')){
-                len = get_be16(pb) - 6;
+                int n_pkts, expected_len;
+                len = get_be32(pb);
+                url_fskip(pb, 2);
+                n_pkts = get_be32(pb);
+                expected_len = 20 + n_pkts * 14;
+                if (len == 20)
+                    /* some files don't add index entries to chunk size... */
+                    len = expected_len;
+                else if (len != expected_len)
+                    av_log(s, AV_LOG_WARNING,
+                           "Index size %d (%d pkts) is wrong, should be %d.\n",
+                           len, n_pkts, expected_len);
+                len -= 14; // we already read part of the index header
                 if(len<0)
                     continue;
                 goto skip;
@@ -480,7 +492,7 @@ skip:
 
 static int rm_assemble_video_frame(AVFormatContext *s, ByteIOContext *pb,
                                    RMDemuxContext *rm, RMStream *vst,
-                                   AVPacket *pkt, int len)
+                                   AVPacket *pkt, int len, int *pseq)
 {
     int hdr, seq, pic_num, len2, pos;
     int type;
@@ -515,6 +527,7 @@ static int rm_assemble_video_frame(AVFormatContext *s, ByteIOContext *pb,
     }
     //now we have to deal with single slice
 
+    *pseq = seq;
     if((seq & 0x7F) == 1 || vst->curpic_num != pic_num){
         vst->slices = ((hdr & 0x3F) << 1) + 1;
         vst->videobufsize = len2 + 8*vst->slices + 1;
@@ -581,7 +594,7 @@ ff_rm_parse_packet (AVFormatContext *s, ByteIOContext *pb,
 
     if (st->codec->codec_type == CODEC_TYPE_VIDEO) {
         rm->current_stream= st->id;
-        if(rm_assemble_video_frame(s, pb, rm, ast, pkt, len))
+        if(rm_assemble_video_frame(s, pb, rm, ast, pkt, len, seq))
             return -1; //got partial frame
     } else if (st->codec->codec_type == CODEC_TYPE_AUDIO) {
         if ((st->codec->codec_id == CODEC_ID_RA_288) ||
@@ -691,37 +704,60 @@ ff_rm_retrieve_cache (AVFormatContext *s, ByteIOContext *pb,
 static int rm_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     RMDemuxContext *rm = s->priv_data;
+    ByteIOContext *pb = s->pb;
     AVStream *st;
-    int i, len, seq = 1;
+    int i, len, res;
     int64_t timestamp, pos;
-    int flags;
+    int old_flags, flags;
 
     if (rm->audio_pkt_cnt) {
         // If there are queued audio packet return them first
         st = s->streams[rm->audio_stream_num];
         ff_rm_retrieve_cache(s, s->pb, st, st->priv_data, pkt);
     } else if (rm->old_format) {
-        RMStream *ast = s->streams[0]->priv_data;
-        int res, y, h = ast->audio_framesize ? ast->sub_packet_h : 1;
+        RMStream *ast;
 
-        timestamp = AV_NOPTS_VALUE;
-        len = ast->audio_framesize ? ast->coded_framesize * h / 2 : RAW_PACKET_SIZE;
-        for (y = 0; y < h; y++) {
-            flags = !y ? 2 : 0;
-            res = ff_rm_parse_packet(s, s->pb, s->streams[0], ast, len, pkt,
-                                     &seq, &flags, &timestamp);
+        st = s->streams[0];
+        ast = st->priv_data;
+        if (st->codec->codec_id == CODEC_ID_RA_288) {
+            int x, y;
+
+            for (y = 0; y < ast->sub_packet_h; y++)
+                for (x = 0; x < ast->sub_packet_h/2; x++)
+                    if (get_buffer(pb, ast->pkt.data+x*2*ast->audio_framesize+y*ast->coded_framesize, ast->coded_framesize) <= 0)
+                        return AVERROR(EIO);
+            rm->audio_stream_num = 0;
+            rm->audio_pkt_cnt = ast->sub_packet_h * ast->audio_framesize / st->codec->block_align - 1;
+            // Release first audio packet
+            av_new_packet(pkt, st->codec->block_align);
+            memcpy(pkt->data, ast->pkt.data, st->codec->block_align); //FIXME avoid this
+            pkt->flags |= PKT_FLAG_KEY; // Mark first packet as keyframe
+            pkt->stream_index = 0;
+        } else {
+            /* just read raw bytes */
+            len = RAW_PACKET_SIZE;
+            len= av_get_packet(pb, pkt, len);
+            pkt->stream_index = 0;
+            if (len <= 0) {
+                return AVERROR(EIO);
+            }
+            pkt->size = len;
         }
-        if (res < 0)
-            return res;
+        rm_ac3_swap_bytes(st, pkt);
     } else {
+        int seq=1;
 resync:
         len=sync(s, &timestamp, &flags, &i, &pos);
         if(len<0)
             return AVERROR(EIO);
         st = s->streams[i];
 
-        if (ff_rm_parse_packet (s, s->pb, st, st->priv_data, len, pkt,
-                                &seq, &flags, &timestamp) < 0)
+        old_flags = flags;
+        res = ff_rm_parse_packet (s, s->pb, st, st->priv_data, len, pkt,
+                                  &seq, &flags, &timestamp);
+        if((old_flags&2) && (seq&0x7F) == 1)
+            av_add_index_entry(st, pos, timestamp, 0, 0, AVINDEX_KEYFRAME);
+        if (res < 0)
             goto resync;
 
         if(  (st->discard >= AVDISCARD_NONKEY && !(flags&2))
@@ -733,9 +769,6 @@ resync:
             }
             goto resync;
         }
-
-        if((flags&2) && (seq&0x7F) == 1)
-            av_add_index_entry(st, pos, timestamp, 0, 0, AVINDEX_KEYFRAME);
     }
 
     return 0;

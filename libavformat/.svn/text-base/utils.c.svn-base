@@ -954,6 +954,11 @@ static int av_read_frame_internal(AVFormatContext *s, AVPacket *pkt)
                 *pkt = st->cur_pkt; st->cur_pkt.data= NULL;
                 compute_pkt_fields(s, st, NULL, pkt);
                 s->cur_st = NULL;
+                if ((s->iformat->flags & AVFMT_GENERIC_INDEX) &&
+                    (pkt->flags & PKT_FLAG_KEY) && pkt->dts != AV_NOPTS_VALUE) {
+                    ff_reduce_index(s, st->index);
+                    av_add_index_entry(st, pkt->pos, pkt->dts, 0, 0, AVINDEX_KEYFRAME);
+                }
                 break;
             } else if (st->cur_len > 0 && st->discard < AVDISCARD_ALL) {
                 len = av_parser_parse2(st->parser, st->codec, &pkt->data, &pkt->size,
@@ -1582,6 +1587,28 @@ int av_seek_frame(AVFormatContext *s, int stream_index, int64_t timestamp, int f
         return av_seek_frame_binary(s, stream_index, timestamp, flags);
     else
         return av_seek_frame_generic(s, stream_index, timestamp, flags);
+}
+
+int avformat_seek_file(AVFormatContext *s, int stream_index, int64_t min_ts, int64_t ts, int64_t max_ts, int flags)
+{
+    if(min_ts > ts || max_ts < ts)
+        return -1;
+
+    av_read_frame_flush(s);
+
+    if (s->iformat->read_seek2)
+        return s->iformat->read_seek2(s, stream_index, min_ts, ts, max_ts, flags);
+
+    if(s->iformat->read_timestamp){
+        //try to seek via read_timestamp()
+    }
+
+    //Fallback to old API if new is not implemented but old is
+    //Note the old has somewat different sematics
+    if(s->iformat->read_seek || 1)
+        return av_seek_frame(s, stream_index, ts, flags | (ts - min_ts > (uint64_t)(max_ts - ts) ? AVSEEK_FLAG_BACKWARD : 0));
+
+    // try some generic seek like av_seek_frame_generic() but with new ts semantics
 }
 
 /*******************************************************/

@@ -1,6 +1,7 @@
 /*
  * MOV demuxer
  * Copyright (c) 2001 Fabrice Bellard
+ * Copyright (c) 2009 Baptiste Coudurier <baptiste dot coudurier at gmail dot com>
  *
  * This file is part of FFmpeg.
  *
@@ -22,13 +23,14 @@
 #include <limits.h>
 
 //#define DEBUG
+//#define DEBUG_METADATA
+//#define MOV_EXPORT_ALL_METADATA
 
 #include "libavutil/intreadwrite.h"
 #include "libavutil/avstring.h"
 #include "avformat.h"
 #include "riff.h"
 #include "isom.h"
-#include "dv.h"
 #include "libavcodec/mpeg4audio.h"
 #include "libavcodec/mpegaudiodata.h"
 
@@ -62,101 +64,6 @@
 #undef NDEBUG
 #include <assert.h>
 
-/* the QuickTime file format is quite convoluted...
- * it has lots of index tables, each indexing something in another one...
- * Here we just use what is needed to read the chunks
- */
-
-typedef struct {
-    int first;
-    int count;
-    int id;
-} MOVStsc;
-
-typedef struct {
-    uint32_t type;
-    char *path;
-} MOVDref;
-
-typedef struct {
-    uint32_t type;
-    int64_t offset;
-    int64_t size; /* total size (excluding the size and type fields) */
-} MOVAtom;
-
-struct MOVParseTableEntry;
-
-typedef struct {
-    unsigned track_id;
-    uint64_t base_data_offset;
-    uint64_t moof_offset;
-    unsigned stsd_id;
-    unsigned duration;
-    unsigned size;
-    unsigned flags;
-} MOVFragment;
-
-typedef struct {
-    unsigned track_id;
-    unsigned stsd_id;
-    unsigned duration;
-    unsigned size;
-    unsigned flags;
-} MOVTrackExt;
-
-typedef struct MOVStreamContext {
-    ByteIOContext *pb;
-    int ffindex; /* the ffmpeg stream id */
-    int next_chunk;
-    unsigned int chunk_count;
-    int64_t *chunk_offsets;
-    unsigned int stts_count;
-    MOVStts *stts_data;
-    unsigned int ctts_count;
-    MOVStts *ctts_data;
-    unsigned int stsc_count;
-    MOVStsc *stsc_data;
-    int ctts_index;
-    int ctts_sample;
-    unsigned int sample_size;
-    unsigned int sample_count;
-    int *sample_sizes;
-    unsigned int keyframe_count;
-    int *keyframes;
-    int time_scale;
-    int time_rate;
-    int time_offset; ///< time offset of the first edit list entry
-    int current_sample;
-    unsigned int bytes_per_frame;
-    unsigned int samples_per_frame;
-    int dv_audio_container;
-    int pseudo_stream_id; ///< -1 means demux all ids
-    int16_t audio_cid; ///< stsd audio compression id
-    unsigned drefs_count;
-    MOVDref *drefs;
-    int dref_id;
-    int wrong_dts; ///< dts are wrong due to negative ctts
-    int width;  ///< tkhd width
-    int height; ///< tkhd height
-} MOVStreamContext;
-
-typedef struct MOVContext {
-    AVFormatContext *fc;
-    int time_scale;
-    int64_t duration; /* duration of the longest track */
-    int found_moov; /* when both 'moov' and 'mdat' sections has been found */
-    int found_mdat; /* we suppose we have enough data to read the file */
-    AVPaletteControl palette_control;
-    DVDemuxContext *dv_demux;
-    AVFormatContext *dv_fctx;
-    int isom; /* 1 if file is ISO Media (mp4/3gp) */
-    MOVFragment fragment; ///< current fragment in moof atom
-    MOVTrackExt *trex_data;
-    unsigned trex_count;
-    int itunes_metadata; ///< metadata are itunes style
-} MOVContext;
-
-
 /* XXX: it's the first time I make a recursive parser I think... sorry if it's ugly :P */
 
 /* those functions parse an atom */
@@ -172,6 +79,96 @@ typedef struct MOVParseTableEntry {
 
 static const MOVParseTableEntry mov_default_parse_table[];
 
+static int mov_metadata_trkn(MOVContext *c, ByteIOContext *pb, unsigned len)
+{
+    char buf[16];
+
+    get_be16(pb); // unknown
+    snprintf(buf, sizeof(buf), "%d", get_be16(pb));
+    av_metadata_set(&c->fc->metadata, "track", buf);
+
+    get_be16(pb); // total tracks
+
+    return 0;
+}
+
+static int mov_read_udta_string(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
+{
+#ifdef MOV_EXPORT_ALL_METADATA
+    char tmp_key[5];
+#endif
+    char str[1024], key2[16], language[4] = {0};
+    const char *key = NULL;
+    uint16_t str_size;
+    int (*parse)(MOVContext*, ByteIOContext*, unsigned) = NULL;
+
+    switch (atom.type) {
+    case MKTAG(0xa9,'n','a','m'): key = "title";     break;
+    case MKTAG(0xa9,'a','u','t'):
+    case MKTAG(0xa9,'A','R','T'):
+    case MKTAG(0xa9,'w','r','t'): key = "author";    break;
+    case MKTAG(0xa9,'c','p','y'): key = "copyright"; break;
+    case MKTAG(0xa9,'c','m','t'):
+    case MKTAG(0xa9,'i','n','f'): key = "comment";   break;
+    case MKTAG(0xa9,'a','l','b'): key = "album";     break;
+    case MKTAG(0xa9,'d','a','y'): key = "year";      break;
+    case MKTAG(0xa9,'g','e','n'): key = "genre";     break;
+    case MKTAG(0xa9,'t','o','o'):
+    case MKTAG(0xa9,'e','n','c'): key = "muxer";     break;
+    case MKTAG( 't','r','k','n'): key = "track";
+        parse = mov_metadata_trkn; break;
+    }
+
+    if (c->itunes_metadata && atom.size > 8) {
+        int data_size = get_be32(pb);
+        int tag = get_le32(pb);
+        if (tag == MKTAG('d','a','t','a')) {
+            get_be32(pb); // type
+            get_be32(pb); // unknown
+            str_size = data_size - 16;
+            atom.size -= 16;
+        } else return 0;
+    } else if (atom.size > 4 && key && !c->itunes_metadata) {
+        str_size = get_be16(pb); // string length
+        ff_mov_lang_to_iso639(get_be16(pb), language);
+        atom.size -= 4;
+    } else
+        str_size = atom.size;
+
+#ifdef MOV_EXPORT_ALL_METADATA
+    if (!key) {
+        snprintf(tmp_key, 5, "%.4s", (char*)&atom.type);
+        key = tmp_key;
+    }
+#endif
+
+    if (!key)
+        return 0;
+    if (atom.size < 0)
+        return -1;
+
+    str_size = FFMIN3(sizeof(str)-1, str_size, atom.size);
+
+    if (parse)
+        parse(c, pb, str_size);
+    else {
+        get_buffer(pb, str, str_size);
+        str[str_size] = 0;
+        av_metadata_set(&c->fc->metadata, key, str);
+        if (*language && strcmp(language, "und")) {
+            snprintf(key2, sizeof(key2), "%s-%s", key, language);
+            av_metadata_set(&c->fc->metadata, key2, str);
+        }
+    }
+#ifdef DEBUG_METADATA
+    av_log(c->fc, AV_LOG_DEBUG, "lang \"%3s\" ", language);
+    av_log(c->fc, AV_LOG_DEBUG, "tag \"%s\" value \"%s\" atom \"%.4s\" %d %lld\n",
+           key, str, (char*)&atom.type, str_size, atom.size);
+#endif
+
+    return 0;
+}
+
 static int mov_read_default(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
 {
     int64_t total_size = 0;
@@ -184,6 +181,7 @@ static int mov_read_default(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
     if (atom.size < 0)
         atom.size = INT64_MAX;
     while(((total_size + 8) < atom.size) && !url_feof(pb) && !err) {
+        int (*parse)(MOVContext*, ByteIOContext*, MOVAtom) = NULL;
         a.size = atom.size;
         a.type=0;
         if(atom.size >= 8) {
@@ -209,16 +207,23 @@ static int mov_read_default(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
             break;
         a.size = FFMIN(a.size, atom.size - total_size);
 
-        for (i = 0; mov_default_parse_table[i].type != 0
-             && mov_default_parse_table[i].type != a.type; i++)
-            /* empty */;
+        for (i = 0; mov_default_parse_table[i].type; i++)
+            if (mov_default_parse_table[i].type == a.type) {
+                parse = mov_default_parse_table[i].parse;
+                break;
+            }
 
-        if (mov_default_parse_table[i].type == 0) { /* skip leaf atoms data */
+        // container is user data
+        if (!parse && (atom.type == MKTAG('u','d','t','a') ||
+                       atom.type == MKTAG('i','l','s','t')))
+            parse = mov_read_udta_string;
+
+        if (!parse) { /* skip leaf atoms data */
             url_fskip(pb, a.size);
         } else {
             int64_t start_pos = url_ftell(pb);
             int64_t left;
-            err = mov_default_parse_table[i].parse(c, pb, a);
+            err = parse(c, pb, a);
             if (url_is_streamed(pb) && c->found_moov && c->found_mdat)
                 break;
             left = a.size - url_ftell(pb) + start_pos;
@@ -324,21 +329,18 @@ static int mov_read_hdlr(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
     ctype = get_le32(pb);
     type = get_le32(pb); /* component subtype */
 
-    dprintf(c->fc, "ctype= %c%c%c%c (0x%08x)\n", *((char *)&ctype), ((char *)&ctype)[1],
-            ((char *)&ctype)[2], ((char *)&ctype)[3], (int) ctype);
-    dprintf(c->fc, "stype= %c%c%c%c\n",
-            *((char *)&type), ((char *)&type)[1], ((char *)&type)[2], ((char *)&type)[3]);
-    if(!ctype)
-        c->isom = 1;
+    dprintf(c->fc, "ctype= %.4s (0x%08x)\n", (char*)&ctype, ctype);
+    dprintf(c->fc, "stype= %.4s\n", (char*)&type);
+
     if     (type == MKTAG('v','i','d','e'))
         st->codec->codec_type = CODEC_TYPE_VIDEO;
     else if(type == MKTAG('s','o','u','n'))
         st->codec->codec_type = CODEC_TYPE_AUDIO;
     else if(type == MKTAG('m','1','a',' '))
         st->codec->codec_id = CODEC_ID_MP2;
-    else if(type == MKTAG('s','u','b','p')) {
+    else if(type == MKTAG('s','u','b','p'))
         st->codec->codec_type = CODEC_TYPE_SUBTITLE;
-    }
+
     get_be32(pb); /* component  manufacture */
     get_be32(pb); /* component flags */
     get_be32(pb); /* component flags mask */
@@ -850,6 +852,7 @@ static int mov_read_stsd(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
                 unsigned int color_start, color_count, color_end;
                 unsigned char r, g, b;
 
+                st->codec->palctrl = av_malloc(sizeof(*st->codec->palctrl));
                 if (color_greyscale) {
                     int color_index, color_dec;
                     /* compute the greyscale palette */
@@ -859,7 +862,7 @@ static int mov_read_stsd(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
                     color_dec = 256 / (color_count - 1);
                     for (j = 0; j < color_count; j++) {
                         r = g = b = color_index;
-                        c->palette_control.palette[j] =
+                        st->codec->palctrl->palette[j] =
                             (r << 16) | (g << 8) | (b);
                         color_index -= color_dec;
                         if (color_index < 0)
@@ -880,7 +883,7 @@ static int mov_read_stsd(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
                         r = color_table[j * 4 + 0];
                         g = color_table[j * 4 + 1];
                         b = color_table[j * 4 + 2];
-                        c->palette_control.palette[j] =
+                        st->codec->palctrl->palette[j] =
                             (r << 16) | (g << 8) | (b);
                     }
                 } else {
@@ -902,15 +905,13 @@ static int mov_read_stsd(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
                             get_byte(pb);
                             b = get_byte(pb);
                             get_byte(pb);
-                            c->palette_control.palette[j] =
+                            st->codec->palctrl->palette[j] =
                                 (r << 16) | (g << 8) | (b);
                         }
                     }
                 }
-                st->codec->palctrl = &c->palette_control;
                 st->codec->palctrl->palette_changed = 1;
-            } else
-                st->codec->palctrl = NULL;
+            }
         } else if(st->codec->codec_type==CODEC_TYPE_AUDIO) {
             int bits_per_sample, flags;
             uint16_t version = get_be16(pb);
@@ -1266,7 +1267,7 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
             for (j = 0; j < sc->stsc_data[stsc_index].count; j++) {
                 if (current_sample >= sc->sample_count) {
                     av_log(mov->fc, AV_LOG_ERROR, "wrong sample count\n");
-                    goto out;
+                    return;
                 }
                 keyframe = !sc->keyframe_count || current_sample+key_off == sc->keyframes[stss_index];
                 if (keyframe) {
@@ -1283,6 +1284,7 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
                             "size %d, distance %d, keyframe %d\n", st->index, current_sample,
                             current_offset, current_dts, sample_size, distance, keyframe);
                 }
+
                 current_offset += sample_size;
                 assert(sc->stts_data[stts_index].duration % sc->time_rate == 0);
                 current_dts += sc->stts_data[stts_index].duration / sc->time_rate;
@@ -1341,9 +1343,6 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
             }
         }
     }
- out:
-    /* adjust sample count to avindex entries */
-    sc->sample_count = st->nb_index_entries;
 }
 
 static int mov_read_trak(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
@@ -1365,17 +1364,18 @@ static int mov_read_trak(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
         return ret;
 
     /* sanity checks */
-    if(sc->chunk_count && (!sc->stts_count || !sc->stsc_count ||
-                           (!sc->sample_size && !sc->sample_count))){
+    if (sc->chunk_count && (!sc->stts_count || !sc->stsc_count ||
+                            (!sc->sample_size && !sc->sample_count))) {
         av_log(c->fc, AV_LOG_ERROR, "stream %d, missing mandatory atoms, broken header\n",
                st->index);
-        sc->sample_count = 0; //ignore track
         return 0;
     }
-    if(!sc->time_rate)
-        sc->time_rate=1;
-    if(!sc->time_scale)
-        sc->time_scale= c->time_scale;
+
+    if (!sc->time_rate)
+        sc->time_rate = 1;
+    if (!sc->time_scale)
+        sc->time_scale = c->time_scale;
+
     av_set_pts_info(st, 64, sc->time_rate, sc->time_scale);
 
     if (st->codec->codec_type == CODEC_TYPE_AUDIO &&
@@ -1385,7 +1385,7 @@ static int mov_read_trak(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
         dprintf(c->fc, "frame size %d\n", st->codec->frame_size);
     }
 
-    if(st->duration != AV_NOPTS_VALUE){
+    if (st->duration != AV_NOPTS_VALUE) {
         assert(st->duration % sc->time_rate == 0);
         st->duration /= sc->time_rate;
     }
@@ -1409,7 +1409,7 @@ static int mov_read_trak(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
 #if CONFIG_MPEG4_DECODER
     case CODEC_ID_MPEG4:
 #endif
-        st->codec->width= 0; /* let decoder init width/height */
+        st->codec->width = 0; /* let decoder init width/height */
         st->codec->height= 0;
         break;
     }
@@ -1435,70 +1435,15 @@ static int mov_read_ilst(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
 
 static int mov_read_meta(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
 {
-    url_fskip(pb, 4); // version + flags
-    atom.size -= 4;
-    return mov_read_default(c, pb, atom);
-}
-
-static int mov_read_trkn(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
-{
-    char track[16];
-    get_be32(pb); // type
-    get_be32(pb); // unknown
-    snprintf(track, sizeof(track), "%d", get_be32(pb));
-    av_metadata_set(&c->fc->metadata, "track", track);
-    dprintf(c->fc, "%.4s %s\n", (char*)&atom.type, track);
-    return 0;
-}
-
-static int mov_read_udta_string(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
-{
-    char str[1024], key2[16], language[4] = {0};
-    const char *key = NULL;
-    uint16_t str_size;
-
-    if (c->itunes_metadata) {
-        int data_size = get_be32(pb);
-        int tag = get_le32(pb);
-        if (tag == MKTAG('d','a','t','a')) {
-            get_be32(pb); // type
-            get_be32(pb); // unknown
-            str_size = data_size - 16;
-            atom.size -= 16;
-        } else return 0;
-    } else {
-        str_size = get_be16(pb); // string length
-        ff_mov_lang_to_iso639(get_be16(pb), language);
+    while (atom.size > 8) {
+        uint32_t tag = get_le32(pb);
         atom.size -= 4;
+        if (tag == MKTAG('h','d','l','r')) {
+            url_fseek(pb, -8, SEEK_CUR);
+            atom.size += 8;
+            return mov_read_default(c, pb, atom);
+        }
     }
-    switch (atom.type) {
-    case MKTAG(0xa9,'n','a','m'): key = "title";     break;
-    case MKTAG(0xa9,'a','u','t'):
-    case MKTAG(0xa9,'A','R','T'):
-    case MKTAG(0xa9,'w','r','t'): key = "author";    break;
-    case MKTAG(0xa9,'c','p','y'): key = "copyright"; break;
-    case MKTAG(0xa9,'c','m','t'):
-    case MKTAG(0xa9,'i','n','f'): key = "comment";   break;
-    case MKTAG(0xa9,'a','l','b'): key = "album";     break;
-    case MKTAG(0xa9,'d','a','y'): key = "year";      break;
-    case MKTAG(0xa9,'g','e','n'): key = "genre";     break;
-    case MKTAG(0xa9,'t','o','o'):
-    case MKTAG(0xa9,'e','n','c'): key = "muxer";     break;
-    }
-    if (!key)
-        return 0;
-    if (atom.size < 0)
-        return -1;
-
-    str_size = FFMIN3(sizeof(str)-1, str_size, atom.size);
-    get_buffer(pb, str, str_size);
-    str[str_size] = 0;
-    av_metadata_set(&c->fc->metadata, key, str);
-    if (*language && strcmp(language, "und")) {
-        snprintf(key2, sizeof(key2), "%s-%s", key, language);
-        av_metadata_set(&c->fc->metadata, key2, str);
-    }
-    dprintf(c->fc, "%.4s %s %d %lld\n", (char*)&atom.type, str, str_size, atom.size);
     return 0;
 }
 
@@ -1704,7 +1649,6 @@ static int mov_read_trun(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
         offset += sample_size;
     }
     frag->moof_offset = offset;
-    sc->sample_count = st->nb_index_entries;
     st->duration = dts;
     return 0;
 }
@@ -1854,26 +1798,12 @@ static const MOVParseTableEntry mov_default_parse_table[] = {
 { MKTAG('t','r','a','k'), mov_read_trak },
 { MKTAG('t','r','a','f'), mov_read_default },
 { MKTAG('t','r','e','x'), mov_read_trex },
-{ MKTAG('t','r','k','n'), mov_read_trkn },
 { MKTAG('t','r','u','n'), mov_read_trun },
 { MKTAG('u','d','t','a'), mov_read_default },
 { MKTAG('w','a','v','e'), mov_read_wave },
 { MKTAG('e','s','d','s'), mov_read_esds },
 { MKTAG('w','i','d','e'), mov_read_wide }, /* place holder */
 { MKTAG('c','m','o','v'), mov_read_cmov },
-{ MKTAG(0xa9,'n','a','m'), mov_read_udta_string },
-{ MKTAG(0xa9,'w','r','t'), mov_read_udta_string },
-{ MKTAG(0xa9,'c','p','y'), mov_read_udta_string },
-{ MKTAG(0xa9,'i','n','f'), mov_read_udta_string },
-{ MKTAG(0xa9,'i','n','f'), mov_read_udta_string },
-{ MKTAG(0xa9,'A','R','T'), mov_read_udta_string },
-{ MKTAG(0xa9,'a','l','b'), mov_read_udta_string },
-{ MKTAG(0xa9,'c','m','t'), mov_read_udta_string },
-{ MKTAG(0xa9,'a','u','t'), mov_read_udta_string },
-{ MKTAG(0xa9,'d','a','y'), mov_read_udta_string },
-{ MKTAG(0xa9,'g','e','n'), mov_read_udta_string },
-{ MKTAG(0xa9,'e','n','c'), mov_read_udta_string },
-{ MKTAG(0xa9,'t','o','o'), mov_read_udta_string },
 { 0, NULL }
 };
 
@@ -1961,7 +1891,7 @@ static int mov_read_packet(AVFormatContext *s, AVPacket *pkt)
     for (i = 0; i < s->nb_streams; i++) {
         AVStream *st = s->streams[i];
         MOVStreamContext *msc = st->priv_data;
-        if (st->discard != AVDISCARD_ALL && msc->pb && msc->current_sample < msc->sample_count) {
+        if (st->discard != AVDISCARD_ALL && msc->pb && msc->current_sample < st->nb_index_entries) {
             AVIndexEntry *current_sample = &st->index_entries[msc->current_sample];
             int64_t dts = av_rescale(current_sample->timestamp * (int64_t)msc->time_rate,
                                      AV_TIME_BASE, msc->time_scale);
@@ -2021,7 +1951,7 @@ static int mov_read_packet(AVFormatContext *s, AVPacket *pkt)
             pkt->dts = AV_NOPTS_VALUE;
     } else {
         AVStream *st = s->streams[sc->ffindex];
-        int64_t next_dts = (sc->current_sample < sc->sample_count) ?
+        int64_t next_dts = (sc->current_sample < st->nb_index_entries) ?
             st->index_entries[sc->current_sample].timestamp : st->duration;
         pkt->duration = next_dts - pkt->dts;
         pkt->pts = pkt->dts;
@@ -2094,26 +2024,34 @@ static int mov_read_seek(AVFormatContext *s, int stream_index, int64_t sample_ti
 
 static int mov_read_close(AVFormatContext *s)
 {
-    int i, j;
     MOVContext *mov = s->priv_data;
-    for(i=0; i<s->nb_streams; i++) {
-        MOVStreamContext *sc = s->streams[i]->priv_data;
+    int i, j;
+
+    for (i = 0; i < s->nb_streams; i++) {
+        AVStream *st = s->streams[i];
+        MOVStreamContext *sc = st->priv_data;
+
         av_freep(&sc->ctts_data);
-        for (j=0; j<sc->drefs_count; j++)
+        for (j = 0; j < sc->drefs_count; j++)
             av_freep(&sc->drefs[j].path);
         av_freep(&sc->drefs);
         if (sc->pb && sc->pb != s->pb)
             url_fclose(sc->pb);
+
+        av_freep(&st->codec->palctrl);
     }
-    if(mov->dv_demux){
-        for(i=0; i<mov->dv_fctx->nb_streams; i++){
+
+    if (mov->dv_demux) {
+        for(i = 0; i < mov->dv_fctx->nb_streams; i++) {
             av_freep(&mov->dv_fctx->streams[i]->codec);
             av_freep(&mov->dv_fctx->streams[i]);
         }
         av_freep(&mov->dv_fctx);
         av_freep(&mov->dv_demux);
     }
+
     av_freep(&mov->trex_data);
+
     return 0;
 }
 

@@ -1,15 +1,15 @@
 8
 
 dir
-28915
+28973
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-03-02T19:52:52.867891Z
-28798
-gpoirier
+2009-03-14T12:32:28.682712Z
+28944
+reimar
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -77,11 +77,11 @@ file
 
 
 
-2009-01-29T11:50:47.000000Z
-503079c21c3c885f3f31f9d039158b3f
-2006-11-15T10:37:41.843815Z
-20940
-diego
+2009-03-16T12:25:55.000000Z
+c044b6167edace88db3f93aac844c56e
+2009-03-14T12:32:28.682712Z
+28944
+reimar
 has-props
 
 ldp.dsl
@@ -106,6 +106,9 @@ dir
 cs
 dir
 
+xsl
+dir
+
 README.maintainers
 file
 
@@ -119,13 +122,10 @@ d6e00e9d4a8bf9add86bd157fb10dd08
 torinthiel
 has-props
 
-xsl
+fr
 dir
 
 es
-dir
-
-fr
 dir
 
 pl

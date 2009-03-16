@@ -1,15 +1,15 @@
 8
 
 dir
-17912
+18004
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/ppc
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-03-03T22:51:30.045752Z
-17786
-michael
+2009-03-15T12:46:07.251609Z
+17984
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -101,18 +101,6 @@ d631d3782aac037820fb4a350370ad77
 diego
 has-props
 
-mathops.h
-file
-
-
-
-
-2009-01-29T11:50:59.000000Z
-44d3b25413e14b92d6803e14eff4f5b9
-2009-01-25T11:16:25.261169Z
-16769
-diego
-
 types_altivec.h
 file
 
@@ -124,6 +112,18 @@ fb491083be42c9018809ff3eb7e9ef94
 2008-12-27T11:21:28.043715Z
 16357
 lu_zero
+
+mathops.h
+file
+
+
+
+
+2009-01-29T11:50:59.000000Z
+44d3b25413e14b92d6803e14eff4f5b9
+2009-01-25T11:16:25.261169Z
+16769
+diego
 
 check_altivec.c
 file
@@ -144,36 +144,10 @@ file
 
 
 
-2009-01-29T11:50:59.000000Z
-8f4fe25230a91ed9197ae40dd648028f
-2008-12-27T11:21:28.043715Z
-16357
-lu_zero
-has-props
-
-fft_altivec.c
-file
-
-
-
-
-2009-01-29T11:50:59.000000Z
-c6cc64fe55ee6a822bfc62507c2abd77
-2009-01-19T15:46:40.737658Z
-16684
-diego
-has-props
-
-dsputil_ppc.c
-file
-
-
-
-
-2009-01-29T11:50:59.000000Z
-5087e78926a8d3e3c64a73735c89c970
-2009-01-24T17:32:06.609830Z
-16755
+2009-03-16T12:25:57.000000Z
+ea1aba19348a53e16696ade346384320
+2009-03-14T19:12:20.195675Z
+17962
 diego
 has-props
 
@@ -190,16 +164,42 @@ b5a4d81b0eaa460d4f0110ee45a26c62
 diego
 has-props
 
-fdct_altivec.c
+dsputil_ppc.c
 file
 
 
 
 
 2009-01-29T11:50:59.000000Z
-cfeb0f719d92d0a206cc8126c7fc70be
-2008-07-24T10:53:32.328994Z
-14366
+5087e78926a8d3e3c64a73735c89c970
+2009-01-24T17:32:06.609830Z
+16755
+diego
+has-props
+
+fft_altivec.c
+file
+
+
+
+
+2009-01-29T11:50:59.000000Z
+c6cc64fe55ee6a822bfc62507c2abd77
+2009-01-19T15:46:40.737658Z
+16684
+diego
+has-props
+
+fdct_altivec.c
+file
+
+
+
+
+2009-03-16T12:25:57.000000Z
+3c72b8c4b8756206b703f013dc661da9
+2009-03-15T12:46:07.251609Z
+17984
 diego
 has-props
 
@@ -235,11 +235,11 @@ file
 
 
 
-2009-01-29T11:50:59.000000Z
-5409a61e00a14f861b6486e443e397e0
-2009-01-07T13:54:26.308424Z
-16465
-gpoirier
+2009-03-16T12:25:57.000000Z
+34afd37cd8c3a7bd721fdf087e2672ff
+2009-03-14T19:12:20.195675Z
+17962
+diego
 has-props
 
 dsputil_ppc.h

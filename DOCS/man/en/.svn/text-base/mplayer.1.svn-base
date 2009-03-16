@@ -904,7 +904,7 @@ i.e.\& using the shell.
 MPlayer uses this command without any checking, it is your responsibility
 to ensure it does not cause security problems (e.g.\& make sure to use full
 paths if "." is in your path like on Windows).
-It also only works when playing video (i.e. not with \-novideo but works with \-vo null).
+It also only works when playing video (i.e.\& not with \-novideo but works with \-vo null).
 .sp 1
 This can be "misused" to disable screensavers that do not support the proper
 X API (also see \-stop\-xscreensaver).
@@ -1133,7 +1133,7 @@ by a newline (\\n) from stdin.
 .I NOTE:
 See \-input cmdlist for a list of slave commands and DOCS/tech/slave.txt
 for their description.
-Also, this is not intended to disable other inputs, e.g. via the video window,
+Also, this is not intended to disable other inputs, e.g.\& via the video window,
 use some other method like \-input nodefault\-binds:conf=/dev/null for that.
 .
 .TP
@@ -3225,7 +3225,7 @@ Use at your own risk!
 Change the range of the pan-and-scan functionality (default: 1).
 Positive values mean multiples of the default range.
 Negative numbers mean you can zoom in up to a factor of \-panscanrange+1.
-E.g. \-panscanrange \-3 allows a zoom factor of up to 4.
+E.g.\& \-panscanrange \-3 allows a zoom factor of up to 4.
 This feature is experimental.
 Do not report bugs unless you are using \-vo gl.
 .
@@ -3455,19 +3455,24 @@ Apply a noise reduction algorithm to the video (default: 0, no noise reduction).
 .IPs deint=<0\-4>
 Chooses the deinterlacer (default: 0).
 All modes > 0 respect \-field\-dominance.
+.br
+.I NOTE:
+Values > 2 delay the video output by one frame.
 .RSss
 .IPs 0
 No deinterlacing.
 .IPs 1
 Show only first field, similar to \-vf field.
 .IPs 2
-Bob deinterlacing (current fallback for advanced deinterlacers).
+Bob deinterlacing
+(current fallback for advanced deinterlacers and hardware decoding).
 .IPs 3
-Motion adaptive temporal deinterlacing (not yet working).
+Motion adaptive temporal deinterlacing
+(currently only working with software-decoded video).
 This is the default if "D" is used to enable deinterlacing.
 .IPs 4
 Motion adaptive temporal deinterlacing with edge-guided spatial interpolation
-(not yet working).
+(currently only working with software-decoded video).
 .RE
 .IPs pullup
 Try to apply inverse telecine, needs temporal deinterlacing.
@@ -3589,6 +3594,23 @@ Video output driver that uses the DirectX interface.
 .IPs noaccel
 Turns off hardware acceleration.
 Try this option if you have display problems.
+.RE
+.PD 1
+.
+.TP
+.B kva (OS/2 only)
+Video output driver that uses the libkva interface.
+.PD 0
+.RSs
+.IPs snap
+Force SNAP mode.
+.IPs wo
+Force WarpOverlay! mode.
+.IPs dive
+Force DIVE mode.
+.IPs (no)t23
+Enable/disable workaround for T23 laptop (default: \-not23).
+Try to enable this option if your video card supports upscaling only.
 .RE
 .PD 1
 .
@@ -10032,7 +10054,7 @@ Lower values allow the quantizer value to jump around more,
 higher values force it to vary more smoothly.
 cplx_blur ensures that each I-frame has quality comparable to the following
 P-frames, and ensures that alternating high and low complexity frames
-(e.g. low fps animation) do not waste bits on fluctuating quantizer.
+(e.g.\& low fps animation) do not waste bits on fluctuating quantizer.
 .
 .TP
 .B qblur=<0\-99> (two pass only)

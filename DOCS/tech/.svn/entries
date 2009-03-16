@@ -1,15 +1,15 @@
 8
 
 dir
-28915
+28973
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/tech
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-03-09T13:11:37.632230Z
-28907
-reimar
+2009-03-14T17:01:28.080983Z
+28949
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -219,19 +219,6 @@ file
 diego
 has-props
 
-codecs.conf.txt
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-c4eaaafd82ac324847a58088293a9cdc
-2008-05-14T17:28:50.503019Z
-26773
-compn
-has-props
-
 libmpcodecs.txt
 file
 
@@ -243,6 +230,19 @@ bee6714bfdcac53b2836d0a1c6871cce
 2009-01-11T19:48:51.883031Z
 28304
 diego
+has-props
+
+codecs.conf.txt
+file
+
+
+
+
+2009-01-29T11:50:47.000000Z
+c4eaaafd82ac324847a58088293a9cdc
+2008-05-14T17:28:50.503019Z
+26773
+compn
 has-props
 
 snow.txt
@@ -258,19 +258,6 @@ file
 corey
 has-props
 
-new_policy_proposal.txt
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-9a0204d3216e7d3b4f2c722d74a6764f
-2007-03-15T12:55:35.967524Z
-22611
-michael
-has-props
-
 patches.txt
 file
 
@@ -282,6 +269,19 @@ file
 2007-09-18T08:36:30.669322Z
 24563
 reimar
+has-props
+
+new_policy_proposal.txt
+file
+
+
+
+
+2009-01-29T11:50:47.000000Z
+9a0204d3216e7d3b4f2c722d74a6764f
+2007-03-15T12:55:35.967524Z
+22611
+michael
 has-props
 
 wishlist
@@ -303,10 +303,10 @@ file
 
 
 
-2009-03-03T09:56:28.000000Z
-349b7c49bbc7078daf61c9cfb0bbd1f7
-2009-03-01T17:53:06.540888Z
-28785
+2009-03-16T12:25:55.000000Z
+612aaaa0329d302f0cbf5ac0d107e533
+2009-03-14T17:01:28.080983Z
+28949
 diego
 has-props
 
@@ -375,19 +375,6 @@ file
 diego
 has-props
 
-libao2.txt
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-aefccca35161a0a24e4bf6f55301785c
-2006-11-14T05:03:47.641267Z
-20907
-uau
-has-props
-
 manpage.txt
 file
 
@@ -401,17 +388,17 @@ file
 cehoyos
 has-props
 
-slave.txt
+libao2.txt
 file
 
 
 
 
-2009-03-09T16:00:02.000000Z
-51da2d3ba16b2c9b99552e9d52a952b4
-2009-03-07T13:25:55.927339Z
-28870
-reimar
+2009-01-29T11:50:47.000000Z
+aefccca35161a0a24e4bf6f55301785c
+2006-11-14T05:03:47.641267Z
+20907
+uau
 has-props
 
 codec-devel.txt
@@ -427,16 +414,29 @@ file
 diego
 has-props
 
+slave.txt
+file
+
+
+
+
+2009-03-09T16:00:02.000000Z
+51da2d3ba16b2c9b99552e9d52a952b4
+2009-03-07T13:25:55.927339Z
+28870
+reimar
+has-props
+
 win32-codec-howto.txt
 file
 
 
 
 
-2009-01-29T11:50:47.000000Z
-29511c94478d010da196e05bda06267d
-2008-12-27T18:58:36.566148Z
-28205
+2009-03-16T12:25:55.000000Z
+2a948be9bde1ae3dbabbef7562850bb1
+2009-03-12T11:16:51.617847Z
+28937
 compn
 
 subcp.txt
@@ -487,11 +487,11 @@ file
 
 
 
-2009-03-09T16:00:02.000000Z
-785ba745b0674b11a110e8fea70a1112
-2009-03-08T10:01:21.415123Z
-28881
-reimar
+2009-03-16T12:25:55.000000Z
+66c80b41f68f617e60d6fa076e425631
+2009-03-09T21:31:36.181115Z
+28923
+kraymer
 
 vidix.txt
 file

@@ -2,6 +2,7 @@
  * MOV, 3GP, MP4 muxer
  * Copyright (c) 2003 Thomas Raivio
  * Copyright (c) 2004 Gildas Bazin <gbazin at videolan dot org>
+ * Copyright (c) 2009 Baptiste Coudurier <baptiste dot coudurier at gmail dot com>
  *
  * This file is part of FFmpeg.
  *
@@ -19,6 +20,7 @@
  * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
+
 #include "avformat.h"
 #include "riff.h"
 #include "avio.h"
@@ -570,6 +572,7 @@ static const AVCodecTag codec_ipod_tags[] = {
     { CODEC_ID_ALAC,   MKTAG('a','l','a','c') },
     { CODEC_ID_AC3,    MKTAG('a','c','-','3') },
     { CODEC_ID_MOV_TEXT, MKTAG('t','x','3','g') },
+    { CODEC_ID_MOV_TEXT, MKTAG('t','e','x','t') },
     { CODEC_ID_NONE, 0 },
 };
 
@@ -586,7 +589,12 @@ static int mov_find_codec_tag(AVFormatContext *s, MOVTrack *track)
         else if (track->enc->codec_type == CODEC_TYPE_VIDEO) tag = MKTAG('m','p','4','v');
         else if (track->enc->codec_type == CODEC_TYPE_AUDIO) tag = MKTAG('m','p','4','a');
     } else if (track->mode == MODE_IPOD) {
-        tag = codec_get_tag(codec_ipod_tags, track->enc->codec_id);
+        if (track->enc->codec_type == CODEC_TYPE_SUBTITLE &&
+            (tag == MKTAG('t','x','3','g') ||
+             tag == MKTAG('t','e','x','t')))
+            track->tag = tag; // keep original tag
+        else
+            tag = codec_get_tag(codec_ipod_tags, track->enc->codec_id);
         if (!match_ext(s->filename, "m4a") && !match_ext(s->filename, "m4v"))
             av_log(s, AV_LOG_WARNING, "Warning, extension is not .m4a nor .m4v "
                    "Quicktime/Ipod might not play the file\n");
@@ -922,8 +930,8 @@ static int mov_write_hdlr_tag(ByteIOContext *pb, MOVTrack *track)
             hdlr_type = "soun";
             descr = "SoundHandler";
         } else if (track->enc->codec_type == CODEC_TYPE_SUBTITLE) {
-            if (track->mode == MODE_IPOD) hdlr_type = "sbtl";
-            else                          hdlr_type = "text";
+            if (track->tag == MKTAG('t','x','3','g')) hdlr_type = "sbtl";
+            else                                      hdlr_type = "text";
             descr = "SubtitleHandler";
         }
     }
@@ -951,8 +959,8 @@ static int mov_write_minf_tag(ByteIOContext *pb, MOVTrack *track)
     else if (track->enc->codec_type == CODEC_TYPE_AUDIO)
         mov_write_smhd_tag(pb);
     else if (track->enc->codec_type == CODEC_TYPE_SUBTITLE) {
-        if (track->mode == MODE_MOV) mov_write_gmhd_tag(pb);
-        else                         mov_write_nmhd_tag(pb);
+        if (track->tag == MKTAG('t','e','x','t')) mov_write_gmhd_tag(pb);
+        else                                      mov_write_nmhd_tag(pb);
     }
     if (track->mode == MODE_MOV) /* FIXME: Why do it for MODE_MOV only ? */
         mov_write_hdlr_tag(pb, NULL);
@@ -1681,8 +1689,7 @@ static int mov_write_header(AVFormatContext *s)
                     return -1;
                 }
                 track->height = track->tag>>24 == 'n' ? 486 : 576;
-            } else
-                track->height = st->codec->height;
+            }
             track->timescale = st->codec->time_base.den;
             av_set_pts_info(st, 64, 1, st->codec->time_base.den);
             if (track->mode == MODE_MOV && track->timescale > 100000)
@@ -1712,6 +1719,8 @@ static int mov_write_header(AVFormatContext *s)
             track->timescale = st->codec->time_base.den;
             av_set_pts_info(st, 64, 1, st->codec->time_base.den);
         }
+        if (!track->height)
+            track->height = st->codec->height;
     }
 
     mov_write_mdat_tag(pb, mov);
@@ -1939,6 +1948,6 @@ AVOutputFormat ipod_muxer = {
     mov_write_packet,
     mov_write_trailer,
     .flags = AVFMT_GLOBALHEADER,
-    .codec_tag = (const AVCodecTag* const []){ff_mp4_obj_type, 0},
+    .codec_tag = (const AVCodecTag* const []){codec_ipod_tags, 0},
 };
 #endif

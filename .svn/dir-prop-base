@@ -10,7 +10,7 @@ libdvdnav	svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdnav/src
 
 K 10
 svn:ignore
-V 151
+V 164
 *.d
 *.ho
 config.h
@@ -25,6 +25,8 @@ codecs.conf.h
 codec-cfg
 codec-cfg-test
 codecs2html
+cpuinfo
+tags
 TAGS
 *.exe
 
