@@ -292,6 +292,49 @@ skip:
     return 0;
 }
 
+/** this function assumes that the demuxer has already seeked to the start
+ * of the INDX chunk, and will bail out if not. */
+static int rm_read_index(AVFormatContext *s)
+{
+    ByteIOContext *pb = s->pb;
+    unsigned int size, n_pkts, str_id, next_off, n, pos, pts;
+    AVStream *st;
+
+    do {
+        if (get_le32(pb) != MKTAG('I','N','D','X'))
+            return -1;
+        size     = get_be32(pb);
+        if (size < 20)
+            return -1;
+        url_fskip(pb, 2);
+        n_pkts   = get_be32(pb);
+        str_id   = get_be16(pb);
+        next_off = get_be32(pb);
+        for (n = 0; n < s->nb_streams; n++)
+            if (s->streams[n]->id == str_id) {
+                st = s->streams[n];
+                break;
+            }
+        if (n == s->nb_streams)
+            goto skip;
+
+        for (n = 0; n < n_pkts; n++) {
+            url_fskip(pb, 2);
+            pts = get_be32(pb);
+            pos = get_be32(pb);
+            url_fskip(pb, 4); /* packet no. */
+
+            av_add_index_entry(st, pos, pts, 0, 0, AVINDEX_KEYFRAME);
+        }
+
+skip:
+        if (next_off && url_ftell(pb) != next_off &&
+            url_fseek(pb, next_off, SEEK_SET) < 0)
+            return -1;
+    } while (next_off);
+
+    return 0;
+}
 
 static int rm_read_header_old(AVFormatContext *s, AVFormatParameters *ap)
 {
@@ -314,6 +357,7 @@ static int rm_read_header(AVFormatContext *s, AVFormatParameters *ap)
     unsigned int tag;
     int tag_size;
     unsigned int start_time, duration;
+    unsigned int data_off = 0, indx_off = 0;
     char buf[128];
     int flags = 0;
 
@@ -357,8 +401,8 @@ static int rm_read_header(AVFormatContext *s, AVFormatParameters *ap)
             get_be32(pb); /* nb packets */
             get_be32(pb); /* duration */
             get_be32(pb); /* preroll */
-            get_be32(pb); /* index offset */
-            get_be32(pb); /* data offset */
+            indx_off = get_be32(pb); /* index offset */
+            data_off = get_be32(pb); /* data offset */
             get_be16(pb); /* nb streams */
             flags = get_be16(pb); /* flags */
             break;
@@ -400,6 +444,14 @@ static int rm_read_header(AVFormatContext *s, AVFormatParameters *ap)
     if (!rm->nb_packets && (flags & 4))
         rm->nb_packets = 3600 * 25;
     get_be32(pb); /* next data header */
+
+    if (!data_off)
+        data_off = url_ftell(pb) - 18;
+    if (indx_off && url_fseek(pb, indx_off, SEEK_SET) >= 0) {
+        rm_read_index(s);
+        url_fseek(pb, data_off + 18, SEEK_SET);
+    }
+
     return 0;
 }
 
@@ -627,16 +679,9 @@ ff_rm_parse_packet (AVFormatContext *s, ByteIOContext *pb,
 
             if (++(ast->sub_packet_cnt) < h)
                 return -1;
-            else {
-                ast->sub_packet_cnt = 0;
-                rm->audio_stream_num = st->index;
-                rm->audio_pkt_cnt = h * w / st->codec->block_align - 1;
-                // Release first audio packet
-                av_new_packet(pkt, st->codec->block_align);
-                memcpy(pkt->data, ast->pkt.data, st->codec->block_align); //FIXME avoid this
-                *timestamp = ast->audiotimestamp;
-                *flags = 2; // Mark first packet as keyframe
-            }
+             ast->sub_packet_cnt = 0;
+             rm->audio_stream_num = st->index;
+             rm->audio_pkt_cnt = h * w / st->codec->block_align;
         } else if (st->codec->codec_id == CODEC_ID_AAC) {
             int x;
             rm->audio_stream_num = st->index;
@@ -644,11 +689,10 @@ ff_rm_parse_packet (AVFormatContext *s, ByteIOContext *pb,
             if (ast->sub_packet_cnt) {
                 for (x = 0; x < ast->sub_packet_cnt; x++)
                     ast->sub_packet_lengths[x] = get_be16(pb);
-                // Release first audio packet
-                rm->audio_pkt_cnt = ast->sub_packet_cnt - 1;
-                av_get_packet(pb, pkt, ast->sub_packet_lengths[0]);
-                *flags = 2; // Mark first packet as keyframe
-            }
+                rm->audio_pkt_cnt = ast->sub_packet_cnt;
+                ast->audiotimestamp = *timestamp;
+            } else
+                return -1;
         } else {
             av_get_packet(pb, pkt, len);
             rm_ac3_swap_bytes(st, pkt);
@@ -695,7 +739,11 @@ ff_rm_retrieve_cache (AVFormatContext *s, ByteIOContext *pb,
                st->codec->block_align);
     }
     rm->audio_pkt_cnt--;
-    pkt->flags = 0;
+    if ((pkt->pts = ast->audiotimestamp) != AV_NOPTS_VALUE) {
+        ast->audiotimestamp = AV_NOPTS_VALUE;
+        pkt->flags = PKT_FLAG_KEY;
+    } else
+        pkt->flags = 0;
     pkt->stream_index = st->index;
 
     return rm->audio_pkt_cnt;
@@ -704,71 +752,49 @@ ff_rm_retrieve_cache (AVFormatContext *s, ByteIOContext *pb,
 static int rm_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     RMDemuxContext *rm = s->priv_data;
-    ByteIOContext *pb = s->pb;
     AVStream *st;
-    int i, len, res;
+    int i, len, res, seq = 1;
     int64_t timestamp, pos;
     int old_flags, flags;
 
-    if (rm->audio_pkt_cnt) {
-        // If there are queued audio packet return them first
-        st = s->streams[rm->audio_stream_num];
-        ff_rm_retrieve_cache(s, s->pb, st, st->priv_data, pkt);
-    } else if (rm->old_format) {
-        RMStream *ast;
-
-        st = s->streams[0];
-        ast = st->priv_data;
-        if (st->codec->codec_id == CODEC_ID_RA_288) {
-            int x, y;
-
-            for (y = 0; y < ast->sub_packet_h; y++)
-                for (x = 0; x < ast->sub_packet_h/2; x++)
-                    if (get_buffer(pb, ast->pkt.data+x*2*ast->audio_framesize+y*ast->coded_framesize, ast->coded_framesize) <= 0)
-                        return AVERROR(EIO);
-            rm->audio_stream_num = 0;
-            rm->audio_pkt_cnt = ast->sub_packet_h * ast->audio_framesize / st->codec->block_align - 1;
-            // Release first audio packet
-            av_new_packet(pkt, st->codec->block_align);
-            memcpy(pkt->data, ast->pkt.data, st->codec->block_align); //FIXME avoid this
-            pkt->flags |= PKT_FLAG_KEY; // Mark first packet as keyframe
-            pkt->stream_index = 0;
+    for (;;) {
+        if (rm->audio_pkt_cnt) {
+            // If there are queued audio packet return them first
+            st = s->streams[rm->audio_stream_num];
+            ff_rm_retrieve_cache(s, s->pb, st, st->priv_data, pkt);
         } else {
-            /* just read raw bytes */
-            len = RAW_PACKET_SIZE;
-            len= av_get_packet(pb, pkt, len);
-            pkt->stream_index = 0;
-            if (len <= 0) {
-                return AVERROR(EIO);
-            }
-            pkt->size = len;
-        }
-        rm_ac3_swap_bytes(st, pkt);
-    } else {
-        int seq=1;
-resync:
-        len=sync(s, &timestamp, &flags, &i, &pos);
-        if(len<0)
-            return AVERROR(EIO);
-        st = s->streams[i];
+            if (rm->old_format) {
+                RMStream *ast;
 
-        old_flags = flags;
-        res = ff_rm_parse_packet (s, s->pb, st, st->priv_data, len, pkt,
-                                  &seq, &flags, &timestamp);
-        if((old_flags&2) && (seq&0x7F) == 1)
-            av_add_index_entry(st, pos, timestamp, 0, 0, AVINDEX_KEYFRAME);
-        if (res < 0)
-            goto resync;
+                st = s->streams[0];
+                ast = st->priv_data;
+                timestamp = AV_NOPTS_VALUE;
+                len = !ast->audio_framesize ? RAW_PACKET_SIZE :
+                    ast->coded_framesize * ast->sub_packet_h / 2;
+                flags = (seq++ == 1) ? 2 : 0;
+            } else {
+                len=sync(s, &timestamp, &flags, &i, &pos);
+                if (len > 0)
+                    st = s->streams[i];
+            }
+
+            if(len<0 || url_feof(s->pb))
+                return AVERROR(EIO);
+
+            old_flags = flags;
+            res = ff_rm_parse_packet (s, s->pb, st, st->priv_data, len, pkt,
+                                      &seq, &flags, &timestamp);
+            if((old_flags&2) && (seq&0x7F) == 1)
+                av_add_index_entry(st, pos, timestamp, 0, 0, AVINDEX_KEYFRAME);
+            if (res)
+                continue;
+        }
 
         if(  (st->discard >= AVDISCARD_NONKEY && !(flags&2))
            || st->discard >= AVDISCARD_ALL){
             av_free_packet(pkt);
-            while (rm->audio_pkt_cnt > 0) {
-                ff_rm_retrieve_cache(s, s->pb, st, st->priv_data, pkt);
-                av_free_packet(pkt);
-            }
-            goto resync;
-        }
+        } else
+            break;
     }
 
     return 0;
