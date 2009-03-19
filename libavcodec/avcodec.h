@@ -813,7 +813,7 @@ typedef struct AVPanScan{
      * - encoding: unused\
      * - decoding: Set by libavcodec\
      */\
-    void *hwaccel_data_private;\
+    void *hwaccel_picture_private;\
 
 
 #define FF_QSCALE_TYPE_MPEG1 0
