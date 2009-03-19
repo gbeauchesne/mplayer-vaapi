@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision: 27770 $ -->
+<!-- $Revision: 29001 $ -->
 <chapter id="video">
 <title>Video output devices</title>
 
@@ -2007,7 +2007,7 @@ the native OSD feature of DVB cards.
 <application>MPlayer</application> supports hardware accelerated playback
 with the Creative DXR2 card.
 </para>
-  
+
 <para>
 First of all you will need properly installed DXR2 drivers. You can find
 the drivers and installation instructions at the
