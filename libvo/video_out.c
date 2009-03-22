@@ -94,6 +94,7 @@ extern const vo_functions_t video_out_mga;
 extern const vo_functions_t video_out_xmga;
 extern const vo_functions_t video_out_x11;
 extern const vo_functions_t video_out_xvmc;
+extern const vo_functions_t video_out_vaapi;
 extern const vo_functions_t video_out_vdpau;
 extern const vo_functions_t video_out_xv;
 extern const vo_functions_t video_out_gl_nosw;
@@ -296,6 +297,9 @@ const vo_functions_t* const video_out_drivers[] =
 #endif
 #ifdef CONFIG_MNG
         &video_out_mng,
+#endif
+#if CONFIG_VAAPI
+        &video_out_vaapi,
 #endif
         NULL
 };
