@@ -80,6 +80,10 @@
 
 #define VOCTRL_UPDATE_SCREENINFO 32
 
+// Return current HW acceleration context
+// void *get_hwaccel_context(void);
+#define VOCTRL_GET_HWACCEL_CONTEXT 33
+
 // Vo can be used by xover
 #define VOCTRL_XOVERLAY_SUPPORT 22
 
