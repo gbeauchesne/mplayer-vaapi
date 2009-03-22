@@ -456,6 +456,9 @@ Codecs:
   --disable-muxer=MUXER     disable specified FFmpeg muxer
   --enable-muxer=MUXER      enable specified FFmpeg muxer
 
+Hardware acceleration:
+  --enable-vaapi            enable VA API acceleration [disable]
+
 Video output:
   --disable-vidix          disable VIDIX [for x86 *nix]
   --with-vidix-drivers[=*] list of VIDIX drivers to be compiled in
@@ -662,6 +665,7 @@ _libopencore_amrwb=auto
 libopenjpeg=auto
 _mencoder=yes
 _mplayer=yes
+_vaapi=auto
 _x11=auto
 _xshape=auto
 _xss=auto
@@ -1020,6 +1024,8 @@ for ac_option do
   --disable-xv)         _xv=no          ;;
   --enable-xvmc)        _xvmc=yes       ;;
   --disable-xvmc)       _xvmc=no        ;;
+  --enable-vaapi)       _vaapi=yes      ;;
+  --disable-vaapi)      _vaapi=no       ;;
   --enable-vda)         _vda=yes        ;;
   --disable-vda)        _vda=no         ;;
   --enable-vdpau)       _vdpau=yes      ;;
@@ -4524,6 +4530,29 @@ else
   libavdecoders=$(filter_out_component decoder 'MPEG_XVMC')
 fi
 echores "$_xvmc"
+
+
+echocheck "VA-API"
+if test "$_vaapi" = yes -o "$_vaapi" = auto; then
+  _vaapi=no
+  cat > $TMPC <<EOF
+#include <va/va_x11.h>
+int main(void) { (void) vaGetDisplay(0); return 0; }
+EOF
+  cc_check -lva-x11 && _vaapi=yes
+fi
+
+if test "$_vaapi" = yes ; then
+  def_vaapi='#define CONFIG_VAAPI 1'
+  libs_mencoder="$libs_mencoder -lva"
+  libs_mplayer="$libs_mplayer -lva-x11"
+  vomodules="vaapi $vomodules"
+else
+  def_vaapi='#define CONFIG_VAAPI 0'
+  novomodules="vaapi $novomodules"
+  libavhwaccels=`echo $libavhwaccels | sed -e "s/\(MPEG[124]\|H26[34]\|WMV3\|VC1\)_VAAPI_HWACCEL//g"`
+fi
+echores "$_vaapi"
 
 
 echocheck "Video Decode Acceleration (VDA)"
@@ -8419,6 +8448,7 @@ TV_V4L2 = $_tv_v4l2
 TWOLAME=$_twolame
 UNRAR_EXEC = $_unrar_exec
 V4L2 = $_v4l2
+VAAPI = $_vaapi
 VCD = $_vcd
 VDA = $_vda
 VDPAU = $_vdpau
@@ -8554,6 +8584,7 @@ CONFIG_MPEGAUDIO=yes
 CONFIG_MUXERS   = yes
 CONFIG_NETWORK  = $networking
 CONFIG_RTPDEC   = $networking
+CONFIG_VAAPI    = $_vaapi
 CONFIG_VF_LAVFI = $_vf_lavfi
 CONFIG_VDA      = $_vda
 CONFIG_VDPAU    = $_vdpau
@@ -8935,6 +8966,7 @@ $def_tdfxfb
 $def_tdfxvid
 $def_tga
 $def_v4l2
+$def_vaapi
 $def_vdpau
 $def_vesa
 $def_vidix
