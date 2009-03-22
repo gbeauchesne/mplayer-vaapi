@@ -998,6 +998,7 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags){
 static inline int is_hwaccel_format(int imgfmt)
 {
     switch (get_video_hwaccel()) {
+    case HWACCEL_VAAPI: return IMGFMT_IS_VAAPI(imgfmt) != 0;
     case HWACCEL_VDPAU: return IMGFMT_IS_VDPAU(imgfmt) != 0;
     case HWACCEL_XVMC:  return IMGFMT_IS_XVMC(imgfmt)  != 0;
     }

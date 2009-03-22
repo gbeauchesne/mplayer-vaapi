@@ -1662,6 +1662,7 @@ static const char help_text[]=
 #define MSGTR_MPCODECS_UnexpectedInitVoError "[VD_FFMPEG] Unexpected init_vo error.\n"
 #define MSGTR_MPCODECS_UnrecoverableErrorRenderBuffersNotTaken "[VD_FFMPEG] Unrecoverable error, render buffers not taken.\n"
 #define MSGTR_MPCODECS_OnlyBuffersAllocatedByVoXvmcAllowed "[VD_FFMPEG] Only buffers allocated by vo_xvmc allowed.\n"
+#define MSGTR_MPCODECS_VAAPIAcceleratedCodec "[VD_FFMPEG] VA API accelerated codec.\n"
 
 // libmpcodecs/ve_lavc.c
 #define MSGTR_MPCODECS_HighQualityEncodingSelected "[VE_LAVC] High quality encoding selected (non-realtime)!\n"
