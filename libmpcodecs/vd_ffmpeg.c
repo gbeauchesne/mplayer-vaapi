@@ -526,7 +526,7 @@ static void update_configuration(sh_video_t *sh, enum AVPixelFormat pix_fmt) {
 static int init_vo(sh_video_t *sh, enum AVPixelFormat pix_fmt)
 {
     vd_ffmpeg_ctx *ctx = sh->context;
-    const AVCodecContext *avctx = ctx->avctx;
+    AVCodecContext * const avctx = ctx->avctx;
     int width, height;
 
     width = avctx->width;
@@ -549,6 +549,7 @@ static int init_vo(sh_video_t *sh, enum AVPixelFormat pix_fmt)
         sh->disp_h = height;
         if (!mpcodecs_config_vo(sh, sh->disp_w, sh->disp_h, ctx->best_csp))
             return -1;
+        avctx->hwaccel_context = mpcodecs_get_hwaccel_context(sh);
         ctx->vo_initialized = 1;
     }
     return 0;

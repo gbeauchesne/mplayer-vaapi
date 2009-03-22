@@ -136,6 +136,12 @@ static int control(struct vf_instance *vf, int request, void* data)
 	*(double *)data = vf->priv->pts;
 	return CONTROL_TRUE;
     }
+    case VFCTRL_GET_HWACCEL_CONTEXT:
+    {
+        if(!video_out) return CONTROL_FALSE; // vo not configured?
+        return(video_out->control(VOCTRL_GET_HWACCEL_CONTEXT, data)
+               == VO_TRUE) ? CONTROL_TRUE : CONTROL_FALSE;
+    }
     }
     // return video_out->control(request,data);
     return CONTROL_UNKNOWN;
