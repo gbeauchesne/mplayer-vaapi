@@ -111,6 +111,7 @@ typedef struct vf_seteq_s
 #define VFCTRL_GET_PTS         17 /* Return last pts value that reached vf_vo*/
 #define VFCTRL_SET_DEINTERLACE 18 /* Set deinterlacing status */
 #define VFCTRL_GET_DEINTERLACE 19 /* Get deinterlacing status */
+#define VFCTRL_GET_HWACCEL_CONTEXT 20 /* Get HW accelerator context */
 
 #include "vfcap.h"
 

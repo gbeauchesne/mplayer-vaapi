@@ -403,3 +403,12 @@ void mpcodecs_draw_slice(sh_video_t *sh, unsigned char **src, int *stride,
     if (vf->draw_slice)
         vf->draw_slice(vf, src, stride, w, h, x, y);
 }
+
+void *mpcodecs_get_hwaccel_context(sh_video_t *sh)
+{
+    void *ctx = NULL;
+    struct vf_instance *vf = sh->vfilter;
+    if (vf->control(vf, VFCTRL_GET_HWACCEL_CONTEXT, &ctx) == CONTROL_TRUE)
+        return ctx;
+    return NULL;
+}
