@@ -127,7 +127,7 @@ void avcodec_register_all(void)
     REGISTER_DECODER (NUV, nuv);
     REGISTER_ENCODER (PAM, pam);
     REGISTER_ENCODER (PBM, pbm);
-    REGISTER_DECODER (PCX, pcx);
+    REGISTER_ENCDEC  (PCX, pcx);
     REGISTER_ENCODER (PGM, pgm);
     REGISTER_ENCODER (PGMYUV, pgmyuv);
     REGISTER_ENCDEC  (PNG, png);
@@ -215,6 +215,7 @@ void avcodec_register_all(void)
     REGISTER_DECODER (SMACKAUD, smackaud);
     REGISTER_ENCDEC  (SONIC, sonic);
     REGISTER_ENCODER (SONIC_LS, sonic_ls);
+    REGISTER_DECODER (TRUEHD, truehd);
     REGISTER_DECODER (TRUESPEECH, truespeech);
     REGISTER_DECODER (TTA, tta);
     REGISTER_DECODER (VMDAUDIO, vmdaudio);

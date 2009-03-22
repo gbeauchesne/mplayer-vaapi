@@ -83,8 +83,8 @@ OBJS-$(CONFIG_FFV1_DECODER)            += ffv1.o rangecoder.o
 OBJS-$(CONFIG_FFV1_ENCODER)            += ffv1.o rangecoder.o
 OBJS-$(CONFIG_FFVHUFF_DECODER)         += huffyuv.o
 OBJS-$(CONFIG_FFVHUFF_ENCODER)         += huffyuv.o
-OBJS-$(CONFIG_FLAC_DECODER)            += flacdec.o
-OBJS-$(CONFIG_FLAC_ENCODER)            += flacenc.o lpc.o
+OBJS-$(CONFIG_FLAC_DECODER)            += flacdec.o flacdata.o flac.o
+OBJS-$(CONFIG_FLAC_ENCODER)            += flacenc.o flacdata.o flac.o lpc.o
 OBJS-$(CONFIG_FLASHSV_DECODER)         += flashsv.o
 OBJS-$(CONFIG_FLASHSV_ENCODER)         += flashsvenc.o
 OBJS-$(CONFIG_FLIC_DECODER)            += flicvideo.o
@@ -159,6 +159,7 @@ OBJS-$(CONFIG_NUV_DECODER)             += nuv.o rtjpeg.o
 OBJS-$(CONFIG_PAM_ENCODER)             += pnmenc.o pnm.o
 OBJS-$(CONFIG_PBM_ENCODER)             += pnmenc.o pnm.o
 OBJS-$(CONFIG_PCX_DECODER)             += pcx.o
+OBJS-$(CONFIG_PCX_ENCODER)             += pcxenc.o
 OBJS-$(CONFIG_PGM_ENCODER)             += pnmenc.o pnm.o
 OBJS-$(CONFIG_PGMYUV_ENCODER)          += pnmenc.o pnm.o
 OBJS-$(CONFIG_PNG_DECODER)             += png.o pngdec.o
@@ -211,6 +212,7 @@ OBJS-$(CONFIG_THP_DECODER)             += mjpegdec.o mjpeg.o
 OBJS-$(CONFIG_TIERTEXSEQVIDEO_DECODER) += tiertexseqv.o
 OBJS-$(CONFIG_TIFF_DECODER)            += tiff.o lzw.o faxcompr.o
 OBJS-$(CONFIG_TIFF_ENCODER)            += tiffenc.o rle.o lzwenc.o
+OBJS-$(CONFIG_TRUEHD_DECODER)          += mlpdec.o mlp_parser.o mlp.o
 OBJS-$(CONFIG_TRUEMOTION1_DECODER)     += truemotion1.o
 OBJS-$(CONFIG_TRUEMOTION2_DECODER)     += truemotion2.o
 OBJS-$(CONFIG_TRUESPEECH_DECODER)      += truespeech.o
@@ -344,17 +346,17 @@ OBJS-$(CONFIG_ADPCM_YAMAHA_ENCODER)       += adpcm.o
 
 # libavformat dependencies
 OBJS-$(CONFIG_EAC3_DEMUXER)            += ac3_parser.o ac3tab.o aac_ac3_parser.o
-OBJS-$(CONFIG_FLAC_DEMUXER)            += flacdec.o
-OBJS-$(CONFIG_FLAC_MUXER)              += flacdec.o
+OBJS-$(CONFIG_FLAC_DEMUXER)            += flacdec.o flacdata.o flac.o
+OBJS-$(CONFIG_FLAC_MUXER)              += flacdec.o flacdata.o flac.o
 OBJS-$(CONFIG_GXF_DEMUXER)             += mpeg12data.o
-OBJS-$(CONFIG_MATROSKA_AUDIO_MUXER)    += xiph.o mpeg4audio.o flacdec.o
+OBJS-$(CONFIG_MATROSKA_AUDIO_MUXER)    += xiph.o mpeg4audio.o flacdec.o flacdata.o flac.o
 OBJS-$(CONFIG_MATROSKA_DEMUXER)        += mpeg4audio.o
-OBJS-$(CONFIG_MATROSKA_MUXER)          += xiph.o mpeg4audio.o flacdec.o
+OBJS-$(CONFIG_MATROSKA_MUXER)          += xiph.o mpeg4audio.o flacdec.o flacdata.o flac.o
 OBJS-$(CONFIG_MOV_DEMUXER)             += mpeg4audio.o mpegaudiodata.o
 OBJS-$(CONFIG_MPEGTS_MUXER)            += mpegvideo.o
 OBJS-$(CONFIG_NUT_MUXER)               += mpegaudiodata.o
-OBJS-$(CONFIG_OGG_DEMUXER)             += flacdec.o
-OBJS-$(CONFIG_OGG_MUXER)               += xiph.o flacdec.o
+OBJS-$(CONFIG_OGG_DEMUXER)             += flacdec.o flacdata.o flac.o
+OBJS-$(CONFIG_OGG_MUXER)               += xiph.o flacdec.o flacdata.o flac.o
 OBJS-$(CONFIG_RTP_MUXER)               += mpegvideo.o
 
 # external codec libraries
@@ -524,7 +526,8 @@ OBJS-$(HAVE_VIS)                       += sparc/dsputil_vis.o           \
 
 
 TESTS = $(addsuffix -test$(EXESUF), cabac dct eval fft h264 rangecoder snow)
-TESTS-$(ARCH_X86) += x86/cpuid-test$(EXESUF) motion-test$(EXESUF)
+TESTS-$(ARCH_X86) += x86/cpuid-test$(EXESUF)
+TESTS-$(HAVE_MMX) += motion-test$(EXESUF)
 
 CLEANFILES = apiexample$(EXESUF)
 DIRS = alpha arm bfin mlib ppc ps2 sh4 sparc x86

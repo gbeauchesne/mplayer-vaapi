@@ -1,15 +1,15 @@
 8
 
 dir
-29001
+29031
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-03-19T11:30:29.558665Z
-29001
-Gabrov
+2009-03-19T19:44:11.791234Z
+29004
+rathann
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2009-03-17T13:10:28.000000Z
-83892cdeb4c6c56084fb6f8ba9854580
-2009-03-17T11:47:27.411710Z
-28980
-reimar
+2009-03-22T00:23:06.000000Z
+0a892068e02eb455515d7c7642b9dafc
+2009-03-19T19:44:11.791234Z
+29004
+rathann
 has-props
 
 Makefile.inc
@@ -106,6 +106,9 @@ dir
 cs
 dir
 
+xsl
+dir
+
 README.maintainers
 file
 
@@ -119,13 +122,10 @@ d6e00e9d4a8bf9add86bd157fb10dd08
 torinthiel
 has-props
 
-xsl
+fr
 dir
 
 es
-dir
-
-fr
 dir
 
 pl

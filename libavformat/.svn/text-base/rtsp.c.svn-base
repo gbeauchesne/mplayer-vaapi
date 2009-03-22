@@ -43,9 +43,6 @@
 
 static int rtsp_read_play(AVFormatContext *s);
 
-/* XXX: currently, the only way to change the protocols consists in
-   changing this variable */
-
 #if LIBAVFORMAT_VERSION_INT < (53 << 16)
 int rtsp_default_protocols = (1 << RTSP_LOWER_TRANSPORT_UDP);
 #endif
@@ -57,11 +54,8 @@ static int rtsp_probe(AVProbeData *p)
     return 0;
 }
 
-static int redir_isspace(int c)
-{
-    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
-}
-
+#define SPACE_CHARS " \t\r\n"
+#define redir_isspace(c) strchr(SPACE_CHARS, c)
 static void skip_spaces(const char **pp)
 {
     const char *p;
@@ -71,15 +65,13 @@ static void skip_spaces(const char **pp)
     *pp = p;
 }
 
-static void get_word_sep(char *buf, int buf_size, const char *sep,
-                         const char **pp)
+static void get_word_until_chars(char *buf, int buf_size,
+                                 const char *sep, const char **pp)
 {
     const char *p;
     char *q;
 
     p = *pp;
-    if (*p == '/')
-        p++;
     skip_spaces(&p);
     q = buf;
     while (!strchr(sep, *p) && *p != '\0') {
@@ -92,22 +84,16 @@ static void get_word_sep(char *buf, int buf_size, const char *sep,
     *pp = p;
 }
 
+static void get_word_sep(char *buf, int buf_size, const char *sep,
+                         const char **pp)
+{
+    if (**pp == '/') (*pp)++;
+    get_word_until_chars(buf, buf_size, sep, pp);
+}
+
 static void get_word(char *buf, int buf_size, const char **pp)
 {
-    const char *p;
-    char *q;
-
-    p = *pp;
-    skip_spaces(&p);
-    q = buf;
-    while (!redir_isspace(*p) && *p != '\0') {
-        if ((q - buf) < buf_size - 1)
-            *q++ = *p;
-        p++;
-    }
-    if (buf_size > 0)
-        *q = '\0';
-    *pp = p;
+    get_word_until_chars(buf, buf_size, SPACE_CHARS, pp);
 }
 
 /* parse the rtpmap description: <codec_name>/<clock_rate>[/<other
@@ -188,7 +174,7 @@ static int hex_to_data(uint8_t *data, const char *p)
     v = 1;
     for(;;) {
         skip_spaces(&p);
-        if (p == '\0')
+        if (*p == '\0')
             break;
         c = toupper((unsigned char)*p++);
         if (c >= '0' && c <= '9')
@@ -216,6 +202,8 @@ static void sdp_parse_fmtp_config(AVCodecContext *codec, char *attr, char *value
             if (!strcmp(attr, "config")) {
                 /* decode the hexa encoded parameter */
                 int len = hex_to_data(NULL, value);
+                if (codec->extradata)
+                    av_free(codec->extradata);
                 codec->extradata = av_mallocz(len + FF_INPUT_BUFFER_PADDING_SIZE);
                 if (!codec->extradata)
                     return;
@@ -255,8 +243,7 @@ static const AttrNameMap attr_names[]=
 int rtsp_next_attr_and_value(const char **p, char *attr, int attr_size, char *value, int value_size)
 {
     skip_spaces(p);
-    if(**p)
-    {
+    if(**p) {
         get_word_sep(attr, attr_size, "=", p);
         if (**p == '=')
             (*p)++;
@@ -597,14 +584,11 @@ static void rtsp_parse_transport(RTSPMessageHeader *reply, const char *p)
 
         get_word_sep(transport_protocol, sizeof(transport_protocol),
                      "/", &p);
-        if (*p == '/')
-            p++;
         if (!strcasecmp (transport_protocol, "rtp")) {
             get_word_sep(profile, sizeof(profile), "/;,", &p);
             lower_transport[0] = '\0';
             /* rtp/avp/<protocol> */
             if (*p == '/') {
-                p++;
                 get_word_sep(lower_transport, sizeof(lower_transport),
                              ";,", &p);
             }
@@ -744,15 +728,36 @@ static void rtsp_skip_packet(AVFormatContext *s)
     }
 }
 
-static void
+/**
+ * Read a RTSP message from the server, or prepare to read data
+ * packets if we're reading data interleaved over the TCP/RTSP
+ * connection as well.
+ *
+ * @param s RTSP demuxer context
+ * @param reply pointer where the RTSP message header will be stored
+ * @param content_ptr pointer where the RTSP message body, if any, will
+ *                    be stored (length is in \p reply)
+ * @param return_on_interleaved_data whether the function may return if we
+ *                   encounter a data marker ('$'), which precedes data
+ *                   packets over interleaved TCP/RTSP connections. If this
+ *                   is set, this function will return 1 after encountering
+ *                   a '$'. If it is not set, the function will skip any
+ *                   data packets (if they are encountered), until a reply
+ *                   has been fully parsed. If no more data is available
+ *                   without parsing a reply, it will return an error.
+ *
+ * @returns 1 if a data packets is ready to be received, -1 on error,
+ *          and 0 on success.
+ */
+static int
 rtsp_read_reply (AVFormatContext *s, RTSPMessageHeader *reply,
-                 unsigned char **content_ptr)
+                 unsigned char **content_ptr, int return_on_interleaved_data)
 {
     RTSPState *rt = s->priv_data;
     char buf[4096], buf1[1024], *q;
     unsigned char ch;
     const char *p;
-    int content_length, line_count = 0;
+    int ret, content_length, line_count = 0;
     unsigned char *content = NULL;
 
     memset(reply, 0, sizeof(*reply));
@@ -762,12 +767,19 @@ rtsp_read_reply (AVFormatContext *s, RTSPMessageHeader *reply,
     for(;;) {
         q = buf;
         for(;;) {
-            if (url_readbuf(rt->rtsp_hd, &ch, 1) != 1)
-                break;
+            ret = url_readbuf(rt->rtsp_hd, &ch, 1);
+#ifdef DEBUG_RTP_TCP
+            printf("ret=%d c=%02x [%c]\n", ret, ch, ch);
+#endif
+            if (ret != 1)
+                return -1;
             if (ch == '\n')
                 break;
             if (ch == '$') {
                 /* XXX: only parse it if first char on line ? */
+                if (return_on_interleaved_data) {
+                    return 1;
+                } else
                 rtsp_skip_packet(s);
             } else if (ch != '\r') {
                 if ((q - buf) < sizeof(buf) - 1)
@@ -809,6 +821,8 @@ rtsp_read_reply (AVFormatContext *s, RTSPMessageHeader *reply,
         *content_ptr = content;
     else
         av_free(content);
+
+    return 0;
 }
 
 static void rtsp_send_cmd(AVFormatContext *s,
@@ -832,7 +846,7 @@ static void rtsp_send_cmd(AVFormatContext *s,
 #endif
     url_write(rt->rtsp_hd, buf, strlen(buf));
 
-    rtsp_read_reply(s, reply, content_ptr);
+    rtsp_read_reply(s, reply, content_ptr, 0);
 }
 
 
@@ -1277,14 +1291,14 @@ static int tcp_read_packet(AVFormatContext *s, RTSPStream **prtsp_st,
 #endif
  redo:
     for(;;) {
-        ret = url_readbuf(rt->rtsp_hd, buf, 1);
-#ifdef DEBUG_RTP_TCP
-        printf("ret=%d c=%02x [%c]\n", ret, buf[0], buf[0]);
-#endif
-        if (ret != 1)
+        RTSPMessageHeader reply;
+
+        ret = rtsp_read_reply(s, &reply, NULL, 1);
+        if (ret == -1)
             return -1;
-        if (buf[0] == '$')
+        if (ret == 1) /* received '$' */
             break;
+        /* XXX: parse message */
     }
     ret = url_readbuf(rt->rtsp_hd, buf, 3);
     if (ret != 3)
@@ -1323,14 +1337,15 @@ static int udp_read_packet(AVFormatContext *s, RTSPStream **prtsp_st,
     RTSPState *rt = s->priv_data;
     RTSPStream *rtsp_st;
     fd_set rfds;
-    int fd, fd_max, n, i, ret;
+    int fd, fd_max, n, i, ret, tcp_fd;
     struct timeval tv;
 
     for(;;) {
         if (url_interrupt_cb())
             return AVERROR(EINTR);
         FD_ZERO(&rfds);
-        fd_max = -1;
+        tcp_fd = fd_max = url_get_file_handle(rt->rtsp_hd);
+        FD_SET(tcp_fd, &rfds);
         for(i = 0; i < rt->nb_rtsp_streams; i++) {
             rtsp_st = rt->rtsp_streams[i];
             if (rtsp_st->rtp_handle) {
@@ -1358,6 +1373,12 @@ static int udp_read_packet(AVFormatContext *s, RTSPStream **prtsp_st,
                         }
                     }
                 }
+            }
+            if (FD_ISSET(tcp_fd, &rfds)) {
+                RTSPMessageHeader reply;
+
+                rtsp_read_reply(s, &reply, NULL, 0);
+                /* XXX: parse message */
             }
         }
     }
@@ -1685,8 +1706,7 @@ static int redir_probe(AVProbeData *pd)
 {
     const char *p;
     p = pd->buf;
-    while (redir_isspace(*p))
-        p++;
+    skip_spaces(&p);
     if (av_strstart(p, "http://", NULL) ||
         av_strstart(p, "rtsp://", NULL))
         return AVPROBE_SCORE_MAX;

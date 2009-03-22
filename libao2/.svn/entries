@@ -1,7 +1,7 @@
 8
 
 dir
-29001
+29031
 svn://svn.mplayerhq.hu/mplayer/trunk/libao2
 svn://svn.mplayerhq.hu/mplayer
 
@@ -26,19 +26,6 @@ svn:special svn:externals svn:needs-lock
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
 
-ao_dxr2.c
-file
-
-
-
-
-2009-03-09T16:00:01.000000Z
-eac01587781498bf83d35633aeb74869
-2009-03-06T19:43:12.249628Z
-28858
-reimar
-has-props
-
 ao_pcm.c
 file
 
@@ -47,6 +34,19 @@ file
 
 2009-03-09T16:00:01.000000Z
 636e48c8ce36ddda1677e697f5fe7843
+2009-03-06T19:43:12.249628Z
+28858
+reimar
+has-props
+
+ao_dxr2.c
+file
+
+
+
+
+2009-03-09T16:00:01.000000Z
+eac01587781498bf83d35633aeb74869
 2009-03-06T19:43:12.249628Z
 28858
 reimar
@@ -78,19 +78,6 @@ file
 reimar
 has-props
 
-ao_sgi.c
-file
-
-
-
-
-2009-03-09T16:00:01.000000Z
-4eb8e00d627c10447081fd081b0b7675
-2009-03-06T19:43:12.249628Z
-28858
-reimar
-has-props
-
 ao_sdl.c
 file
 
@@ -104,6 +91,19 @@ e828c6c99780477ce11669362f7df093
 reimar
 has-props
 
+ao_sgi.c
+file
+
+
+
+
+2009-03-09T16:00:01.000000Z
+4eb8e00d627c10447081fd081b0b7675
+2009-03-06T19:43:12.249628Z
+28858
+reimar
+has-props
+
 ao_v4l2.c
 file
 
@@ -112,18 +112,6 @@ file
 
 2009-03-09T16:00:01.000000Z
 34a416588d46299994632c4f08917049
-2009-03-06T19:43:12.249628Z
-28858
-reimar
-
-ao_ivtv.c
-file
-
-
-
-
-2009-03-09T16:00:01.000000Z
-f335679a1791a92f39b2a5418be037cd
 2009-03-06T19:43:12.249628Z
 28858
 reimar
@@ -140,18 +128,17 @@ file
 28858
 reimar
 
-ao_macosx.c
+ao_ivtv.c
 file
 
 
 
 
 2009-03-09T16:00:01.000000Z
-2388d8cca5b3438b82544b3f13b021c2
+f335679a1791a92f39b2a5418be037cd
 2009-03-06T19:43:12.249628Z
 28858
 reimar
-has-props
 
 ao_dart.c
 file
@@ -164,6 +151,19 @@ file
 2009-03-06T19:43:12.249628Z
 28858
 reimar
+
+ao_macosx.c
+file
+
+
+
+
+2009-03-09T16:00:01.000000Z
+2388d8cca5b3438b82544b3f13b021c2
+2009-03-06T19:43:12.249628Z
+28858
+reimar
+has-props
 
 ao_dsound.c
 file

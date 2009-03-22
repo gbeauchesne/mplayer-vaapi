@@ -1707,6 +1707,7 @@ fi
 
 
 def_fast_64bit='#define HAVE_FAST_64BIT 0'
+def_fast_unaligned='#define HAVE_FAST_UNALIGNED 0'
 _arch_all='X86 X86_32 X86_64 IA64 SPARC ARM AVR32 SH4 PPC ALPHA SGI_MIPS PA_RISC S390 S390X VAX BFIN XTENSA GENERIC'
 case "$host_arch" in
   i[3-9]86|x86|x86pc|k5|k6|k6-2|k6-3|pentium*|athlon*|i586-i686)
@@ -8771,11 +8772,13 @@ $def_yasm
 #define CONFIG_POWERPC_PERF 0
 #define CONFIG_SMALL 0
 #define CONFIG_SWSCALE 1
+#define CONFIG_SWSCALE_ALPHA 1
 
 #define HAVE_GETHRTIME 0
 #define HAVE_INLINE_ASM 0
 #define HAVE_POLL_H 1
 #define HAVE_PPC4XX 0
+#define HAVE_VIRTUALALLOC 0
 
 /* Some FFmpeg codecs depend on these. Enable them unconditionally for now. */
 #define CONFIG_AANDCT 1
