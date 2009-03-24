@@ -1,14 +1,14 @@
 8
 
 dir
-29031
+29049
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/ru
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-02-23T05:47:40.084768Z
-28709
+2009-03-22T13:19:58.888813Z
+29034
 bircoph
 has-props
 
@@ -32,11 +32,11 @@ file
 
 
 
-2009-02-16T15:28:14.000000Z
-18d27e59b7ce28563ddb3aef9c67548e
-2009-02-10T00:23:50.870407Z
-28516
-diego
+2009-03-24T10:19:47.000000Z
+ed12e31f246590e632049390b10f2db7
+2009-03-22T13:19:58.888813Z
+29034
+bircoph
 has-props
 
 cd-dvd.xml

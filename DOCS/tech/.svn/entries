@@ -1,7 +1,7 @@
 8
 
 dir
-29031
+29049
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/tech
 svn://svn.mplayerhq.hu/mplayer
 
@@ -219,19 +219,6 @@ file
 diego
 has-props
 
-libmpcodecs.txt
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-bee6714bfdcac53b2836d0a1c6871cce
-2009-01-11T19:48:51.883031Z
-28304
-diego
-has-props
-
 codecs.conf.txt
 file
 
@@ -243,6 +230,19 @@ c4eaaafd82ac324847a58088293a9cdc
 2008-05-14T17:28:50.503019Z
 26773
 compn
+has-props
+
+libmpcodecs.txt
+file
+
+
+
+
+2009-01-29T11:50:47.000000Z
+bee6714bfdcac53b2836d0a1c6871cce
+2009-01-11T19:48:51.883031Z
+28304
+diego
 has-props
 
 snow.txt
@@ -258,19 +258,6 @@ file
 corey
 has-props
 
-patches.txt
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-391d1c7774a81a02514aa3e3d81f35f7
-2007-09-18T08:36:30.669322Z
-24563
-reimar
-has-props
-
 new_policy_proposal.txt
 file
 
@@ -282,6 +269,19 @@ file
 2007-03-15T12:55:35.967524Z
 22611
 michael
+has-props
+
+patches.txt
+file
+
+
+
+
+2009-01-29T11:50:47.000000Z
+391d1c7774a81a02514aa3e3d81f35f7
+2007-09-18T08:36:30.669322Z
+24563
+reimar
 has-props
 
 wishlist
@@ -375,19 +375,6 @@ file
 diego
 has-props
 
-manpage.txt
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-28675276d54d90c9f610faf48ab101c4
-2007-10-30T22:35:42.789596Z
-24904
-cehoyos
-has-props
-
 libao2.txt
 file
 
@@ -401,17 +388,17 @@ aefccca35161a0a24e4bf6f55301785c
 uau
 has-props
 
-codec-devel.txt
+manpage.txt
 file
 
 
 
 
 2009-01-29T11:50:47.000000Z
-1e64149515edf441ef02884ed6778b31
-2008-12-27T13:58:20.457713Z
-28202
-diego
+28675276d54d90c9f610faf48ab101c4
+2007-10-30T22:35:42.789596Z
+24904
+cehoyos
 has-props
 
 slave.txt
@@ -425,6 +412,19 @@ file
 2009-03-07T13:25:55.927339Z
 28870
 reimar
+has-props
+
+codec-devel.txt
+file
+
+
+
+
+2009-01-29T11:50:47.000000Z
+1e64149515edf441ef02884ed6778b31
+2008-12-27T13:58:20.457713Z
+28202
+diego
 has-props
 
 win32-codec-howto.txt

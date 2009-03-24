@@ -140,6 +140,7 @@ OBJS-$(CONFIG_MPEG_XVMC_DECODER)       += mpegvideo_xvmc.o mpeg12.o mpeg12data.o
 OBJS-$(CONFIG_MPEGVIDEO_DECODER)       += mpeg12.o mpeg12data.o mpegvideo.o error_resilience.o
 OBJS-$(CONFIG_MPEG1VIDEO_DECODER)      += mpeg12.o mpeg12data.o mpegvideo.o error_resilience.o
 OBJS-$(CONFIG_MPEG1VIDEO_ENCODER)      += mpeg12enc.o mpeg12data.o mpegvideo_enc.o motion_est.o ratecontrol.o mpeg12.o mpeg12data.o mpegvideo.o error_resilience.o
+OBJS-$(CONFIG_MPEG2_VAAPI_HWACCEL)     += mpeg12.o mpeg12data.o mpegvideo.o error_resilience.o vaapi.o vaapi_mpeg2.o
 OBJS-$(CONFIG_MPEG2VIDEO_DECODER)      += mpeg12.o mpeg12data.o mpegvideo.o error_resilience.o
 OBJS-$(CONFIG_MPEG2VIDEO_ENCODER)      += mpeg12enc.o mpeg12data.o mpegvideo_enc.o motion_est.o ratecontrol.o mpeg12.o mpeg12data.o mpegvideo.o error_resilience.o
 OBJS-$(CONFIG_MPEG4_DECODER)           += h263dec.o h263.o mpeg4video_parser.o mpeg12data.o mpegvideo.o error_resilience.o
@@ -156,15 +157,20 @@ OBJS-$(CONFIG_MSZH_DECODER)            += lcldec.o
 OBJS-$(CONFIG_NELLYMOSER_DECODER)      += nellymoserdec.o nellymoser.o
 OBJS-$(CONFIG_NELLYMOSER_ENCODER)      += nellymoserenc.o nellymoser.o
 OBJS-$(CONFIG_NUV_DECODER)             += nuv.o rtjpeg.o
-OBJS-$(CONFIG_PAM_ENCODER)             += pnmenc.o pnm.o
-OBJS-$(CONFIG_PBM_ENCODER)             += pnmenc.o pnm.o
+OBJS-$(CONFIG_PAM_DECODER)             += pnmenc.o pnm.o
+OBJS-$(CONFIG_PAM_ENCODER)             += pnmenc.o
+OBJS-$(CONFIG_PBM_DECODER)             += pnmenc.o pnm.o
+OBJS-$(CONFIG_PBM_ENCODER)             += pnmenc.o
 OBJS-$(CONFIG_PCX_DECODER)             += pcx.o
 OBJS-$(CONFIG_PCX_ENCODER)             += pcxenc.o
-OBJS-$(CONFIG_PGM_ENCODER)             += pnmenc.o pnm.o
-OBJS-$(CONFIG_PGMYUV_ENCODER)          += pnmenc.o pnm.o
+OBJS-$(CONFIG_PGM_DECODER)             += pnmenc.o pnm.o
+OBJS-$(CONFIG_PGM_ENCODER)             += pnmenc.o
+OBJS-$(CONFIG_PGMYUV_DECODER)          += pnmenc.o pnm.o
+OBJS-$(CONFIG_PGMYUV_ENCODER)          += pnmenc.o
 OBJS-$(CONFIG_PNG_DECODER)             += png.o pngdec.o
 OBJS-$(CONFIG_PNG_ENCODER)             += png.o pngenc.o
-OBJS-$(CONFIG_PPM_ENCODER)             += pnmenc.o pnm.o
+OBJS-$(CONFIG_PPM_DECODER)             += pnmenc.o pnm.o
+OBJS-$(CONFIG_PPM_ENCODER)             += pnmenc.o
 OBJS-$(CONFIG_PTX_DECODER)             += ptx.o
 OBJS-$(CONFIG_QCELP_DECODER)           += qcelpdec.o qcelp_lsp.o celp_math.o celp_filters.o acelp_vectors.o
 OBJS-$(CONFIG_QDM2_DECODER)            += qdm2.o mpegaudiodec.o mpegaudiodecheader.o mpegaudio.o mpegaudiodata.o
@@ -525,11 +531,12 @@ OBJS-$(HAVE_VIS)                       += sparc/dsputil_vis.o           \
                                           sparc/simple_idct_vis.o       \
 
 
-TESTS = $(addsuffix -test$(EXESUF), cabac dct eval fft h264 rangecoder snow)
-TESTS-$(ARCH_X86) += x86/cpuid-test$(EXESUF)
-TESTS-$(HAVE_MMX) += motion-test$(EXESUF)
+EXAMPLES = apiexample$(EXESUF)
 
-CLEANFILES = apiexample$(EXESUF)
+TESTPROGS = $(addsuffix -test$(EXESUF), cabac dct eval fft h264 rangecoder snow)
+TESTPROGS-$(ARCH_X86) += x86/cpuid-test$(EXESUF)
+TESTPROGS-$(HAVE_MMX) += motion-test$(EXESUF)
+
 DIRS = alpha arm bfin mlib ppc ps2 sh4 sparc x86
 
 include $(SUBDIR)../subdir.mak
