@@ -979,7 +979,7 @@ static int draw_slice(uint8_t *image[], int stride[], int w, int h,
                       int x, int y)
 {
     VdpStatus vdp_st;
-    struct vdpau_render_state *rndr = (struct vdpau_render_state *)image[0];
+    struct vdpau_render_state *rndr = (struct vdpau_render_state *)image[3];
     int max_refs = image_format == IMGFMT_VDPAU_H264 ? rndr->info.h264.num_ref_frames : 2;
 
     if (handle_preemption() < 0)
@@ -1082,10 +1082,10 @@ static uint32_t get_image(mp_image_t *mpi)
         return VO_FALSE;
     }
     mpi->flags |= MP_IMGFLAG_DIRECT;
-    mpi->stride[0] = mpi->stride[1] = mpi->stride[2] = 0;
-    mpi->planes[0] = mpi->planes[1] = mpi->planes[2] = NULL;
+    mpi->stride[0] = mpi->stride[1] = mpi->stride[2] = mpi->stride[3] = 0;
+    mpi->planes[0] = mpi->planes[1] = mpi->planes[2] = mpi->planes[3] = NULL;
     // hack to get around a check and to avoid a special-case in vd_ffmpeg.c
-    mpi->planes[0] = (void *)rndr;
+    mpi->planes[0] = mpi->planes[3] = (void *)rndr;
     mpi->num_planes = 1;
     mpi->priv = rndr;
     return VO_TRUE;
