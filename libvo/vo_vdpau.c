@@ -148,7 +148,7 @@ static void                              *vdpau_lib_handle;
 #define osd_surface output_surfaces[NUM_OUTPUT_SURFACES]
 static VdpOutputSurface                   output_surfaces[NUM_OUTPUT_SURFACES + 1];
 static VdpVideoSurface                    deint_surfaces[3];
-static mp_image_t                        *deint_mpi[3];
+static mp_image_t                        *deint_mpi[2];
 static int                                output_surface_width, output_surface_height;
 
 static VdpVideoMixer                      video_mixer;
@@ -212,6 +212,13 @@ static int                                int_pause;
 
 static void draw_eosd(void);
 
+static void push_deint_surface(VdpVideoSurface surface)
+{
+    deint_surfaces[2] = deint_surfaces[1];
+    deint_surfaces[1] = deint_surfaces[0];
+    deint_surfaces[0] = surface;
+}
+
 static void video_to_output_surface(void)
 {
     VdpTime dummy;
@@ -227,9 +234,10 @@ static void video_to_output_surface(void)
             draw_eosd();
             draw_osd();
             flip_page();
+            push_deint_surface(surface_render[vid_surface_num].surface);
         }
         if (deint)
-            field = top_field_first == i ?
+            field = (top_field_first == i) ^ (deint > 2) ?
                     VDP_VIDEO_MIXER_PICTURE_STRUCTURE_BOTTOM_FIELD:
                     VDP_VIDEO_MIXER_PICTURE_STRUCTURE_TOP_FIELD;
         output_surface = output_surfaces[surface_num];
@@ -458,7 +466,7 @@ static void free_video_specific(void) {
     for (i = 0; i < 3; i++)
         deint_surfaces[i] = VDP_INVALID_HANDLE;
 
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 2; i++)
         if (deint_mpi[i]) {
             deint_mpi[i]->usage_count--;
             deint_mpi[i] = NULL;
@@ -864,9 +872,8 @@ static uint32_t draw_image(mp_image_t *mpi)
         vid_surface_num = rndr - surface_render;
         if (deint_buffer_past_frames) {
             mpi->usage_count++;
-            if (deint_mpi[2])
-                deint_mpi[2]->usage_count--;
-            deint_mpi[2] = deint_mpi[1];
+            if (deint_mpi[1])
+                deint_mpi[1]->usage_count--;
             deint_mpi[1] = deint_mpi[0];
             deint_mpi[0] = mpi;
         }
@@ -874,7 +881,7 @@ static uint32_t draw_image(mp_image_t *mpi)
         VdpStatus vdp_st;
         void *destdata[3] = {mpi->planes[0], mpi->planes[2], mpi->planes[1]};
         struct vdpau_render_state *rndr = get_surface(deint_counter);
-        deint_counter = (deint_counter + 1) & 3;
+        deint_counter = (deint_counter + 1) % 3;
         vid_surface_num = rndr - surface_render;
         vdp_st = vdp_video_surface_put_bits_y_cb_cr(rndr->surface,
                                                     VDP_YCBCR_FORMAT_YV12,
@@ -887,9 +894,7 @@ static uint32_t draw_image(mp_image_t *mpi)
     if (deint < 3)
         deint_surfaces[0] = surface_render[vid_surface_num].surface;
     video_to_output_surface();
-    deint_surfaces[2] = deint_surfaces[1];
-    deint_surfaces[1] = deint_surfaces[0];
-    deint_surfaces[0] = surface_render[vid_surface_num].surface;
+    push_deint_surface(surface_render[vid_surface_num].surface);
     return VO_TRUE;
 }
 
@@ -1029,7 +1034,7 @@ static int preinit(const char *arg)
     deint_type = 3;
     deint_counter = 0;
     deint_buffer_past_frames = 0;
-    deint_mpi[0] = deint_mpi[1] = deint_mpi[2] = NULL;
+    deint_mpi[0] = deint_mpi[1] = NULL;
     chroma_deint = 1;
     pullup = 0;
     denoise = 0;

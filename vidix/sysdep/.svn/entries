@@ -1,7 +1,7 @@
 8
 
 dir
-29049
+29054
 svn://svn.mplayerhq.hu/mplayer/trunk/vidix/sysdep
 svn://svn.mplayerhq.hu/mplayer
 
@@ -26,17 +26,17 @@ svn:special svn:externals svn:needs-lock
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
 
-pci_os2.c
+pci_ia64.c
 file
 
 
 
 
 2009-01-29T11:50:43.000000Z
-83ec8410450b278b3543fb4a403f4a63
-2008-10-16T18:59:27.316302Z
-27788
-diego
+dacb7c5b752e9862ab2c6425b1980bb2
+2002-01-15T08:33:09.000000Z
+4165
+nick
 has-props
 
 AsmMacros_arm32.h
@@ -52,29 +52,16 @@ file
 diego
 has-props
 
-pci_ia64.c
+pci_os2.c
 file
 
 
 
 
 2009-01-29T11:50:43.000000Z
-dacb7c5b752e9862ab2c6425b1980bb2
-2002-01-15T08:33:09.000000Z
-4165
-nick
-has-props
-
-AsmMacros_alpha.h
-file
-
-
-
-
-2009-01-29T11:50:43.000000Z
-5286b4a70e289f9fab507a2b01709b21
-2008-12-03T23:01:03.919423Z
-28085
+83ec8410450b278b3543fb4a403f4a63
+2008-10-16T18:59:27.316302Z
+27788
 diego
 has-props
 
@@ -91,6 +78,19 @@ file
 diego
 has-props
 
+AsmMacros_alpha.h
+file
+
+
+
+
+2009-01-29T11:50:43.000000Z
+5286b4a70e289f9fab507a2b01709b21
+2008-12-03T23:01:03.919423Z
+28085
+diego
+has-props
+
 pci_sparc.c
 file
 
@@ -102,19 +102,6 @@ dacb7c5b752e9862ab2c6425b1980bb2
 2002-01-15T08:33:09.000000Z
 4165
 nick
-has-props
-
-pci_mach386.c
-file
-
-
-
-
-2009-01-29T11:50:43.000000Z
-0e7f7ab9c32494aa25e56766abef53de
-2008-05-16T00:13:03.566393Z
-26785
-diego
 has-props
 
 pci_386bsd.c
@@ -130,16 +117,16 @@ file
 diego
 has-props
 
-libdha_win32.c
+pci_mach386.c
 file
 
 
 
 
 2009-01-29T11:50:43.000000Z
-e1a19199751be3638998db6c545e5fcc
-2009-01-05T14:48:03.147736Z
-28267
+0e7f7ab9c32494aa25e56766abef53de
+2008-05-16T00:13:03.566393Z
+26785
 diego
 has-props
 
@@ -153,6 +140,19 @@ file
 bcbb8bc0cf3ea42880f3a369109921bd
 2008-05-16T00:13:03.566393Z
 26785
+diego
+has-props
+
+libdha_win32.c
+file
+
+
+
+
+2009-01-29T11:50:43.000000Z
+e1a19199751be3638998db6c545e5fcc
+2009-01-05T14:48:03.147736Z
+28267
 diego
 has-props
 
@@ -182,19 +182,6 @@ file
 diego
 has-props
 
-pci_powerpc.c
-file
-
-
-
-
-2009-01-29T11:50:43.000000Z
-8e44e62e54f6e9b8e47bd85e0b35b169
-2002-12-20T21:07:27.000000Z
-8504
-alex
-has-props
-
 pci_netbsd.c
 file
 
@@ -206,6 +193,19 @@ file
 2008-05-16T00:13:03.566393Z
 26785
 diego
+has-props
+
+pci_powerpc.c
+file
+
+
+
+
+2009-01-29T11:50:43.000000Z
+8e44e62e54f6e9b8e47bd85e0b35b169
+2002-12-20T21:07:27.000000Z
+8504
+alex
 has-props
 
 pci_bsdi.c
