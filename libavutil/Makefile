@@ -41,12 +41,10 @@ OBJS = adler32.o                                                        \
        tree.o                                                           \
        utils.o                                                          \
 
-TESTPROGS = $(addsuffix -test$(EXESUF), adler32 aes base64 crc des lls md5 pca sha1 softfloat tree)
+TESTPROGS = adler32 aes base64 crc des lls md5 pca sha1 softfloat tree
 
 DIRS = arm bfin sh4 x86
 
 include $(SUBDIR)../subdir.mak
 
 $(SUBDIR)lzo-test$(EXESUF): EXTRALIBS += -llzo2
-
-CLEANFILES = lzo-test$(EXESUF)

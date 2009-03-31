@@ -3056,7 +3056,7 @@ void ff_mpeg4_init_partitions(MpegEncContext *s)
     uint8_t *start= pbBufPtr(&s->pb);
     uint8_t *end= s->pb.buf_end;
     int size= end - start;
-    int pb_size = (((long)start + size/3)&(~3)) - (long)start;
+    int pb_size = (((intptr_t)start + size/3)&(~3)) - (intptr_t)start;
     int tex_size= (size - 2*pb_size)&(~3);
 
     set_put_bits_buffer_size(&s->pb, pb_size);
@@ -5339,9 +5339,11 @@ static void mpeg4_decode_sprite_trajectory(MpegEncContext * s, GetBitContext *gb
         }
         skip_bits1(gb); /* marker bit */
 //printf("%d %d %d %d\n", x, y, i, s->sprite_warping_accuracy);
-        d[i][0]= x;
-        d[i][1]= y;
+        s->sprite_traj[i][0]= d[i][0]= x;
+        s->sprite_traj[i][1]= d[i][1]= y;
     }
+    for(; i<4; i++)
+        s->sprite_traj[i][0]= s->sprite_traj[i][1]= 0;
 
     while((1<<alpha)<w) alpha++;
     while((1<<beta )<h) beta++; // there seems to be a typo in the mpeg4 std for the definition of w' and h'

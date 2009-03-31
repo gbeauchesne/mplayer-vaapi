@@ -31,7 +31,7 @@
 .\" Title
 .\" --------------------------------------------------------------------------
 .
-.TH MPlayer 1 "2009-01-05" "The MPlayer Project" "The Movie Player"
+.TH MPlayer 1 "2009-03-25" "The MPlayer Project" "The Movie Player"
 .
 .SH NAME
 mplayer  \- movie player
@@ -960,7 +960,7 @@ Device to be used for Apple IR Remote (default is autodetected, Linux only).
 Delay in milliseconds before we start to autorepeat a key (0 to disable).
 .IPs ar-rate
 Number of key presses to generate per second on autorepeat.
-.IPs (no)default-binds
+.IPs (no)default-bindings
 Use the key bindings that MPlayer ships with by default.
 .IPs keylist
 Prints all keys that can be bound to commands.
@@ -3455,9 +3455,6 @@ Apply a noise reduction algorithm to the video (default: 0, no noise reduction).
 .IPs deint=<0\-4>
 Chooses the deinterlacer (default: 0).
 All modes > 0 respect \-field\-dominance.
-.br
-.I NOTE:
-Values > 2 delay the video output by one field.
 .RSss
 .IPs 0
 No deinterlacing.

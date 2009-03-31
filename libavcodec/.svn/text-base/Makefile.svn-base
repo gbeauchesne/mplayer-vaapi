@@ -531,15 +531,14 @@ OBJS-$(HAVE_VIS)                       += sparc/dsputil_vis.o           \
                                           sparc/simple_idct_vis.o       \
 
 
-EXAMPLES = apiexample$(EXESUF)
+EXAMPLES = api
 
-TESTPROGS = $(addsuffix -test$(EXESUF), cabac dct eval fft h264 rangecoder snow)
-TESTPROGS-$(ARCH_X86) += x86/cpuid-test$(EXESUF)
-TESTPROGS-$(HAVE_MMX) += motion-test$(EXESUF)
+TESTPROGS = cabac dct eval fft h264 rangecoder snow
+TESTPROGS-$(ARCH_X86) += x86/cpuid
+TESTPROGS-$(HAVE_MMX) += motion
 
 DIRS = alpha arm bfin mlib ppc ps2 sh4 sparc x86
 
 include $(SUBDIR)../subdir.mak
 
 $(SUBDIR)dct-test$(EXESUF): $(SUBDIR)fdctref.o $(SUBDIR)aandcttab.o
-$(SUBDIR)fft-test$(EXESUF): $(SUBDIR)fdctref.o

@@ -1,9 +1,10 @@
 K 10
 svn:ignore
-V 20
+V 22
 *.d
+*.exe
 *.ho
-cpuid-test
+*-test
 
 K 13
 svn:mergeinfo
