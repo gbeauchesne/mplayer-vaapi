@@ -74,6 +74,26 @@ int get_video_hwaccel(void)
     return video_hwaccel;
 }
 
+const char *get_video_hwaccel_name(int hwaccel)
+{
+    switch (hwaccel) {
+    case HWACCEL_XVMC:  return "XvMC";
+    case HWACCEL_VAAPI: return "VA API";
+    case HWACCEL_VDPAU: return "VDPAU";
+    }
+    return NULL;
+}
+
+const char *get_video_hwaccel_short_name(int hwaccel)
+{
+    switch (hwaccel) {
+    case HWACCEL_XVMC:  return "xvmc";
+    case HWACCEL_VAAPI: return "vaapi";
+    case HWACCEL_VDPAU: return "vdpau";
+    }
+    return NULL;
+}
+
 int get_video_quality_max(sh_video_t *sh_video)
 {
     vf_instance_t *vf = sh_video->vfilter;

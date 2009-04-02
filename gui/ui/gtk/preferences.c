@@ -70,9 +70,11 @@ static GtkWidget * CLVDrivers;
        GtkWidget * prEFontName;
        GtkWidget * prEDVDDevice;
        GtkWidget * prECDRomDevice;
+static GtkWidget * EVHW;
 static GtkWidget * EVFM;
 static GtkWidget * EAFM;
 
+static GtkWidget * CBVHW;
 static GtkWidget * CBVFM;
 static GtkWidget * CBAFM;
 static GtkWidget * CBAudioEqualizer;
@@ -353,6 +355,26 @@ void ShowPreferences( void )
 /* 5th page */
  gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( CBNonInterlaved ),force_ni );
  if ( index_mode == 1 ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( CBIndex ),1 );
+
+ {
+     int     i;
+     GList * Items = NULL;
+     char  * name  = NULL;
+
+     Items = g_list_append(Items, MSGTR_PREFERENCES_None);
+     for (i = 0; i < HWACCEL_COUNT; i++) {
+         const char *hwaccel_name = get_video_hwaccel_name(i);
+         if (!hwaccel_name)
+             continue;
+         Items = g_list_append(Items, hwaccel_name);
+         if (video_hwaccel_name && !gstrcmp(video_hwaccel_name, get_video_hwaccel_short_name(i) ) ) name = hwaccel_name;
+     }
+     gtk_combo_set_popdown_strings(GTK_COMBO(CBVHW), Items);
+     g_list_free(Items);
+     if (name)
+         gtk_entry_set_text(GTK_ENTRY(EVHW), name);
+ }
+
  {
   int     i;
   GList * Items = NULL;
@@ -593,6 +615,17 @@ static void prButton( GtkButton * button, gpointer user_data )
 	force_ni=gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( CBNonInterlaved ) );
 	index_mode=-1;
 	if ( gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( CBIndex ) ) ) index_mode=1;
+
+	{
+            int i;
+            const char *tmp = gtk_entry_get_text(GTK_ENTRY(EVHW));
+            for (i = 0; i < HWACCEL_COUNT; i++) {
+                if (!gstrcmp(tmp, get_video_hwaccel_name(i))) {
+                    video_hwaccel_name = get_video_hwaccel_short_name(i);
+                    break;
+                }
+            }
+        }
 
 	{
 	 int i;
@@ -1188,6 +1221,20 @@ GtkWidget * create_Preferences( void )
 
   CBNonInterlaved=AddCheckButton( MSGTR_PREFERENCES_NI,vbox602 );
   CBIndex=AddCheckButton( MSGTR_PREFERENCES_IDX,vbox602 );
+
+  hbox5=AddHBox( vbox602,1 );
+
+  AddLabel( MSGTR_PREFERENCES_VideoHardwareAcceleration,hbox5 );
+
+  CBVHW=gtk_combo_new();
+  gtk_widget_set_name( CBVHW,"CBVHW" );
+  gtk_widget_show( CBVHW );
+  gtk_box_pack_start( GTK_BOX( hbox5 ),CBVHW,TRUE,TRUE,0 );
+
+  EVHW=GTK_COMBO( CBVHW )->entry;
+  gtk_widget_set_name( EVHW,"CEVHW" );
+  gtk_entry_set_editable( GTK_ENTRY( EVHW ),FALSE );
+  gtk_widget_show( EVHW );
 
   hbox5=AddHBox( vbox602,1 );
 

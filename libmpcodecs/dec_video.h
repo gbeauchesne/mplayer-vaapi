@@ -22,10 +22,11 @@
 #include "libmpdemux/stheader.h"
 
 enum {
-  HWACCEL_NONE,
+  HWACCEL_NONE = 0,
   HWACCEL_XVMC,
   HWACCEL_VAAPI,
-  HWACCEL_VDPAU
+  HWACCEL_VDPAU,
+  HWACCEL_COUNT
 };
 
 extern int field_dominance;
@@ -49,6 +50,8 @@ void resync_video_stream(sh_video_t *sh_video);
 int get_current_video_decoder_lag(sh_video_t *sh_video);
 
 int get_video_hwaccel(void);
+const char *get_video_hwaccel_name(int hwaccel);
+const char *get_video_hwaccel_short_name(int hwaccel);
 
 extern int divx_quality;
 extern char *video_hwaccel_name;
