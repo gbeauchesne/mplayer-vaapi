@@ -230,7 +230,7 @@ static void resize(void)
 
 static int preinit(const char *arg)
 {
-    VAStatus va_status;
+    VAStatus status;
     int va_major_version, va_minor_version;
     int i, max_image_formats, max_profiles;
 
@@ -246,9 +246,9 @@ static int preinit(const char *arg)
         return -1;
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): VA display %p\n", va_context->display);
 
-    va_status = vaInitialize(va_context->display, &va_major_version, &va_minor_version);
-    VA_CHECK_STATUS(va_status);
-    if (va_status != VA_STATUS_SUCCESS)
+    status = vaInitialize(va_context->display, &va_major_version, &va_minor_version);
+    VA_CHECK_STATUS(status);
+    if (status != VA_STATUS_SUCCESS)
         return -1;
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): VA API version %d.%d\n",
            va_major_version, va_minor_version);
@@ -257,9 +257,9 @@ static int preinit(const char *arg)
     va_image_formats = calloc(max_image_formats, sizeof(*va_image_formats));
     if (va_image_formats == NULL)
         return -1;
-    va_status = vaQueryImageFormats(va_context->display, va_image_formats, &va_num_image_formats);
-    VA_CHECK_STATUS(va_status);
-    if (va_status != VA_STATUS_SUCCESS)
+    status = vaQueryImageFormats(va_context->display, va_image_formats, &va_num_image_formats);
+    VA_CHECK_STATUS(status);
+    if (status != VA_STATUS_SUCCESS)
         return -1;
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): %d image formats available\n",
            va_num_image_formats);
@@ -270,9 +270,9 @@ static int preinit(const char *arg)
     va_profiles = calloc(max_profiles, sizeof(*va_profiles));
     if (va_profiles == NULL)
         return -1;
-    va_status = vaQueryConfigProfiles(va_context->display, va_profiles, &va_num_profiles);
-    VA_CHECK_STATUS(va_status);
-    if (va_status != VA_STATUS_SUCCESS)
+    status = vaQueryConfigProfiles(va_context->display, va_profiles, &va_num_profiles);
+    VA_CHECK_STATUS(status);
+    if (status != VA_STATUS_SUCCESS)
         return -1;
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): %d profiles available\n",
            va_num_profiles);
