@@ -27,6 +27,7 @@
 #include "video_out_internal.h"
 #include "x11_common.h"
 #include "libavcodec/vaapi.h"
+#include "gui/interface.h"
 
 #include <va/va_x11.h>
 #include <X11/Xlib.h>
@@ -338,26 +339,27 @@ static int config_x11(uint32_t width, uint32_t height,
     XWindowAttributes wattr;
     int depth;
 
-    /* XXX: merge the GUI support stuff */
-    XGetWindowAttributes(mDisplay, DefaultRootWindow(mDisplay), &wattr);
-    depth = wattr.depth;
-    if (depth != 15 && depth != 16 && depth != 24 && depth != 32)
-        depth = 24;
-    XMatchVisualInfo(mDisplay, mScreen, depth, TrueColor, &visualInfo);
+#if CONFIG_GUI
+    if (use_gui)
+        guiGetEvent(guiSetShVideo, 0);  // the GUI will set up / resize our window
+    else
+#endif
+    {
+        XGetWindowAttributes(mDisplay, DefaultRootWindow(mDisplay), &wattr);
+        depth = wattr.depth;
+        if (depth != 15 && depth != 16 && depth != 24 && depth != 32)
+            depth = 24;
+        XMatchVisualInfo(mDisplay, mScreen, depth, TrueColor, &visualInfo);
 
-    vo_x11_create_vo_window(&visualInfo,
-                            vo_dx, vo_dy, display_width, display_height,
-                            flags, CopyFromParent, "va_x11", title);
+        vo_x11_create_vo_window(&visualInfo,
+                                vo_dx, vo_dy, display_width, display_height,
+                                flags, CopyFromParent, "va_x11", title);
 
-    xswa_mask = CWBorderPixel|CWBackPixel;
-    xswa.border_pixel = 0;
-    xswa.background_pixel = 0;
-    XChangeWindowAttributes(mDisplay, vo_window, xswa_mask, &xswa);
-
-    if (vo_gc != None)
-        XFreeGC(mDisplay, vo_gc);
-    vo_gc = XCreateGC(mDisplay, vo_window, 0L, NULL);
-    XSync(mDisplay, False);
+        xswa_mask = CWBorderPixel|CWBackPixel;
+        xswa.border_pixel = 0;
+        xswa.background_pixel = 0;
+        XChangeWindowAttributes(mDisplay, vo_window, xswa_mask, &xswa);
+    }
 
     if ((flags & VOFLAG_FULLSCREEN) && WinID <= 0)
         vo_fs = VO_TRUE;
@@ -603,6 +605,8 @@ static int control(uint32_t request, void *data, ...)
         return get_image(data);
     case VOCTRL_DRAW_IMAGE:
         return draw_image(data);
+    case VOCTRL_GUISUPPORT:
+        return VO_TRUE;
     case VOCTRL_BORDER:
         vo_x11_border();
         resize();
