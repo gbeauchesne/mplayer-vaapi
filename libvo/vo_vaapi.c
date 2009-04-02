@@ -371,6 +371,11 @@ static void uninit(void)
         va_profiles = NULL;
     }
 
+    if (va_image_formats) {
+        free(va_image_formats);
+        va_image_formats = NULL;
+    }
+
     if (va_context && va_context->display) {
         vaTerminate(va_context->display);
         va_context->display = NULL;
