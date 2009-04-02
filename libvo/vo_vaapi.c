@@ -251,13 +251,6 @@ static int init_entrypoints(VAProfile profile)
     return 0;
 }
 
-static int get_root_window_depth(void)
-{
-    XWindowAttributes wattr;
-    XGetWindowAttributes(mDisplay, DefaultRootWindow(mDisplay), &wattr);
-    return wattr.depth;
-}
-
 static inline VASurfaceID get_surface(int number)
 {
     if (number > va_num_surfaces)
@@ -386,6 +379,43 @@ static void uninit(void)
     }
 }
 
+static int config_x11(uint32_t width, uint32_t height,
+                      uint32_t display_width, uint32_t display_height,
+                      uint32_t flags, char *title)
+{
+    XVisualInfo visualInfo;
+    XSetWindowAttributes xswa;
+    unsigned long xswa_mask;
+    XWindowAttributes wattr;
+    int depth;
+
+    /* XXX: merge the GUI support stuff */
+    XGetWindowAttributes(mDisplay, DefaultRootWindow(mDisplay), &wattr);
+    depth = wattr.depth;
+    if (depth != 15 && depth != 16 && depth != 24 && depth != 32)
+        depth = 24;
+    XMatchVisualInfo(mDisplay, mScreen, depth, TrueColor, &visualInfo);
+
+    vo_x11_create_vo_window(&visualInfo,
+                            vo_dx, vo_dy, display_width, display_height,
+                            flags, CopyFromParent, "va_x11", title);
+
+    xswa_mask = CWBorderPixel|CWBackPixel;
+    xswa.border_pixel = 0;
+    xswa.background_pixel = 0;
+    XChangeWindowAttributes(mDisplay, vo_window, xswa_mask, &xswa);
+
+    if (vo_gc != None)
+        XFreeGC(mDisplay, vo_gc);
+    vo_gc = XCreateGC(mDisplay, vo_window, 0L, NULL);
+    XSync(mDisplay, False);
+
+    if ((flags & VOFLAG_FULLSCREEN) && WinID <= 0)
+        vo_fs = VO_TRUE;
+    calc_drwXY(&g_drawable_xoffset, &g_drawable_yoffset);
+    return 0;
+}
+
 static int config(uint32_t width, uint32_t height,
                   uint32_t display_width, uint32_t display_height,
                   uint32_t flags, char *title, uint32_t format)
@@ -394,13 +424,11 @@ static int config(uint32_t width, uint32_t height,
     VAStatus status;
     int profile, entrypoint;
 
-    XVisualInfo visualInfo;
-    XSetWindowAttributes wattr;
-    unsigned long wattr_mask;
-    int depth;
-
     mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::config(): size %dx%d, display size %dx%d, flags %x, title '%s', format %x (%s)\n",
            width, height, display_width, display_height, flags, title, format, vo_format_name(format));
+
+    if (config_x11(width, height, display_width, display_height, flags, title) < 0)
+        return 1;
 
     /* Check we have not already called config() before */
     if (g_image_format == format &&
@@ -494,36 +522,6 @@ static int config(uint32_t width, uint32_t height,
     g_image_width  = width;
     g_image_height = height;
     g_image_format = format;
-
-    /* Initialize X11 window */
-    /* XXX: merge the GUI support stuff */
-    depth = get_root_window_depth();
-    if (depth != 15 && depth != 16 && depth != 24 && depth != 32)
-        depth = 24;
-    XMatchVisualInfo(mDisplay, mScreen, depth, TrueColor, &visualInfo);
-
-    vo_x11_create_vo_window(&visualInfo,
-                            vo_dx, vo_dy, display_width, display_height,
-                            flags, CopyFromParent, "va_x11", title);
-
-    wattr_mask = CWBorderPixel|CWBackPixel;
-    wattr.border_pixel = 0;
-    wattr.background_pixel = 0;
-    XChangeWindowAttributes(mDisplay, vo_window, wattr_mask, &wattr);
-
-    if (vo_gc != None)
-        XFreeGC(mDisplay, vo_gc);
-    vo_gc = XCreateGC(mDisplay, vo_window, 0L, NULL);
-    XSync(mDisplay, False);
-
-    if ((flags & VOFLAG_FULLSCREEN) && WinID <= 0)
-        vo_fs = VO_TRUE;
-    calc_drwXY(&g_drawable_xoffset, &g_drawable_yoffset);
-
-    panscan_calc();
-
-    if (vo_ontop)
-        vo_x11_setlayer(mDisplay, vo_window, vo_ontop);
 
     vo_directrendering = 1;
     return 0;
