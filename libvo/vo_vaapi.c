@@ -20,24 +20,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-
-#include <va/va_x11.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
 #include "config.h"
 #include "mp_msg.h"
 #include "help_mp.h"
 #include "video_out.h"
 #include "video_out_internal.h"
 #include "x11_common.h"
-#include "aspect.h"
-#include "libavutil/common.h"
 #include "libavcodec/vaapi.h"
+
+#include <va/va_x11.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 static vo_info_t info = {
     "VA API with X11",
@@ -240,11 +233,6 @@ static int preinit(const char *arg)
     VAStatus va_status;
     int va_major_version, va_minor_version;
     int i, max_image_formats, max_profiles;
-
-    if (arg) {
-        mp_msg(MSGT_VO, MSGL_ERR, "[vo_vaapi]  unknown subdevice: %s\n", arg);
-        return ENOSYS;
-    }
 
     if (!vo_init())
         return -1;
