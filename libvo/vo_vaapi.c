@@ -664,12 +664,21 @@ static int control(uint32_t request, void *data, ...)
         return get_image(data);
     case VOCTRL_DRAW_IMAGE:
         return draw_image(data);
+    case VOCTRL_BORDER:
+        vo_x11_border();
+        resize();
+        return VO_TRUE;
     case VOCTRL_FULLSCREEN:
         vo_x11_fullscreen();
         resize();
         return VO_TRUE;
     case VOCTRL_ONTOP:
         vo_x11_ontop();
+        return VO_TRUE;
+    case VOCTRL_GET_PANSCAN:
+        return VO_TRUE;
+    case VOCTRL_SET_PANSCAN:
+        resize();
         return VO_TRUE;
     case VOCTRL_GET_HWACCEL_CONTEXT:
         *((void **)data) = va_context;
