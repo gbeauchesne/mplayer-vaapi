@@ -224,35 +224,6 @@ static int VAEntrypoint_from_imgfmt(uint32_t format)
     return -1;
 }
 
-static int init_entrypoints(VAProfile profile)
-{
-    VAStatus status;
-    int i, max_entrypoints;
-
-    if (va_entrypoints && va_num_entrypoints > 0)
-        return 0;
-
-    if (va_entrypoints)
-        free(va_entrypoints);
-
-    max_entrypoints = vaMaxNumEntrypoints(va_context->display);
-    va_entrypoints = calloc(max_entrypoints, sizeof(*va_entrypoints));
-    if (va_entrypoints == NULL)
-        return -1;
-
-    status = vaQueryConfigEntrypoints(va_context->display, profile,
-                                      va_entrypoints, &va_num_entrypoints);
-    VA_CHECK_STATUS(status);
-    if (status != VA_STATUS_SUCCESS)
-        return -1;
-
-    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] init_entrypoints(%s): %d entrypoints available\n",
-           string_of_VAProfile(profile), va_num_entrypoints);
-    for (i = 0; i < va_num_entrypoints; i++)
-        mp_msg(MSGT_VO, MSGL_DBG2, "  %s\n", string_of_VAEntrypoint(va_entrypoints[i]));
-    return 0;
-}
-
 static inline VASurfaceID get_surface(int number)
 {
     if (number > va_num_surfaces)
