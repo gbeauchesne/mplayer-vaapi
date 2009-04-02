@@ -428,7 +428,7 @@ static int config(uint32_t width, uint32_t height,
            width, height, display_width, display_height, flags, title, format, vo_format_name(format));
 
     if (config_x11(width, height, display_width, display_height, flags, title) < 0)
-        return 1;
+        return -1;
 
     /* Check we have not already called config() before */
     if (g_image_format == format &&
@@ -445,14 +445,14 @@ static int config(uint32_t width, uint32_t height,
     /* Check format -- query_format() should have checked that for us */
     if (!IMGFMT_IS_VAAPI(format)) {
         assert(IMGFMT_IS_VAAPI(format));
-        return 1;
+        return -1;
     }
 
     /* Check profile -- query_format() should have checked that for us */
     profile = VAProfile_from_imgfmt(format);
     if (profile < 0) {
         assert(profile >= 0);
-        return 1;
+        return -1;
     }
 
     /* Check entry-point -- query_format() should have checked that for us */
@@ -460,7 +460,7 @@ static int config(uint32_t width, uint32_t height,
     entrypoint = VAEntrypoint_from_imgfmt(format);
     if (entrypoint < 0) {
         assert(entrypoint >= 0);
-        return 1;
+        return -1;
     }
 
     /* Check chroma format -- query_format() should have checked that for us */
@@ -468,10 +468,10 @@ static int config(uint32_t width, uint32_t height,
     status = vaGetConfigAttributes(va_context->display, profile, entrypoint, &attrib, 1);
     VA_CHECK_STATUS(status);
     if (status != VA_STATUS_SUCCESS)
-        return 1;
+        return -1;
     if ((attrib.value & VA_RT_FORMAT_YUV420) == 0) {
         assert((attrib.value & VA_RT_FORMAT_YUV420) != 0);
-        return 1;
+        return -1;
     }
 
     free_video_specific();
@@ -480,7 +480,7 @@ static int config(uint32_t width, uint32_t height,
     status = vaCreateConfig(va_context->display, profile, entrypoint, &attrib, 1, &va_context->config_id);
     VA_CHECK_STATUS(status);
     if (status != VA_STATUS_SUCCESS)
-        return 1;
+        return -1;
 
     /* Create video surfaces */
     switch (IMGFMT_VAAPI_CODEC(format)) {
@@ -498,16 +498,16 @@ static int config(uint32_t width, uint32_t height,
         break;
     default:
         assert(0);
-        return 1;
+        return -1;
     }
     va_surface_ids = calloc(va_num_surfaces, sizeof(*va_surface_ids));
     if (va_surface_ids == NULL)
-        return 1;
+        return -1;
     status = vaCreateSurfaces(va_context->display, width, height, VA_RT_FORMAT_YUV420,
                               va_num_surfaces, va_surface_ids);
     VA_CHECK_STATUS(status);
     if (status != VA_STATUS_SUCCESS)
-        return 1;
+        return -1;
 
     /* Create a context for the decode pipeline */
     status = vaCreateContext(va_context->display, va_context->config_id,
@@ -516,7 +516,7 @@ static int config(uint32_t width, uint32_t height,
                              &va_context->context_id);
     VA_CHECK_STATUS(status);
     if (status != VA_STATUS_SUCCESS)
-        return 1;
+        return -1;
 
     g_is_paused    = 0;
     g_image_width  = width;
