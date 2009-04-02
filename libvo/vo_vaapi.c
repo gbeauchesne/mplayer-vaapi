@@ -535,6 +535,9 @@ static int has_hw_codec(uint32_t format)
     VAStatus status;
     int profile, entrypoint;
 
+    if (!IMGFMT_IS_VAAPI(format))
+        return 0;
+
     /* check for codec */
     profile = VAProfile_from_imgfmt(format);
     if (profile < 0)
