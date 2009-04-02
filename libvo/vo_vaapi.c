@@ -385,6 +385,8 @@ static void uninit(void)
         free(va_context);
         va_context = NULL;
     }
+
+    vo_x11_uninit();
 }
 
 static int config_x11(uint32_t width, uint32_t height,
