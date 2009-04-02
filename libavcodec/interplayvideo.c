@@ -197,29 +197,24 @@ static int ipvideo_decode_block_opcode_0x6(IpvideoContext *s)
 static int ipvideo_decode_block_opcode_0x7(IpvideoContext *s)
 {
     int x, y;
-    unsigned char P0, P1;
+    unsigned char P[2];
     unsigned int flags;
-    int bitmask;
 
     /* 2-color encoding */
     CHECK_STREAM_PTR(2);
 
-    P0 = *s->stream_ptr++;
-    P1 = *s->stream_ptr++;
+    P[0] = *s->stream_ptr++;
+    P[1] = *s->stream_ptr++;
 
-    if (P0 <= P1) {
+    if (P[0] <= P[1]) {
 
         /* need 8 more bytes from the stream */
         CHECK_STREAM_PTR(8);
 
         for (y = 0; y < 8; y++) {
-            flags = *s->stream_ptr++;
-            for (x = 0x01; x <= 0x80; x <<= 1) {
-                if (flags & x)
-                    *s->pixel_ptr++ = P1;
-                else
-                    *s->pixel_ptr++ = P0;
-            }
+            flags = *s->stream_ptr++ | 0x100;
+            for (; flags != 1; flags >>= 1)
+                *s->pixel_ptr++ = P[flags & 1];
             s->pixel_ptr += s->line_inc;
         }
 
@@ -229,20 +224,12 @@ static int ipvideo_decode_block_opcode_0x7(IpvideoContext *s)
         CHECK_STREAM_PTR(2);
 
         flags = bytestream_get_le16(&s->stream_ptr);
-        bitmask = 0x0001;
         for (y = 0; y < 8; y += 2) {
-            for (x = 0; x < 8; x += 2, bitmask <<= 1) {
-                if (flags & bitmask) {
-                    *(s->pixel_ptr + x) = P1;
-                    *(s->pixel_ptr + x + 1) = P1;
-                    *(s->pixel_ptr + s->stride + x) = P1;
-                    *(s->pixel_ptr + s->stride + x + 1) = P1;
-                } else {
-                    *(s->pixel_ptr + x) = P0;
-                    *(s->pixel_ptr + x + 1) = P0;
-                    *(s->pixel_ptr + s->stride + x) = P0;
-                    *(s->pixel_ptr + s->stride + x + 1) = P0;
-                }
+            for (x = 0; x < 8; x += 2, flags >>= 1) {
+                s->pixel_ptr[x                ] =
+                s->pixel_ptr[x + 1            ] =
+                s->pixel_ptr[x +     s->stride] =
+                s->pixel_ptr[x + 1 + s->stride] = P[flags & 1];
             }
             s->pixel_ptr += s->stride * 2;
         }
@@ -255,12 +242,8 @@ static int ipvideo_decode_block_opcode_0x7(IpvideoContext *s)
 static int ipvideo_decode_block_opcode_0x8(IpvideoContext *s)
 {
     int x, y;
-    unsigned char P[8];
-    unsigned char B[8];
+    unsigned char P[2];
     unsigned int flags = 0;
-    unsigned int bitmask = 0;
-    unsigned char P0 = 0, P1 = 0;
-    int lower_half = 0;
 
     /* 2-color encoding for each 4x4 quadrant, or 2-color encoding on
      * either top and bottom or left and right halves */
@@ -271,104 +254,44 @@ static int ipvideo_decode_block_opcode_0x8(IpvideoContext *s)
 
     if (P[0] <= P[1]) {
 
-        /* need 12 more bytes */
-        CHECK_STREAM_PTR(12);
-        B[0] = *s->stream_ptr++;  B[1] = *s->stream_ptr++;
-        P[2] = *s->stream_ptr++;  P[3] = *s->stream_ptr++;
-        B[2] = *s->stream_ptr++;  B[3] = *s->stream_ptr++;
-        P[4] = *s->stream_ptr++;  P[5] = *s->stream_ptr++;
-        B[4] = *s->stream_ptr++;  B[5] = *s->stream_ptr++;
-        P[6] = *s->stream_ptr++;  P[7] = *s->stream_ptr++;
-        B[6] = *s->stream_ptr++;  B[7] = *s->stream_ptr++;
+        CHECK_STREAM_PTR(14);
+        s->stream_ptr -= 2;
 
-        for (y = 0; y < 8; y++) {
-
-            /* time to reload flags? */
-            if (y == 0) {
-                flags =
-                    ((B[0] & 0xF0) <<  4) | ((B[4] & 0xF0) <<  8) |
-                    ((B[0] & 0x0F)      ) | ((B[4] & 0x0F) <<  4) |
-                    ((B[1] & 0xF0) << 20) | ((B[5] & 0xF0) << 24) |
-                    ((B[1] & 0x0F) << 16) | ((B[5] & 0x0F) << 20);
-                bitmask = 0x00000001;
-                lower_half = 0;  /* still on top half */
-            } else if (y == 4) {
-                flags =
-                    ((B[2] & 0xF0) <<  4) | ((B[6] & 0xF0) <<  8) |
-                    ((B[2] & 0x0F)      ) | ((B[6] & 0x0F) <<  4) |
-                    ((B[3] & 0xF0) << 20) | ((B[7] & 0xF0) << 24) |
-                    ((B[3] & 0x0F) << 16) | ((B[7] & 0x0F) << 20);
-                bitmask = 0x00000001;
-                lower_half = 2;
+        for (y = 0; y < 16; y++) {
+            // new values for each 4x4 block
+            if (!(y & 3)) {
+                P[0] = *s->stream_ptr++; P[1] = *s->stream_ptr++;
+                flags = bytestream_get_le16(&s->stream_ptr);
             }
 
-            for (x = 0; x < 8; x++, bitmask <<= 1) {
-                /* get the pixel values ready for this quadrant */
-                if (x == 0) {
-                    P0 = P[lower_half + 0];
-                    P1 = P[lower_half + 1];
-                } else if (x == 4) {
-                    P0 = P[lower_half + 4];
-                    P1 = P[lower_half + 5];
-                }
-
-                if (flags & bitmask)
-                    *s->pixel_ptr++ = P1;
-                else
-                    *s->pixel_ptr++ = P0;
-            }
-            s->pixel_ptr += s->line_inc;
+            for (x = 0; x < 4; x++, flags >>= 1)
+                *s->pixel_ptr++ = P[flags & 1];
+            s->pixel_ptr += s->stride - 4;
+            // switch to right half
+            if (y == 7) s->pixel_ptr -= 8 * s->stride - 4;
         }
 
     } else {
 
         /* need 10 more bytes */
         CHECK_STREAM_PTR(10);
-        B[0] = *s->stream_ptr++;  B[1] = *s->stream_ptr++;
-        B[2] = *s->stream_ptr++;  B[3] = *s->stream_ptr++;
-        P[2] = *s->stream_ptr++;  P[3] = *s->stream_ptr++;
-        B[4] = *s->stream_ptr++;  B[5] = *s->stream_ptr++;
-        B[6] = *s->stream_ptr++;  B[7] = *s->stream_ptr++;
 
-        if (P[2] <= P[3]) {
+        if (s->stream_ptr[4] <= s->stream_ptr[5]) {
+
+            flags = bytestream_get_le32(&s->stream_ptr);
 
             /* vertical split; left & right halves are 2-color encoded */
 
-            for (y = 0; y < 8; y++) {
-
-                /* time to reload flags? */
-                if (y == 0) {
-                    flags =
-                        ((B[0] & 0xF0) <<  4) | ((B[4] & 0xF0) <<  8) |
-                        ((B[0] & 0x0F)      ) | ((B[4] & 0x0F) <<  4) |
-                        ((B[1] & 0xF0) << 20) | ((B[5] & 0xF0) << 24) |
-                        ((B[1] & 0x0F) << 16) | ((B[5] & 0x0F) << 20);
-                    bitmask = 0x00000001;
-                } else if (y == 4) {
-                    flags =
-                        ((B[2] & 0xF0) <<  4) | ((B[6] & 0xF0) <<  8) |
-                        ((B[2] & 0x0F)      ) | ((B[6] & 0x0F) <<  4) |
-                        ((B[3] & 0xF0) << 20) | ((B[7] & 0xF0) << 24) |
-                        ((B[3] & 0x0F) << 16) | ((B[7] & 0x0F) << 20);
-                    bitmask = 0x00000001;
+            for (y = 0; y < 16; y++) {
+                for (x = 0; x < 4; x++, flags >>= 1)
+                    *s->pixel_ptr++ = P[flags & 1];
+                s->pixel_ptr += s->stride - 4;
+                // switch to right half
+                if (y == 7) {
+                    s->pixel_ptr -= 8 * s->stride - 4;
+                    P[0] = *s->stream_ptr++; P[1] = *s->stream_ptr++;
+                    flags = bytestream_get_le32(&s->stream_ptr);
                 }
-
-                for (x = 0; x < 8; x++, bitmask <<= 1) {
-                    /* get the pixel values ready for this half */
-                    if (x == 0) {
-                        P0 = P[0];
-                        P1 = P[1];
-                    } else if (x == 4) {
-                        P0 = P[2];
-                        P1 = P[3];
-                    }
-
-                    if (flags & bitmask)
-                        *s->pixel_ptr++ = P1;
-                    else
-                        *s->pixel_ptr++ = P0;
-                }
-                s->pixel_ptr += s->line_inc;
             }
 
         } else {
@@ -376,23 +299,14 @@ static int ipvideo_decode_block_opcode_0x8(IpvideoContext *s)
             /* horizontal split; top & bottom halves are 2-color encoded */
 
             for (y = 0; y < 8; y++) {
-
-                flags = B[y];
-                if (y == 0) {
-                    P0 = P[0];
-                    P1 = P[1];
-                } else if (y == 4) {
-                    P0 = P[2];
-                    P1 = P[3];
+                if (y == 4) {
+                    P[0] = *s->stream_ptr++;
+                    P[1] = *s->stream_ptr++;
                 }
+                flags = *s->stream_ptr++ | 0x100;
 
-                for (bitmask = 0x01; bitmask <= 0x80; bitmask <<= 1) {
-
-                    if (flags & bitmask)
-                        *s->pixel_ptr++ = P1;
-                    else
-                        *s->pixel_ptr++ = P0;
-                }
+                for (; flags != 1; flags >>= 1)
+                    *s->pixel_ptr++ = P[flags & 1];
                 s->pixel_ptr += s->line_inc;
             }
         }
@@ -406,9 +320,6 @@ static int ipvideo_decode_block_opcode_0x9(IpvideoContext *s)
 {
     int x, y;
     unsigned char P[4];
-    unsigned int flags = 0;
-    int shifter = 0;
-    unsigned char pix;
 
     /* 4-color encoding */
     CHECK_STREAM_PTR(4);
@@ -416,75 +327,62 @@ static int ipvideo_decode_block_opcode_0x9(IpvideoContext *s)
     memcpy(P, s->stream_ptr, 4);
     s->stream_ptr += 4;
 
-    if ((P[0] <= P[1]) && (P[2] <= P[3])) {
+    if (P[0] <= P[1]) {
+        if (P[2] <= P[3]) {
 
-        /* 1 of 4 colors for each pixel, need 16 more bytes */
-        CHECK_STREAM_PTR(16);
+            /* 1 of 4 colors for each pixel, need 16 more bytes */
+            CHECK_STREAM_PTR(16);
 
-        for (y = 0; y < 8; y++) {
-            /* get the next set of 8 2-bit flags */
-            flags = bytestream_get_le16(&s->stream_ptr);
-            for (x = 0, shifter = 0; x < 8; x++, shifter += 2) {
-                *s->pixel_ptr++ = P[(flags >> shifter) & 0x03];
+            for (y = 0; y < 8; y++) {
+                /* get the next set of 8 2-bit flags */
+                int flags = bytestream_get_le16(&s->stream_ptr);
+                for (x = 0; x < 8; x++, flags >>= 2)
+                    *s->pixel_ptr++ = P[flags & 0x03];
+                s->pixel_ptr += s->line_inc;
             }
-            s->pixel_ptr += s->line_inc;
+
+        } else {
+            uint32_t flags;
+
+            /* 1 of 4 colors for each 2x2 block, need 4 more bytes */
+            CHECK_STREAM_PTR(4);
+
+            flags = bytestream_get_le32(&s->stream_ptr);
+
+            for (y = 0; y < 8; y += 2) {
+                for (x = 0; x < 8; x += 2, flags >>= 2) {
+                    s->pixel_ptr[x                ] =
+                    s->pixel_ptr[x + 1            ] =
+                    s->pixel_ptr[x +     s->stride] =
+                    s->pixel_ptr[x + 1 + s->stride] = P[flags & 0x03];
+                }
+                s->pixel_ptr += s->stride * 2;
+            }
+
         }
-
-    } else if ((P[0] <= P[1]) && (P[2] > P[3])) {
-
-        /* 1 of 4 colors for each 2x2 block, need 4 more bytes */
-        CHECK_STREAM_PTR(4);
-
-        flags = bytestream_get_le32(&s->stream_ptr);
-        shifter = 0;
-
-        for (y = 0; y < 8; y += 2) {
-            for (x = 0; x < 8; x += 2, shifter += 2) {
-                pix = P[(flags >> shifter) & 0x03];
-                *(s->pixel_ptr + x) = pix;
-                *(s->pixel_ptr + x + 1) = pix;
-                *(s->pixel_ptr + s->stride + x) = pix;
-                *(s->pixel_ptr + s->stride + x + 1) = pix;
-            }
-            s->pixel_ptr += s->stride * 2;
-        }
-
-    } else if ((P[0] > P[1]) && (P[2] <= P[3])) {
-
-        /* 1 of 4 colors for each 2x1 block, need 8 more bytes */
-        CHECK_STREAM_PTR(8);
-
-        for (y = 0; y < 8; y++) {
-            /* time to reload flags? */
-            if ((y == 0) || (y == 4)) {
-                flags = bytestream_get_le32(&s->stream_ptr);
-                shifter = 0;
-            }
-            for (x = 0; x < 8; x += 2, shifter += 2) {
-                pix = P[(flags >> shifter) & 0x03];
-                *(s->pixel_ptr + x) = pix;
-                *(s->pixel_ptr + x + 1) = pix;
-            }
-            s->pixel_ptr += s->stride;
-        }
-
     } else {
+        uint64_t flags;
 
-        /* 1 of 4 colors for each 1x2 block, need 8 more bytes */
+        /* 1 of 4 colors for each 2x1 or 1x2 block, need 8 more bytes */
         CHECK_STREAM_PTR(8);
 
-        for (y = 0; y < 8; y += 2) {
-            /* time to reload flags? */
-            if ((y == 0) || (y == 4)) {
-                flags = bytestream_get_le32(&s->stream_ptr);
-                shifter = 0;
+        flags = bytestream_get_le64(&s->stream_ptr);
+        if (P[2] <= P[3]) {
+            for (y = 0; y < 8; y++) {
+                for (x = 0; x < 8; x += 2, flags >>= 2) {
+                    s->pixel_ptr[x    ] =
+                    s->pixel_ptr[x + 1] = P[flags & 0x03];
+                }
+                s->pixel_ptr += s->stride;
             }
-            for (x = 0; x < 8; x++, shifter += 2) {
-                pix = P[(flags >> shifter) & 0x03];
-                *(s->pixel_ptr + x) = pix;
-                *(s->pixel_ptr + s->stride + x) = pix;
+        } else {
+            for (y = 0; y < 8; y += 2) {
+                for (x = 0; x < 8; x++, flags >>= 2) {
+                    s->pixel_ptr[x            ] =
+                    s->pixel_ptr[x + s->stride] = P[flags & 0x03];
+                }
+                s->pixel_ptr += s->stride * 2;
             }
-            s->pixel_ptr += s->stride * 2;
         }
     }
 
@@ -495,94 +393,58 @@ static int ipvideo_decode_block_opcode_0x9(IpvideoContext *s)
 static int ipvideo_decode_block_opcode_0xA(IpvideoContext *s)
 {
     int x, y;
-    unsigned char P[16];
-    unsigned char B[16];
+    unsigned char P[4];
     int flags = 0;
-    int shifter = 0;
-    int index;
-    int split;
-    int lower_half;
 
     /* 4-color encoding for each 4x4 quadrant, or 4-color encoding on
      * either top and bottom or left and right halves */
-    CHECK_STREAM_PTR(4);
+    CHECK_STREAM_PTR(24);
 
-    memcpy(P, s->stream_ptr, 4);
-    s->stream_ptr += 4;
+    if (s->stream_ptr[0] <= s->stream_ptr[1]) {
 
-    if (P[0] <= P[1]) {
+        /* 4-color encoding for each quadrant; need 32 bytes */
+        CHECK_STREAM_PTR(32);
 
-        /* 4-color encoding for each quadrant; need 28 more bytes */
-        CHECK_STREAM_PTR(28);
-
-        memcpy(B, s->stream_ptr, 4);
-        s->stream_ptr += 4;
-        for (y = 4; y < 16; y += 4) {
-            memcpy(P + y, s->stream_ptr, 4);
-            s->stream_ptr += 4;
-            memcpy(B + y, s->stream_ptr, 4);
-            s->stream_ptr += 4;
-        }
-
-        for (y = 0; y < 8; y++) {
-
-            lower_half = (y >= 4) ? 4 : 0;
-            flags = (B[y + 8] << 8) | B[y];
-
-            for (x = 0, shifter = 0; x < 8; x++, shifter += 2) {
-                split = (x >= 4) ? 8 : 0;
-                index = split + lower_half + ((flags >> shifter) & 0x03);
-                *s->pixel_ptr++ = P[index];
+        for (y = 0; y < 16; y++) {
+            // new values for each 4x4 block
+            if (!(y & 3)) {
+                memcpy(P, s->stream_ptr, 4);
+                s->stream_ptr += 4;
+                flags = bytestream_get_le32(&s->stream_ptr);
             }
 
-            s->pixel_ptr += s->line_inc;
+            for (x = 0; x < 4; x++, flags >>= 2)
+                *s->pixel_ptr++ = P[flags & 0x03];
+
+            s->pixel_ptr += s->stride - 4;
+            // switch to right half
+            if (y == 7) s->pixel_ptr -= 8 * s->stride - 4;
         }
 
     } else {
+        // vertical split?
+        int vert = s->stream_ptr[12] <= s->stream_ptr[13];
+        uint64_t flags = 0;
 
         /* 4-color encoding for either left and right or top and bottom
-         * halves; need 20 more bytes */
-        CHECK_STREAM_PTR(20);
+         * halves */
 
-        memcpy(B, s->stream_ptr, 8);
-        s->stream_ptr += 8;
-        memcpy(P + 4, s->stream_ptr, 4);
-        s->stream_ptr += 4;
-        memcpy(B + 8, s->stream_ptr, 8);
-        s->stream_ptr += 8;
-
-        if (P[4] <= P[5]) {
-
-            /* block is divided into left and right halves */
-            for (y = 0; y < 8; y++) {
-
-                flags = (B[y + 8] << 8) | B[y];
-                split = 0;
-
-                for (x = 0, shifter = 0; x < 8; x++, shifter += 2) {
-                    if (x == 4)
-                        split = 4;
-                    *s->pixel_ptr++ = P[split + ((flags >> shifter) & 0x03)];
-                }
-
-                s->pixel_ptr += s->line_inc;
+        for (y = 0; y < 16; y++) {
+            // load values for each half
+            if (!(y & 7)) {
+                memcpy(P, s->stream_ptr, 4);
+                s->stream_ptr += 4;
+                flags = bytestream_get_le64(&s->stream_ptr);
             }
 
-        } else {
+            for (x = 0; x < 4; x++, flags >>= 2)
+                *s->pixel_ptr++ = P[flags & 0x03];
 
-            /* block is divided into top and bottom halves */
-            split = 0;
-            for (y = 0; y < 8; y++) {
-
-                flags = (B[y * 2 + 1] << 8) | B[y * 2];
-                if (y == 4)
-                    split = 4;
-
-                for (x = 0, shifter = 0; x < 8; x++, shifter += 2)
-                    *s->pixel_ptr++ = P[split + ((flags >> shifter) & 0x03)];
-
-                s->pixel_ptr += s->line_inc;
-            }
+            if (vert) {
+                s->pixel_ptr += s->stride - 4;
+                // switch to right half
+                if (y == 7) s->pixel_ptr -= 8 * s->stride - 4;
+            } else if (y & 1) s->pixel_ptr += s->line_inc;
         }
     }
 
@@ -610,18 +472,16 @@ static int ipvideo_decode_block_opcode_0xB(IpvideoContext *s)
 static int ipvideo_decode_block_opcode_0xC(IpvideoContext *s)
 {
     int x, y;
-    unsigned char pix;
 
     /* 16-color block encoding: each 2x2 block is a different color */
     CHECK_STREAM_PTR(16);
 
     for (y = 0; y < 8; y += 2) {
         for (x = 0; x < 8; x += 2) {
-            pix = *s->stream_ptr++;
-            *(s->pixel_ptr + x) = pix;
-            *(s->pixel_ptr + x + 1) = pix;
-            *(s->pixel_ptr + s->stride + x) = pix;
-            *(s->pixel_ptr + s->stride + x + 1) = pix;
+            s->pixel_ptr[x                ] =
+            s->pixel_ptr[x + 1            ] =
+            s->pixel_ptr[x +     s->stride] =
+            s->pixel_ptr[x + 1 + s->stride] = *s->stream_ptr++;
         }
         s->pixel_ptr += s->stride * 2;
     }
@@ -633,23 +493,18 @@ static int ipvideo_decode_block_opcode_0xC(IpvideoContext *s)
 static int ipvideo_decode_block_opcode_0xD(IpvideoContext *s)
 {
     int y;
-    unsigned char P[4];
-    unsigned char index = 0;
+    unsigned char P[2];
 
     /* 4-color block encoding: each 4x4 block is a different color */
     CHECK_STREAM_PTR(4);
 
-    memcpy(P, s->stream_ptr, 4);
-    s->stream_ptr += 4;
-
     for (y = 0; y < 8; y++) {
-        if (y < 4)
-            index = 0;
-        else
-            index = 2;
-
-        memset(s->pixel_ptr    , P[index    ], 4);
-        memset(s->pixel_ptr + 4, P[index + 1], 4);
+        if (!(y & 3)) {
+            P[0] = *s->stream_ptr++;
+            P[1] = *s->stream_ptr++;
+        }
+        memset(s->pixel_ptr,     P[0], 4);
+        memset(s->pixel_ptr + 4, P[1], 4);
         s->pixel_ptr += s->stride;
     }
 
@@ -678,22 +533,17 @@ static int ipvideo_decode_block_opcode_0xE(IpvideoContext *s)
 static int ipvideo_decode_block_opcode_0xF(IpvideoContext *s)
 {
     int x, y;
-    unsigned char sample0, sample1;
+    unsigned char sample[2];
 
     /* dithered encoding */
     CHECK_STREAM_PTR(2);
-    sample0 = *s->stream_ptr++;
-    sample1 = *s->stream_ptr++;
+    sample[0] = *s->stream_ptr++;
+    sample[1] = *s->stream_ptr++;
 
     for (y = 0; y < 8; y++) {
         for (x = 0; x < 8; x += 2) {
-            if (y & 1) {
-                *s->pixel_ptr++ = sample1;
-                *s->pixel_ptr++ = sample0;
-            } else {
-                *s->pixel_ptr++ = sample0;
-                *s->pixel_ptr++ = sample1;
-            }
+            *s->pixel_ptr++ = sample[  y & 1 ];
+            *s->pixel_ptr++ = sample[!(y & 1)];
         }
         s->pixel_ptr += s->line_inc;
     }
