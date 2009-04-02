@@ -58,8 +58,8 @@ static int g_is_paused;
 static uint32_t g_image_width;
 static uint32_t g_image_height;
 static uint32_t g_image_format;
-static uint32_t g_drawable_xoffset; // XXX: use vo_x instead?
-static uint32_t g_drawable_yoffset; // XXX: use vo_y instead?
+static struct vo_rect g_output_rect;
+static VASurfaceID g_output_surface;
 
 static struct vaapi_context *va_context;
 static VAProfile *va_profiles;
@@ -70,7 +70,6 @@ static VASurfaceID *va_surface_ids;
 static int va_num_surfaces;
 static VAImageFormat *va_image_formats;
 static int va_num_image_formats;
-static VASurfaceID g_output_surface;
 
 #if DEBUG
 #define VA_CHECK_STATUS(status) do {                                    \
@@ -261,22 +260,15 @@ static inline VASurfaceID get_surface(int number)
     return va_surface_ids[number];
 }
 
-static void calc_drwXY(uint32_t *drwX, uint32_t *drwY)
+static void resize(void)
 {
-    *drwX = *drwY = 0;
-    if (vo_fs) {
-        aspect(&vo_dwidth, &vo_dheight, A_ZOOM);
-        vo_dwidth = FFMIN(vo_dwidth, vo_screenwidth);
-        vo_dheight = FFMIN(vo_dheight, vo_screenheight);
-        *drwX = (vo_screenwidth - vo_dwidth) / 2;
-        *drwY = (vo_screenheight - vo_dheight) / 2;
-        mp_msg(MSGT_VO, MSGL_V, "[vaapi-fs] dx: %d dy: %d dw: %d dh: %d\n",
-               *drwX, *drwY, vo_dwidth, vo_dheight);
-    }
-    else if (WinID == 0) {
-        *drwX = vo_dx;
-        *drwY = vo_dy;
-    }
+    struct vo_rect src;
+
+    calc_src_dst_rects(g_image_width, g_image_height,
+                       &src, &g_output_rect, NULL, NULL);
+
+    vo_x11_clearwindow(mDisplay, vo_window);
+    flip_page();
 }
 
 static int preinit(const char *arg)
@@ -422,7 +414,6 @@ static int config_x11(uint32_t width, uint32_t height,
 
     if ((flags & VOFLAG_FULLSCREEN) && WinID <= 0)
         vo_fs = VO_TRUE;
-    calc_drwXY(&g_drawable_xoffset, &g_drawable_yoffset);
     return 0;
 }
 
@@ -533,6 +524,7 @@ static int config(uint32_t width, uint32_t height,
     g_image_width  = width;
     g_image_height = height;
     g_image_format = format;
+    resize();
     return 0;
 }
 
@@ -573,8 +565,10 @@ static int put_surface(VASurfaceID surface)
                           surface,
                           vo_window,
                           0, 0, g_image_width, g_image_height,
-                          g_drawable_xoffset, g_drawable_yoffset,
-                          vo_dwidth, vo_dheight,
+                          g_output_rect.left,
+                          g_output_rect.top,
+                          g_output_rect.width,
+                          g_output_rect.height,
                           NULL, 0,
                           VA_FRAME_PICTURE);
 
@@ -650,10 +644,8 @@ static void check_events(void)
 {
     int events = vo_x11_check_events(mDisplay);
 
-    if (events & VO_EVENT_RESIZE) {
-        vo_x11_clearwindow(mDisplay, vo_window);
-        calc_drwXY(&g_drawable_xoffset, &g_drawable_yoffset);
-    }
+    if (events & VO_EVENT_RESIZE)
+        resize();
 
     if (events & (VO_EVENT_EXPOSE|VO_EVENT_RESIZE)) {
     }
@@ -674,8 +666,7 @@ static int control(uint32_t request, void *data, ...)
         return draw_image(data);
     case VOCTRL_FULLSCREEN:
         vo_x11_fullscreen();
-        vo_x11_clearwindow(mDisplay, vo_window);
-        calc_drwXY(&g_drawable_xoffset, &g_drawable_yoffset);
+        resize();
         return VO_TRUE;
     case VOCTRL_ONTOP:
         vo_x11_ontop();
