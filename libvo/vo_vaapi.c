@@ -224,13 +224,6 @@ static int VAEntrypoint_from_imgfmt(uint32_t format)
     return -1;
 }
 
-static inline VASurfaceID get_surface(int number)
-{
-    if (number > va_num_surfaces)
-        return 0;
-    return va_surface_ids[number];
-}
-
 static void resize(void)
 {
     struct vo_rect src;
@@ -483,10 +476,10 @@ static int config(uint32_t width, uint32_t height,
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] config(): size %dx%d, display size %dx%d, flags %x, title '%s', format %x (%s)\n",
            width, height, display_width, display_height, flags, title, format, vo_format_name(format));
 
+    free_video_specific();
+
     if (config_x11(width, height, display_width, display_height, flags, title) < 0)
         return -1;
-
-    free_video_specific();
 
     if (config_vaapi(width, height, format) < 0)
         return -1;
@@ -586,7 +579,7 @@ static uint32_t get_image(mp_image_t *mpi)
     if (!IMGFMT_IS_VAAPI(g_image_format))
         return VO_FALSE;
 
-    surface = get_surface(mpi->number);
+    surface = va_surface_ids[mpi->number];
     if (surface == 0)
         return VO_FALSE;
 
