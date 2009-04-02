@@ -522,8 +522,6 @@ static int config(uint32_t width, uint32_t height,
     g_image_width  = width;
     g_image_height = height;
     g_image_format = format;
-
-    vo_directrendering = 1;
     return 0;
 }
 
