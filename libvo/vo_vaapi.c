@@ -64,16 +64,14 @@ static int va_num_surfaces;
 static VAImageFormat *va_image_formats;
 static int va_num_image_formats;
 
-#if DEBUG
-#define VA_CHECK_STATUS(status) do {                                    \
-        if ((status) != VA_STATUS_SUCCESS) {                            \
-            mp_msg(MSGT_VO, MSGL_ERR, "vo_vaapi:(%s:%d): status (%d) != VA_STATUS_SUCCESS\n", \
-                   __FILE__, __LINE__, status);                         \
-        }                                                               \
-    } while (0)
-#else
-#define VA_CHECK_STATUS(status)
-#endif
+static int check_status(VAStatus status, const char *msg)
+{
+    if (status != VA_STATUS_SUCCESS) {
+        mp_msg(MSGT_VO, MSGL_ERR, "[vo_vaapi] %s: %s\n", msg, vaErrorStr(status));
+        return 0;
+    }
+    return 1;
+}
 
 static const char *string_of_VAImageFormat(VAImageFormat *imgfmt)
 {
@@ -247,8 +245,7 @@ static int preinit(const char *arg)
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): VA display %p\n", va_context->display);
 
     status = vaInitialize(va_context->display, &va_major_version, &va_minor_version);
-    VA_CHECK_STATUS(status);
-    if (status != VA_STATUS_SUCCESS)
+    if (!check_status(status, "vaInitialize()"))
         return -1;
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): VA API version %d.%d\n",
            va_major_version, va_minor_version);
@@ -258,8 +255,7 @@ static int preinit(const char *arg)
     if (va_image_formats == NULL)
         return -1;
     status = vaQueryImageFormats(va_context->display, va_image_formats, &va_num_image_formats);
-    VA_CHECK_STATUS(status);
-    if (status != VA_STATUS_SUCCESS)
+    if (!check_status(status, "vaQueryImageFormats()"))
         return -1;
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): %d image formats available\n",
            va_num_image_formats);
@@ -271,8 +267,7 @@ static int preinit(const char *arg)
     if (va_profiles == NULL)
         return -1;
     status = vaQueryConfigProfiles(va_context->display, va_profiles, &va_num_profiles);
-    VA_CHECK_STATUS(status);
-    if (status != VA_STATUS_SUCCESS)
+    if (!check_status(status, "vaQueryConfigProfiles()"))
         return -1;
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): %d profiles available\n",
            va_num_profiles);
@@ -388,8 +383,7 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
 
     status = vaQueryConfigEntrypoints(va_context->display, profile,
                                       va_entrypoints, &va_num_entrypoints);
-    VA_CHECK_STATUS(status);
-    if (status != VA_STATUS_SUCCESS)
+    if (!check_status(status, "vaQueryConfigEntrypoints()"))
         return -1;
 
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] config_vaapi(%s): %d entrypoints available\n",
@@ -404,16 +398,14 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
     /* Check chroma format (only 4:2:0 for now) */
     attrib.type = VAConfigAttribRTFormat;
     status = vaGetConfigAttributes(va_context->display, profile, entrypoint, &attrib, 1);
-    VA_CHECK_STATUS(status);
-    if (status != VA_STATUS_SUCCESS)
+    if (!check_status(status, "vaGetConfigAttributes()"))
         return -1;
     if ((attrib.value & VA_RT_FORMAT_YUV420) == 0)
         return -1;
 
     /* Create a configuration for the decode pipeline */
     status = vaCreateConfig(va_context->display, profile, entrypoint, &attrib, 1, &va_context->config_id);
-    VA_CHECK_STATUS(status);
-    if (status != VA_STATUS_SUCCESS)
+    if (!check_status(status, "vaCreateConfig()"))
         return -1;
 
     /* Create video surfaces */
@@ -441,8 +433,7 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
         return -1;
     status = vaCreateSurfaces(va_context->display, width, height, VA_RT_FORMAT_YUV420,
                               va_num_surfaces, va_surface_ids);
-    VA_CHECK_STATUS(status);
-    if (status != VA_STATUS_SUCCESS)
+    if (!check_status(status, "vaCreateSurfaces()"))
         return -1;
 
     /* Create a context for the decode pipeline */
@@ -450,8 +441,7 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
                              width, height, VA_PROGRESSIVE,
                              va_surface_ids, va_num_surfaces,
                              &va_context->context_id);
-    VA_CHECK_STATUS(status);
-    if (status != VA_STATUS_SUCCESS)
+    if (!check_status(status, "vaCreateContext()"))
         return -1;
 
     return 0;
@@ -511,9 +501,7 @@ static void put_surface(VASurfaceID surface)
 
     status = vaSyncSurface(va_context->display, va_context->context_id,
                            surface);
-
-    VA_CHECK_STATUS(status);
-    if (status != VA_STATUS_SUCCESS)
+    if (!check_status(status, "vaSyncSurface()"))
         return;
 
     status = vaPutSurface(va_context->display,
@@ -526,6 +514,7 @@ static void put_surface(VASurfaceID surface)
                           g_output_rect.height,
                           NULL, 0,
                           VA_FRAME_PICTURE);
+    check_status(status, "vaPutSurface()");
 }
 
 static int draw_slice(uint8_t * image[], int stride[],
