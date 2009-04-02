@@ -502,16 +502,19 @@ static int query_format(uint32_t format)
     return 0;
 }
 
-static int put_surface(VASurfaceID surface)
+static void put_surface(VASurfaceID surface)
 {
     VAStatus status;
+
+    if (surface == 0)
+        return;
 
     status = vaSyncSurface(va_context->display, va_context->context_id,
                            surface);
 
     VA_CHECK_STATUS(status);
     if (status != VA_STATUS_SUCCESS)
-        return VO_ERROR;
+        return;
 
     status = vaPutSurface(va_context->display,
                           surface,
@@ -523,8 +526,6 @@ static int put_surface(VASurfaceID surface)
                           g_output_rect.height,
                           NULL, 0,
                           VA_FRAME_PICTURE);
-
-    return VO_TRUE;
 }
 
 static int draw_slice(uint8_t * image[], int stride[],
@@ -551,10 +552,7 @@ static void flip_page(void)
 {
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] flip_page()\n");
 
-    if (g_output_surface == 0)
-        return;
     put_surface(g_output_surface);
-    g_output_surface = 0;
 }
 
 static uint32_t get_image(mp_image_t *mpi)
