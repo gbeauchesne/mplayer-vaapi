@@ -597,8 +597,8 @@ static void check_events(void)
     if (events & VO_EVENT_RESIZE)
         resize();
 
-    if (events & (VO_EVENT_EXPOSE|VO_EVENT_RESIZE)) {
-    }
+    if ((events & (VO_EVENT_EXPOSE|VO_EVENT_RESIZE)) && g_is_paused)
+        put_surface(g_output_surface);
 }
 
 static int control(uint32_t request, void *data, ...)
