@@ -416,65 +416,34 @@ static int config_x11(uint32_t width, uint32_t height,
     return 0;
 }
 
-static int config(uint32_t width, uint32_t height,
-                  uint32_t display_width, uint32_t display_height,
-                  uint32_t flags, char *title, uint32_t format)
+static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
 {
     VAConfigAttrib attrib;
     VAStatus status;
     int profile, entrypoint;
 
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::config(): size %dx%d, display size %dx%d, flags %x, title '%s', format %x (%s)\n",
-           width, height, display_width, display_height, flags, title, format, vo_format_name(format));
-
-    if (config_x11(width, height, display_width, display_height, flags, title) < 0)
-        return -1;
-
-    /* Check we have not already called config() before */
-    if (g_image_format == format &&
-        g_image_width == width &&
-        g_image_height == height &&
-        va_num_surfaces &&
-        va_context->config_id > 0 &&
-        va_context->context_id > 0 &&
-        vo_window > 0) {
-        mp_msg(MSGT_VO, MSGL_WARN, "vo_vaapi::config(): check why we are reconfiguring again the VO!\n");
-        return 0;
-    }
-
-    /* Check format -- query_format() should have checked that for us */
-    if (!IMGFMT_IS_VAAPI(format)) {
-        assert(IMGFMT_IS_VAAPI(format));
-        return -1;
-    }
-
-    /* Check profile -- query_format() should have checked that for us */
+    /* Check profile */
     profile = VAProfile_from_imgfmt(format);
     if (profile < 0) {
         assert(profile >= 0);
         return -1;
     }
 
-    /* Check entry-point -- query_format() should have checked that for us */
+    /* Check entry-point */
+    /* XXX: only VLD is supported at this time */
     init_entrypoints(profile);
     entrypoint = VAEntrypoint_from_imgfmt(format);
-    if (entrypoint < 0) {
-        assert(entrypoint >= 0);
+    if (entrypoint != VAEntrypointVLD)
         return -1;
-    }
 
-    /* Check chroma format -- query_format() should have checked that for us */
+    /* check chroma format (only 4:2:0 for now) */
     attrib.type = VAConfigAttribRTFormat;
     status = vaGetConfigAttributes(va_context->display, profile, entrypoint, &attrib, 1);
     VA_CHECK_STATUS(status);
     if (status != VA_STATUS_SUCCESS)
         return -1;
-    if ((attrib.value & VA_RT_FORMAT_YUV420) == 0) {
-        assert((attrib.value & VA_RT_FORMAT_YUV420) != 0);
+    if ((attrib.value & VA_RT_FORMAT_YUV420) == 0)
         return -1;
-    }
-
-    free_video_specific();
 
     /* Create a configuration for the decode pipeline */
     status = vaCreateConfig(va_context->display, profile, entrypoint, &attrib, 1, &va_context->config_id);
@@ -518,6 +487,24 @@ static int config(uint32_t width, uint32_t height,
     if (status != VA_STATUS_SUCCESS)
         return -1;
 
+    return 0;
+}
+
+static int config(uint32_t width, uint32_t height,
+                  uint32_t display_width, uint32_t display_height,
+                  uint32_t flags, char *title, uint32_t format)
+{
+    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::config(): size %dx%d, display size %dx%d, flags %x, title '%s', format %x (%s)\n",
+           width, height, display_width, display_height, flags, title, format, vo_format_name(format));
+
+    if (config_x11(width, height, display_width, display_height, flags, title) < 0)
+        return -1;
+
+    free_video_specific();
+
+    if (config_vaapi(width, height, format) < 0)
+        return -1;
+
     g_is_paused    = 0;
     g_image_width  = width;
     g_image_height = height;
@@ -525,52 +512,25 @@ static int config(uint32_t width, uint32_t height,
     return 0;
 }
 
-static int has_hw_codec(uint32_t format)
-{
-    VAConfigAttrib attrib;
-    VAStatus status;
-    int profile, entrypoint;
-
-    if (!IMGFMT_IS_VAAPI(format))
-        return 0;
-
-    /* check for codec */
-    profile = VAProfile_from_imgfmt(format);
-    if (profile < 0)
-        return 0;
-
-    /* check for entry-point */
-    /* XXX: only VLD is supported at this time */
-    init_entrypoints(profile);
-    entrypoint = VAEntrypoint_from_imgfmt(format);
-    assert(entrypoint == VAEntrypointVLD);
-    if (entrypoint != VAEntrypointVLD)
-        return 0;
-
-    /* check chroma format (only 4:2:0 for now) */
-    attrib.type = VAConfigAttribRTFormat;
-    status = vaGetConfigAttributes(va_context->display, profile, entrypoint, &attrib, 1);
-    VA_CHECK_STATUS(status);
-    if (status != VA_STATUS_SUCCESS)
-        return 0;
-    if ((attrib.value & VA_RT_FORMAT_YUV420) == 0)
-        return 0;
-
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::has_hw_codec(): HW decoder available\n");
-    return 1;
-}
-
 static int query_format(uint32_t format)
 {
+    const int default_caps = (VFCAP_CSP_SUPPORTED |
+                              VFCAP_CSP_SUPPORTED_BY_HW |
+                              VFCAP_HWSCALE_UP |
+                              VFCAP_HWSCALE_DOWN);
+
     mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::query_format(): format %x (%s)\n",
            format, vo_format_name(format));
 
-    if (has_hw_codec(format))
-        return (VFCAP_CSP_SUPPORTED |
-                VFCAP_CSP_SUPPORTED_BY_HW |
-                VFCAP_HWSCALE_UP |
-                VFCAP_HWSCALE_DOWN);
-
+    switch (format) {
+    case IMGFMT_VAAPI_MPEG2:
+    case IMGFMT_VAAPI_MPEG4:
+    case IMGFMT_VAAPI_H263:
+    case IMGFMT_VAAPI_H264:
+    case IMGFMT_VAAPI_WMV3:
+    case IMGFMT_VAAPI_VC1:
+        return default_caps;
+    }
     return 0;
 }
 
