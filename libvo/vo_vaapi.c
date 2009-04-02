@@ -355,16 +355,16 @@ static void free_video_specific(void)
         vaDestroyConfig(va_context->display, va_context->config_id);
         va_context->config_id = 0;
     }
-}
-
-static void uninit(void)
-{
-    free_video_specific();
 
     if (va_entrypoints) {
         free(va_entrypoints);
         va_entrypoints = NULL;
     }
+}
+
+static void uninit(void)
+{
+    free_video_specific();
 
     if (va_profiles) {
         free(va_profiles);
@@ -423,7 +423,7 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
 {
     VAConfigAttrib attrib;
     VAStatus status;
-    int profile, entrypoint;
+    int i, profile, entrypoint, max_entrypoints;
 
     /* Check profile */
     profile = VAProfile_from_imgfmt(format);
@@ -431,7 +431,22 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
         return -1;
 
     /* Check entry-point (only VLD for now) */
-    init_entrypoints(profile);
+    max_entrypoints = vaMaxNumEntrypoints(va_context->display);
+    va_entrypoints = calloc(max_entrypoints, sizeof(*va_entrypoints));
+    if (va_entrypoints == NULL)
+        return -1;
+
+    status = vaQueryConfigEntrypoints(va_context->display, profile,
+                                      va_entrypoints, &va_num_entrypoints);
+    VA_CHECK_STATUS(status);
+    if (status != VA_STATUS_SUCCESS)
+        return -1;
+
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] config_vaapi(%s): %d entrypoints available\n",
+           string_of_VAProfile(profile), va_num_entrypoints);
+    for (i = 0; i < va_num_entrypoints; i++)
+        mp_msg(MSGT_VO, MSGL_DBG2, "  %s\n", string_of_VAEntrypoint(va_entrypoints[i]));
+
     entrypoint = VAEntrypoint_from_imgfmt(format);
     if (entrypoint != VAEntrypointVLD)
         return -1;
