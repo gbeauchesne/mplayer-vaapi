@@ -721,6 +721,7 @@ static const char help_text[]=
 #define MSGTR_PREFERENCES_IDX "Rebuild index table, if needed"
 #define MSGTR_PREFERENCES_VideoCodecFamily "Video codec family:"
 #define MSGTR_PREFERENCES_AudioCodecFamily "Audio codec family:"
+#define MSGTR_PREFERENCES_VideoHardwareAcceleration "Video hardware acceleration:"
 #define MSGTR_PREFERENCES_FRAME_OSD_Level "OSD level"
 #define MSGTR_PREFERENCES_FRAME_Subtitle "Subtitle"
 #define MSGTR_PREFERENCES_FRAME_Font "Font"
