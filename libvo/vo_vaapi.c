@@ -48,22 +48,22 @@ const LIBVO_EXTERN(vaapi)
 #define NUM_VIDEO_SURFACES_H264  17 /* 1 decode frame, up to 16 references */
 #define NUM_VIDEO_SURFACES_VC1    3 /* 1 decode frame, up to 2 references */
 
-static int g_is_paused;
-static uint32_t g_image_width;
-static uint32_t g_image_height;
-static uint32_t g_image_format;
-static struct vo_rect g_output_rect;
-static VASurfaceID g_output_surface;
+static int                      g_is_paused;
+static uint32_t                 g_image_width;
+static uint32_t                 g_image_height;
+static uint32_t                 g_image_format;
+static struct vo_rect           g_output_rect;
+static VASurfaceID              g_output_surface;
 
-static struct vaapi_context *va_context;
-static VAProfile *va_profiles;
-static int va_num_profiles;
-static VAEntrypoint *va_entrypoints;
-static int va_num_entrypoints;
-static VASurfaceID *va_surface_ids;
-static int va_num_surfaces;
-static VAImageFormat *va_image_formats;
-static int va_num_image_formats;
+static struct vaapi_context    *va_context;
+static VAProfile               *va_profiles;
+static int                      va_num_profiles;
+static VAEntrypoint            *va_entrypoints;
+static int                      va_num_entrypoints;
+static VASurfaceID             *va_surface_ids;
+static int                      va_num_surfaces;
+static VAImageFormat           *va_image_formats;
+static int                      va_num_image_formats;
 
 static int check_status(VAStatus status, const char *msg)
 {
