@@ -326,6 +326,9 @@ static void uninit(void)
         va_context = NULL;
     }
 
+#ifdef CONFIG_XF86VM
+    vo_vm_close();
+#endif
     vo_x11_uninit();
 }
 
@@ -345,7 +348,12 @@ static int config_x11(uint32_t width, uint32_t height,
     else
 #endif
     {
-        XGetWindowAttributes(mDisplay, DefaultRootWindow(mDisplay), &wattr);
+#ifdef CONFIG_XF86VM
+        if (flags & VOFLAG_MODESWITCHING)
+            vo_vm_switch();
+        else
+#endif
+            XGetWindowAttributes(mDisplay, DefaultRootWindow(mDisplay), &wattr);
         depth = wattr.depth;
         if (depth != 15 && depth != 16 && depth != 24 && depth != 32)
             depth = 24;
@@ -359,6 +367,17 @@ static int config_x11(uint32_t width, uint32_t height,
         xswa.border_pixel = 0;
         xswa.background_pixel = 0;
         XChangeWindowAttributes(mDisplay, vo_window, xswa_mask, &xswa);
+
+#ifdef CONFIG_XF86VM
+        if (flags & VOFLAG_MODESWITCHING) {
+            /* Grab the mouse pointer in our window */
+            if (vo_grabpointer)
+                XGrabPointer(mDisplay, vo_window, True, 0,
+                             GrabModeAsync, GrabModeAsync,
+                             vo_window, None, CurrentTime);
+            XSetInputFocus(mDisplay, vo_window, RevertToNone, CurrentTime);
+        }
+#endif
     }
 
     if ((flags & VOFLAG_FULLSCREEN) && WinID <= 0)
