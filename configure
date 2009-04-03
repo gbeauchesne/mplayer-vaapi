@@ -1557,8 +1557,7 @@ libavdecoders=$(echo $libavdecoders_all)
 libavencoders=$(echo $libavencoders_all)
 libavparsers=$(echo $libavparsers_all)
 libavbsfs=$(echo $libavbsfs_all)
-# Disable all hardware accelerators for now.
-libavhwaccels=
+libavhwaccels=$(echo $libavhwaccels_all)
 libavdemuxers=$(echo $libavdemuxers_all)
 libavmuxers=$(echo $libavmuxers_all)
 libavprotocols=$(echo $libavprotocols_all)
