@@ -997,7 +997,8 @@ static int mov_read_stsd(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
             // ttxt stsd contains display flags, justification, background
             // color, fonts, and default styles, so fake an atom to read it
             MOVAtom fake_atom = { .size = size - (url_ftell(pb) - start_pos) };
-            mov_read_glbl(c, pb, fake_atom);
+            if (format != AV_RL32("mp4s")) // mp4s contains a regular esds atom
+                mov_read_glbl(c, pb, fake_atom);
             st->codec->codec_id= id;
             st->codec->width = sc->width;
             st->codec->height = sc->height;

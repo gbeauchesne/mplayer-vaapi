@@ -1,7 +1,7 @@
 8
 
 dir
-29125
+29134
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml
 svn://svn.mplayerhq.hu/mplayer
 
@@ -106,9 +106,6 @@ dir
 cs
 dir
 
-xsl
-dir
-
 README.maintainers
 file
 
@@ -122,10 +119,13 @@ d6e00e9d4a8bf9add86bd157fb10dd08
 torinthiel
 has-props
 
-fr
+xsl
 dir
 
 es
+dir
+
+fr
 dir
 
 pl

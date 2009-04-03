@@ -1,15 +1,15 @@
 8
 
 dir
-29125
+29134
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man/en
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-04-01T08:46:03.094949Z
-29120
-reimar
+2009-04-02T19:02:59.032844Z
+29133
+bircoph
 
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-04-02T09:20:37.000000Z
-b62e1cffc770d070befbe1b9196ed17c
-2009-04-01T08:46:03.094949Z
-29120
-reimar
+2009-04-03T07:43:00.000000Z
+d9d64fd3f952855d0728fe2091a6c823
+2009-04-02T19:02:59.032844Z
+29133
+bircoph
 has-props
 
