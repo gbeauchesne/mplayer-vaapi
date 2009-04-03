@@ -353,7 +353,7 @@ static int config_x11(uint32_t width, uint32_t height,
             vo_vm_switch();
         else
 #endif
-            XGetWindowAttributes(mDisplay, DefaultRootWindow(mDisplay), &wattr);
+        XGetWindowAttributes(mDisplay, DefaultRootWindow(mDisplay), &wattr);
         depth = wattr.depth;
         if (depth != 15 && depth != 16 && depth != 24 && depth != 32)
             depth = 24;
@@ -361,10 +361,10 @@ static int config_x11(uint32_t width, uint32_t height,
 
         vo_x11_create_vo_window(&visualInfo,
                                 vo_dx, vo_dy, display_width, display_height,
-                                flags, CopyFromParent, "va_x11", title);
+                                flags, CopyFromParent, "vaapi", title);
 
-        xswa_mask = CWBorderPixel|CWBackPixel;
-        xswa.border_pixel = 0;
+        xswa_mask             = CWBorderPixel | CWBackPixel;
+        xswa.border_pixel     = 0;
         xswa.background_pixel = 0;
         XChangeWindowAttributes(mDisplay, vo_window, xswa_mask, &xswa);
 
