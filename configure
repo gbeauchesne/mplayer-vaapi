@@ -797,10 +797,10 @@ for ac_option do
     ;;
 
   --extra-cflags=*)
-    extra_cflags=`echo $ac_option | cut -d '=' -f 2`
+    extra_cflags=`echo $ac_option | cut -d '=' -f 2-`
     ;;
   --extra-ldflags=*)
-    extra_ldflags=`echo $ac_option | cut -d '=' -f 2`
+    extra_ldflags=`echo $ac_option | cut -d '=' -f 2-`
     ;;
   --extra-libs=*)
     extra_libs=`echo $ac_option | cut -d '=' -f 2`
@@ -8866,6 +8866,8 @@ $def_xvid_lavc
 #define CONFIG_MPEG2_VAAPI_HWACCEL 0
 #define CONFIG_MPEG4_VAAPI_HWACCEL 0
 #define CONFIG_H264_VAAPI_HWACCEL 0
+#define CONFIG_VC1_VAAPI_HWACCEL 0
+#define CONFIG_WMV3_VAAPI_HWACCEL 0
 
 #endif /* MPLAYER_CONFIG_H */
 EOF
