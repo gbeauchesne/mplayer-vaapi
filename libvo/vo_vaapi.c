@@ -342,7 +342,7 @@ static int config_x11(uint32_t width, uint32_t height,
     XWindowAttributes wattr;
     int depth;
 
-#if CONFIG_GUI
+#ifdef CONFIG_GUI
     if (use_gui)
         guiGetEvent(guiSetShVideo, 0);  // the GUI will set up / resize our window
     else
