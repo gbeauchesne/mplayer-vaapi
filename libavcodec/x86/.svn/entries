@@ -1,15 +1,15 @@
 8
 
 dir
-18339
+18538
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/x86
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-04-04T13:20:53.811482Z
-18330
-stefano
+2009-04-15T19:10:16.080753Z
+18527
+conrad
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -57,11 +57,11 @@ file
 
 
 
-2009-04-06T14:43:52.000000Z
-4b49906d640c2b732a7efaf1a0e8f3d2
-2009-04-04T13:20:53.811482Z
-18330
-stefano
+2009-04-16T16:02:20.000000Z
+16f50eaa8f617bfe4a5f49315773725d
+2009-04-09T21:53:48.044750Z
+18404
+michael
 has-props
 
 fdct_mmx.c
@@ -203,6 +203,18 @@ file
 diego
 has-props
 
+vp6dsp_sse2.c
+file
+
+
+
+
+2009-02-16T15:28:16.000000Z
+ff23240ae388de4830a5f5fb13dd6eb1
+2009-02-13T00:02:33.268424Z
+17195
+aurel
+
 snowdsp_mmx.c
 file
 
@@ -216,17 +228,17 @@ file
 cehoyos
 has-props
 
-vp6dsp_sse2.c
+vp3dsp_sse2.h
 file
 
 
 
 
-2009-02-16T15:28:16.000000Z
-ff23240ae388de4830a5f5fb13dd6eb1
-2009-02-13T00:02:33.268424Z
-17195
-aurel
+2009-01-29T11:51:00.000000Z
+d6f841fd99b20209cd1128850a9e5db8
+2008-12-22T09:12:42.514770Z
+16270
+diego
 
 h264_idct_sse2.asm
 file
@@ -240,29 +252,29 @@ file
 17524
 darkshikari
 
-vp3dsp_sse2.h
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-d6f841fd99b20209cd1128850a9e5db8
-2008-12-22T09:12:42.514770Z
-16270
-diego
-
 vc1dsp_mmx.c
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
-667235ec7df7625e0a938bc813ec8c89
-2008-10-16T13:34:09.085992Z
-15627
-flameeyes
+2009-04-16T16:02:20.000000Z
+e9e888ffd7848009a780d1c4ac5364bf
+2009-04-15T02:25:42.336293Z
+18519
+conrad
+
+vp6dsp_sse2.h
+file
+
+
+
+
+2009-02-16T15:28:16.000000Z
+05495abb74a11dc58180c50b9dd5788e
+2009-02-13T00:02:33.268424Z
+17195
+aurel
 
 fft_3dn.c
 file
@@ -276,18 +288,6 @@ f9d46e16b88bc8673e3b3ad7a5030e91
 14698
 lorenm
 has-props
-
-vp6dsp_sse2.h
-file
-
-
-
-
-2009-02-16T15:28:16.000000Z
-05495abb74a11dc58180c50b9dd5788e
-2009-02-13T00:02:33.268424Z
-17195
-aurel
 
 cavsdsp_mmx.c
 file
@@ -326,19 +326,6 @@ file
 aurel
 has-props
 
-dsputil_mmx_avg_template.c
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-a712bfcb0fa79f7a0e2127a61c8752de
-2009-01-19T15:46:40.737658Z
-16684
-diego
-has-props
-
 flacdsp_mmx.c
 file
 
@@ -352,17 +339,30 @@ file
 flameeyes
 has-props
 
-vp3dsp_mmx.c
+dsputil_mmx_avg_template.c
 file
 
 
 
 
-2009-02-05T14:32:37.000000Z
-5055c8717e171101860c2d2aafbc606a
-2009-02-01T02:00:19.447756Z
-16912
+2009-01-29T11:51:00.000000Z
+a712bfcb0fa79f7a0e2127a61c8752de
+2009-01-19T15:46:40.737658Z
+16684
 diego
+has-props
+
+mpegvideo_mmx.c
+file
+
+
+
+
+2009-04-06T14:43:52.000000Z
+6d3ffbe506a74027c201ea1ee62f6218
+2009-04-04T13:20:53.811482Z
+18330
+stefano
 has-props
 
 h264_deblock_sse2.asm
@@ -377,17 +377,17 @@ file
 17524
 darkshikari
 
-mpegvideo_mmx.c
+vp3dsp_mmx.c
 file
 
 
 
 
-2009-04-06T14:43:52.000000Z
-6d3ffbe506a74027c201ea1ee62f6218
-2009-04-04T13:20:53.811482Z
-18330
-stefano
+2009-02-05T14:32:37.000000Z
+5055c8717e171101860c2d2aafbc606a
+2009-02-01T02:00:19.447756Z
+16912
+diego
 has-props
 
 h264_i386.h
@@ -409,11 +409,11 @@ file
 
 
 
-2009-01-29T11:51:00.000000Z
-ea2ab8aecc516d2a6b6c06658590cec6
-2009-01-19T15:46:40.737658Z
-16684
-diego
+2009-04-16T16:02:20.000000Z
+e7ba95a5bfeb4634ab2b499a3a0afdec
+2009-04-15T19:10:16.080753Z
+18527
+conrad
 has-props
 
 idct_mmx.c
@@ -447,11 +447,11 @@ file
 
 
 
-2009-04-06T14:43:52.000000Z
-886a7868e246bb066f27d81d4f48e605
-2009-04-04T13:20:53.811482Z
-18330
-stefano
+2009-04-16T16:02:20.000000Z
+a50ff3d7e175bdf8705235e325ae8e43
+2009-04-15T19:10:16.080753Z
+18527
+conrad
 has-props
 
 dsputil_mmx.h
@@ -472,11 +472,11 @@ file
 
 
 
-2009-02-16T15:28:16.000000Z
-cc8236a26dda191236a10d5a4d348aca
-2009-02-08T06:35:21.396182Z
-17046
-bcoudurier
+2009-04-16T16:02:20.000000Z
+96ea8927e0e38d729ede1f51c875693a
+2009-04-14T23:56:10.743556Z
+18518
+conrad
 has-props
 
 dsputil_yasm.asm

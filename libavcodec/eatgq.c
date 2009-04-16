@@ -30,7 +30,7 @@
 
 #include "avcodec.h"
 #define ALT_BITSTREAM_READER_LE
-#include "bitstream.h"
+#include "get_bits.h"
 #include "bytestream.h"
 #include "dsputil.h"
 #include "aandcttab.h"
@@ -190,7 +190,9 @@ static void tgq_calculate_qtable(TgqContext *s, int quant){
 
 static int tgq_decode_frame(AVCodecContext *avctx,
                             void *data, int *data_size,
-                            const uint8_t *buf, int buf_size){
+                            AVPacket *avpkt){
+    const uint8_t *buf = avpkt->data;
+    int buf_size = avpkt->size;
     const uint8_t *buf_start = buf;
     const uint8_t *buf_end = buf + buf_size;
     TgqContext *s = avctx->priv_data;

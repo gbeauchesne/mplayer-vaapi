@@ -26,7 +26,8 @@
  */
 
 #include "avcodec.h"
-#include "bitstream.h"
+#include "get_bits.h"
+#include "put_bits.h"
 #include "dsputil.h"
 #include "rangecoder.h"
 #include "golomb.h"
@@ -936,7 +937,9 @@ static av_cold int decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, const uint8_t *buf, int buf_size){
+static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPacket *avpkt){
+    const uint8_t *buf = avpkt->data;
+    int buf_size = avpkt->size;
     FFV1Context *f = avctx->priv_data;
     RangeCoder * const c= &f->c;
     const int width= f->width;

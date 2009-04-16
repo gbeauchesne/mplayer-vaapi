@@ -7,6 +7,7 @@ HEADERS = avcodec.h opt.h vdpau.h xvmc.h
 
 OBJS = allcodecs.o                                                      \
        audioconvert.o                                                   \
+       avpacket.o                                                       \
        bitstream.o                                                      \
        bitstream_filter.o                                               \
        dsputil.o                                                        \
@@ -462,7 +463,6 @@ OBJS-$(HAVE_MMX)                       += x86/cpuid.o                   \
                                           x86/motion_est_mmx.o          \
                                           x86/mpegvideo_mmx.o           \
                                           x86/simple_idct_mmx.o         \
-                                          $(MMX-OBJS-yes)
 
 OBJS-$(ARCH_ALPHA)                     += alpha/dsputil_alpha.o         \
                                           alpha/dsputil_alpha_asm.o     \
@@ -506,7 +506,6 @@ OBJS-$(ARCH_BFIN)                      += bfin/dsputil_bfin.o           \
 OBJS-$(ARCH_PPC)                       += ppc/dsputil_ppc.o             \
 
 ALTIVEC-OBJS-$(CONFIG_H264_DECODER)    += ppc/h264_altivec.o
-ALTIVEC-OBJS-$(CONFIG_SNOW_DECODER)    += ppc/snow_altivec.o
 ALTIVEC-OBJS-$(CONFIG_VC1_DECODER)     += ppc/vc1dsp_altivec.o
 ALTIVEC-OBJS-$(CONFIG_WMV3_DECODER)    += ppc/vc1dsp_altivec.o
 

@@ -155,6 +155,7 @@ DECLARE_ALIGNED_16(const double, ff_pd_2[2]) = { 2.0, 2.0 };
 #define SET_RND  MOVQ_WONE
 #define PAVGBP(a, b, c, d, e, f)        PAVGBP_MMX_NO_RND(a, b, c, d, e, f)
 #define PAVGB(a, b, c, e)               PAVGB_MMX_NO_RND(a, b, c, e)
+#define OP_AVG(a, b, c, e)              PAVGB_MMX(a, b, c, e)
 
 #include "dsputil_mmx_rnd_template.c"
 
@@ -176,17 +177,20 @@ DECLARE_ALIGNED_16(const double, ff_pd_2[2]) = { 2.0, 2.0 };
 #undef SET_RND
 #undef PAVGBP
 #undef PAVGB
+#undef OP_AVG
 
 /***********************************/
 /* 3Dnow specific */
 
 #define DEF(x) x ## _3dnow
 #define PAVGB "pavgusb"
+#define OP_AVG PAVGB
 
 #include "dsputil_mmx_avg_template.c"
 
 #undef DEF
 #undef PAVGB
+#undef OP_AVG
 
 /***********************************/
 /* MMX2 specific */
@@ -195,11 +199,13 @@ DECLARE_ALIGNED_16(const double, ff_pd_2[2]) = { 2.0, 2.0 };
 
 /* Introduced only in MMX2 set */
 #define PAVGB "pavgb"
+#define OP_AVG PAVGB
 
 #include "dsputil_mmx_avg_template.c"
 
 #undef DEF
 #undef PAVGB
+#undef OP_AVG
 
 #define put_no_rnd_pixels16_mmx put_pixels16_mmx
 #define put_no_rnd_pixels8_mmx put_pixels8_mmx
@@ -1813,6 +1819,9 @@ void ff_vc1dsp_init_mmx(DSPContext* dsp, AVCodecContext *avctx);
 void ff_put_vc1_mspel_mc00_mmx(uint8_t *dst, const uint8_t *src, int stride, int rnd) {
     put_pixels8_mmx(dst, src, stride, 8);
 }
+void ff_avg_vc1_mspel_mc00_mmx2(uint8_t *dst, const uint8_t *src, int stride, int rnd) {
+    avg_pixels8_mmx2(dst, src, stride, 8);
+}
 
 /* external functions, from idct_mmx.c */
 void ff_mmx_idct(DCTELEM *block);
@@ -2693,7 +2702,7 @@ void dsputil_init_mmx(DSPContext* c, AVCodecContext *avctx)
         }
         c->put_h264_chroma_pixels_tab[0]= put_h264_chroma_mc8_mmx_rnd;
         c->put_h264_chroma_pixels_tab[1]= put_h264_chroma_mc4_mmx;
-        c->put_no_rnd_h264_chroma_pixels_tab[0]= put_h264_chroma_mc8_mmx_nornd;
+        c->put_no_rnd_vc1_chroma_pixels_tab[0]= put_vc1_chroma_mc8_mmx_nornd;
 
         c->put_rv40_chroma_pixels_tab[0]= put_rv40_chroma_mc8_mmx;
         c->put_rv40_chroma_pixels_tab[1]= put_rv40_chroma_mc4_mmx;
@@ -2789,6 +2798,8 @@ void dsputil_init_mmx(DSPContext* c, AVCodecContext *avctx)
 
             c->avg_rv40_chroma_pixels_tab[0]= avg_rv40_chroma_mc8_mmx2;
             c->avg_rv40_chroma_pixels_tab[1]= avg_rv40_chroma_mc4_mmx2;
+
+            c->avg_no_rnd_vc1_chroma_pixels_tab[0]= avg_vc1_chroma_mc8_mmx2_nornd;
 
             c->avg_h264_chroma_pixels_tab[0]= avg_h264_chroma_mc8_mmx2_rnd;
             c->avg_h264_chroma_pixels_tab[1]= avg_h264_chroma_mc4_mmx2;
@@ -2939,7 +2950,8 @@ void dsputil_init_mmx(DSPContext* c, AVCodecContext *avctx)
             H264_QPEL_FUNCS(3, 1, ssse3);
             H264_QPEL_FUNCS(3, 2, ssse3);
             H264_QPEL_FUNCS(3, 3, ssse3);
-            c->put_no_rnd_h264_chroma_pixels_tab[0]= put_h264_chroma_mc8_ssse3_nornd;
+            c->put_no_rnd_vc1_chroma_pixels_tab[0]= put_vc1_chroma_mc8_ssse3_nornd;
+            c->avg_no_rnd_vc1_chroma_pixels_tab[0]= avg_vc1_chroma_mc8_ssse3_nornd;
             c->put_h264_chroma_pixels_tab[0]= put_h264_chroma_mc8_ssse3_rnd;
             c->avg_h264_chroma_pixels_tab[0]= avg_h264_chroma_mc8_ssse3_rnd;
             c->put_h264_chroma_pixels_tab[1]= put_h264_chroma_mc4_ssse3;
