@@ -522,7 +522,7 @@ static void put_surface(VASurfaceID surface)
 
     status = vaSyncSurface(va_context->display, va_context->context_id,
                            surface);
-    if (!check_status(status, "vaSyncSurface()"))
+    if (!check_status(status, "vaSyncSurface() for decode"))
         return;
 
     status = vaPutSurface(va_context->display,
@@ -535,7 +535,13 @@ static void put_surface(VASurfaceID surface)
                           g_output_rect.height,
                           NULL, 0,
                           VA_FRAME_PICTURE);
-    check_status(status, "vaPutSurface()");
+    if (!check_status(status, "vaPutSurface()"))
+        return;
+
+    status = vaSyncSurface(va_context->display, va_context->context_id,
+                           surface);
+    if (!check_status(status, "vaSyncSurface() for display"))
+        return;
 }
 
 static int draw_slice(uint8_t * image[], int stride[],
