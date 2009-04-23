@@ -1,15 +1,15 @@
 8
 
 dir
-29185
+29224
 svn://svn.mplayerhq.hu/mplayer/trunk/gui
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-04-04T20:30:49.692597Z
-29141
-compn
+2009-04-19T13:32:15.073254Z
+29190
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -119,10 +119,10 @@ file
 
 
 
-2009-01-29T11:50:43.000000Z
-46e0989558e50a016f449d24a0c2bfef
-2008-12-03T23:01:03.919423Z
-28085
+2009-04-23T10:52:51.000000Z
+da6f3e7d56e825c87f8f122e9ea43444
+2009-04-19T13:32:15.073254Z
+29190
 diego
 has-props
 

@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# avoid insecure tempfile creation
+umask 0022
+
 # This script will download binary codecs for MPlayer unto a Debian system.
 
 # Author:  thuglife, mennucc1
@@ -22,23 +25,23 @@ choosemirror ()
 {
   cd $PREFDIR
 
-  #if [ ! -r mirrors ] || find  mirrors -mtime +20  ; then
-    echo Downloading mirrors list..
+  #if [ ! -r mirrors ] || find mirrors -mtime +20 ; then
+    echo Downloading mirrors list
     wget -nv -c -N $MYSITE/mirrors || true
   #fi
   if [ ! -r bestsites ] || [ mirrors -nt bestsites ] || \
-    find  bestsites -mtime +20 > /dev/null ; then
-    if which netselect > /dev/null  ; then
-      echo  Choosing best mirrors using netselect....
-      netselect  -s 5  $( cat mirrors ) | awk '{print $2}' > bestsites
+    find bestsites -mtime +20 > /dev/null ; then
+    if which netselect > /dev/null ; then
+      echo Choosing best mirrors using netselect
+      netselect -s 5 $( cat mirrors ) | awk '{print $2}' > bestsites
     elif which fping > /dev/null ; then
-      fping -C 1   $( sed   's#.*//##;s#/.*##' mirrors ) 2>&1 | \
-        egrep -v 'bytes.*loss' | sort -n -k3  | \
-        grep -v ': *-' |  awk '/:/{print $1}' | head -5 > bestsites
+     fping -C 1  $( sed   's#.*//##;s#/.*##' mirrors ) 2>&1 | \
+       egrep -v 'bytes.*loss' | sort -n -k3 | \
+       grep -v ': *-' | awk '/:/{print $1}' | head -5 > bestsites
     else
       echo "(If you install 'netselect', it will select the best mirror for you"
       echo "  you may wish to stop this script and rerun after installation)"
-      sleep 5
+      sleep 3
       head -3 mirrors > bestsites
     fi
   fi
@@ -54,13 +57,13 @@ INSTALL () {
   cd $CODECDIR/mplayer_binary_codecs
 
   if [ -r $filename ] ; then
-    cp $filename  $filename.bak
+    cp $filename $filename.bak
   fi
 
-  if [  "$url" = @MAINSITE@ ] ; then
-    cat $PREFDIR/bestsites |   while read mainsite ; do
+  if [ "$url" = @MAINSITE@ ] ; then
+    cat $PREFDIR/bestsites | while read mainsite ; do
       echo Downloading $filename from $mainsite ...
-      wget -v -c -N $mainsite/$dir/$filename || true
+      wget -c -N $mainsite/$dir/$filename || true
       if [ -r "$filename" ] ; then
         UNPACK "$filename"
         [ -r $filename.bak ] && rm $filename.bak
@@ -68,8 +71,8 @@ INSTALL () {
       fi
     done
   else
-    wget -v -c -N $url/$dir/$filename || true
-    if  [ -r "$filename" ] ; then
+    wget -c -N $url/$dir/$filename || true
+    if [ -r "$filename" ] ; then
       UNPACK "$filename"
       [ -r $filename.bak ] && rm $filename.bak
       return 0
@@ -91,20 +94,23 @@ UNPACK ()
       rm $filename.list
     fi
 
+    tarfail () { echo FAILED $filename ; rm $filename.list ; exit 1 ; }
+
     case "$filename" in
       *.tar.gz)
-        tar xvzf $filename > $filename.list
+        tar xvzf $filename > $filename.list || tarfail
         #rm $filename
         ;;
       *.tgz)
-        tar xvzf $filename > $filename.list
+        tar xvzf $filename > $filename.list || tarfail
         #rm $filename
         ;;
       *.tar.bz2)
-        tar  --bzip2 -xvf $filename > $filename.list
+        tar --bzip2 -xvf $filename > $filename.list || tarfail
         #rm $filename
         ;;
     esac
+    [ -r $filename.bak ] && rm $filename.bak
     LINK $filename.list
     echo "Installed $filename Succesfully!"
   fi
@@ -135,10 +141,14 @@ fi
 
 case "$1" in
   install)
+    if  test -x /bin/bzip2 || test -x /usr/bin/bzip2 ; then : ; else
+      echo You need to install bzip2
+      exit 1
+    fi
     choosemirror
     cd $PREFDIR
-    #if [ ! -r codecs_list ] || find  codecs_list -mtime +20  ; then
-      echo 'Getting  codecs list ...'
+    #if [ ! -r codecs_list ] || find codecs_list -mtime +20 ; then
+      echo 'Getting codecs list'
       wget -nv -c -N $MYSITE/codecs_list || true
     #fi
 
@@ -146,9 +156,9 @@ case "$1" in
       egrep -v "^[[:space:]]*(#|$)" $PREFDIR/codecs_list | \
         while read arch url dir file info ; do
           if [ "$dpkgarch" = "$arch" ]; then
-            echo Installing $file  $info...
-            INSTALL "$url"  "$dir"  "$file"
-            n=1
+            echo Downloading and installing $file $info...
+            INSTALL "$url" "$dir" "$file"
+	    n=1
           fi
         done
     else

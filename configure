@@ -2611,6 +2611,17 @@ EOF
     test "$_altivec" = yes && CFLAGS="$CFLAGS $_altivec_gcc_flags"
 fi
 
+if ppc ; then
+def_xform_asm='#define HAVE_XFORM_ASM 0'
+xform_asm=no
+echocheck "XFORM ASM support"
+  cat > $TMPC << EOF
+int main(void) { __asm__ volatile ("lwzx 0, %y0" :: "Z"(*(int*)0)"); return 0; }
+EOF
+cc_check && xform_asm=yes && def_xform_asm='#define HAVE_XFORM_ASM 1'
+echores "$xform_asm"
+fi
+
 if arm ; then
   echocheck "ARM pld instruction"
   cat > $TMPC << EOF
@@ -5072,7 +5083,7 @@ fi
 if test "$_sdl" = auto || test "$_sdl" = yes ; then
   cat > $TMPC << EOF
 #include <SDL.h>
-int main(void) {
+int main(int argc, char *argv[]) {
   SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE);
   return 0;
 }
@@ -8787,6 +8798,7 @@ $def_posix_memalign
 $def_pthreads
 $def_ten_operands
 $def_threads
+$def_xform_asm
 $def_yasm
 
 #define CONFIG_FASTDIV 0
@@ -8803,6 +8815,7 @@ $def_yasm
 
 #define HAVE_GETHRTIME 0
 #define HAVE_INLINE_ASM 0
+#define HAVE_LDBRX 0
 #define HAVE_POLL_H 1
 #define HAVE_PPC4XX 0
 #define HAVE_VIRTUALALLOC 0

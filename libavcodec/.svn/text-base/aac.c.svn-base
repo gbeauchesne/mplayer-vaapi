@@ -1616,7 +1616,7 @@ static int aac_decode_frame(AVCodecContext * avccontext, void * data, int * data
     init_get_bits(&gb, buf, buf_size*8);
 
     if (show_bits(&gb, 12) == 0xfff) {
-        if ((err = parse_adts_frame_header(ac, &gb)) < 0) {
+        if (parse_adts_frame_header(ac, &gb) < 0) {
             av_log(avccontext, AV_LOG_ERROR, "Error decoding AAC frame header.\n");
             return -1;
         }
@@ -1629,7 +1629,6 @@ static int aac_decode_frame(AVCodecContext * avccontext, void * data, int * data
     // parse
     while ((elem_type = get_bits(&gb, 3)) != TYPE_END) {
         elem_id = get_bits(&gb, 4);
-        err = -1;
 
         if(elem_type < TYPE_DSE && !(che=get_che(ac, elem_type, elem_id))) {
             av_log(ac->avccontext, AV_LOG_ERROR, "channel element %d.%d is not allocated\n", elem_type, elem_id);

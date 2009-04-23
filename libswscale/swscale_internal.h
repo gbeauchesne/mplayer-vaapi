@@ -291,7 +291,18 @@ void ff_yuv2packedX_altivec(SwsContext *c,
 const char *sws_format_name(int format);
 
 //FIXME replace this with something faster
-#define isPlanarYUV(x)  (           \
+#define is16BPS(x)      (           \
+           (x)==PIX_FMT_GRAY16BE    \
+        || (x)==PIX_FMT_GRAY16LE    \
+        || (x)==PIX_FMT_YUV420PLE   \
+        || (x)==PIX_FMT_YUV422PLE   \
+        || (x)==PIX_FMT_YUV444PLE   \
+        || (x)==PIX_FMT_YUV420PBE   \
+        || (x)==PIX_FMT_YUV422PBE   \
+        || (x)==PIX_FMT_YUV444PBE   \
+    )
+#define isBE(x) ((x)&1)
+#define isPlanar8YUV(x) (           \
            (x)==PIX_FMT_YUV410P     \
         || (x)==PIX_FMT_YUV420P     \
         || (x)==PIX_FMT_YUVA420P    \
@@ -301,6 +312,15 @@ const char *sws_format_name(int format);
         || (x)==PIX_FMT_YUV440P     \
         || (x)==PIX_FMT_NV12        \
         || (x)==PIX_FMT_NV21        \
+    )
+#define isPlanarYUV(x)  (           \
+        isPlanar8YUV(x)             \
+        || (x)==PIX_FMT_YUV420PLE   \
+        || (x)==PIX_FMT_YUV422PLE   \
+        || (x)==PIX_FMT_YUV444PLE   \
+        || (x)==PIX_FMT_YUV420PBE   \
+        || (x)==PIX_FMT_YUV422PBE   \
+        || (x)==PIX_FMT_YUV444PBE   \
     )
 #define isYUV(x)        (           \
            (x)==PIX_FMT_UYVY422     \

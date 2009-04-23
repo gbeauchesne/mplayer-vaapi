@@ -249,10 +249,9 @@ static inline int get_symbol(RangeCoder *c, uint8_t *state, int is_signed){
     else{
         int i, e, a;
         e= 0;
-        while(get_rac(c, state+1 + e)){ //1..10
+        while(get_rac(c, state+1 + e) && e<9){ //1..10
             e++;
         }
-        assert(e<=9);
 
         a= 1;
         for(i=e-1; i>=0; i--){
@@ -530,17 +529,16 @@ static void write_header(FFV1Context *f){
 
 static av_cold int common_init(AVCodecContext *avctx){
     FFV1Context *s = avctx->priv_data;
-    int width, height;
 
     s->avctx= avctx;
     s->flags= avctx->flags;
 
     dsputil_init(&s->dsp, avctx);
 
-    width= s->width= avctx->width;
-    height= s->height= avctx->height;
+    s->width = avctx->width;
+    s->height= avctx->height;
 
-    assert(width && height);
+    assert(s->width && s->height);
 
     return 0;
 }
