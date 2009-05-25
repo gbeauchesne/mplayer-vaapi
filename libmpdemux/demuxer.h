@@ -1,3 +1,21 @@
+/*
+ * This file is part of MPlayer.
+ *
+ * MPlayer is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MPlayer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with MPlayer; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
 #ifndef MPLAYER_DEMUXER_H
 #define MPLAYER_DEMUXER_H
 
@@ -172,7 +190,7 @@ typedef struct demuxers_desc_st {
   int safe_check; ///< If 1 detection is safe and fast, do it before file extension check
 
   /// Check if can demux the file, return DEMUXER_TYPE_xxx on success
-  int (*check_file)(struct demuxer_st *demuxer); ///< Mandatory if safe_check == 1, else optional 
+  int (*check_file)(struct demuxer_st *demuxer); ///< Mandatory if safe_check == 1, else optional
   /// Get packets from file, return 0 on eof
   int (*fill_buffer)(struct demuxer_st *demuxer, demux_stream_t *ds); ///< Mandatory
   /// Open the demuxer, return demuxer on success, NULL on failure
@@ -224,7 +242,7 @@ typedef struct demuxer_st {
 
   demux_chapter_t* chapters;
   int num_chapters;
-  
+
   demux_attachment_t* attachments;
   int num_attachments;
 

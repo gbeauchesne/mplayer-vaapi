@@ -30,6 +30,7 @@
 #include "avcodec.h"
 #include "dsputil.h"
 #include "mpegvideo.h"
+#include "mpegvideo_common.h"
 
 #include "mpeg12.h"
 #include "mpeg12data.h"
@@ -48,6 +49,9 @@
 #define MB_PTYPE_VLC_BITS 6
 #define MB_BTYPE_VLC_BITS 6
 
+static inline int mpeg1_decode_block_intra(MpegEncContext *s,
+                              DCTELEM *block,
+                              int n);
 static inline int mpeg1_decode_block_inter(MpegEncContext *s,
                               DCTELEM *block,
                               int n);
@@ -319,7 +323,7 @@ static int mpeg_decode_mb(MpegEncContext *s,
             }
         } else {
             for(i=0;i<6;i++) {
-                if (ff_mpeg1_decode_block_intra(s, *s->pblocks[i], i) < 0)
+                if (mpeg1_decode_block_intra(s, *s->pblocks[i], i) < 0)
                     return -1;
             }
         }
@@ -604,7 +608,7 @@ static int mpeg_decode_motion(MpegEncContext *s, int fcode, int pred)
     return val;
 }
 
-inline int ff_mpeg1_decode_block_intra(MpegEncContext *s,
+static inline int mpeg1_decode_block_intra(MpegEncContext *s,
                                DCTELEM *block,
                                int n)
 {
@@ -675,6 +679,13 @@ inline int ff_mpeg1_decode_block_intra(MpegEncContext *s,
     }
     s->block_last_index[n] = i;
    return 0;
+}
+
+int ff_mpeg1_decode_block_intra(MpegEncContext *s,
+                                DCTELEM *block,
+                                int n)
+{
+    return mpeg1_decode_block_intra(s, block, n);
 }
 
 static inline int mpeg1_decode_block_inter(MpegEncContext *s,
@@ -1188,6 +1199,11 @@ static av_cold int mpeg_decode_init(AVCodecContext *avctx)
     s->mpeg_enc_ctx.picture_number = 0;
     s->repeat_field = 0;
     s->mpeg_enc_ctx.codec_id= avctx->codec->id;
+    avctx->color_range= AVCOL_RANGE_MPEG;
+    if (avctx->codec->id == CODEC_ID_MPEG1VIDEO)
+        avctx->chroma_sample_location = AVCHROMA_LOC_CENTER;
+    else
+        avctx->chroma_sample_location = AVCHROMA_LOC_LEFT;
     return 0;
 }
 
@@ -1420,9 +1436,9 @@ static void mpeg_decode_sequence_display_extension(Mpeg1Context *s1)
     skip_bits(&s->gb, 3); /* video format */
     color_description= get_bits1(&s->gb);
     if(color_description){
-        skip_bits(&s->gb, 8); /* color primaries */
-        skip_bits(&s->gb, 8); /* transfer_characteristics */
-        skip_bits(&s->gb, 8); /* matrix_coefficients */
+        s->avctx->color_primaries= get_bits(&s->gb, 8);
+        s->avctx->color_trc      = get_bits(&s->gb, 8);
+        s->avctx->colorspace     = get_bits(&s->gb, 8);
     }
     w= get_bits(&s->gb, 14);
     skip_bits(&s->gb, 1); //marker
@@ -1470,42 +1486,35 @@ static void mpeg_decode_picture_display_extension(Mpeg1Context *s1)
         );
 }
 
+static int load_matrix(MpegEncContext *s, uint16_t matrix0[64], uint16_t matrix1[64], int intra){
+    int i;
+
+    for(i=0; i<64; i++) {
+        int j = s->dsp.idct_permutation[ ff_zigzag_direct[i] ];
+        int v = get_bits(&s->gb, 8);
+        if(v==0){
+            av_log(s->avctx, AV_LOG_ERROR, "matrix damaged\n");
+            return -1;
+        }
+        if(intra && i==0 && v!=8){
+            av_log(s->avctx, AV_LOG_ERROR, "intra matrix invalid, ignoring\n");
+            v= 8; // needed by pink.mpg / issue1046
+        }
+        matrix0[j] = v;
+        if(matrix1)
+            matrix1[j] = v;
+    }
+    return 0;
+}
+
 static void mpeg_decode_quant_matrix_extension(MpegEncContext *s)
 {
-    int i, v, j;
-
     dprintf(s->avctx, "matrix extension\n");
 
-    if (get_bits1(&s->gb)) {
-        for(i=0;i<64;i++) {
-            v = get_bits(&s->gb, 8);
-            j= s->dsp.idct_permutation[ ff_zigzag_direct[i] ];
-            s->intra_matrix[j] = v;
-            s->chroma_intra_matrix[j] = v;
-        }
-    }
-    if (get_bits1(&s->gb)) {
-        for(i=0;i<64;i++) {
-            v = get_bits(&s->gb, 8);
-            j= s->dsp.idct_permutation[ ff_zigzag_direct[i] ];
-            s->inter_matrix[j] = v;
-            s->chroma_inter_matrix[j] = v;
-        }
-    }
-    if (get_bits1(&s->gb)) {
-        for(i=0;i<64;i++) {
-            v = get_bits(&s->gb, 8);
-            j= s->dsp.idct_permutation[ ff_zigzag_direct[i] ];
-            s->chroma_intra_matrix[j] = v;
-        }
-    }
-    if (get_bits1(&s->gb)) {
-        for(i=0;i<64;i++) {
-            v = get_bits(&s->gb, 8);
-            j= s->dsp.idct_permutation[ ff_zigzag_direct[i] ];
-            s->chroma_inter_matrix[j] = v;
-        }
-    }
+    if(get_bits1(&s->gb)) load_matrix(s, s->chroma_intra_matrix, s->intra_matrix, 1);
+    if(get_bits1(&s->gb)) load_matrix(s, s->chroma_inter_matrix, s->inter_matrix, 0);
+    if(get_bits1(&s->gb)) load_matrix(s, s->chroma_intra_matrix, NULL           , 1);
+    if(get_bits1(&s->gb)) load_matrix(s, s->chroma_inter_matrix, NULL           , 0);
 }
 
 static void mpeg_decode_picture_coding_extension(Mpeg1Context *s1)
@@ -2008,22 +2017,7 @@ static int mpeg1_decode_sequence(AVCodecContext *avctx,
 
     /* get matrix */
     if (get_bits1(&s->gb)) {
-        for(i=0;i<64;i++) {
-            v = get_bits(&s->gb, 8);
-            if(v==0){
-                av_log(s->avctx, AV_LOG_ERROR, "intra matrix damaged\n");
-                return -1;
-            }
-            j = s->dsp.idct_permutation[ ff_zigzag_direct[i] ];
-            s->intra_matrix[j] = v;
-            s->chroma_intra_matrix[j] = v;
-        }
-#ifdef DEBUG
-        dprintf(s->avctx, "intra matrix present\n");
-        for(i=0;i<64;i++)
-            dprintf(s->avctx, " %d", s->intra_matrix[s->dsp.idct_permutation[i]]);
-        dprintf(s->avctx, "\n");
-#endif
+        load_matrix(s, s->chroma_intra_matrix, s->intra_matrix, 1);
     } else {
         for(i=0;i<64;i++) {
             j = s->dsp.idct_permutation[i];
@@ -2033,22 +2027,7 @@ static int mpeg1_decode_sequence(AVCodecContext *avctx,
         }
     }
     if (get_bits1(&s->gb)) {
-        for(i=0;i<64;i++) {
-            v = get_bits(&s->gb, 8);
-            if(v==0){
-                av_log(s->avctx, AV_LOG_ERROR, "inter matrix damaged\n");
-                return -1;
-            }
-            j = s->dsp.idct_permutation[ ff_zigzag_direct[i] ];
-            s->inter_matrix[j] = v;
-            s->chroma_inter_matrix[j] = v;
-        }
-#ifdef DEBUG
-        dprintf(s->avctx, "non-intra matrix present\n");
-        for(i=0;i<64;i++)
-            dprintf(s->avctx, " %d", s->inter_matrix[s->dsp.idct_permutation[i]]);
-        dprintf(s->avctx, "\n");
-#endif
+        load_matrix(s, s->chroma_inter_matrix, s->inter_matrix, 0);
     } else {
         for(i=0;i<64;i++) {
             int j= s->dsp.idct_permutation[i];
@@ -2171,7 +2150,7 @@ static void mpeg_decode_gop(AVCodecContext *avctx,
     int drop_frame_flag;
     int time_code_hours, time_code_minutes;
     int time_code_seconds, time_code_pictures;
-    int closed_gop, broken_link;
+    int broken_link;
 
     init_get_bits(&s->gb, buf, buf_size*8);
 
@@ -2183,7 +2162,7 @@ static void mpeg_decode_gop(AVCodecContext *avctx,
     time_code_seconds = get_bits(&s->gb,6);
     time_code_pictures = get_bits(&s->gb,6);
 
-    closed_gop  = get_bits1(&s->gb);
+    s->closed_gop = get_bits1(&s->gb);
     /*broken_link indicate that after editing the
       reference frames of the first B-Frames after GOP I-Frame
       are missing (open gop)*/
@@ -2192,7 +2171,7 @@ static void mpeg_decode_gop(AVCodecContext *avctx,
     if(s->avctx->debug & FF_DEBUG_PICT_INFO)
         av_log(s->avctx, AV_LOG_DEBUG, "GOP (%2d:%02d:%02d.[%02d]) closed_gop=%d broken_link=%d\n",
             time_code_hours, time_code_minutes, time_code_seconds,
-            time_code_pictures, closed_gop, broken_link);
+            time_code_pictures, s->closed_gop, broken_link);
 }
 /**
  * Finds the end of the current frame in the bitstream.
@@ -2386,8 +2365,17 @@ static int decode_chunks(AVCodecContext *avctx,
                 int mb_y= start_code - SLICE_MIN_START_CODE;
 
                 if(s2->last_picture_ptr==NULL){
-                /* Skip B-frames if we do not have reference frames. */
-                    if(s2->pict_type==FF_B_TYPE) break;
+                /* Skip B-frames if we do not have reference frames and gop is not closed */
+                    if(s2->pict_type==FF_B_TYPE){
+                        int i;
+                        if(!s2->closed_gop)
+                            break;
+                        /* Allocate a dummy frame */
+                        i= ff_find_unused_picture(s2, 0);
+                        s2->last_picture_ptr= &s2->picture[i];
+                        if(alloc_picture(s2, s2->last_picture_ptr, 0) < 0)
+                            return -1;
+                    }
                 }
                 if(s2->next_picture_ptr==NULL){
                 /* Skip P-frames if we do not have a reference frame or we have an invalid header. */

@@ -465,7 +465,7 @@ mpeg_run(mpeg_t *mpeg)
 	    len = buf[0] << 8 | buf[1];
 	    if (len > 0 && rar_seek(mpeg->stream, len, SEEK_CUR))
 		return -1;
-		
+
 	}
 	else {
 	    mp_msg(MSGT_VOBSUB,MSGL_ERR,"unknown header 0x%02X%02X%02X%02X\n",
@@ -563,7 +563,7 @@ packet_queue_ensure(packet_queue_t *queue, unsigned int needed_size)
 static int
 packet_queue_grow(packet_queue_t *queue)
 {
-    if (packet_queue_ensure(queue, queue->packets_size + 1) < 0) 
+    if (packet_queue_ensure(queue, queue->packets_size + 1) < 0)
 	return -1;
     packet_construct(queue->packets + queue->packets_size);
     ++queue->packets_size;
@@ -1009,7 +1009,7 @@ vobsub_open(const char *const name,const char *const ifo,const int force,void** 
 	      if(force)
 		mp_msg(MSGT_VOBSUB,MSGL_ERR,"VobSub: Can't open SUB file\n");
 	      else {
-		
+
 		free(buf);
 		free(vob);
 		return NULL;
@@ -1380,7 +1380,7 @@ vobsub_out_output(void *me, const unsigned char *packet, int len, double pts)
 	last_pts = pts;
 	last_pts_set = 1;
 
-	/* Packet start code: Windows' Vobsub needs this */ 
+	/* Packet start code: Windows' Vobsub needs this */
 	p = buffer;
 	*p++ = 0;		/* 0x00 */
 	*p++ = 0;

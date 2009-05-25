@@ -157,6 +157,7 @@ void av_register_all(void)
     REGISTER_MUXDEMUX (PCM_U8,    pcm_u8);
     REGISTER_MUXER    (PSP, psp);
     REGISTER_DEMUXER  (PVA, pva);
+    REGISTER_DEMUXER  (QCP, qcp);
     REGISTER_DEMUXER  (R3D, r3d);
     REGISTER_MUXDEMUX (RAWVIDEO, rawvideo);
     REGISTER_DEMUXER  (REDIR, redir);
@@ -182,6 +183,7 @@ void av_register_all(void)
     REGISTER_MUXER    (TGP, tgp);
     REGISTER_DEMUXER  (THP, thp);
     REGISTER_DEMUXER  (TIERTEXSEQ, tiertexseq);
+    REGISTER_DEMUXER  (TMV, tmv);
     REGISTER_MUXDEMUX (TRUEHD, truehd);
     REGISTER_DEMUXER  (TTA, tta);
     REGISTER_DEMUXER  (TXD, txd);

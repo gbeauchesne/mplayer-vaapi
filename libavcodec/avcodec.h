@@ -30,7 +30,7 @@
 #include "libavutil/avutil.h"
 
 #define LIBAVCODEC_VERSION_MAJOR 52
-#define LIBAVCODEC_VERSION_MINOR 27
+#define LIBAVCODEC_VERSION_MINOR 29
 #define LIBAVCODEC_VERSION_MICRO  0
 
 #define LIBAVCODEC_VERSION_INT  AV_VERSION_INT(LIBAVCODEC_VERSION_MAJOR, \
@@ -194,6 +194,8 @@ enum CodecID {
     CODEC_ID_AURA,
     CODEC_ID_AURA2,
     CODEC_ID_V210X,
+    CODEC_ID_TMV,
+    CODEC_ID_V210,
 
     /* various PCM "codecs" */
     CODEC_ID_PCM_S16LE= 0x10000,
@@ -439,6 +441,59 @@ enum AVDiscard{
     AVDISCARD_BIDIR  = 16, ///< discard all bidirectional frames
     AVDISCARD_NONKEY = 32, ///< discard all frames except keyframes
     AVDISCARD_ALL    = 48, ///< discard all
+};
+
+enum AVColorPrimaries{
+    AVCOL_PRI_BT709      =1, ///< also ITU-R BT1361 / IEC 61966-2-4 / SMPTE RP177 Annex B
+    AVCOL_PRI_UNSPECIFIED=2,
+    AVCOL_PRI_BT470M     =4,
+    AVCOL_PRI_BT470BG    =5, ///< also ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R BT1700 625 PAL & SECAM
+    AVCOL_PRI_SMPTE170M  =6, ///< also ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC
+    AVCOL_PRI_SMPTE240M  =7, ///< functionally identical to above
+    AVCOL_PRI_FILM       =8,
+    AVCOL_PRI_NB           , ///< Not part of ABI
+};
+
+enum AVColorTransferCharacteristic{
+    AVCOL_TRC_BT709      =1, ///< also ITU-R BT1361
+    AVCOL_TRC_UNSPECIFIED=2,
+    AVCOL_TRC_GAMMA22    =4, ///< also ITU-R BT470M / ITU-R BT1700 625 PAL & SECAM
+    AVCOL_TRC_GAMMA28    =5, ///< also ITU-R BT470BG
+    AVCOL_TRC_NB           , ///< Not part of ABI
+};
+
+enum AVColorSpace{
+    AVCOL_SPC_RGB        =0,
+    AVCOL_SPC_BT709      =1, ///< also ITU-R BT1361 / IEC 61966-2-4 xvYCC709 / SMPTE RP177 Annex B
+    AVCOL_SPC_UNSPECIFIED=2,
+    AVCOL_SPC_FCC        =4,
+    AVCOL_SPC_BT470BG    =5, ///< also ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R BT1700 625 PAL & SECAM / IEC 61966-2-4 xvYCC601
+    AVCOL_SPC_SMPTE170M  =6, ///< also ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC / functionally identical to above
+    AVCOL_SPC_SMPTE240M  =7,
+    AVCOL_SPC_NB           , ///< Not part of ABI
+};
+
+enum AVColorRange{
+    AVCOL_RANGE_UNSPECIFIED=0,
+    AVCOL_RANGE_MPEG       =1, ///< the normal 219*2^(n-8) "MPEG" YUV ranges
+    AVCOL_RANGE_JPEG       =2, ///< the normal     2^n-1   "JPEG" YUV ranges
+    AVCOL_RANGE_NB           , ///< Not part of ABI
+};
+
+/**
+ *  X   X      3 4 X      X are luma samples,
+ *             1 2        1-6 are possible chroma positions
+ *  X   X      5 6 X      0 is undefined/unknown position
+ */
+enum AVChromaLocation{
+    AVCHROMA_LOC_UNSPECIFIED=0,
+    AVCHROMA_LOC_LEFT       =1, ///< mpeg2/4, h264 default
+    AVCHROMA_LOC_CENTER     =2, ///< mpeg1, jpeg, h263
+    AVCHROMA_LOC_TOPLEFT    =3, ///< DV
+    AVCHROMA_LOC_TOP        =4,
+    AVCHROMA_LOC_BOTTOMLEFT =5,
+    AVCHROMA_LOC_BOTTOM     =6,
+    AVCHROMA_LOC_NB           , ///< Not part of ABI
 };
 
 typedef struct RcOverride{
@@ -2415,6 +2470,41 @@ typedef struct AVCodecContext {
      * - decoding: Set by user
      */
     void *hwaccel_context;
+
+    /**
+     * Chromaticity coordinates of the source primaries.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     */
+    enum AVColorPrimaries color_primaries;
+
+    /**
+     * Color Transfer Characteristic.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     */
+    enum AVColorTransferCharacteristic color_trc;
+
+    /**
+     * YUV colorspace type.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     */
+    enum AVColorSpace colorspace;
+
+    /**
+     * MPEG vs JPEG YUV range.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     */
+    enum AVColorRange color_range;
+
+    /**
+     * This defines the location of chroma samples.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     */
+     enum AVChromaLocation chroma_sample_location;
 } AVCodecContext;
 
 /**
@@ -2681,13 +2771,7 @@ int av_dup_packet(AVPacket *pkt);
  *
  * @param pkt packet to free
  */
-static inline void av_free_packet(AVPacket *pkt)
-{
-    if (pkt) {
-        if (pkt->destruct) pkt->destruct(pkt);
-        pkt->data = NULL; pkt->size = 0;
-    }
-}
+void av_free_packet(AVPacket *pkt);
 
 /* resample.c */
 
@@ -3099,11 +3183,10 @@ attribute_deprecated int avcodec_decode_audio2(AVCodecContext *avctx, int16_t *s
 #endif
 
 /**
- * Decodes an audio frame from \p avpkt->data into \p samples.
- * The avcodec_decode_audio3() function decodes an audio frame from the input
- * buffer \p avpkt->data of size \p avpkt->size. To decode it, it makes use of the
- * audio codec which was coupled with \p avctx using avcodec_open(). The
- * resulting decoded frame is stored in output buffer \p samples.  If no frame
+ * Decodes the audio frame of size avpkt->size from avpkt->data into samples.
+ * Some decoders may support multiple frames in a single AVPacket, such
+ * decoders would then just decode the first frame.
+ * If no frame
  * could be decompressed, \p frame_size_ptr is zero. Otherwise, it is the
  * decompressed frame size in \e bytes.
  *
@@ -3157,11 +3240,9 @@ attribute_deprecated int avcodec_decode_video(AVCodecContext *avctx, AVFrame *pi
 #endif
 
 /**
- * Decodes a video frame from \p avpkt->data into \p picture.
- * The avcodec_decode_video2() function decodes a video frame from the input
- * buffer \p avpkt->data of size \p avpkt->size. To decode it, it makes use of the
- * video codec which was coupled with \p avctx using avcodec_open(). The
- * resulting decoded frame is stored in \p picture.
+ * Decodes the video frame of size avpkt->size from avpkt->data into picture.
+ * Some decoders may support multiple frames in a single AVPacket, such
+ * decoders would then just decode the first frame.
  *
  * @warning The input buffer must be \c FF_INPUT_BUFFER_PADDING_SIZE larger than
  * the actual read bytes because some optimized bitstream readers read 32 or 64
@@ -3204,7 +3285,7 @@ attribute_deprecated int avcodec_decode_subtitle(AVCodecContext *avctx, AVSubtit
 
 /**
  * Decodes a subtitle message.
- * Returns -1 if error, otherwise returns the number of bytes used.
+ * Returns a negative value on error, otherwise returns the number of bytes used.
  * If no subtitle could be decompressed, \p got_sub_ptr is zero.
  * Otherwise, the subtitle is stored in \p *sub.
  *
@@ -3222,10 +3303,6 @@ int avcodec_parse_frame(AVCodecContext *avctx, uint8_t **pdata,
 
 /**
  * Encodes an audio frame from \p samples into \p buf.
- * The avcodec_encode_audio() function encodes an audio frame from the input
- * buffer \p samples. To encode it, it makes use of the audio codec which was
- * coupled with \p avctx using avcodec_open(). The resulting encoded frame is
- * stored in output buffer \p buf.
  *
  * @note The output buffer should be at least \c FF_MIN_BUFFER_SIZE bytes large.
  * However, for PCM audio the user will know how much space is needed
@@ -3248,10 +3325,7 @@ int avcodec_encode_audio(AVCodecContext *avctx, uint8_t *buf, int buf_size,
 
 /**
  * Encodes a video frame from \p pict into \p buf.
- * The avcodec_encode_video() function encodes a video frame from the input
- * \p pict. To encode it, it makes use of the video codec which was coupled with
- * \p avctx using avcodec_open(). The resulting encoded bytes representing the
- * frame are stored in the output buffer \p buf. The input picture should be
+ * The input picture should be
  * stored using a specific format, namely \c avctx.pix_fmt.
  *
  * @param avctx the codec context

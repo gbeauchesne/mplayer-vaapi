@@ -19,13 +19,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
 
+#include "config.h"
 #include "dvdread/dvd_reader.h"
 #include "dvd_input.h"
 

@@ -1,15 +1,15 @@
 8
 
 dir
-1169
+1173
 svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdread/src
 svn://svn.mplayerhq.hu/dvdnav
 
 
 
-2009-02-15T18:30:24.688883Z
-1168
-nicodvb
+2009-05-05T17:27:14.215971Z
+1173
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-02-16T15:28:19.000000Z
-14b5a421eb2784e971bf65e498c50ec4
-2009-02-15T18:30:24.688883Z
-1168
+2009-05-25T08:54:09.000000Z
+ab275d41f3f9d527f543daa9ae94bced
+2009-04-28T13:26:33.798743Z
+1172
 nicodvb
 has-props
 
@@ -45,11 +45,24 @@ file
 
 
 
-2009-01-29T11:51:04.000000Z
-4ef2dc297013a3833740f6b0a3fad378
-2008-12-31T08:43:03.809552Z
-1162
-reimar
+2009-05-25T08:54:09.000000Z
+92ad4db8151844ad0e2221a0eee9d0da
+2009-04-28T13:26:33.798743Z
+1172
+nicodvb
+has-props
+
+bitreader.c
+file
+
+
+
+
+2009-05-25T08:54:09.000000Z
+9048cf8bf6fe99c81d21c94876e2ae78
+2009-04-28T13:26:33.798743Z
+1172
+nicodvb
 has-props
 
 dvd_input.h
@@ -63,19 +76,6 @@ c6709a9858812bcda21288d69b4d9169
 2008-09-14T20:37:38.705801Z
 1143
 diego
-has-props
-
-bitreader.c
-file
-
-
-
-
-2009-01-29T11:51:04.000000Z
-cdbd2ef5decef6b185ad1c5195c99878
-2008-12-31T08:43:03.809552Z
-1162
-reimar
 has-props
 
 ifo_read.c
@@ -110,11 +110,11 @@ file
 
 
 
-2009-01-29T11:51:04.000000Z
-57444c9851ac0149ad41506cf4eed129
-2008-12-31T08:43:03.809552Z
-1162
-reimar
+2009-05-25T08:54:09.000000Z
+ca9a20dcbf0b184816aa92125543672d
+2009-04-28T13:26:33.798743Z
+1172
+nicodvb
 has-props
 
 nav_read.c
@@ -149,12 +149,15 @@ file
 
 
 
-2009-01-29T11:51:04.000000Z
-2627d1c4df358f3b53a2ee23386dd9f9
-2008-09-25T09:17:42.807531Z
-1150
-diego
+2009-05-25T08:54:09.000000Z
+60830c20beec6fb2ea079a2791cfbf9f
+2009-04-28T13:26:33.798743Z
+1172
+nicodvb
 has-props
+
+dvdread
+dir
 
 Makefile.am
 file
@@ -168,9 +171,6 @@ ab4a7f88a4237b8c3e36aac76e51a6bb
 1162
 reimar
 has-props
-
-dvdread
-dir
 
 ifo_print.c
 file
@@ -204,10 +204,10 @@ file
 
 
 
-2009-01-29T11:51:04.000000Z
-ba023176429724152355feca288edb83
-2008-12-31T08:43:03.809552Z
-1162
-reimar
+2009-05-25T08:54:09.000000Z
+63c3feb06858c6bb736fd9275da2e436
+2009-05-05T17:27:14.215971Z
+1173
+diego
 has-props
 

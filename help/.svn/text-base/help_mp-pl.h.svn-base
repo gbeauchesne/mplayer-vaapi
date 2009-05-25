@@ -489,7 +489,7 @@ static const char help_text[]=
 #define MSGTR_OptionListHeader "\n Nazwa                 Typ            Min        Max      Ogólnie  CL    Cfg\n\n"
 #define MSGTR_TotalOptions "\nRazem: %d opcji\n"
 #define MSGTR_ProfileInclusionTooDeep "Ostrzeżenie: Profile inclusion too deep.\n"
-//nope? 
+//nope?
 #define MSGTR_NoProfileDefined "Brak zdefiniowanych profili.\n"
 #define MSGTR_AvailableProfiles "Dostępne profile:\n"
 #define MSGTR_UnknownProfile "Nieznany profil '%s'.\n"
@@ -624,8 +624,8 @@ static const char help_text[]=
 #define MSGTR_UsingExternalPP "[PP] Używam zewnętrznego filtra postprocessing, max q = %d.\n"
 #define MSGTR_UsingCodecPP "[PP] Używam filtra postprocessing kodeka, max q = %d.\n"
 #define MSGTR_VideoAttributeNotSupportedByVO_VD "Atrybut video '%s' nie jest obsługiwany przez wybrany vo & vd.\n"
-#define MSGTR_VideoCodecFamilyNotAvailableStr "Zarządano rodziny kodeków video [%s] (vfm=%s) niedostępna.\nWłącz ją przy kompilacji.\n"
-#define MSGTR_AudioCodecFamilyNotAvailableStr "Zarządano rodziny kodeków audio [%s] (afm=%s) niedostępna.\nWłącz ją przy kompilacji.\n"
+#define MSGTR_VideoCodecFamilyNotAvailableStr "Zażądano rodziny kodeków video [%s] (vfm=%s) niedostępna.\nWłącz ją przy kompilacji.\n"
+#define MSGTR_AudioCodecFamilyNotAvailableStr "Zażądano rodziny kodeków audio [%s] (afm=%s) niedostępna.\nWłącz ją przy kompilacji.\n"
 #define MSGTR_OpeningVideoDecoder "Otwieram dekoder video: [%s] %s\n"
 #define MSGTR_SelectedVideoCodec "Wybrany kodek video: [%s] vfm: %s (%s)\n"
 #define MSGTR_OpeningAudioDecoder "Otwieram dekoder audio: [%s] %s\n"
@@ -1049,7 +1049,7 @@ static const char help_text[]=
 
 // ======================= AO Audio Output drivers ========================
 
-// libao2 
+// libao2
 
 // audio_out.c
 #define MSGTR_AO_ALSA9_1x_Removed "audio_out: moduły alsa9 i alsa1x zostały usunięte, użyj w zamian -ao alsa.\n"
@@ -1155,7 +1155,7 @@ static const char help_text[]=
 
 // ======================= AF Audio Filters ================================
 
-// libaf 
+// libaf
 
 // af_ladspa.c
 

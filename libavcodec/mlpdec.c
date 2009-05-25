@@ -27,6 +27,7 @@
 #include <stdint.h>
 
 #include "avcodec.h"
+#include "dsputil.h"
 #include "libavutil/intreadwrite.h"
 #include "get_bits.h"
 #include "libavutil/crc.h"
@@ -144,6 +145,8 @@ typedef struct MLPDecodeContext {
     int8_t      noise_buffer[MAX_BLOCKSIZE_POW2];
     int8_t      bypassed_lsbs[MAX_BLOCKSIZE][MAX_CHANNELS];
     int32_t     sample_buffer[MAX_BLOCKSIZE][MAX_CHANNELS];
+
+    DSPContext  dsp;
 } MLPDecodeContext;
 
 static VLC huff_vlc[3];
@@ -231,6 +234,7 @@ static av_cold int mlp_decode_init(AVCodecContext *avctx)
     m->avctx = avctx;
     for (substr = 0; substr < MAX_SUBSTREAMS; substr++)
         m->substream[substr].lossless_check_data = 0xffffffff;
+    dsputil_init(&m->dsp, avctx);
 
     return 0;
 }
@@ -340,12 +344,17 @@ static int read_restart_header(MLPDecodeContext *m, GetBitContext *gbp,
                                  : MAX_MATRIX_CHANNEL_TRUEHD;
 
     sync_word = get_bits(gbp, 13);
-    s->noise_type = get_bits1(gbp);
 
-    if ((m->avctx->codec_id == CODEC_ID_MLP && s->noise_type) ||
-        sync_word != 0x31ea >> 1) {
+    if (sync_word != 0x31ea >> 1) {
         av_log(m->avctx, AV_LOG_ERROR,
                "restart header sync incorrect (got 0x%04x)\n", sync_word);
+        return -1;
+    }
+
+    s->noise_type = get_bits1(gbp);
+
+    if (m->avctx->codec_id == CODEC_ID_MLP && s->noise_type) {
+        av_log(m->avctx, AV_LOG_ERROR, "MLP must have 0x31ea sync word.\n");
         return -1;
     }
 
@@ -365,6 +374,15 @@ static int read_restart_header(MLPDecodeContext *m, GetBitContext *gbp,
     if (s->max_channel != s->max_matrix_channel) {
         av_log(m->avctx, AV_LOG_ERROR,
                "Max channel must be equal max matrix channel.\n");
+        return -1;
+    }
+
+    /* This should happen for TrueHD streams with >6 channels and MLP's noise
+     * type. It is not yet known if this is allowed. */
+    if (s->max_channel > MAX_MATRIX_CHANNEL_MLP && !s->noise_type) {
+        av_log(m->avctx, AV_LOG_ERROR,
+               "Number of channels %d is larger than the maximum supported "
+               "by the decoder. %s\n", s->max_channel+2, sample_message);
         return -1;
     }
 
@@ -477,6 +495,7 @@ static int read_filter_params(MLPDecodeContext *m, GetBitContext *gbp,
     fp->order = order;
 
     if (order > 0) {
+        int32_t *fcoeff = m->channel_params[channel].coeff[filter];
         int coeff_bits, coeff_shift;
 
         fp->shift = get_bits(gbp, 4);
@@ -497,7 +516,7 @@ static int read_filter_params(MLPDecodeContext *m, GetBitContext *gbp,
         }
 
         for (i = 0; i < order; i++)
-            fp->coeff[i] = get_sbits(gbp, coeff_bits) << coeff_shift;
+            fcoeff[i] = get_sbits(gbp, coeff_bits) << coeff_shift;
 
         if (get_bits1(gbp)) {
             int state_bits, state_shift;
@@ -616,10 +635,10 @@ static int read_channel_params(MLPDecodeContext *m, unsigned int substr,
         return -1;
     }
     /* The FIR and IIR filters must have the same precision.
-        * To simplify the filtering code, only the precision of the
-        * FIR filter is considered. If only the IIR filter is employed,
-        * the FIR filter precision is set to that of the IIR filter, so
-        * that the filtering code can use it. */
+     * To simplify the filtering code, only the precision of the
+     * FIR filter is considered. If only the IIR filter is employed,
+     * the FIR filter precision is set to that of the IIR filter, so
+     * that the filtering code can use it. */
     if (!fir->order && iir->order)
         fir->shift = iir->shift;
 
@@ -700,44 +719,25 @@ static void filter_channel(MLPDecodeContext *m, unsigned int substr,
                            unsigned int channel)
 {
     SubStream *s = &m->substream[substr];
-    int32_t firbuf[MAX_BLOCKSIZE + MAX_FIR_ORDER];
-    int32_t iirbuf[MAX_BLOCKSIZE + MAX_IIR_ORDER];
+    const int32_t *fircoeff = m->channel_params[channel].coeff[FIR];
+    int32_t state_buffer[NUM_FILTERS][MAX_BLOCKSIZE + MAX_FIR_ORDER];
+    int32_t *firbuf = state_buffer[FIR] + MAX_BLOCKSIZE;
+    int32_t *iirbuf = state_buffer[IIR] + MAX_BLOCKSIZE;
     FilterParams *fir = &m->channel_params[channel].filter_params[FIR];
     FilterParams *iir = &m->channel_params[channel].filter_params[IIR];
     unsigned int filter_shift = fir->shift;
     int32_t mask = MSB_MASK(s->quant_step_size[channel]);
-    int index = MAX_BLOCKSIZE;
-    int i;
 
-    memcpy(&firbuf[index], fir->state, MAX_FIR_ORDER * sizeof(int32_t));
-    memcpy(&iirbuf[index], iir->state, MAX_IIR_ORDER * sizeof(int32_t));
+    memcpy(firbuf, fir->state, MAX_FIR_ORDER * sizeof(int32_t));
+    memcpy(iirbuf, iir->state, MAX_IIR_ORDER * sizeof(int32_t));
 
-    for (i = 0; i < s->blocksize; i++) {
-        int32_t residual = m->sample_buffer[i + s->blockpos][channel];
-        unsigned int order;
-        int64_t accum = 0;
-        int32_t result;
+    m->dsp.mlp_filter_channel(firbuf, fircoeff,
+                              fir->order, iir->order,
+                              filter_shift, mask, s->blocksize,
+                              &m->sample_buffer[s->blockpos][channel]);
 
-        /* TODO: Move this code to DSPContext? */
-
-        for (order = 0; order < fir->order; order++)
-            accum += (int64_t) firbuf[index + order] * fir->coeff[order];
-        for (order = 0; order < iir->order; order++)
-            accum += (int64_t) iirbuf[index + order] * iir->coeff[order];
-
-        accum  = accum >> filter_shift;
-        result = (accum + residual) & mask;
-
-        --index;
-
-        firbuf[index] = result;
-        iirbuf[index] = result - accum;
-
-        m->sample_buffer[i + s->blockpos][channel] = result;
-    }
-
-    memcpy(fir->state, &firbuf[index], MAX_FIR_ORDER * sizeof(int32_t));
-    memcpy(iir->state, &iirbuf[index], MAX_IIR_ORDER * sizeof(int32_t));
+    memcpy(fir->state, firbuf - s->blocksize, MAX_FIR_ORDER * sizeof(int32_t));
+    memcpy(iir->state, iirbuf - s->blocksize, MAX_IIR_ORDER * sizeof(int32_t));
 }
 
 /** Read a block of PCM residual data (or actual if no filtering active). */

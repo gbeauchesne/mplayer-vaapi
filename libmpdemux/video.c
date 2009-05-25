@@ -1,4 +1,22 @@
-// read video frame
+/*
+ * video frame reading
+ *
+ * This file is part of MPlayer.
+ *
+ * MPlayer is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MPlayer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with MPlayer; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
 #include "config.h"
 
@@ -88,7 +106,7 @@ video_codec_t video_codec = find_video_codec(sh_video);
 switch(video_codec){
  case VIDEO_OTHER: {
  if((d_video->demuxer->file_format == DEMUXER_TYPE_ASF) || (d_video->demuxer->file_format == DEMUXER_TYPE_AVI)) {
-    // display info: 
+    // display info:
     // in case no strf chunk has been seen in avi, we have no bitmap header
     if(!sh_video->bih) return 0;
     sh_video->format=sh_video->bih->biCompression;
@@ -129,13 +147,13 @@ switch(video_codec){
       }
    }
    pos = videobuf_len+4;
-   if(!read_video_packet(d_video)){ 
+   if(!read_video_packet(d_video)){
      mp_msg(MSGT_DECVIDEO,MSGL_ERR,"Can't read Video Object Layer Header\n");
      return 0;
    }
    mp4_header_process_vol(&picture, &(videobuffer[pos]));
    mp_msg(MSGT_DECVIDEO,MSGL_V,"OK! FPS SEEMS TO BE %.3f\nSearching for Video Object Plane Start code... ", sh_video->fps);
- mp4_init: 
+ mp4_init:
    while(1){
       int i=sync_video_packet(d_video);
       if(i==0x1B6) break; // found it!
@@ -145,7 +163,7 @@ switch(video_codec){
       }
    }
    pos = videobuf_len+4;
-   if(!read_video_packet(d_video)){ 
+   if(!read_video_packet(d_video)){
      mp_msg(MSGT_DECVIDEO,MSGL_ERR,"Can't read Video Object Plane Header\n");
      return 0;
    }
@@ -159,7 +177,7 @@ switch(video_codec){
           goto mp4_init;
 
      i=0;
-     mn = mx = units[0];  
+     mn = mx = units[0];
      for(i=0; i<3; i++) {
        if(units[i] < mn)
          mn = units[i];
@@ -212,7 +230,7 @@ switch(video_codec){
      }
    }
    pos = videobuf_len+4;
-   if(!read_video_packet(d_video)){ 
+   if(!read_video_packet(d_video)){
      mp_msg(MSGT_DECVIDEO,MSGL_ERR,"Can't read sequence parameter set\n");
      return 0;
    }
@@ -275,17 +293,17 @@ mpeg_header_parser:
      }
    }
 
-   if(!read_video_packet(d_video)){ 
+   if(!read_video_packet(d_video)){
      mp_msg(MSGT_DECVIDEO,MSGL_ERR,MSGTR_CannotReadMpegSequHdr);
      return 0;
    }
    if(mp_header_process_sequence_header (&picture, &videobuffer[4])) {
-     mp_msg(MSGT_DECVIDEO,MSGL_ERR,MSGTR_BadMpegSequHdr); 
+     mp_msg(MSGT_DECVIDEO,MSGL_ERR,MSGTR_BadMpegSequHdr);
      goto mpeg_header_parser;
    }
    if(sync_video_packet(d_video)==0x1B5){ // next packet is seq. ext.
     int pos=videobuf_len;
-    if(!read_video_packet(d_video)){ 
+    if(!read_video_packet(d_video)){
       mp_msg(MSGT_DECVIDEO,MSGL_ERR,MSGTR_CannotReadMpegSequHdrEx);
       return 0;
     }
@@ -342,7 +360,7 @@ mpeg_header_parser:
        return 0;
      }
    }
-   if(!read_video_packet(d_video)){ 
+   if(!read_video_packet(d_video)){
      mp_msg(MSGT_DECVIDEO,MSGL_ERR, "Couldn't read VC-1 sequence header!\n");
      return 0;
    }

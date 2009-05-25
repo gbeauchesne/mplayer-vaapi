@@ -85,6 +85,7 @@ av_cold int ff_mjpeg_decode_init(AVCodecContext *avctx)
     s->start_code = -1;
     s->first_picture = 1;
     s->org_height = avctx->coded_height;
+    avctx->chroma_sample_location = AVCHROMA_LOC_CENTER;
 
     build_basic_mjpeg_vlc(s);
 
@@ -826,9 +827,8 @@ static int mjpeg_decode_scan(MJpegDecodeContext *s, int nb_components, int Ah, i
                     }
                 }
             }
-            /* (< 1350) buggy workaround for Spectralfan.mov, should be fixed */
-            if (s->restart_interval && (s->restart_interval < 1350) &&
-                !--s->restart_count) {
+
+            if (s->restart_interval && !--s->restart_count) {
                 align_get_bits(&s->gb);
                 skip_bits(&s->gb, 16); /* skip RSTn */
                 for (i=0; i<nb_components; i++) /* reset dc */

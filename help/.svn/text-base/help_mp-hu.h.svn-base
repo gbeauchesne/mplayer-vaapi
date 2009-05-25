@@ -3,7 +3,7 @@
 //... Okay enough of the hw, now send the other two!
 //
 // Updated by: Gabrov <gabrov@freemail.hu>
-// Sync'ed with help_mp-en.h r28860 (2009. 03. 09.)
+// Sync'ed with help_mp-en.h r29209 (2009. 05. 24.)
 
 
 // ========================= MPlayer help ===========================
@@ -601,23 +601,23 @@ static const char help_text[]=
 #define MSGTR_MENU_AboutMPlayer "Az MPlayer-ről"
 #define MSGTR_MENU_Open "Megnyitás..."
 #define MSGTR_MENU_PlayFile "Fájl lejátszás..."
-#define MSGTR_MENU_PlayVCD "VCD lejátszás..."  
-#define MSGTR_MENU_PlayDVD "DVD lejátszás..."  
-#define MSGTR_MENU_PlayURL "URL lejátszás..."  
+#define MSGTR_MENU_PlayVCD "VCD lejátszás..."
+#define MSGTR_MENU_PlayDVD "DVD lejátszás..."
+#define MSGTR_MENU_PlayURL "URL lejátszás..."
 #define MSGTR_MENU_LoadSubtitle "Felirat betöltése..."
 #define MSGTR_MENU_DropSubtitle "Felirat eldobása..."
 #define MSGTR_MENU_LoadExternAudioFile "Külső hang betöltése..."
 #define MSGTR_MENU_Playing "Lejátszás"
 #define MSGTR_MENU_Play "Lejátszás"
 #define MSGTR_MENU_Pause "Pillanatállj"
-#define MSGTR_MENU_Stop "Állj"  
+#define MSGTR_MENU_Stop "Állj"
 #define MSGTR_MENU_NextStream "Következő fájl"
 #define MSGTR_MENU_PrevStream "Előző fájl"
 #define MSGTR_MENU_Size "Méret"
 #define MSGTR_MENU_HalfSize   "Fél méret"
 #define MSGTR_MENU_NormalSize "Normál méret"
 #define MSGTR_MENU_DoubleSize "Dupla méret"
-#define MSGTR_MENU_FullScreen "Teljesképernyő" 
+#define MSGTR_MENU_FullScreen "Teljesképernyő"
 #define MSGTR_MENU_DVD "DVD"
 #define MSGTR_MENU_VCD "VCD"
 #define MSGTR_MENU_PlayDisc "Lemez megnyitása..."
@@ -1185,7 +1185,7 @@ static const char help_text[]=
 #define MSGTR_AO_ESD_CantOpenPBStream "[AO ESD] nem sikerült megnyitni az ESD playback folyamot: %s\n"
 
 // ao_mpegpes.c
-#define MSGTR_AO_MPEGPES_CantSetMixer "[AO MPEGPES] DVB audio keverő beállítása sikertelen: %s.\n" 
+#define MSGTR_AO_MPEGPES_CantSetMixer "[AO MPEGPES] DVB audio keverő beállítása sikertelen: %s.\n"
 #define MSGTR_AO_MPEGPES_UnsupSamplerate "[AO MPEGPES] %d Hz nem támogatott, új mintavételt próbálok.\n"
 
 // ao_pcm.c

@@ -1,9 +1,24 @@
 /*
- * native Matroska demuxer
- * Written by Aurelien Jacobs <aurel@gnuage.org>
+ * Matroska demuxer
+ * Copyright (C) 2004 Aurelien Jacobs <aurel@gnuage.org>
  * Based on the one written by Ronald Bultje for gstreamer
- *   and on demux_mkv.cpp from Moritz Bunkus.
- * Licence: GPL
+ * and on demux_mkv.cpp from Moritz Bunkus.
+ *
+ * This file is part of MPlayer.
+ *
+ * MPlayer is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MPlayer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with MPlayer; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "config.h"
@@ -75,13 +90,13 @@ typedef struct mkv_track
 {
   int tnum;
   char *name;
-  
+
   char *codec_id;
   int ms_compat;
   char *language;
 
   int type;
-  
+
   uint32_t v_width, v_height, v_dwidth, v_dheight;
   float v_frate;
 
@@ -172,7 +187,7 @@ typedef struct mkv_demuxer
   int v_skip_to_keyframe, a_skip_to_keyframe;
 
   int64_t stop_timecode;
-  
+
   int last_aid;
   int audio_tracks[MAX_A_STREAMS];
 } mkv_demuxer_t;
@@ -207,7 +222,7 @@ demux_mkv_find_track_by_num (mkv_demuxer_t *d, int n, int type)
     if (d->tracks[i] != NULL && d->tracks[i]->type == type)
       if (id++ == n)
         return d->tracks[i];
-  
+
   return NULL;
 }
 
@@ -416,7 +431,7 @@ demux_mkv_read_info (demuxer_t *demuxer)
           }
 
         default:
-          ebml_read_skip (s, &l); 
+          ebml_read_skip (s, &l);
           break;
         }
       length -= l + il;
@@ -787,7 +802,7 @@ demux_mkv_read_trackentry (demuxer_t *demuxer)
                     track->name);
             break;
           }
-          
+
         case MATROSKA_ID_TRACKTYPE:
           {
             uint64_t num = ebml_read_uint (s, &l);
@@ -982,7 +997,7 @@ demux_mkv_read_cues (demuxer_t *demuxer)
         ebml_read_skip (s, NULL);
         return 0;
       }
-  mkv_d->parsed_cues = realloc (mkv_d->parsed_cues, 
+  mkv_d->parsed_cues = realloc (mkv_d->parsed_cues,
                                 (mkv_d->parsed_cues_num+1)
                                 * sizeof (off_t));
   mkv_d->parsed_cues[mkv_d->parsed_cues_num++] = off;
@@ -1069,7 +1084,7 @@ demux_mkv_read_cues (demuxer_t *demuxer)
           mkv_d->indexes[mkv_d->num_indexes].timecode = time;
           mkv_d->indexes[mkv_d->num_indexes].filepos =mkv_d->segment_start+pos;
           mp_msg (MSGT_DEMUX, MSGL_DBG2, "[mkv] |+ found cue point "
-                  "for track %"PRIu64": timecode %"PRIu64", filepos: %"PRIu64"\n", 
+                  "for track %"PRIu64": timecode %"PRIu64", filepos: %"PRIu64"\n",
                   track, time, mkv_d->segment_start + pos);
           mkv_d->num_indexes++;
         }
@@ -1174,9 +1189,9 @@ demux_mkv_read_chapters (demuxer_t *demuxer)
 
                       if (!name)
                         name = strdup("(unnamed)");
-                      
+
                       cid = demuxer_add_chapter(demuxer, name, start, end);
-                      
+
                       mp_msg(MSGT_DEMUX, MSGL_V,
                              "[mkv] Chapter %u from %02d:%02d:%02d."
                              "%03d to %02d:%02d:%02d.%03d, %s\n",
@@ -1333,7 +1348,7 @@ demux_mkv_read_seekhead (demuxer_t *demuxer)
         ebml_read_skip (s, NULL);
         return 0;
       }
-  mkv_d->parsed_seekhead = realloc (mkv_d->parsed_seekhead, 
+  mkv_d->parsed_seekhead = realloc (mkv_d->parsed_seekhead,
                                     (mkv_d->parsed_seekhead_num+1)
                                     * sizeof (off_t));
   mkv_d->parsed_seekhead[mkv_d->parsed_seekhead_num++] = off;
@@ -2308,7 +2323,7 @@ demux_mkv_read_block_lacing (uint8_t *buffer, uint64_t *size,
         case 1:  /* xiph lacing */
           for (i=0; i < *laces-1; i++)
             {
-              lace_size[i] = 0; 
+              lace_size[i] = 0;
               do
                 {
                   lace_size[i] += *buffer;
@@ -2648,9 +2663,9 @@ handle_block (demuxer_t *demuxer, uint8_t *block, uint64_t length,
     {
       ds = demuxer->audio;
 
-      if (mkv_d->a_skip_to_keyframe) 
+      if (mkv_d->a_skip_to_keyframe)
         {
-          if (simpleblock) 
+          if (simpleblock)
             {
                if (!(flags&0x80))   /*current frame isn't a keyframe*/
                  use_this_block = 0;
@@ -2987,7 +3002,7 @@ demux_mkv_seek (demuxer_t *demuxer, float rel_seek_secs, float audio_delay, int 
       else
         {
           mkv_index_t *index = NULL;
-          int seek_id = (demuxer->video->id < 0) ? demuxer->audio->id : demuxer->video->id;  
+          int seek_id = (demuxer->video->id < 0) ? demuxer->audio->id : demuxer->video->id;
 
           /* let's find the entry in the indexes with the smallest */
           /* difference to the wanted timecode. */
@@ -3078,7 +3093,7 @@ static int
 demux_mkv_control (demuxer_t *demuxer, int cmd, void *arg)
 {
   mkv_demuxer_t *mkv_d = (mkv_demuxer_t *) demuxer->priv;
-  
+
   switch (cmd)
     {
     case DEMUXER_CTRL_CORRECT_PTS:
@@ -3097,7 +3112,7 @@ demux_mkv_control (demuxer_t *demuxer, int cmd, void *arg)
         }
 
       *((int *) arg) = (int) (100 * mkv_d->last_pts / mkv_d->duration);
-      return DEMUXER_CTRL_OK; 
+      return DEMUXER_CTRL_OK;
 
     case DEMUXER_CTRL_SWITCH_AUDIO:
       if (demuxer->audio && demuxer->audio->sh) {

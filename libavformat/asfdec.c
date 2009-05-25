@@ -19,12 +19,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+//#define DEBUG
+
 #include "libavutil/common.h"
+#include "libavutil/avstring.h"
 #include "libavcodec/mpegaudio.h"
 #include "avformat.h"
 #include "riff.h"
 #include "asf.h"
 #include "asfcrypt.h"
+#include "avlanguage.h"
 
 void ff_mms_set_stream_selection(URLContext *h, AVFormatContext *format);
 
@@ -44,7 +48,10 @@ static const ff_asf_guid stream_bitrate_guid = { /* (http://get.to/sdp) */
 /**********************************/
 /* decoding */
 
-//#define DEBUG
+static int guidcmp(const void *g1, const void *g2)
+{
+    return memcmp(g1, g2, sizeof(ff_asf_guid));
+}
 
 #ifdef DEBUG
 #define PRINT_IF_GUID(g,cmp) \
@@ -76,6 +83,7 @@ static void print_guid(const ff_asf_guid *g)
     else PRINT_IF_GUID(g, ff_asf_ext_stream_audio_stream);
     else PRINT_IF_GUID(g, ff_asf_metadata_header);
     else PRINT_IF_GUID(g, stream_bitrate_guid);
+    else PRINT_IF_GUID(g, ff_asf_language_guid);
     else
         dprintf(NULL, "(GUID: unknown) ");
     for(i=0;i<16;i++)
@@ -86,11 +94,6 @@ static void print_guid(const ff_asf_guid *g)
 #else
 #define print_guid(g)
 #endif
-
-static int guidcmp(const void *g1, const void *g2)
-{
-    return memcmp(g1, g2, sizeof(ff_asf_guid));
-}
 
 static void get_guid(ByteIOContext *s, ff_asf_guid *g)
 {
@@ -119,11 +122,12 @@ static void get_str16(ByteIOContext *pb, char *buf, int buf_size)
 static void get_str16_nolen(ByteIOContext *pb, int len, char *buf, int buf_size)
 {
     char* q = buf;
-    len /= 2;
-    while (len--) {
+    for (; len > 1; len -= 2) {
         uint8_t tmp;
         PUT_UTF8(get_le16(pb), tmp, if (q - buf < buf_size - 1) *q++ = tmp;)
     }
+    if (len > 0)
+        url_fskip(pb, len);
     *q = '\0';
 }
 
@@ -237,6 +241,8 @@ static int asf_read_header(AVFormatContext *s, AVFormatParameters *ap)
                 return AVERROR(ENOMEM);
             st->priv_data = asf_st;
             start_time = asf->hdr.preroll;
+
+            asf_st->stream_language_index = 128; // invalid stream index means no language info
 
             if(!(asf->hdr.flags & 0x01)) { // if we aren't streaming...
                 st->duration = asf->hdr.send_time /
@@ -403,6 +409,16 @@ static int asf_read_header(AVFormatContext *s, AVFormatParameters *ap)
 //                av_log(s, AV_LOG_ERROR, "flags: 0x%x stream id %d, bitrate %d\n", flags, stream_id, bitrate);
                 asf->stream_bitrates[stream_id]= bitrate;
             }
+        } else if (!guidcmp(&g, &ff_asf_language_guid)) {
+            int j;
+            int stream_count = get_le16(pb);
+            for(j = 0; j < stream_count; j++) {
+                char lang[6];
+                unsigned int lang_len = get_byte(pb);
+                get_str16_nolen(pb, lang_len, lang, sizeof(lang));
+                if (j < 128)
+                    av_strlcpy(asf->stream_languages[j], lang, sizeof(*asf->stream_languages));
+            }
         } else if (!guidcmp(&g, &ff_asf_extended_content_header)) {
             int desc_count, i;
 
@@ -443,6 +459,7 @@ static int asf_read_header(AVFormatContext *s, AVFormatParameters *ap)
         } else if (!guidcmp(&g, &ff_asf_ext_stream_header)) {
             int ext_len, payload_ext_ct, stream_ct;
             uint32_t ext_d, leak_rate, stream_num;
+            unsigned int stream_languageid_index;
 
             get_le64(pb); // starttime
             get_le64(pb); // endtime
@@ -455,7 +472,11 @@ static int asf_read_header(AVFormatContext *s, AVFormatParameters *ap)
             get_le32(pb); // max-object-size
             get_le32(pb); // flags (reliable,seekable,no_cleanpoints?,resend-live-cleanpoints, rest of bits reserved)
             stream_num = get_le16(pb); // stream-num
-            get_le16(pb); // stream-language-id-index
+
+            stream_languageid_index = get_le16(pb); // stream-language-id-index
+            if (stream_num < 128)
+                asf->streams[stream_num].stream_language_index = stream_languageid_index;
+
             get_le64(pb); // avg frametime in 100ns units
             stream_ct = get_le16(pb); //stream-name-count
             payload_ext_ct = get_le16(pb); //payload-extension-system-count
@@ -535,6 +556,17 @@ static int asf_read_header(AVFormatContext *s, AVFormatParameters *ap)
                           &st->sample_aspect_ratio.den,
                           dar[i].num, dar[i].den, INT_MAX);
 //av_log(s, AV_LOG_ERROR, "dar %d:%d sar=%d:%d\n", dar[i].num, dar[i].den, st->sample_aspect_ratio.num, st->sample_aspect_ratio.den);
+
+            // copy and convert language codes to the frontend
+            if (asf->streams[i].stream_language_index < 128) {
+                const char *rfc1766 = asf->stream_languages[asf->streams[i].stream_language_index];
+                if (rfc1766 && strlen(rfc1766) > 1) {
+                    const char primary_tag[3] = { rfc1766[0], rfc1766[1], '\0' }; // ignore country code if any
+                    const char *iso6392 = av_convert_lang_to(primary_tag, AV_LANG_ISO639_2_BIBL);
+                    if (iso6392)
+                        av_metadata_set(&st->metadata, "language", iso6392);
+                }
+            }
         }
     }
 

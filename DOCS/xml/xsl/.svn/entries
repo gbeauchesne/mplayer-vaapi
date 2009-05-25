@@ -1,15 +1,15 @@
 8
 
 dir
-29224
+29319
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/xsl
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2003-03-23T23:35:12.000000Z
-9676
-nicolas
+2009-05-13T02:58:57.333510Z
+29305
+diego
 
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2009-01-29T11:50:45.000000Z
-f80b2f8adf642becb330a8382b290c95
-2003-03-23T23:35:12.000000Z
-9676
-nicolas
+2009-05-25T08:53:57.000000Z
+f1feaf5b06120978882e35d3aa1f7ce4
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 ldp-html-chunk.xsl
@@ -45,11 +45,11 @@ file
 
 
 
-2009-01-29T11:50:45.000000Z
-43952a64bd242cc1367b0105e8c0f3f6
-2003-03-23T23:35:12.000000Z
-9676
-nicolas
+2009-05-25T08:53:57.000000Z
+9a957463fc0a94e6bcc29ecc0ec226ac
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 ldp-html-common.xsl
@@ -58,11 +58,11 @@ file
 
 
 
-2009-01-29T11:50:45.000000Z
-e6dafd119be7f76a97a4ecc9da49c551
-2003-03-23T23:35:12.000000Z
-9676
-nicolas
+2009-05-25T08:53:57.000000Z
+fa215797dac969949537eda97060bb53
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 ldp-print.xsl

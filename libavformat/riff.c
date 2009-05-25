@@ -101,6 +101,7 @@ const AVCodecTag codec_bmp_tags[] = {
     { CODEC_ID_DVVIDEO,      MKTAG('c', 'd', 'v', 'c') }, /* Canopus DV */
     { CODEC_ID_DVVIDEO,      MKTAG('C', 'D', 'V', 'H') }, /* Canopus DV */
     { CODEC_ID_DVVIDEO,      MKTAG('d', 'v', 'c', ' ') },
+    { CODEC_ID_DVVIDEO,      MKTAG('d', 'v', 'h', '1') },
     { CODEC_ID_MPEG1VIDEO,   MKTAG('m', 'p', 'g', '1') },
     { CODEC_ID_MPEG1VIDEO,   MKTAG('m', 'p', 'g', '2') },
     { CODEC_ID_MPEG2VIDEO,   MKTAG('m', 'p', 'g', '2') },
@@ -139,6 +140,7 @@ const AVCodecTag codec_bmp_tags[] = {
     { CODEC_ID_RAWVIDEO,     MKTAG('I', 'Y', 'U', 'V') },
     { CODEC_ID_RAWVIDEO,     MKTAG('Y', '8', '0', '0') },
     { CODEC_ID_RAWVIDEO,     MKTAG('H', 'D', 'Y', 'C') },
+    { CODEC_ID_V210,         MKTAG('v', '2', '1', '0') },
     { CODEC_ID_INDEO3,       MKTAG('I', 'V', '3', '1') },
     { CODEC_ID_INDEO3,       MKTAG('I', 'V', '3', '2') },
     { CODEC_ID_INDEO4,       MKTAG('I', 'V', '4', '1') },

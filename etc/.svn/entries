@@ -1,15 +1,15 @@
 8
 
 dir
-29224
+29319
 svn://svn.mplayerhq.hu/mplayer/trunk/etc
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-04-04T04:27:09.048470Z
-29137
-compn
+2009-05-13T02:58:57.333510Z
+29305
+diego
 
 
 svn:special svn:externals svn:needs-lock
@@ -84,11 +84,11 @@ file
 
 
 
-2009-04-06T14:43:48.000000Z
-750d2c858a0a237fd5e9627eeabae1a3
-2009-04-04T04:27:09.048470Z
-29137
-compn
+2009-05-25T08:54:02.000000Z
+e294aa6d07e674c0aabd473ced2ccdf4
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 codecs.conf
@@ -97,11 +97,11 @@ file
 
 
 
-2009-04-06T14:43:48.000000Z
-7345b6e0817d1acbc528ed939d30cc38
-2009-04-03T13:39:34.178045Z
-29136
-compn
+2009-05-25T08:54:02.000000Z
+9c50123dd003b414783242b8ef759ac4
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 inttypes.h
@@ -123,11 +123,11 @@ file
 
 
 
-2009-01-29T11:50:52.000000Z
-f96f66278e1bf637f5fb77bbb03a9857
-2007-12-22T06:14:38.490906Z
-25489
-ulion
+2009-05-25T08:54:02.000000Z
+09fbe6aab949a8270b3a5063a62b5a56
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 mplayer.xpm

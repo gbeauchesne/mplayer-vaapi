@@ -1,6 +1,26 @@
-//  Y4M file parser by Rik Snel (using yuv4mpeg*.[ch] from
-//  mjpeg.sourceforge.net) (derived from demux_viv.c)
-//  older YUV4MPEG (used by xawtv) support by Alex Beregszaszi
+/*
+ * Y4M file parser
+ * copyright (c) 2001 Rik Snel
+ * (using yuv4mpeg*.[ch] from mjpeg.sourceforge.net)
+ * (derived from demux_viv.c)
+ * older YUV4MPEG (used by xawtv) support by Alex Beregszaszi
+ *
+ * This file is part of MPlayer.
+ *
+ * MPlayer is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MPlayer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with MPlayer; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +37,7 @@
 #include "stheader.h"
 
 typedef struct {
-    int framenum; 
+    int framenum;
     y4m_stream_info_t* si;
     int is_older;
 } y4m_priv_t;
@@ -26,14 +46,14 @@ static int y4m_check_file(demuxer_t* demuxer){
     int orig_pos = stream_tell(demuxer->stream);
     char buf[10];
     y4m_priv_t* priv;
-    
+
     mp_msg(MSGT_DEMUX, MSGL_V, "Checking for YUV4MPEG2\n");
-    
+
     if(stream_read(demuxer->stream, buf, 9)!=9)
         return 0;
 
     buf[9] = 0;
-    
+
     if (strncmp("YUV4MPEG2", buf, 9) && strncmp("YUV4MPEG ", buf, 9)) {
 	    return 0;
     }
@@ -84,7 +104,7 @@ static int demux_y4m_fill_buffer(demuxer_t *demux, demux_stream_t *dsds) {
   if (priv->is_older)
   {
     int c;
-    
+
     c = stream_read_char(demux->stream); /* F */
     if (c == -256)
 	return 0; /* EOF */
@@ -144,7 +164,7 @@ static demuxer_t* demux_open_y4m(demuxer_t* demuxer){
 	buf[1] = 0;
 	frame_rate_code = atoi(buf);
 	stream_skip(demuxer->stream, 1); /* new-line */
-	
+
 	if (!sh->fps)
 	{
 	    /* values from xawtv */
@@ -183,9 +203,9 @@ static demuxer_t* demux_open_y4m(demuxer_t* demuxer){
     else
     {
 	y4m_init_stream_info(priv->si);
-	if ((err=y4m_read_stream_header(demuxer->stream, priv->si)) != Y4M_OK) 
+	if ((err=y4m_read_stream_header(demuxer->stream, priv->si)) != Y4M_OK)
 	    mp_msg(MSGT_DEMUXER, MSGL_FATAL, "error parsing YUV4MPEG header: %s\n", y4m_strerr(err));
-	
+
 	if(!sh->fps) {
     	    ratio = y4m_si_get_framerate(priv->si);
     	    if (ratio.d != 0)
@@ -194,7 +214,7 @@ static demuxer_t* demux_open_y4m(demuxer_t* demuxer){
         	sh->fps=15.0f;
 	}
 	sh->frametime=1.0f/sh->fps;
-	
+
 	ratio = y4m_si_get_sampleaspect(priv->si);
 
 	sh->disp_w = y4m_si_get_width(priv->si);
@@ -221,7 +241,7 @@ static demuxer_t* demux_open_y4m(demuxer_t* demuxer){
     demuxer->video->sh=sh;
     sh->ds=demuxer->video;
     demuxer->video->id=0;
-		
+
 
     mp_msg(MSGT_DEMUX, MSGL_INFO, "YUV4MPEG2 Video stream %d size: display: %dx%d, codec: %ux%u\n",
             demuxer->video->id, sh->disp_w, sh->disp_h, sh->bih->biWidth,
@@ -251,7 +271,7 @@ static void demux_seek_y4m(demuxer_t *demuxer, float rel_seek_secs, float audio_
          * demuxed (counting from ONE (see demux_open_y4m)) */
         stream_seek(demuxer->stream, curr_pos + rel_seek_frames*(size+6));
     } else {
-	    /* should never come here, because seeking for YUV4MPEG2 
+	    /* should never come here, because seeking for YUV4MPEG2
 	     * is disabled. */
 	    mp_msg(MSGT_DEMUX, MSGL_WARN, "Seeking for YUV4MPEG2 not yet implemented!\n");
     }

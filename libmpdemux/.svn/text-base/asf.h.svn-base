@@ -1,3 +1,21 @@
+/*
+ * This file is part of MPlayer.
+ *
+ * MPlayer is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MPlayer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with MPlayer; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
 #ifndef MPLAYER_ASF_H
 #define MPLAYER_ASF_H
 
@@ -7,7 +25,7 @@
 #include "mpbswap.h"
 
 ///////////////////////
-// ASF Object Header 
+// ASF Object Header
 ///////////////////////
 typedef struct __attribute__((packed)) {
   uint8_t guid[16];
@@ -15,7 +33,7 @@ typedef struct __attribute__((packed)) {
 } ASF_obj_header_t;
 
 ////////////////
-// ASF Header 
+// ASF Header
 ////////////////
 typedef struct __attribute__((packed)) {
   ASF_obj_header_t objh;
@@ -25,7 +43,7 @@ typedef struct __attribute__((packed)) {
 } ASF_header_t;
 
 /////////////////////
-// ASF File Header 
+// ASF File Header
 /////////////////////
 typedef struct __attribute__((packed)) {
   uint8_t stream_id[16]; // stream GUID
@@ -66,7 +84,7 @@ typedef struct  __attribute__((packed)) {
 } ASF_content_description_t;
 
 ////////////////////////
-// ASF Segment Header 
+// ASF Segment Header
 ////////////////////////
 typedef struct __attribute__((packed)) {
   uint8_t streamno;

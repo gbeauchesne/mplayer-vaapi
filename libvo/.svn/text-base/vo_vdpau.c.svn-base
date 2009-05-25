@@ -575,7 +575,9 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width,
 
         xswa.background_pixel = 0;
         xswa.border_pixel     = 0;
-        xswamask = CWBackPixel | CWBorderPixel;
+        /* Do not use CWBackPixel: It leads to VDPAU errors after
+           aspect ratio changes. */
+        xswamask = CWBorderPixel;
 
         vo_x11_create_vo_window(&vinfo, vo_dx, vo_dy, d_width, d_height,
                                 flags, CopyFromParent, "vdpau", title);
@@ -859,7 +861,7 @@ static int draw_slice(uint8_t *image[], int stride[], int w, int h,
     if ((decoder == VDP_INVALID_HANDLE || decoder_max_refs < max_refs)
         && !create_vdp_decoder(max_refs))
         return VO_FALSE;
-    
+
     vdp_st = vdp_decoder_render(decoder, rndr->surface, (void *)&rndr->info, rndr->bitstream_buffers_used, rndr->bitstream_buffers);
     CHECK_ST_WARNING("Failed VDPAU decoder rendering");
     return VO_TRUE;

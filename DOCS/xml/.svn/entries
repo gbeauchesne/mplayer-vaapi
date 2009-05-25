@@ -1,15 +1,15 @@
 8
 
 dir
-29224
+29319
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-03-22T13:19:58.888813Z
-29034
-bircoph
+2009-05-24T09:54:25.418903Z
+29319
+Gabrov
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2009-03-22T00:23:06.000000Z
-0a892068e02eb455515d7c7642b9dafc
-2009-03-19T19:44:11.791234Z
-29004
-rathann
+2009-05-25T08:53:57.000000Z
+10a7baa3beed38816057d326a9ba613a
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 Makefile.inc
@@ -77,11 +77,11 @@ file
 
 
 
-2009-03-16T12:25:55.000000Z
-c044b6167edace88db3f93aac844c56e
-2009-03-14T12:32:28.682712Z
-28944
-reimar
+2009-05-25T08:53:57.000000Z
+135bfeef2b409ed7a9d15e38d7d2dc3e
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 ldp.dsl
@@ -90,11 +90,11 @@ file
 
 
 
-2009-01-29T11:50:47.000000Z
-d4f86b0df7cc7d40107e42d4681fd744
-2003-03-23T23:26:55.000000Z
-9675
-nicolas
+2009-05-25T08:53:57.000000Z
+e16bce7b031b0d25d4edc3d49a374935
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 zh_CN
@@ -104,9 +104,6 @@ en
 dir
 
 cs
-dir
-
-xsl
 dir
 
 README.maintainers
@@ -122,10 +119,13 @@ d6e00e9d4a8bf9add86bd157fb10dd08
 torinthiel
 has-props
 
-fr
+xsl
 dir
 
 es
+dir
+
+fr
 dir
 
 pl

@@ -475,6 +475,12 @@ typedef struct DSPContext {
 
     void (*shrink[4])(uint8_t *dst, int dst_wrap, const uint8_t *src, int src_wrap, int width, int height);
 
+    /* mlp/truehd functions */
+    void (*mlp_filter_channel)(int32_t *state, const int32_t *coeff,
+                               int firorder, int iirorder,
+                               unsigned int filter_shift, int32_t mask, int blocksize,
+                               int32_t *sample_buffer);
+
     /* vc1 functions */
     void (*vc1_inv_trans_8x8)(DCTELEM *b);
     void (*vc1_inv_trans_8x4)(uint8_t *dest, int line_size, DCTELEM *block);
@@ -765,7 +771,7 @@ extern float ff_sine_2048[2048];
 extern float ff_sine_4096[4096];
 extern float *ff_sine_windows[6];
 
-int ff_mdct_init(MDCTContext *s, int nbits, int inverse);
+int ff_mdct_init(MDCTContext *s, int nbits, int inverse, double scale);
 void ff_imdct_calc_c(MDCTContext *s, FFTSample *output, const FFTSample *input);
 void ff_imdct_half_c(MDCTContext *s, FFTSample *output, const FFTSample *input);
 void ff_imdct_calc_3dn(MDCTContext *s, FFTSample *output, const FFTSample *input);

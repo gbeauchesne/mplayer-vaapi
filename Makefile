@@ -531,8 +531,8 @@ SRCS_MPLAYER-$(APPLE_REMOTE) += input/ar.c
 SRCS_MPLAYER-$(ARTS)         += libao2/ao_arts.c
 SRCS_MPLAYER-$(BL)           += libvo/vo_bl.c
 SRCS_MPLAYER-$(CACA)         += libvo/vo_caca.c
-SRCS_MPLAYER-$(COREAUDIO)    += libao2/ao_macosx.c
-SRCS_MPLAYER-$(COREVIDEO)    += libvo/vo_macosx.m
+SRCS_MPLAYER-$(COREAUDIO)    += libao2/ao_coreaudio.c
+SRCS_MPLAYER-$(COREVIDEO)    += libvo/vo_corevideo.m
 SRCS_MPLAYER-$(DART)         += libao2/ao_dart.c
 SRCS_MPLAYER-$(DFBMGA)       += libvo/vo_dfbmga.c
 SRCS_MPLAYER-$(DGA)          += libvo/vo_dga.c
@@ -658,18 +658,18 @@ SRCS_MPLAYER-$(XVR100)        += libvo/vo_xvr100.c
 SRCS_MPLAYER-$(YUV4MPEG)      += libvo/vo_yuv4mpeg.c
 SRCS_MPLAYER-$(ZR)            += libvo/jpeg_enc.c libvo/vo_zr.c libvo/vo_zr2.c
 
-SRCS_MPLAYER = mplayer.c \
+SRCS_MPLAYER = command.c \
                m_property.c \
+               mixer.c \
                mp_fifo.c \
                mp_msg.c \
-               mixer.c \
+               mplayer.c \
                parser-mpcmd.c \
-               command.c \
                input/input.c \
-               libao2/audio_out.c \
                libao2/ao_mpegpes.c \
                libao2/ao_null.c \
                libao2/ao_pcm.c \
+               libao2/audio_out.c \
                libvo/aspect.c \
                libvo/geometry.c \
                libvo/spuenc.c \
@@ -878,17 +878,18 @@ codec-cfg.d codec-cfg.o: codecs.conf.h
 $(DEPS) $(MENCODER_DEPS) $(MPLAYER_DEPS): help_mp.h
 $(call ADDSUFFIXES,.d .o,mpcommon vobsub stream/stream_cddb stream/network libmpdemux/muxer_avi gui/win32/gui): version.h
 
-libdvdcss/%: CFLAGS += -D__USE_UNIX98 -D_GNU_SOURCE -DVERSION=\"1.2.10\" $(CFLAGS_LIBDVDCSS)
-libdvdnav/%: CFLAGS += -D__USE_UNIX98 -D_GNU_SOURCE -DHAVE_CONFIG_H -DVERSION=\"MPlayer-custom\"
-libdvdnav/% stream/stream_dvdnav%: CFLAGS += $(CFLAGS_LIBDVDNAV)
-libdvdread4/%: CFLAGS += -D__USE_UNIX98 -D_GNU_SOURCE -DHAVE_CONFIG_H $(CFLAGS_LIBDVDCSS_DVDREAD)
-libfaad2/%: CFLAGS += -Ilibfaad2 -D_GNU_SOURCE -DHAVE_CONFIG_H $(CFLAGS_FAAD_FIXED)
+libdvdcss/%:   CFLAGS := -Ilibdvdcss -D__USE_UNIX98 -D_GNU_SOURCE -DVERSION=\"1.2.10\" $(CFLAGS_LIBDVDCSS) $(CFLAGS)
+libdvdnav/%:   CFLAGS := -Ilibdvdnav -D__USE_UNIX98 -D_GNU_SOURCE -DHAVE_CONFIG_H -DVERSION=\"MPlayer-custom\" $(CFLAGS)
+libdvdread4/%: CFLAGS := -Ilibdvdread4 -D__USE_UNIX98 -D_GNU_SOURCE $(CFLAGS_LIBDVDCSS_DVDREAD) $(CFLAGS)
+libfaad2/%:    CFLAGS := -Ilibfaad2 -D_GNU_SOURCE -DHAVE_CONFIG_H $(CFLAGS_FAAD_FIXED) $(CFLAGS)
 
 loader/%: CFLAGS += -Iloader -fno-omit-frame-pointer $(CFLAGS_NO_OMIT_LEAF_FRAME_POINTER)
 #loader/%: CFLAGS += -Ddbg_printf=__vprintf -DTRACE=__vprintf -DDETAILED_OUT
 loader/win32%: CFLAGS += $(CFLAGS_STACKREALIGN)
 
 mp3lib/decode_i586%: CFLAGS += -fomit-frame-pointer
+
+stream/stream_dvdnav%: CFLAGS := $(CFLAGS_LIBDVDNAV) $(CFLAGS)
 
 tremor/%: CFLAGS += $(CFLAGS_TREMOR_LOW)
 
@@ -981,10 +982,10 @@ doxygen:
 	doxygen DOCS/tech/Doxyfile
 
 TAGS:
-	rm -f $@; ( find -name '*.[chS]' -o -name '*.asm' -print ) | xargs etags -a
+	rm -f $@; find . -name '*.[chS]' -o -name '*.asm' | xargs etags -a
 
 tags:
-	rm -f $@; ( find -name '*.[chS]' -o -name '*.asm' -print ) | xargs ctags -a
+	rm -f $@; find . -name '*.[chS]' -o -name '*.asm' | xargs ctags -a
 
 
 

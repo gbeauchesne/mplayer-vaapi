@@ -2198,6 +2198,7 @@ static av_cold int decode_init(AVCodecContext *avctx){
     else
         avctx->pix_fmt= avctx->get_format(avctx, avctx->codec->pix_fmts);
     avctx->hwaccel = ff_find_hwaccel(avctx->codec->id, avctx->pix_fmt);
+    avctx->chroma_sample_location = AVCHROMA_LOC_LEFT;
 
     decode_init_vlc();
 
@@ -6002,6 +6003,7 @@ static void filter_mb_edgev( H264Context *h, uint8_t *pix, int stride, int16_t b
     const int index_a = qp + h->slice_alpha_c0_offset;
     const int alpha = (alpha_table+52)[index_a];
     const int beta  = (beta_table+52)[qp + h->slice_beta_offset];
+    if (alpha ==0 || beta == 0) return;
 
     if( bS[0] < 4 ) {
         int8_t tc[4];
@@ -6018,6 +6020,7 @@ static void filter_mb_edgecv( H264Context *h, uint8_t *pix, int stride, int16_t 
     const int index_a = qp + h->slice_alpha_c0_offset;
     const int alpha = (alpha_table+52)[index_a];
     const int beta  = (beta_table+52)[qp + h->slice_beta_offset];
+    if (alpha ==0 || beta == 0) return;
 
     if( bS[0] < 4 ) {
         int8_t tc[4];
@@ -6186,6 +6189,7 @@ static void filter_mb_edgeh( H264Context *h, uint8_t *pix, int stride, int16_t b
     const int index_a = qp + h->slice_alpha_c0_offset;
     const int alpha = (alpha_table+52)[index_a];
     const int beta  = (beta_table+52)[qp + h->slice_beta_offset];
+    if (alpha ==0 || beta == 0) return;
 
     if( bS[0] < 4 ) {
         int8_t tc[4];
@@ -6203,6 +6207,7 @@ static void filter_mb_edgech( H264Context *h, uint8_t *pix, int stride, int16_t 
     const int index_a = qp + h->slice_alpha_c0_offset;
     const int alpha = (alpha_table+52)[index_a];
     const int beta  = (beta_table+52)[qp + h->slice_beta_offset];
+    if (alpha ==0 || beta == 0) return;
 
     if( bS[0] < 4 ) {
         int8_t tc[4];
@@ -7064,7 +7069,7 @@ static inline int decode_vui_parameters(H264Context *h, SPS *sps){
     }
 
     if(get_bits1(&s->gb)){      /* chroma_location_info_present_flag */
-        get_ue_golomb(&s->gb);  /* chroma_sample_location_type_top_field */
+        s->avctx->chroma_sample_location = get_ue_golomb(&s->gb)+1;  /* chroma_sample_location_type_top_field */
         get_ue_golomb(&s->gb);  /* chroma_sample_location_type_bottom_field */
     }
 

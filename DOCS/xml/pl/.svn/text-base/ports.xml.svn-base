@@ -259,8 +259,8 @@ Typowy błąd, jaki otrzymasz przy próbie budowy kompilatorem GNU C, który nie
 			Opening audio decoder: [acm] Win32/ACM decoders
 			sysi86(SI86DSCR): Invalid argument
 			Couldn't install fs segment, expect segfault
-			
-			
+
+
 			MPlayer interrupted by signal 11 in module: init_audio_codec
 			...
 		</screen>
@@ -693,7 +693,7 @@ wyższym. Zalecanym kompilatorem jest GCC 3.x w wersji Apple.
 Możesz otrzymać podstawowe środowisko do kompilacji, instalując
 <ulink url="http://developer.apple.com/tools/download/">Xcode</ulink> od Apple.
 Jeżeli masz Mac OS X 10.3.9 lub późniejszy i QuickTime 7, możesz
-skorzystać ze sterownika wyjścia video <option>macosx</option>.
+skorzystać ze sterownika wyjścia video <option>corevideo</option>.
 </para>
 
 <para>
@@ -838,7 +838,7 @@ zawierający gotowy do uruchomienia program.
 <para>
 Możes również skorzystać z projektu <application>Xcode</application> 2.1;
 stary projekt dla <application>Xcode</application> 1.x już nie działa.
- 
+
 </para>
 </sect2>
 </sect1>

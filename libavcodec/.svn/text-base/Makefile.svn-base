@@ -125,7 +125,7 @@ OBJS-$(CONFIG_MIMIC_DECODER)           += mimic.o
 OBJS-$(CONFIG_MJPEG_DECODER)           += mjpegdec.o mjpeg.o
 OBJS-$(CONFIG_MJPEG_ENCODER)           += mjpegenc.o mjpeg.o mpegvideo_enc.o motion_est.o ratecontrol.o mpeg12data.o mpegvideo.o
 OBJS-$(CONFIG_MJPEGB_DECODER)          += mjpegbdec.o mjpegdec.o mjpeg.o
-OBJS-$(CONFIG_MLP_DECODER)             += mlpdec.o mlp_parser.o mlp.o
+OBJS-$(CONFIG_MLP_DECODER)             += mlpdec.o mlp_parser.o mlp.o mlpdsp.o
 OBJS-$(CONFIG_MMVIDEO_DECODER)         += mmvideo.o
 OBJS-$(CONFIG_MOTIONPIXELS_DECODER)    += motionpixels.o
 OBJS-$(CONFIG_MP1_DECODER)             += mpegaudiodec.o mpegaudiodecheader.o mpegaudio.o mpegaudiodata.o
@@ -221,7 +221,8 @@ OBJS-$(CONFIG_THP_DECODER)             += mjpegdec.o mjpeg.o
 OBJS-$(CONFIG_TIERTEXSEQVIDEO_DECODER) += tiertexseqv.o
 OBJS-$(CONFIG_TIFF_DECODER)            += tiff.o lzw.o faxcompr.o
 OBJS-$(CONFIG_TIFF_ENCODER)            += tiffenc.o rle.o lzwenc.o
-OBJS-$(CONFIG_TRUEHD_DECODER)          += mlpdec.o mlp_parser.o mlp.o
+OBJS-$(CONFIG_TMV_DECODER)             += tmv.o cga_data.o
+OBJS-$(CONFIG_TRUEHD_DECODER)          += mlpdec.o mlp_parser.o mlp.o mlpdsp.o
 OBJS-$(CONFIG_TRUEMOTION1_DECODER)     += truemotion1.o
 OBJS-$(CONFIG_TRUEMOTION2_DECODER)     += truemotion2.o
 OBJS-$(CONFIG_TRUESPEECH_DECODER)      += truespeech.o
@@ -229,6 +230,8 @@ OBJS-$(CONFIG_TSCC_DECODER)            += tscc.o msrledec.o
 OBJS-$(CONFIG_TTA_DECODER)             += tta.o
 OBJS-$(CONFIG_TXD_DECODER)             += txd.o s3tc.o
 OBJS-$(CONFIG_ULTI_DECODER)            += ulti.o
+OBJS-$(CONFIG_V210_DECODER)            += v210dec.o
+OBJS-$(CONFIG_V210_ENCODER)            += v210enc.o
 OBJS-$(CONFIG_V210X_DECODER)           += v210x.o
 OBJS-$(CONFIG_VB_DECODER)              += vb.o
 OBJS-$(CONFIG_VC1_DECODER)             += vc1.o vc1data.o vc1dsp.o msmpeg4data.o h263dec.o h263.o intrax8.o intrax8dsp.o error_resilience.o mpegvideo.o msmpeg4.o
@@ -357,9 +360,11 @@ OBJS-$(CONFIG_ADPCM_YAMAHA_DECODER)       += adpcm.o
 OBJS-$(CONFIG_ADPCM_YAMAHA_ENCODER)       += adpcm.o
 
 # libavformat dependencies
+OBJS-$(CONFIG_ADTS_MUXER)              += mpeg4audio.o
 OBJS-$(CONFIG_EAC3_DEMUXER)            += ac3_parser.o ac3tab.o aac_ac3_parser.o
 OBJS-$(CONFIG_FLAC_DEMUXER)            += flacdec.o flacdata.o flac.o
 OBJS-$(CONFIG_FLAC_MUXER)              += flacdec.o flacdata.o flac.o
+OBJS-$(CONFIG_FLV_DEMUXER)             += mpeg4audio.o
 OBJS-$(CONFIG_GXF_DEMUXER)             += mpeg12data.o
 OBJS-$(CONFIG_MATROSKA_AUDIO_MUXER)    += xiph.o mpeg4audio.o flacdec.o flacdata.o flac.o
 OBJS-$(CONFIG_MATROSKA_DEMUXER)        += mpeg4audio.o
@@ -440,8 +445,10 @@ MMX-OBJS-$(CONFIG_CAVS_DECODER)        += x86/cavsdsp_mmx.o
 MMX-OBJS-$(CONFIG_ENCODERS)            += x86/dsputilenc_mmx.o
 MMX-OBJS-$(CONFIG_FLAC_ENCODER)        += x86/flacdsp_mmx.o
 MMX-OBJS-$(CONFIG_GPL)                 += x86/idct_mmx.o
+MMX-OBJS-$(CONFIG_MLP_DECODER)         += x86/mlpdsp.o
 MMX-OBJS-$(CONFIG_SNOW_DECODER)        += x86/snowdsp_mmx.o
 MMX-OBJS-$(CONFIG_THEORA_DECODER)      += x86/vp3dsp_mmx.o x86/vp3dsp_sse2.o
+MMX-OBJS-$(CONFIG_TRUEHD_DECODER)      += x86/mlpdsp.o
 MMX-OBJS-$(CONFIG_VC1_DECODER)         += x86/vc1dsp_mmx.o
 MMX-OBJS-$(CONFIG_VP3_DECODER)         += x86/vp3dsp_mmx.o x86/vp3dsp_sse2.o
 MMX-OBJS-$(CONFIG_VP5_DECODER)         += x86/vp3dsp_mmx.o x86/vp3dsp_sse2.o
@@ -490,11 +497,15 @@ OBJS-$(HAVE_ARMVFP)                    += arm/dsputil_vfp.o             \
 OBJS-$(HAVE_IWMMXT)                    += arm/dsputil_iwmmxt.o          \
                                           arm/mpegvideo_iwmmxt.o        \
 
+NEON-OBJS-$(CONFIG_THEORA_DECODER)     += arm/vp3dsp_neon.o
+NEON-OBJS-$(CONFIG_VP3_DECODER)        += arm/vp3dsp_neon.o
+
 OBJS-$(HAVE_NEON)                      += arm/dsputil_neon.o            \
                                           arm/dsputil_neon_s.o          \
                                           arm/h264dsp_neon.o            \
                                           arm/h264idct_neon.o           \
                                           arm/simple_idct_neon.o        \
+					  $(NEON-OBJS-yes)
 
 OBJS-$(ARCH_BFIN)                      += bfin/dsputil_bfin.o           \
                                           bfin/fdct_bfin.o              \

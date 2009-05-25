@@ -1,7 +1,23 @@
 /*
-    Realaudio demuxer for MPlayer
-		(c) 2003, 2005 Roberto Togni
-*/
+ * Realaudio demuxer
+ * copyright (c) 2003, 2005 Roberto Togni
+ *
+ * This file is part of MPlayer.
+ *
+ * MPlayer is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MPlayer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with MPlayer; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,7 +73,7 @@ typedef struct {
 static int ra_check_file(demuxer_t* demuxer)
 {
 	unsigned int chunk_id;
-  
+
 	chunk_id = stream_read_dword_le(demuxer->stream);
 	if (chunk_id == FOURCC_DOTRA)
 		return DEMUXER_TYPE_REALAUDIO;
@@ -323,7 +339,7 @@ static demuxer_t* demux_open_ra(demuxer_t* demuxer)
 static void demux_close_ra(demuxer_t *demuxer)
 {
 	ra_priv_t* ra_priv = demuxer->priv;
- 
+
     if (ra_priv) {
 	    if (ra_priv->audio_buf)
 	        free (ra_priv->audio_buf);

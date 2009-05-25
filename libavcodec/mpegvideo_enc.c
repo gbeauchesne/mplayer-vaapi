@@ -649,6 +649,9 @@ av_cold int MPV_encode_init(AVCodecContext *avctx)
 
     s->encoding = 1;
 
+    s->progressive_frame=
+    s->progressive_sequence= !(avctx->flags & (CODEC_FLAG_INTERLACED_DCT|CODEC_FLAG_INTERLACED_ME|CODEC_FLAG_ALT_SCAN));
+
     /* init */
     if (MPV_common_init(s) < 0)
         return -1;
@@ -663,8 +666,7 @@ av_cold int MPV_encode_init(AVCodecContext *avctx)
 
     if((CONFIG_H263P_ENCODER || CONFIG_RV20_ENCODER) && s->modified_quant)
         s->chroma_qscale_table= ff_h263_chroma_qscale_table;
-    s->progressive_frame=
-    s->progressive_sequence= !(avctx->flags & (CODEC_FLAG_INTERLACED_DCT|CODEC_FLAG_INTERLACED_ME|CODEC_FLAG_ALT_SCAN));
+
     s->quant_precision=5;
 
     ff_set_cmp(&s->dsp, s->dsp.ildct_cmp, s->avctx->ildct_cmp);
@@ -1305,11 +1307,21 @@ vbv_retry:
         /* update mpeg1/2 vbv_delay for CBR */
         if(s->avctx->rc_max_rate && s->avctx->rc_min_rate == s->avctx->rc_max_rate && s->out_format == FMT_MPEG1
            && 90000LL * (avctx->rc_buffer_size-1) <= s->avctx->rc_max_rate*0xFFFFLL){
-            int vbv_delay;
+            int vbv_delay, min_delay;
+            double inbits = s->avctx->rc_max_rate*av_q2d(s->avctx->time_base);
+            int    minbits= s->frame_bits - 8*(s->vbv_delay_ptr - s->pb.buf - 1);
+            double bits   = s->rc_context.buffer_index + minbits - inbits;
+
+            if(bits<0)
+                av_log(s->avctx, AV_LOG_ERROR, "Internal error, negative bits\n");
 
             assert(s->repeat_first_field==0);
 
-            vbv_delay= lrintf(90000 * s->rc_context.buffer_index / s->avctx->rc_max_rate);
+            vbv_delay=     bits * 90000                               / s->avctx->rc_max_rate;
+            min_delay= (minbits * 90000LL + s->avctx->rc_max_rate - 1)/ s->avctx->rc_max_rate;
+
+            vbv_delay= FFMAX(vbv_delay, min_delay);
+
             assert(vbv_delay < 0xFFFF);
 
             s->vbv_delay_ptr[0] &= 0xF8;
@@ -3264,7 +3276,6 @@ static int dct_quantize_refine(MpegEncContext *s, //FIXME breaks denoise?
                         int n, int qscale){
     int16_t rem[64];
     DECLARE_ALIGNED_16(DCTELEM, d1[64]);
-    const int *qmat;
     const uint8_t *scantable= s->intra_scantable.scantable;
     const uint8_t *perm_scantable= s->intra_scantable.permutated;
 //    unsigned int threshold1, threshold2;
@@ -3308,7 +3319,6 @@ static int messed_sign=0;
         dc= block[0]*q;
 //        block[0] = (block[0] + (q >> 1)) / q;
         start_i = 1;
-        qmat = s->q_intra_matrix[qscale];
 //        if(s->mpeg_quant || s->out_format == FMT_MPEG1)
 //            bias= 1<<(QMAT_SHIFT-1);
         length     = s->intra_ac_vlc_length;
@@ -3316,7 +3326,6 @@ static int messed_sign=0;
     } else {
         dc= 0;
         start_i = 0;
-        qmat = s->q_inter_matrix[qscale];
         length     = s->inter_ac_vlc_length;
         last_length= s->inter_ac_vlc_last_length;
     }

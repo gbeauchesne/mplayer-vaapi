@@ -34,8 +34,12 @@
 #include "mp_msg.h"
 #include "help_mp.h"
 
+#ifdef __MINGW32__
+// for GetFileType to detect pipes
+#include <windows.h>
+#endif
 
-static const ao_info_t info = 
+static const ao_info_t info =
 {
     "RAW PCM/WAVE file writer audio output",
     "pcm",
@@ -149,13 +153,13 @@ static int init(int rate,int channels,int format,int flags){
     wavhdr.bytes_per_second = le2me_32(ao_data.bps);
     wavhdr.bits = le2me_16(bits);
     wavhdr.block_align = le2me_16(ao_data.channels * (bits / 8));
-    
+
     wavhdr.data = le2me_32(WAV_ID_DATA);
     wavhdr.data_length=le2me_32(0x7ffff000);
     wavhdr.file_length = wavhdr.data_length + sizeof(wavhdr) - 8;
 
-    mp_msg(MSGT_AO, MSGL_INFO, MSGTR_AO_PCM_FileInfo, ao_outputfilename, 
-           (ao_pcm_waveheader?"WAVE":"RAW PCM"), rate, 
+    mp_msg(MSGT_AO, MSGL_INFO, MSGTR_AO_PCM_FileInfo, ao_outputfilename,
+           (ao_pcm_waveheader?"WAVE":"RAW PCM"), rate,
            (channels > 1) ? "Stereo" : "Mono", af_fmt2str_short(format));
     mp_msg(MSGT_AO, MSGL_INFO, MSGTR_AO_PCM_HintInfo);
 
@@ -166,16 +170,22 @@ static int init(int rate,int channels,int format,int flags){
         }
         return 1;
     }
-    mp_msg(MSGT_AO, MSGL_ERR, MSGTR_AO_PCM_CantOpenOutputFile, 
+    mp_msg(MSGT_AO, MSGL_ERR, MSGTR_AO_PCM_CantOpenOutputFile,
                ao_outputfilename);
     return 0;
 }
 
 // close audio device
 static void uninit(int immed){
-    
+
     if(ao_pcm_waveheader){ /* Rewrite wave header */
-        if (fseek(fp, 0, SEEK_SET) != 0)
+        int broken_seek = 0;
+#ifdef __MINGW32__
+        // Windows, in its usual idiocy "emulates" seeks on pipes so it always looks
+        // like they work. So we have to detect them brute-force.
+        broken_seek = GetFileType((HANDLE)_get_osfhandle(_fileno(fp))) != FILE_TYPE_DISK;
+#endif
+        if (broken_seek || fseek(fp, 0, SEEK_SET) != 0)
             mp_msg(MSGT_AO, MSGL_ERR, "Could not seek to start, WAV size headers not updated!\n");
         else if (data_length > 0x7ffff000)
             mp_msg(MSGT_AO, MSGL_ERR, "File larger than allowed for WAV files, may play truncated!\n");
@@ -232,7 +242,7 @@ static int play(void* data,int len,int flags){
         buffer[i] = le2me_16(buffer[i]);
       }
     }
-#endif 
+#endif
 
     if (ao_data.channels == 6 || ao_data.channels == 5) {
         int frame_size = le2me_16(wavhdr.bits) / 8;
@@ -248,7 +258,7 @@ static int play(void* data,int len,int flags){
 
     if(ao_pcm_waveheader)
         data_length += len;
-    
+
     return len;
 }
 
