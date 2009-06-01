@@ -1,7 +1,7 @@
 8
 
 dir
-29319
+29339
 svn://svn.mplayerhq.hu/mplayer/trunk/vidix/sysdep
 svn://svn.mplayerhq.hu/mplayer
 
@@ -26,14 +26,14 @@ svn:special svn:externals svn:needs-lock
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
 
-pci_os2.c
+pci_ia64.c
 file
 
 
 
 
 2009-05-25T08:53:55.000000Z
-8e637f9bbb45b089c73d64756e6b7c04
+167c06870ea4d1b0e6d8ee41062e5f56
 2009-05-13T02:58:57.333510Z
 29305
 diego
@@ -52,14 +52,27 @@ file
 diego
 has-props
 
-pci_ia64.c
+pci_os2.c
 file
 
 
 
 
 2009-05-25T08:53:55.000000Z
-167c06870ea4d1b0e6d8ee41062e5f56
+8e637f9bbb45b089c73d64756e6b7c04
+2009-05-13T02:58:57.333510Z
+29305
+diego
+has-props
+
+AsmMacros_x86.h
+file
+
+
+
+
+2009-05-25T08:53:55.000000Z
+e231737cd0810f89209121bd23efbb8e
 2009-05-13T02:58:57.333510Z
 29305
 diego
@@ -78,19 +91,6 @@ file
 diego
 has-props
 
-AsmMacros_x86.h
-file
-
-
-
-
-2009-05-25T08:53:55.000000Z
-e231737cd0810f89209121bd23efbb8e
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
-
 pci_sparc.c
 file
 
@@ -101,19 +101,6 @@ file
 167c06870ea4d1b0e6d8ee41062e5f56
 2009-05-13T02:58:57.333510Z
 29305
-diego
-has-props
-
-pci_mach386.c
-file
-
-
-
-
-2009-01-29T11:50:43.000000Z
-0e7f7ab9c32494aa25e56766abef53de
-2008-05-16T00:13:03.566393Z
-26785
 diego
 has-props
 
@@ -130,16 +117,16 @@ file
 diego
 has-props
 
-libdha_win32.c
+pci_mach386.c
 file
 
 
 
 
-2009-05-25T08:53:55.000000Z
-057ce2653171ef6e06078b16cd8ea5ee
-2009-05-13T02:58:57.333510Z
-29305
+2009-01-29T11:50:43.000000Z
+0e7f7ab9c32494aa25e56766abef53de
+2008-05-16T00:13:03.566393Z
+26785
 diego
 has-props
 
@@ -153,6 +140,19 @@ file
 bcbb8bc0cf3ea42880f3a369109921bd
 2008-05-16T00:13:03.566393Z
 26785
+diego
+has-props
+
+libdha_win32.c
+file
+
+
+
+
+2009-05-25T08:53:55.000000Z
+057ce2653171ef6e06078b16cd8ea5ee
+2009-05-13T02:58:57.333510Z
+29305
 diego
 has-props
 
@@ -182,19 +182,6 @@ file
 diego
 has-props
 
-pci_powerpc.c
-file
-
-
-
-
-2009-05-25T08:53:55.000000Z
-2b3295dd48405f53aab2109f6f977cbb
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
-
 pci_netbsd.c
 file
 
@@ -205,6 +192,19 @@ file
 355806c3919ada8ba22c09336f876bf6
 2008-05-16T00:13:03.566393Z
 26785
+diego
+has-props
+
+pci_powerpc.c
+file
+
+
+
+
+2009-05-25T08:53:55.000000Z
+2b3295dd48405f53aab2109f6f977cbb
+2009-05-13T02:58:57.333510Z
+29305
 diego
 has-props
 
