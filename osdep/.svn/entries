@@ -1,7 +1,7 @@
 8
 
 dir
-29339
+29365
 svn://svn.mplayerhq.hu/mplayer/trunk/osdep
 svn://svn.mplayerhq.hu/mplayer
 
@@ -153,18 +153,6 @@ file
 reimar
 has-props
 
-getch2-os2.c
-file
-
-
-
-
-2009-06-01T12:23:33.000000Z
-0681339d999b80747b14a8553ae7f0f3
-2009-05-31T13:00:51.021663Z
-29332
-reimar
-
 timer-linux.c
 file
 
@@ -178,18 +166,17 @@ file
 diego
 has-props
 
-glob-win.c
+getch2-os2.c
 file
 
 
 
 
-2009-05-25T08:53:59.000000Z
-f00730e15576aadff77d67e137db88ca
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
+2009-06-01T12:23:33.000000Z
+0681339d999b80747b14a8553ae7f0f3
+2009-05-31T13:00:51.021663Z
+29332
+reimar
 
 shmem.h
 file
@@ -201,6 +188,19 @@ file
 f28ac96016d154ce3b44d1493f505e87
 2009-03-01T13:13:25.730797Z
 28779
+diego
+has-props
+
+glob-win.c
+file
+
+
+
+
+2009-05-25T08:53:59.000000Z
+f00730e15576aadff77d67e137db88ca
+2009-05-13T02:58:57.333510Z
+29305
 diego
 has-props
 

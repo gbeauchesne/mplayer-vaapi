@@ -22,7 +22,6 @@
 
 #include "libavcodec/get_bits.h"
 #include "libavcodec/put_bits.h"
-#include "libavcodec/internal.h"
 #include "libavcodec/mpeg4audio.h"
 #include "avformat.h"
 
@@ -64,7 +63,7 @@ static int decode_extradata(AVFormatContext *s, ADTSContext *adts, uint8_t *buf,
         return -1;
     }
     if (get_bits(&gb, 1)) {
-        ff_log_missing_feature(s, "Signaled SBR or PS", 0);
+        av_log(s, AV_LOG_ERROR, "Signaled SBR or PS is not supported\n");
         return -1;
     }
     if (!adts->channel_conf) {
@@ -148,7 +147,7 @@ AVOutputFormat adts_muxer = {
     "adts",
     NULL_IF_CONFIG_SMALL("ADTS AAC"),
     "audio/aac",
-    "aac",
+    "aac,adts",
     sizeof(ADTSContext),
     CODEC_ID_AAC,
     CODEC_ID_NONE,

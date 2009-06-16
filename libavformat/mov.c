@@ -763,15 +763,17 @@ static int mov_read_stsd(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
     for(pseudo_stream_id=0; pseudo_stream_id<entries; pseudo_stream_id++) {
         //Parsing Sample description table
         enum CodecID id;
-        int dref_id;
+        int dref_id = 1;
         MOVAtom a = { 0, 0, 0 };
         int64_t start_pos = url_ftell(pb);
         int size = get_be32(pb); /* size */
         uint32_t format = get_le32(pb); /* data format */
 
-        get_be32(pb); /* reserved */
-        get_be16(pb); /* reserved */
-        dref_id = get_be16(pb);
+        if (size >= 16) {
+            get_be32(pb); /* reserved */
+            get_be16(pb); /* reserved */
+            dref_id = get_be16(pb);
+        }
 
         if (st->codec->codec_tag &&
             st->codec->codec_tag != format &&
@@ -790,7 +792,7 @@ static int mov_read_stsd(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
 
         st->codec->codec_tag = format;
         id = codec_get_id(codec_movaudio_tags, format);
-        if (id<=0 && (format&0xFFFF) == 'm'+('s'<<8))
+        if (id<=0 && ((format&0xFFFF) == 'm'+('s'<<8) || (format&0xFFFF) == 'T'+('S'<<8)))
             id = codec_get_id(codec_wav_tags, bswap_32(format)&0xFFFF);
 
         if (st->codec->codec_type != CODEC_TYPE_VIDEO && id > 0) {
@@ -1251,8 +1253,6 @@ static int mov_read_stts(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
         sc->stts_data[i].count= sample_count;
         sc->stts_data[i].duration= sample_duration;
 
-        sc->time_rate= av_gcd(sc->time_rate, sample_duration);
-
         dprintf(c->fc, "sample_count=%d, sample_duration=%d\n",sample_count,sample_duration);
 
         duration+=(int64_t)sample_duration*sample_count;
@@ -1279,8 +1279,6 @@ static int mov_read_cslg(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
 
     sc->dts_shift = get_be32(pb);
     dprintf(c->fc, "dts shift %d\n", sc->dts_shift);
-
-    sc->time_rate= av_gcd(sc->time_rate, FFABS(sc->dts_shift));
 
     get_be32(pb); // least dts to pts delta
     get_be32(pb); // greatest dts to pts delta
@@ -1315,8 +1313,6 @@ static int mov_read_ctts(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
 
         sc->ctts_data[i].count   = count;
         sc->ctts_data[i].duration= duration;
-
-        sc->time_rate= av_gcd(sc->time_rate, FFABS(duration));
     }
     return 0;
 }
@@ -1335,8 +1331,7 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
     /* adjust first dts according to edit list */
     if (sc->time_offset) {
         int rescaled = sc->time_offset < 0 ? av_rescale(sc->time_offset, sc->time_scale, mov->time_scale) : sc->time_offset;
-        assert(sc->time_offset % sc->time_rate == 0);
-        current_dts = - (rescaled / sc->time_rate);
+        current_dts = -rescaled;
         if (sc->ctts_data && sc->ctts_data[0].duration / sc->stts_data[0].duration > 16) {
             /* more than 16 frames delay, dts are likely wrong
                this happens with files created by iMovie */
@@ -1354,7 +1349,6 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
         unsigned int distance = 0;
         int key_off = sc->keyframes && sc->keyframes[0] == 1;
 
-        sc->dts_shift /= sc->time_rate;
         current_dts -= sc->dts_shift;
 
         st->nb_frames = sc->sample_count;
@@ -1392,8 +1386,7 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
                 }
 
                 current_offset += sample_size;
-                assert(sc->stts_data[stts_index].duration % sc->time_rate == 0);
-                current_dts += sc->stts_data[stts_index].duration / sc->time_rate;
+                current_dts += sc->stts_data[stts_index].duration;
                 distance++;
                 stts_sample++;
                 current_sample++;
@@ -1441,8 +1434,7 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
                         size, samples);
 
                 current_offset += size;
-                assert(samples % sc->time_rate == 0);
-                current_dts += samples / sc->time_rate;
+                current_dts += samples;
                 chunk_samples -= samples;
             }
         }
@@ -1475,23 +1467,16 @@ static int mov_read_trak(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
         return 0;
     }
 
-    if (!sc->time_rate)
-        sc->time_rate = 1;
     if (!sc->time_scale)
         sc->time_scale = c->time_scale;
 
-    av_set_pts_info(st, 64, sc->time_rate, sc->time_scale);
+    av_set_pts_info(st, 64, 1, sc->time_scale);
 
     if (st->codec->codec_type == CODEC_TYPE_AUDIO &&
         !st->codec->frame_size && sc->stts_count == 1) {
         st->codec->frame_size = av_rescale(sc->stts_data[0].duration,
                                            st->codec->sample_rate, sc->time_scale);
         dprintf(c->fc, "frame size %d\n", st->codec->frame_size);
-    }
-
-    if (st->duration != AV_NOPTS_VALUE) {
-        assert(st->duration % sc->time_rate == 0);
-        st->duration /= sc->time_rate;
     }
 
     mov_build_index(c, st);
@@ -1752,8 +1737,7 @@ static int mov_read_trun(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
                 "size %d, distance %d, keyframe %d\n", st->index, sc->sample_count+i,
                 offset, dts, sample_size, distance, keyframe);
         distance++;
-        assert(sample_duration % sc->time_rate == 0);
-        dts += sample_duration / sc->time_rate;
+        dts += sample_duration;
         offset += sample_size;
     }
     frag->moof_offset = offset;
@@ -1847,6 +1831,9 @@ static int mov_read_elst(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
     get_be24(pb); /* flags */
     edit_count = get_be32(pb); /* entries */
 
+    if((uint64_t)edit_count*12+8 > atom.size)
+        return -1;
+
     for(i=0; i<edit_count; i++){
         int time;
         int duration = get_be32(pb); /* Track duration */
@@ -1854,7 +1841,6 @@ static int mov_read_elst(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
         get_be32(pb); /* Media rate */
         if (i == 0 && time >= -1) {
             sc->time_offset = time != -1 ? time : -duration;
-            sc->time_rate = av_gcd(sc->time_rate, FFABS(sc->time_offset));
         }
     }
 
@@ -2004,8 +1990,7 @@ static int mov_read_packet(AVFormatContext *s, AVPacket *pkt)
         MOVStreamContext *msc = st->priv_data;
         if (st->discard != AVDISCARD_ALL && msc->pb && msc->current_sample < st->nb_index_entries) {
             AVIndexEntry *current_sample = &st->index_entries[msc->current_sample];
-            int64_t dts = av_rescale(current_sample->timestamp * (int64_t)msc->time_rate,
-                                     AV_TIME_BASE, msc->time_scale);
+            int64_t dts = av_rescale(current_sample->timestamp, AV_TIME_BASE, msc->time_scale);
             dprintf(s, "stream %d, sample %d, dts %"PRId64"\n", i, msc->current_sample, dts);
             if (!sample || (url_is_streamed(s->pb) && current_sample->pos < sample->pos) ||
                 (!url_is_streamed(s->pb) &&
@@ -2049,8 +2034,7 @@ static int mov_read_packet(AVFormatContext *s, AVPacket *pkt)
     pkt->stream_index = sc->ffindex;
     pkt->dts = sample->timestamp;
     if (sc->ctts_data) {
-        assert(sc->ctts_data[sc->ctts_index].duration % sc->time_rate == 0);
-        pkt->pts = pkt->dts + sc->dts_shift + sc->ctts_data[sc->ctts_index].duration / sc->time_rate;
+        pkt->pts = pkt->dts + sc->dts_shift + sc->ctts_data[sc->ctts_index].duration;
         /* update ctts context */
         sc->ctts_sample++;
         if (sc->ctts_index < sc->ctts_count &&

@@ -1,7 +1,7 @@
 8
 
 dir
-29339
+29365
 svn://svn.mplayerhq.hu/mplayer/trunk/libao2
 svn://svn.mplayerhq.hu/mplayer
 
@@ -26,19 +26,6 @@ svn:special svn:externals svn:needs-lock
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
 
-ao_pcm.c
-file
-
-
-
-
-2009-05-25T08:53:55.000000Z
-93e7f9981cecb3dde55bfb18d422ef52
-2009-05-16T13:59:53.129787Z
-29311
-reimar
-has-props
-
 ao_dxr2.c
 file
 
@@ -50,6 +37,19 @@ bf68d27be414286901dbc6a70460ba05
 2009-05-13T02:58:57.333510Z
 29305
 diego
+has-props
+
+ao_pcm.c
+file
+
+
+
+
+2009-05-25T08:53:55.000000Z
+93e7f9981cecb3dde55bfb18d422ef52
+2009-05-16T13:59:53.129787Z
+29311
+reimar
 has-props
 
 ao_alsa.c
@@ -78,19 +78,6 @@ file
 diego
 has-props
 
-ao_sdl.c
-file
-
-
-
-
-2009-05-25T08:53:55.000000Z
-7594c26643d086972ba78e51ed883337
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
-
 ao_sgi.c
 file
 
@@ -99,6 +86,19 @@ file
 
 2009-05-25T08:53:55.000000Z
 f82cab39ce970ea9bad5ace713242212
+2009-05-13T02:58:57.333510Z
+29305
+diego
+has-props
+
+ao_sdl.c
+file
+
+
+
+
+2009-05-25T08:53:55.000000Z
+7594c26643d086972ba78e51ed883337
 2009-05-13T02:58:57.333510Z
 29305
 diego
@@ -116,18 +116,6 @@ e0a99a5a37dfbb6c26191c8541de8e8c
 29305
 diego
 
-ao_pulse.c
-file
-
-
-
-
-2009-04-16T16:02:09.000000Z
-7c32d287daa56b2c49419e1f91c795af
-2009-04-09T20:20:00.507114Z
-29160
-reimar
-
 ao_ivtv.c
 file
 
@@ -139,6 +127,18 @@ d91e25e31088d242bfdc028eebc03a62
 2009-05-13T02:58:57.333510Z
 29305
 diego
+
+ao_pulse.c
+file
+
+
+
+
+2009-04-16T16:02:09.000000Z
+7c32d287daa56b2c49419e1f91c795af
+2009-04-09T20:20:00.507114Z
+29160
+reimar
 
 ao_dart.c
 file

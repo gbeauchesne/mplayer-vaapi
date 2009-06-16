@@ -1,7 +1,7 @@
 8
 
 dir
-19071
+19203
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/ppc
 svn://svn.ffmpeg.org/ffmpeg
 
@@ -88,18 +88,6 @@ file
 diego
 has-props
 
-types_altivec.h
-file
-
-
-
-
-2009-01-29T11:50:59.000000Z
-fb491083be42c9018809ff3eb7e9ef94
-2008-12-27T11:21:28.043715Z
-16357
-lu_zero
-
 mathops.h
 file
 
@@ -111,6 +99,18 @@ file
 2009-05-26T05:00:51.046203Z
 18953
 reimar
+
+types_altivec.h
+file
+
+
+
+
+2009-01-29T11:50:59.000000Z
+fb491083be42c9018809ff3eb7e9ef94
+2008-12-27T11:21:28.043715Z
+16357
+lu_zero
 
 check_altivec.c
 file
@@ -138,16 +138,28 @@ file
 conrad
 has-props
 
-mpegvideo_altivec.c
+vp3dsp_altivec.c
+file
+
+
+
+
+2009-06-01T12:23:34.000000Z
+51fcb2670adcf290583627dd11fef25e
+2009-05-25T22:19:35.611545Z
+18949
+conrad
+
+fft_altivec.c
 file
 
 
 
 
 2009-04-16T16:02:16.000000Z
-ffb6814f0f458cbc3c6a9a58ef812d2f
-2009-04-12T21:45:26.026841Z
-18476
+6fd6a7544341f457951601eca15d4a77
+2009-04-09T11:54:13.481631Z
+18384
 diego
 has-props
 
@@ -164,30 +176,18 @@ d34151a51e71c320c222fd8da9deb46b
 conrad
 has-props
 
-fft_altivec.c
+mpegvideo_altivec.c
 file
 
 
 
 
 2009-04-16T16:02:16.000000Z
-6fd6a7544341f457951601eca15d4a77
-2009-04-09T11:54:13.481631Z
-18384
+ffb6814f0f458cbc3c6a9a58ef812d2f
+2009-04-12T21:45:26.026841Z
+18476
 diego
 has-props
-
-vp3dsp_altivec.c
-file
-
-
-
-
-2009-06-01T12:23:34.000000Z
-51fcb2670adcf290583627dd11fef25e
-2009-05-25T22:19:35.611545Z
-18949
-conrad
 
 fdct_altivec.c
 file

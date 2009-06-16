@@ -76,10 +76,12 @@ void avcodec_register_all(void)
     REGISTER_DECODER (CSCD, cscd);
     REGISTER_DECODER (CYUV, cyuv);
     REGISTER_ENCDEC  (DNXHD, dnxhd);
+    REGISTER_DECODER (DPX, dpx);
     REGISTER_DECODER (DSICINVIDEO, dsicinvideo);
     REGISTER_ENCDEC  (DVVIDEO, dvvideo);
     REGISTER_DECODER (DXA, dxa);
     REGISTER_DECODER (EACMV, eacmv);
+    REGISTER_DECODER (EAMAD, eamad);
     REGISTER_DECODER (EATGQ, eatgq);
     REGISTER_DECODER (EATGV, eatgv);
     REGISTER_DECODER (EATQI, eatqi);
@@ -227,7 +229,8 @@ void avcodec_register_all(void)
     REGISTER_DECODER (TRUESPEECH, truespeech);
     REGISTER_DECODER (TTA, tta);
     REGISTER_DECODER (VMDAUDIO, vmdaudio);
-    REGISTER_ENCDEC  (VORBIS, vorbis);
+    /* The Vorbis encoder is disabled because it is extremely low quality. */
+    REGISTER_DECODER (VORBIS, vorbis);
     REGISTER_DECODER (WAVPACK, wavpack);
     REGISTER_ENCDEC  (WMAV1, wmav1);
     REGISTER_ENCDEC  (WMAV2, wmav2);
@@ -309,6 +312,8 @@ void avcodec_register_all(void)
     REGISTER_ENCDEC  (LIBGSM, libgsm);
     REGISTER_ENCDEC  (LIBGSM_MS, libgsm_ms);
     REGISTER_ENCODER (LIBMP3LAME, libmp3lame);
+    REGISTER_ENCDEC  (LIBOPENCORE_AMRNB, libopencore_amrnb);
+    REGISTER_DECODER (LIBOPENCORE_AMRWB, libopencore_amrwb);
     REGISTER_DECODER (LIBOPENJPEG, libopenjpeg);
     REGISTER_ENCDEC  (LIBSCHROEDINGER, libschroedinger);
     REGISTER_DECODER (LIBSPEEX, libspeex);
@@ -339,6 +344,7 @@ void avcodec_register_all(void)
     REGISTER_PARSER  (VP3, vp3);
 
     /* bitstream filters */
+    REGISTER_BSF     (AAC_ADTSTOASC, aac_adtstoasc);
     REGISTER_BSF     (DUMP_EXTRADATA, dump_extradata);
     REGISTER_BSF     (H264_MP4TOANNEXB, h264_mp4toannexb);
     REGISTER_BSF     (IMX_DUMP_HEADER, imx_dump_header);
