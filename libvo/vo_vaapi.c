@@ -26,9 +26,11 @@
 #include "video_out.h"
 #include "video_out_internal.h"
 #include "x11_common.h"
+#include "libavutil/common.h"
 #include "libavcodec/vaapi.h"
 #include "gui/interface.h"
 
+#include <assert.h>
 #include <va/va_x11.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -43,10 +45,11 @@ static vo_info_t info = {
 const LIBVO_EXTERN(vaapi)
 
 /* Numbers of video surfaces */
-#define NUM_VIDEO_SURFACES_MPEG2  3 /* 1 decode frame, up to 2 reference */
-#define NUM_VIDEO_SURFACES_MPEG4  3 /* 1 decode frame, up to 2 reference */
-#define NUM_VIDEO_SURFACES_H264  17 /* 1 decode frame, up to 16 references */
-#define NUM_VIDEO_SURFACES_VC1    3 /* 1 decode frame, up to 2 references */
+#define MAX_VIDEO_SURFACES       24 /* XXX: maximum that satisfies IEGD */
+#define NUM_VIDEO_SURFACES_MPEG2  2 /* up to  2 references */
+#define NUM_VIDEO_SURFACES_MPEG4  2 /* up to  2 references */
+#define NUM_VIDEO_SURFACES_H264  16 /* up to 16 references */
+#define NUM_VIDEO_SURFACES_VC1    2 /* up to  2 references */
 
 static int                      g_is_paused;
 static uint32_t                 g_image_width;
@@ -62,6 +65,9 @@ static VAEntrypoint            *va_entrypoints;
 static int                      va_num_entrypoints;
 static VASurfaceID             *va_surface_ids;
 static int                      va_num_surfaces;
+static VASurfaceID            **va_free_surfaces;
+static int                      va_free_surfaces_head_index;
+static int                      va_free_surfaces_tail_index;
 static VAImageFormat           *va_image_formats;
 static int                      va_num_image_formats;
 
@@ -216,6 +222,50 @@ static int VAEntrypoint_from_imgfmt(uint32_t format)
     return -1;
 }
 
+static int get_iegd_version_1(void)
+{
+    const char *str;
+    char *end;
+    unsigned int major = 0, minor = 0, micro = 0;
+    unsigned long v;
+
+    str = vaQueryVendorString(va_context->display);
+    if (!str)
+        return 0;
+    str = strstr(str, "Intel");
+    if (!str)
+        return 0;
+    str = strstr(str + 6, "Embedded Graphics Driver");
+    if (!str)
+        return 0;
+
+    v = strtoul(str + 25, &end, 10);
+    if (end && end != str) {
+        major = v;
+        if (*(str = end) == '.') {
+            v = strtoul(str + 1, &end, 10);
+            if (end && end != str) {
+                minor = v;
+                if (*(str = end) == '.') {
+                    v = strtoul(str + 1, &end, 10);
+                    if (end && end != str)
+                        micro = v;
+                }
+            }
+        }
+    }
+
+    return (major << 16) | (minor << 8) | micro;
+}
+
+static inline int get_iegd_version(void)
+{
+    static int iegd_version = -1;
+    if (iegd_version < 0)
+        iegd_version = get_iegd_version_1();
+    return iegd_version;
+}
+
 static void resize(void)
 {
     struct vo_rect src;
@@ -283,6 +333,11 @@ static void free_video_specific(void)
     if (va_context && va_context->context_id) {
         vaDestroyContext(va_context->display, va_context->context_id);
         va_context->context_id = 0;
+    }
+
+    if (va_free_surfaces) {
+        free(va_free_surfaces);
+        va_free_surfaces = NULL;
     }
 
     if (va_surface_ids) {
@@ -449,13 +504,23 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
     }
     if (va_num_surfaces == 0)
         return -1;
+    if (get_iegd_version() > 0)
+        va_num_surfaces = FFMIN(2 * va_num_surfaces, MAX_VIDEO_SURFACES);
+
     va_surface_ids = calloc(va_num_surfaces, sizeof(*va_surface_ids));
-    if (va_surface_ids == NULL)
+    if (!va_surface_ids)
         return -1;
+
     status = vaCreateSurfaces(va_context->display, width, height, VA_RT_FORMAT_YUV420,
                               va_num_surfaces, va_surface_ids);
     if (!check_status(status, "vaCreateSurfaces()"))
         return -1;
+
+    va_free_surfaces = calloc(va_num_surfaces, sizeof(*va_free_surfaces));
+    if (!va_free_surfaces)
+        return -1;
+    for (i = 0; i < va_num_surfaces; i++)
+        va_free_surfaces[i] = &va_surface_ids[i];
 
     /* Create a context for the decode pipeline */
     status = vaCreateContext(va_context->display, va_context->config_id,
@@ -571,9 +636,31 @@ static void flip_page(void)
     put_surface(g_output_surface);
 }
 
+static VASurfaceID *get_surface(mp_image_t *mpi)
+{
+    VASurfaceID *surface;
+
+    if (get_iegd_version() == 0)
+        return &va_surface_ids[mpi->number];
+
+    /* Push current surface to a free slot */
+    if (mpi->priv) {
+        assert(!va_free_surfaces[va_free_surfaces_tail_index]);
+        va_free_surfaces[va_free_surfaces_tail_index] = mpi->priv;
+        va_free_surfaces_tail_index = (va_free_surfaces_tail_index + 1) % va_num_surfaces;
+    }
+
+    /* Pop the least recently used free surface */
+    assert(va_free_surfaces[va_free_surfaces_head_index]);
+    surface = va_free_surfaces[va_free_surfaces_head_index];
+    va_free_surfaces[va_free_surfaces_head_index] = NULL;
+    va_free_surfaces_head_index = (va_free_surfaces_head_index + 1) % va_num_surfaces;
+    return surface;
+}
+
 static uint32_t get_image(mp_image_t *mpi)
 {
-    VASurfaceID surface;
+    VASurfaceID *surface;
 
     if (mpi->type != MP_IMGTYPE_NUMBERED)
         return VO_FALSE;
@@ -581,17 +668,18 @@ static uint32_t get_image(mp_image_t *mpi)
     if (!IMGFMT_IS_VAAPI(g_image_format))
         return VO_FALSE;
 
-    surface = va_surface_ids[mpi->number];
-    if (surface == 0)
+    surface = get_surface(mpi);
+    if (!surface)
         return VO_FALSE;
 
     mpi->flags |= MP_IMGFLAG_DIRECT;
     mpi->stride[0] = mpi->stride[1] = mpi->stride[2] = mpi->stride[3] = 0;
     mpi->planes[0] = mpi->planes[1] = mpi->planes[2] = mpi->planes[3] = NULL;
-    mpi->planes[0] = mpi->planes[3] = (char *)(uintptr_t)surface;
+    mpi->planes[0] = mpi->planes[3] = (char *)(uintptr_t)*surface;
     mpi->num_planes = 1;
+    mpi->priv = surface;
 
-    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] get_image(): surface 0x%08x\n", surface);
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] get_image(): surface 0x%08x\n", *surface);
 
     return VO_TRUE;
 }
