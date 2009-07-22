@@ -46,10 +46,10 @@ const LIBVO_EXTERN(vaapi)
 
 /* Numbers of video surfaces */
 #define MAX_VIDEO_SURFACES       24 /* XXX: maximum that satisfies IEGD */
-#define NUM_VIDEO_SURFACES_MPEG2  2 /* up to  2 references */
-#define NUM_VIDEO_SURFACES_MPEG4  2 /* up to  2 references */
-#define NUM_VIDEO_SURFACES_H264  16 /* up to 16 references */
-#define NUM_VIDEO_SURFACES_VC1    2 /* up to  2 references */
+#define NUM_VIDEO_SURFACES_MPEG2  3 /* 1 decode frame, up to  2 references */
+#define NUM_VIDEO_SURFACES_MPEG4  3 /* 1 decode frame, up to  2 references */
+#define NUM_VIDEO_SURFACES_H264  17 /* 1 decode frame, up to 16 references */
+#define NUM_VIDEO_SURFACES_VC1    3 /* 1 decode frame, up to  2 references */
 
 static int                      g_is_paused;
 static uint32_t                 g_image_width;
@@ -640,8 +640,10 @@ static VASurfaceID *get_surface(mp_image_t *mpi)
 {
     VASurfaceID *surface;
 
-    if (get_iegd_version() == 0)
+    if (get_iegd_version() == 0) {
+        assert(mpi->number < va_num_surfaces);
         return &va_surface_ids[mpi->number];
+    }
 
     /* Push current surface to a free slot */
     if (mpi->priv) {
