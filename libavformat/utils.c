@@ -499,6 +499,8 @@ int av_open_input_file(AVFormatContext **ic_ptr, const char *filename,
     av_freep(&pd->buf);
     if (pb)
         url_fclose(pb);
+    if (ap && ap->prealloced_context)
+        av_free(*ic_ptr);
     *ic_ptr = NULL;
     return err;
 

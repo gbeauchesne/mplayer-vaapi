@@ -1,15 +1,15 @@
 8
 
 dir
-29412
+29473
 svn://svn.mplayerhq.hu/mplayer/trunk/liba52
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-05-13T15:22:13.531759Z
-29306
-bircoph
+2009-07-26T19:53:00.188059Z
+29443
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2009-05-25T08:53:55.000000Z
-c2927975a974c1f2317fb7e89acf0585
-2009-05-13T15:22:13.531759Z
-29306
-bircoph
+2009-08-03T15:00:34.000000Z
+546cd72d468acc9304e5955e91d326e8
+2009-07-26T19:53:00.188059Z
+29443
+diego
 has-props
 
 imdct.c
@@ -104,19 +104,6 @@ file
 bircoph
 has-props
 
-resample_c.c
-file
-
-
-
-
-2009-01-29T11:50:43.000000Z
-10fd9eb1a5487c3a3cf1c66b9b628977
-2007-12-22T19:11:54.840366Z
-25511
-diego
-has-props
-
 parse.c
 file
 
@@ -128,6 +115,19 @@ file
 2009-05-13T15:22:13.531759Z
 29306
 bircoph
+has-props
+
+resample_c.c
+file
+
+
+
+
+2009-01-29T11:50:43.000000Z
+10fd9eb1a5487c3a3cf1c66b9b628977
+2007-12-22T19:11:54.840366Z
+25511
+diego
 has-props
 
 liba52.txt
@@ -143,27 +143,14 @@ file
 arpi
 has-props
 
-resample_altivec.c
-file
-
-
-
-
-2009-01-29T11:50:43.000000Z
-489efb2e14498d49b2f8443d2735a939
-2007-12-22T19:16:01.540157Z
-25512
-diego
-has-props
-
-imdct_3dnow.h
+test.c
 file
 
 
 
 
 2009-05-25T08:53:55.000000Z
-5019e3ac4897f02c727011e15050c184
+1049cdb26c0cd44bf31e24daef43474b
 2009-05-13T15:22:13.531759Z
 29306
 bircoph
@@ -182,17 +169,30 @@ cb0387f5a2efe674dbaa69c2ae74afb1
 rathann
 has-props
 
-test.c
+imdct_3dnow.h
 file
 
 
 
 
 2009-05-25T08:53:55.000000Z
-1049cdb26c0cd44bf31e24daef43474b
+5019e3ac4897f02c727011e15050c184
 2009-05-13T15:22:13.531759Z
 29306
 bircoph
+has-props
+
+resample_altivec.c
+file
+
+
+
+
+2009-01-29T11:50:43.000000Z
+489efb2e14498d49b2f8443d2735a939
+2007-12-22T19:16:01.540157Z
+25512
+diego
 has-props
 
 bit_allocate.c
@@ -279,11 +279,11 @@ file
 
 
 
-2009-05-25T08:53:55.000000Z
-ab9257779d4fc092348ce846efa86a22
-2009-05-13T15:22:13.531759Z
-29306
-bircoph
+2009-08-03T15:00:34.000000Z
+f08cdca7200c61a5648faec5d00e23de
+2009-07-26T19:53:00.188059Z
+29443
+diego
 has-props
 
 a52.h

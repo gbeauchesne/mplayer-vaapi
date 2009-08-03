@@ -1,15 +1,15 @@
 8
 
 dir
-19357
+19572
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/arm
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-07-04T20:41:11.313346Z
-19345
-conrad
+2009-07-27T22:55:55.542627Z
+19522
+mru
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2009-01-29T11:51:00.000000Z
-37e5bdd5eeafa3b009c9657c887ab81f
-2009-01-13T23:44:16.634366Z
-16590
-aurel
+2009-08-03T15:00:37.000000Z
+11550150765cabc0ad8f772b3160b0ff
+2009-07-27T22:55:55.542627Z
+19522
+mru
 
 dsputil_neon.c
 file
@@ -44,11 +44,11 @@ file
 
 
 
-2009-05-25T08:54:06.000000Z
-2f8c9590b2f6a45a30aae8a6c611c2c7
-2009-05-23T18:36:20.221067Z
-18916
-conrad
+2009-08-03T15:00:37.000000Z
+0ad95f1df6bb7b7079b3477a88326a22
+2009-07-22T22:38:26.176714Z
+19495
+diego
 
 dsputil_neon_s.S
 file
@@ -56,11 +56,11 @@ file
 
 
 
-2009-05-25T08:54:06.000000Z
-191bd6edf3d9abbcd52374698edcfedf
-2009-04-29T11:38:09.039550Z
-18713
-conrad
+2009-08-03T15:00:37.000000Z
+552d1107797c34104860fc30cdf24f24
+2009-07-20T22:30:27.419814Z
+19475
+mru
 
 simple_idct_arm.S
 file
@@ -75,18 +75,6 @@ file
 diego
 has-props
 
-vp3dsp_neon.S
-file
-
-
-
-
-2009-07-06T15:13:54.000000Z
-15a6c2949761f3b61de3cb8eb7196137
-2009-07-04T20:41:11.313346Z
-19345
-conrad
-
 mpegvideo_arm.c
 file
 
@@ -100,29 +88,17 @@ db8762191682cd15343c7971143ede22
 aurel
 has-props
 
-simple_idct_armv5te.S
+vp3dsp_neon.S
 file
 
 
 
 
-2009-01-29T11:51:00.000000Z
-843fc6e74652edc84fb92d04c3d01ff1
-2008-12-17T00:54:54.689120Z
-16179
-mru
-
-dsputil_vfp.S
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-85b75a95991baf4647c7997e24cfe1c8
-2009-01-13T23:44:16.634366Z
-16590
-aurel
+2009-07-06T15:13:54.000000Z
+15a6c2949761f3b61de3cb8eb7196137
+2009-07-04T20:41:11.313346Z
+19345
+conrad
 
 float_arm_vfp.c
 file
@@ -136,18 +112,29 @@ file
 16590
 aurel
 
-jrevdct_arm.S
+dsputil_vfp.S
 file
 
 
 
 
 2009-01-29T11:51:00.000000Z
-f5112c74f1dfd2c3742f8047639ffb40
+85b75a95991baf4647c7997e24cfe1c8
+2009-01-13T23:44:16.634366Z
+16590
+aurel
+
+simple_idct_armv5te.S
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+843fc6e74652edc84fb92d04c3d01ff1
 2008-12-17T00:54:54.689120Z
 16179
 mru
-has-props
 
 mathops.h
 file
@@ -160,6 +147,19 @@ file
 2009-03-05T21:20:13.959418Z
 17831
 mru
+
+jrevdct_arm.S
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+f5112c74f1dfd2c3742f8047639ffb40
+2008-12-17T00:54:54.689120Z
+16179
+mru
+has-props
 
 mpegvideo_armv5te.c
 file
@@ -179,24 +179,11 @@ file
 
 
 
-2009-07-06T15:13:54.000000Z
-770757cad3476529337c10d2b34c464f
-2009-07-04T20:41:11.313346Z
-19345
-conrad
-has-props
-
-mpegvideo_iwmmxt.c
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-f73f2d3646f3529cbbd29ff6aeb97e98
-2008-12-17T00:54:54.689120Z
-16179
-mru
+2009-08-03T15:00:37.000000Z
+c0bbf69115da231dd7288d4b78c0b7ec
+2009-07-22T22:27:10.698524Z
+19492
+diego
 has-props
 
 mpegvideo_armv5te_s.S
@@ -210,6 +197,19 @@ d5b7a353f6a81c7cb452a19df1d2051b
 2008-12-17T00:54:54.689120Z
 16179
 mru
+
+mpegvideo_iwmmxt.c
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+f73f2d3646f3529cbbd29ff6aeb97e98
+2008-12-17T00:54:54.689120Z
+16179
+mru
+has-props
 
 dsputil_arm_s.S
 file

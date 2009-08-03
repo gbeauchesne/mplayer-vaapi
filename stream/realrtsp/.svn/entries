@@ -1,15 +1,15 @@
 8
 
 dir
-29412
+29473
 svn://svn.mplayerhq.hu/mplayer/trunk/stream/realrtsp
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-07-28T16:25:03.913438Z
+29455
+uau
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -84,11 +84,11 @@ file
 
 
 
-2009-05-25T08:53:53.000000Z
-7090be0e3a833f0ad56e28b33e5844e3
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-08-03T15:00:34.000000Z
+382137b8a287dbcf67768db878148acf
+2009-07-28T16:25:03.913438Z
+29455
+uau
 has-props
 
 xbuffer.h

@@ -28,7 +28,6 @@
 #endif
 
 #include "libavutil/avutil.h"
-#include "libavutil/internal.h"
 
 #define STR(s)         AV_TOSTRING(s) //AV_STRINGIFY is too long
 
@@ -42,7 +41,7 @@
 
 #define VOF  (VOFW*2)
 
-#ifdef WORDS_BIGENDIAN
+#if HAVE_BIGENDIAN
 #define ALT32_CORR (-1)
 #else
 #define ALT32_CORR   1
@@ -83,7 +82,6 @@ typedef struct SwsContext{
     enum PixelFormat dstFormat, srcFormat;  ///< format 4:2:0 type is always YV12
     int origDstFormat, origSrcFormat;       ///< format
     int chrSrcHSubSample, chrSrcVSubSample;
-    int chrIntHSubSample, chrIntVSubSample;
     int chrDstHSubSample, chrDstVSubSample;
     int vChrDrop;
     int sliceDir;
