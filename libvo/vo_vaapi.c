@@ -569,6 +569,7 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
     if (!check_status(status, "vaCreateContext()"))
         return -1;
 
+    g_output_surface = VA_INVALID_SURFACE;
     return 0;
 }
 
@@ -621,11 +622,10 @@ static void put_surface(VASurfaceID surface)
 {
     VAStatus status;
 
-    if (surface == 0)
+    if (surface == VA_INVALID_SURFACE)
         return;
 
-    status = vaSyncSurface(va_context->display, va_context->context_id,
-                           surface);
+    status = vaSyncSurface(va_context->display, va_context->context_id, surface);
     if (!check_status(status, "vaSyncSurface() for decode"))
         return;
 
@@ -641,13 +641,6 @@ static void put_surface(VASurfaceID surface)
                           VA_FRAME_PICTURE);
     if (!check_status(status, "vaPutSurface()"))
         return;
-
-    if (!need_extra_surfaces()) {
-        status = vaSyncSurface(va_context->display, va_context->context_id,
-                               surface);
-        if (!check_status(status, "vaSyncSurface() for display"))
-            return;
-    }
 }
 
 static int draw_slice(uint8_t * image[], int stride[],
@@ -672,9 +665,18 @@ static void draw_osd(void)
 
 static void flip_page(void)
 {
+    VAStatus status;
+
+    if (g_output_surface == VA_INVALID_SURFACE)
+        return;
+
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] flip_page()\n");
 
     put_surface(g_output_surface);
+
+    status = vaSyncSurface(va_context->display, va_context->context_id, g_output_surface);
+    if (!check_status(status, "vaSyncSurface() for display"))
+        return;
 }
 
 static VASurfaceID *get_surface(mp_image_t *mpi)
