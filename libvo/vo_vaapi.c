@@ -222,24 +222,13 @@ static int VAEntrypoint_from_imgfmt(uint32_t format)
     return -1;
 }
 
-static int get_iegd_version_1(void)
+static int get_version(const char *str)
 {
-    const char *str;
     char *end;
     unsigned int major = 0, minor = 0, micro = 0;
     unsigned long v;
 
-    str = vaQueryVendorString(va_context->display);
-    if (!str)
-        return 0;
-    str = strstr(str, "Intel");
-    if (!str)
-        return 0;
-    str = strstr(str + 6, "Embedded Graphics Driver");
-    if (!str)
-        return 0;
-
-    v = strtoul(str + 25, &end, 10);
+    v = strtoul(str, &end, 10);
     if (end && end != str) {
         major = v;
         if (*(str = end) == '.') {
@@ -258,12 +247,62 @@ static int get_iegd_version_1(void)
     return (major << 16) | (minor << 8) | micro;
 }
 
+static int get_iegd_version_1(void)
+{
+    const char *str;
+
+    str = vaQueryVendorString(va_context->display);
+    if (!str)
+        return 0;
+    str = strstr(str, "Intel");
+    if (!str)
+        return 0;
+    str = strstr(str + 6, "Embedded Graphics Driver");
+    if (!str)
+        return 0;
+
+    return get_version(str + 25);
+}
+
 static inline int get_iegd_version(void)
 {
     static int iegd_version = -1;
     if (iegd_version < 0)
         iegd_version = get_iegd_version_1();
     return iegd_version;
+}
+
+static int get_xvba_version_1(void)
+{
+    const char *str;
+
+    str = vaQueryVendorString(va_context->display);
+    if (!str)
+        return 0;
+    str = strstr(str, "XvBA");
+    if (!str)
+        return 0;
+    str = strchr(str, '-');
+    if (!str || !isdigit(str[2]))
+        return 0;
+
+    return get_version(str + 2);
+}
+
+static inline int get_xvba_version(void)
+{
+    static int xvba_version = -1;
+    if (xvba_version < 0)
+        xvba_version = get_xvba_version_1();
+    return xvba_version;
+}
+
+static inline int need_extra_surfaces(void)
+{
+    static int use_workaround = -1;
+    if (use_workaround < 0)
+        use_workaround = get_iegd_version() > 0 || get_xvba_version() > 0;
+    return use_workaround;
 }
 
 static void resize(void)
@@ -504,7 +543,7 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
     }
     if (va_num_surfaces == 0)
         return -1;
-    if (get_iegd_version() > 0)
+    if (need_extra_surfaces())
         va_num_surfaces = FFMIN(2 * va_num_surfaces, MAX_VIDEO_SURFACES);
 
     va_surface_ids = calloc(va_num_surfaces, sizeof(*va_surface_ids));
@@ -603,10 +642,12 @@ static void put_surface(VASurfaceID surface)
     if (!check_status(status, "vaPutSurface()"))
         return;
 
-    status = vaSyncSurface(va_context->display, va_context->context_id,
-                           surface);
-    if (!check_status(status, "vaSyncSurface() for display"))
-        return;
+    if (!need_extra_surfaces()) {
+        status = vaSyncSurface(va_context->display, va_context->context_id,
+                               surface);
+        if (!check_status(status, "vaSyncSurface() for display"))
+            return;
+    }
 }
 
 static int draw_slice(uint8_t * image[], int stride[],
@@ -640,7 +681,7 @@ static VASurfaceID *get_surface(mp_image_t *mpi)
 {
     VASurfaceID *surface;
 
-    if (get_iegd_version() == 0) {
+    if (!need_extra_surfaces()) {
         assert(mpi->number < va_num_surfaces);
         return &va_surface_ids[mpi->number];
     }
