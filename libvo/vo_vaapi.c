@@ -573,7 +573,7 @@ static int query_format(uint32_t format)
     case IMGFMT_VAAPI_H264:
     case IMGFMT_VAAPI_WMV3:
     case IMGFMT_VAAPI_VC1:
-        return default_caps;
+        return default_caps | VOCAP_NOSLICES;
     }
     return 0;
 }
