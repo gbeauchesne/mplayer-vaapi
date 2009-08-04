@@ -45,6 +45,7 @@ static vo_info_t info = {
 const LIBVO_EXTERN(vaapi)
 
 /* Numbers of video surfaces */
+#define MAX_OUTPUT_SURFACES       2 /* Maintain synchronisation points in flip_page() */
 #define MAX_VIDEO_SURFACES       24 /* Maintain free surfaces in a queue (use LRU) */
 #define NUM_VIDEO_SURFACES_MPEG2  3 /* 1 decode frame, up to  2 references */
 #define NUM_VIDEO_SURFACES_MPEG4  3 /* 1 decode frame, up to  2 references */
@@ -56,7 +57,8 @@ static uint32_t                 g_image_width;
 static uint32_t                 g_image_height;
 static uint32_t                 g_image_format;
 static struct vo_rect           g_output_rect;
-static VASurfaceID              g_output_surface;
+static VASurfaceID              g_output_surfaces[MAX_OUTPUT_SURFACES];
+static unsigned int             g_output_surface;
 
 static struct vaapi_context    *va_context;
 static VAProfile               *va_profiles;
@@ -487,7 +489,9 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
     if (!check_status(status, "vaCreateContext()"))
         return -1;
 
-    g_output_surface = VA_INVALID_SURFACE;
+    g_output_surface = 0;
+    for (i = 0; i < MAX_OUTPUT_SURFACES; i++)
+        g_output_surfaces[i] = VA_INVALID_SURFACE;
     return 0;
 }
 
@@ -583,18 +587,22 @@ static void draw_osd(void)
 
 static void flip_page(void)
 {
+    VASurfaceID surface;
     VAStatus status;
-
-    if (g_output_surface == VA_INVALID_SURFACE)
-        return;
 
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] flip_page()\n");
 
-    put_surface(g_output_surface);
+    surface = g_output_surfaces[g_output_surface];
+    if (surface != VA_INVALID_SURFACE)
+        put_surface(surface);
 
-    status = vaSyncSurface(va_context->display, va_context->context_id, g_output_surface);
-    if (!check_status(status, "vaSyncSurface() for display"))
-        return;
+    surface = g_output_surfaces[(g_output_surface - 1) % MAX_OUTPUT_SURFACES];
+    if (surface != VA_INVALID_SURFACE) {
+        status = vaSyncSurface(va_context->display, va_context->context_id, surface);
+        if (!check_status(status, "vaSyncSurface() for display"))
+            return;
+    }
+    g_output_surface = (g_output_surface + 1) % MAX_OUTPUT_SURFACES;
 }
 
 static VASurfaceID *get_surface(mp_image_t *mpi)
@@ -648,7 +656,7 @@ static uint32_t draw_image(mp_image_t *mpi)
 
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] draw_image(): surface 0x%08x\n", surface);
 
-    g_output_surface = surface;
+    g_output_surfaces[g_output_surface] = surface;
     return VO_TRUE;
 }
 
@@ -659,8 +667,11 @@ static void check_events(void)
     if (events & VO_EVENT_RESIZE)
         resize();
 
-    if ((events & (VO_EVENT_EXPOSE|VO_EVENT_RESIZE)) && g_is_paused)
-        put_surface(g_output_surface);
+    if ((events & (VO_EVENT_EXPOSE|VO_EVENT_RESIZE)) && g_is_paused) {
+        VASurfaceID surface = g_output_surfaces[g_output_surface];
+        if (surface != VA_INVALID_SURFACE)
+            put_surface(surface);
+    }
 }
 
 static int control(uint32_t request, void *data, ...)
