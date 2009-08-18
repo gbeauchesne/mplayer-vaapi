@@ -245,11 +245,11 @@ static int preinit(const char *arg)
         return -1;
 
     va_context = calloc(1, sizeof(*va_context));
-    if (va_context == NULL)
+    if (!va_context)
         return -1;
 
     va_context->display = vaGetDisplay(mDisplay);
-    if (va_context->display == NULL)
+    if (!va_context->display)
         return -1;
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): VA display %p\n", va_context->display);
 
@@ -261,7 +261,7 @@ static int preinit(const char *arg)
 
     max_image_formats = vaMaxNumImageFormats(va_context->display);
     va_image_formats = calloc(max_image_formats, sizeof(*va_image_formats));
-    if (va_image_formats == NULL)
+    if (!va_image_formats)
         return -1;
     status = vaQueryImageFormats(va_context->display, va_image_formats, &va_num_image_formats);
     if (!check_status(status, "vaQueryImageFormats()"))
@@ -273,7 +273,7 @@ static int preinit(const char *arg)
 
     max_profiles = vaMaxNumProfiles(va_context->display);
     va_profiles = calloc(max_profiles, sizeof(*va_profiles));
-    if (va_profiles == NULL)
+    if (!va_profiles)
         return -1;
     status = vaQueryConfigProfiles(va_context->display, va_profiles, &va_num_profiles);
     if (!check_status(status, "vaQueryConfigProfiles()"))
@@ -412,7 +412,7 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
     /* Check entry-point (only VLD for now) */
     max_entrypoints = vaMaxNumEntrypoints(va_context->display);
     va_entrypoints = calloc(max_entrypoints, sizeof(*va_entrypoints));
-    if (va_entrypoints == NULL)
+    if (!va_entrypoints)
         return -1;
 
     status = vaQueryConfigEntrypoints(va_context->display, profile,
