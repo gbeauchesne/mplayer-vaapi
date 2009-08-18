@@ -364,7 +364,6 @@ static int config_x11(uint32_t width, uint32_t height,
 #ifdef CONFIG_XF86VM
         if (flags & VOFLAG_MODESWITCHING)
             vo_vm_switch();
-        else
 #endif
         XGetWindowAttributes(mDisplay, DefaultRootWindow(mDisplay), &wattr);
         depth = wattr.depth;
