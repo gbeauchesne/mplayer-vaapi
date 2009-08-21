@@ -71,6 +71,7 @@ static unsigned int             g_output_surface;
 
 #if CONFIG_GL
 static int                      gl_enabled;
+static int                      gl_reflect;
 static GLuint                   gl_texture;
 #endif
 
@@ -289,6 +290,7 @@ static void resize(void)
 static const opt_t subopts[] = {
 #if CONFIG_GL
     { "gl",          OPT_ARG_BOOL, &gl_enabled,   NULL },
+    { "reflect",     OPT_ARG_BOOL, &gl_reflect,   NULL },
 #endif
     { NULL, }
 };
@@ -307,13 +309,16 @@ static int preinit(const char *arg)
 #if CONFIG_GL
                "  gl\n"
                "    Enable OpenGL rendering\n"
+               "  reflect\n"
+               "    Enable OpenGL reflection effects\n"
 #endif
                "\n" );
         return -1;
     }
 #if CONFIG_GL
     if (gl_enabled)
-        mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using OpenGL rendering\n");
+        mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using OpenGL rendering%s\n",
+               gl_reflect ? ", with reflection effects" : "");
 #endif
 
     if (!vo_init())
@@ -714,6 +719,47 @@ static void put_surface_x11(VASurfaceID surface)
 }
 
 #if CONFIG_VAAPI_GLX
+static void render_background(void)
+{
+    /* Original code from Mirco Muller (MacSlow):
+       <http://cgit.freedesktop.org/~macslow/gl-gst-player/> */
+    GLfloat fStartX = 0.0f;
+    GLfloat fStartY = 0.0f;
+    GLfloat fWidth  = (GLfloat)vo_dwidth;
+    GLfloat fHeight = (GLfloat)vo_dheight;
+
+    glBegin(GL_QUADS);
+    {
+        /* top third, darker grey to white */
+        glColor3f(0.85f, 0.85f, 0.85f);
+        glVertex3f(fStartX, fStartY, 0.0f);
+        glColor3f(0.85f, 0.85f, 0.85f);
+        glVertex3f(fStartX + fWidth, fStartY, 0.0f);
+        glColor3f(1.0f, 1.0f, 1.0f);
+        glVertex3f(fStartX + fWidth, fStartY + fHeight / 3.0f, 0.0f);
+        glColor3f(1.0f, 1.0f, 1.0f);
+        glVertex3f(fStartX, fStartY + fHeight / 3.0f, 0.0f);
+
+        /* middle third, just plain white */
+        glColor3f(1.0f, 1.0f, 1.0f);
+        glVertex3f(fStartX, fStartY + fHeight / 3.0f, 0.0f);
+        glVertex3f(fStartX + fWidth, fStartY + fHeight / 3.0f, 0.0f);
+        glVertex3f(fStartX + fWidth, fStartY + 2.0f * fHeight / 3.0f, 0.0f);
+        glVertex3f(fStartX, fStartY + 2.0f * fHeight / 3.0f, 0.0f);
+
+        /* bottom third, white to lighter grey */
+        glColor3f(1.0f, 1.0f, 1.0f);
+        glVertex3f(fStartX, fStartY + 2.0f * fHeight / 3.0f, 0.0f);
+        glColor3f(1.0f, 1.0f, 1.0f);
+        glVertex3f(fStartX + fWidth, fStartY + 2.0f * fHeight / 3.0f, 0.0f);
+        glColor3f(0.62f, 0.66f, 0.69f);
+        glVertex3f(fStartX + fWidth, fStartY + fHeight, 0.0f);
+        glColor3f(0.62f, 0.66f, 0.69f);
+        glVertex3f(fStartX, fStartY + fHeight, 0.0f);
+    }
+    glEnd();
+}
+
 static void render_frame(void)
 {
     struct vo_rect * const r = &g_output_rect;
@@ -731,6 +777,27 @@ static void render_frame(void)
     glDisable(GL_TEXTURE_2D);
 }
 
+static void render_reflection(void)
+{
+    struct vo_rect * const r = &g_output_rect;
+    const unsigned int rh  = g_output_rect.height / 5;
+    GLfloat ry = 1.0f - (GLfloat)rh / (GLfloat)r->height;
+
+    glEnable(GL_TEXTURE_2D);
+    glBegin(GL_QUADS);
+    {
+        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        glTexCoord2f(0.0f, 1.0f); glVertex2i(r->left, r->top);
+        glTexCoord2f(1.0f, 1.0f); glVertex2i(r->right, r->top);
+
+        glColor4f(1.0f, 1.0f, 1.0f, 0.0f);
+        glTexCoord2f(1.0f, ry); glVertex2i(r->right, r->top + rh);
+        glTexCoord2f(0.0f, ry); glVertex2i(r->left, r->top + rh);
+    }
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+}
+
 static void put_surface_glx(VASurfaceID surface)
 {
     VAStatus status;
@@ -741,7 +808,25 @@ static void put_surface_glx(VASurfaceID surface)
         return;
 
     glClear(GL_COLOR_BUFFER_BIT);
+
+    if (gl_reflect) {
+        render_background();
+
+        glPushMatrix();
+        glRotatef(20.0f, 0.0f, 1.0f, 0.0f);
+        glTranslatef(50.0f, 0.0f, 0.0f);
+    }
+
     render_frame();
+
+    if (gl_reflect) {
+        glPushMatrix();
+        glTranslatef(0.0, (GLfloat)g_output_rect.height + 5.0f, 0.0f);
+        render_reflection();
+        glPopMatrix();
+        glPopMatrix();
+    }
+
     swapGlBuffers();
 }
 #endif
