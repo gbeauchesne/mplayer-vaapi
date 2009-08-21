@@ -828,6 +828,9 @@ static void put_surface_glx(VASurfaceID surface)
     }
 
     swapGlBuffers();
+
+    if (vo_fs) /* avoid flickering borders in fullscreen mode */
+        glClear(GL_COLOR_BUFFER_BIT);
 }
 #endif
 
