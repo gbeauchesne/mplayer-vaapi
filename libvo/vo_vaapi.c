@@ -23,6 +23,7 @@
 #include "config.h"
 #include "mp_msg.h"
 #include "help_mp.h"
+#include "subopt-helper.h"
 #include "video_out.h"
 #include "video_out_internal.h"
 #include "x11_common.h"
@@ -30,10 +31,18 @@
 #include "libavcodec/vaapi.h"
 #include "gui/interface.h"
 
+#if CONFIG_GL
+#include "gl_common.h"
+#include <GL/glu.h>
+#endif
+
 #include <assert.h>
-#include <va/va_x11.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <va/va_x11.h>
+#if CONFIG_VAAPI_GLX
+#include <va/va_glx.h>
+#endif
 
 static vo_info_t info = {
     "VA API with X11",
@@ -59,6 +68,24 @@ static uint32_t                 g_image_format;
 static struct vo_rect           g_output_rect;
 static VASurfaceID              g_output_surfaces[MAX_OUTPUT_SURFACES];
 static unsigned int             g_output_surface;
+
+#if CONFIG_GL
+static int                      gl_enabled;
+static GLuint                   gl_texture;
+#endif
+
+#if CONFIG_VAAPI_GLX
+static GLXContext               gl_context;
+static XVisualInfo             *gl_visual_info;
+static int                      gl_visual_attr[] = {
+    GLX_RGBA,
+    GLX_RED_SIZE, 1,
+    GLX_GREEN_SIZE, 1,
+    GLX_BLUE_SIZE, 1,
+    GLX_DOUBLEBUFFER,
+    GL_NONE
+};
+#endif
 
 static struct vaapi_context    *va_context;
 static VAProfile               *va_profiles;
@@ -232,14 +259,62 @@ static void resize(void)
                        &src, &g_output_rect, NULL, NULL);
 
     vo_x11_clearwindow(mDisplay, vo_window);
+
+#if CONFIG_GL
+#define FOVY     60.0f
+#define ASPECT   1.0f
+#define Z_NEAR   0.1f
+#define Z_FAR    100.0f
+#define Z_CAMERA 0.869f
+
+    if (gl_enabled) {
+        glViewport(0, 0, vo_dwidth, vo_dheight);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(FOVY, ASPECT, Z_NEAR, Z_FAR);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        glTranslatef(-0.5f, -0.5f, -Z_CAMERA);
+        glScalef(1.0f / (GLfloat)vo_dwidth,
+                 -1.0f / (GLfloat)vo_dheight,
+                 1.0f / (GLfloat)vo_dwidth);
+        glTranslatef(0.0f, -1.0f * (GLfloat)vo_dheight, 0.0f);
+    }
+#endif
+
     flip_page();
 }
+
+static const opt_t subopts[] = {
+#if CONFIG_GL
+    { "gl",          OPT_ARG_BOOL, &gl_enabled,   NULL },
+#endif
+    { NULL, }
+};
 
 static int preinit(const char *arg)
 {
     VAStatus status;
     int va_major_version, va_minor_version;
     int i, max_image_formats, max_profiles;
+
+    if (subopt_parse(arg, subopts) != 0) {
+        mp_msg(MSGT_VO, MSGL_FATAL,
+               "\n-vo vaapi command line help:\n"
+               "Example: mplayer -vo vaapi:gl\n"
+               "\nOptions:\n"
+#if CONFIG_GL
+               "  gl\n"
+               "    Enable OpenGL rendering\n"
+#endif
+               "\n" );
+        return -1;
+    }
+#if CONFIG_GL
+    if (gl_enabled)
+        mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using OpenGL rendering\n");
+#endif
 
     if (!vo_init())
         return -1;
@@ -248,7 +323,12 @@ static int preinit(const char *arg)
     if (!va_context)
         return -1;
 
-    va_context->display = vaGetDisplay(mDisplay);
+#if CONFIG_VAAPI_GLX
+    if (gl_enabled)
+        va_context->display = vaGetDisplayGLX(mDisplay);
+    else
+#endif
+        va_context->display = vaGetDisplay(mDisplay);
     if (!va_context->display)
         return -1;
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): VA display %p\n", va_context->display);
@@ -313,6 +393,20 @@ static void free_video_specific(void)
         free(va_entrypoints);
         va_entrypoints = NULL;
     }
+
+#if CONFIG_GL
+    if (gl_texture) {
+        glDeleteTextures(1, &gl_texture);
+        gl_texture = GL_NONE;
+    }
+#endif
+
+#if CONFIG_VAAPI_GLX
+    if (gl_enabled) {
+        releaseGlContext(&gl_visual_info, &gl_context);
+        gl_visual_info = NULL;
+    }
+#endif
 }
 
 static void uninit(void)
@@ -349,7 +443,9 @@ static int config_x11(uint32_t width, uint32_t height,
                       uint32_t display_width, uint32_t display_height,
                       uint32_t flags, char *title)
 {
+    Colormap cmap;
     XVisualInfo visualInfo;
+    XVisualInfo *vi;
     XSetWindowAttributes xswa;
     unsigned long xswa_mask;
     XWindowAttributes wattr;
@@ -371,9 +467,29 @@ static int config_x11(uint32_t width, uint32_t height,
             depth = 24;
         XMatchVisualInfo(mDisplay, mScreen, depth, TrueColor, &visualInfo);
 
-        vo_x11_create_vo_window(&visualInfo,
+#if CONFIG_VAAPI_GLX
+        if (gl_enabled) {
+            vi = glXChooseVisual(mDisplay, mScreen, gl_visual_attr);
+            if (!vi)
+                return -1;
+            cmap = XCreateColormap(mDisplay, mRootWin, vi->visual, AllocNone);
+            if (cmap == None)
+                return -1;
+        }
+        else
+#endif
+        {
+            vi = &visualInfo;
+            XMatchVisualInfo(mDisplay, mScreen, depth, TrueColor, vi);
+            cmap = CopyFromParent;
+        }
+
+        vo_x11_create_vo_window(vi,
                                 vo_dx, vo_dy, display_width, display_height,
-                                flags, CopyFromParent, "vaapi", title);
+                                flags, cmap, "vaapi", title);
+
+        if (vi != &visualInfo)
+            XFree(vi);
 
         xswa_mask             = CWBorderPixel | CWBackPixel;
         xswa.border_pixel     = 0;
@@ -396,6 +512,41 @@ static int config_x11(uint32_t width, uint32_t height,
         vo_fs = VO_TRUE;
     return 0;
 }
+
+#if CONFIG_VAAPI_GLX
+static int config_glx(unsigned int width, unsigned int height)
+{
+    if (setGlWindow(&gl_visual_info, &gl_context, vo_window) < 0)
+        return -1;
+
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_TEXTURE_2D);
+    glDrawBuffer(vo_doublebuffering ? GL_BACK : GL_FRONT);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    /* Create OpenGL texture */
+    /* XXX: assume GL_ARB_texture_non_power_of_two is available */
+    glEnable(GL_TEXTURE_2D);
+    glGenTextures(1, &gl_texture);
+    BindTexture(GL_TEXTURE_2D, gl_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                 GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+    glDisable(GL_TEXTURE_2D);
+
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    return 0;
+}
+#endif
 
 static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
 {
@@ -506,6 +657,11 @@ static int config(uint32_t width, uint32_t height,
     if (config_x11(width, height, display_width, display_height, flags, title) < 0)
         return -1;
 
+#if CONFIG_VAAPI_GLX
+    if (gl_enabled && config_glx(width, height) < 0)
+        return -1;
+#endif
+
     if (config_vaapi(width, height, format) < 0)
         return -1;
 
@@ -539,16 +695,9 @@ static int query_format(uint32_t format)
     return 0;
 }
 
-static void put_surface(VASurfaceID surface)
+static void put_surface_x11(VASurfaceID surface)
 {
     VAStatus status;
-
-    if (surface == VA_INVALID_SURFACE)
-        return;
-
-    status = vaSyncSurface(va_context->display, va_context->context_id, surface);
-    if (!check_status(status, "vaSyncSurface() for decode"))
-        return;
 
     status = vaPutSurface(va_context->display,
                           surface,
@@ -562,6 +711,58 @@ static void put_surface(VASurfaceID surface)
                           VA_FRAME_PICTURE);
     if (!check_status(status, "vaPutSurface()"))
         return;
+}
+
+#if CONFIG_VAAPI_GLX
+static void render_frame(void)
+{
+    struct vo_rect * const r = &g_output_rect;
+
+    glEnable(GL_TEXTURE_2D);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    glBegin(GL_QUADS);
+    {
+        glTexCoord2f(0.0f, 0.0f); glVertex2i(r->left, r->top);
+        glTexCoord2f(0.0f, 1.0f); glVertex2i(r->left, r->bottom);
+        glTexCoord2f(1.0f, 1.0f); glVertex2i(r->right, r->bottom);
+        glTexCoord2f(1.0f, 0.0f); glVertex2i(r->right, r->top);
+    }
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+}
+
+static void put_surface_glx(VASurfaceID surface)
+{
+    VAStatus status;
+
+    status = vaCopySurfaceToTextureGLX(va_context->display, surface,
+                                       gl_texture, VA_FRAME_PICTURE);
+    if (!check_status(status, "vaCopySurfaceToTextureGLX()"))
+        return;
+
+    glClear(GL_COLOR_BUFFER_BIT);
+    render_frame();
+    swapGlBuffers();
+}
+#endif
+
+static void put_surface(VASurfaceID surface)
+{
+    VAStatus status;
+
+    if (surface == VA_INVALID_SURFACE)
+        return;
+
+    status = vaSyncSurface(va_context->display, va_context->context_id, surface);
+    if (!check_status(status, "vaSyncSurface() for decode"))
+        return;
+
+#if CONFIG_VAAPI_GLX
+    if (gl_enabled)
+        put_surface_glx(surface);
+    else
+#endif
+        put_surface_x11(surface);
 }
 
 static int draw_slice(uint8_t * image[], int stride[],
