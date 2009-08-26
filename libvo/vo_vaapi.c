@@ -545,6 +545,7 @@ static int config_glx(unsigned int width, unsigned int height)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
                  GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+    BindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -765,6 +766,7 @@ static void render_frame(void)
     struct vo_rect * const r = &g_output_rect;
 
     glEnable(GL_TEXTURE_2D);
+    BindTexture(GL_TEXTURE_2D, gl_texture);
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     glBegin(GL_QUADS);
     {
@@ -774,6 +776,7 @@ static void render_frame(void)
         glTexCoord2f(1.0f, 0.0f); glVertex2i(r->right, r->top);
     }
     glEnd();
+    BindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
 }
 
@@ -784,6 +787,7 @@ static void render_reflection(void)
     GLfloat ry = 1.0f - (GLfloat)rh / (GLfloat)r->height;
 
     glEnable(GL_TEXTURE_2D);
+    BindTexture(GL_TEXTURE_2D, gl_texture);
     glBegin(GL_QUADS);
     {
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -795,6 +799,7 @@ static void render_reflection(void)
         glTexCoord2f(0.0f, ry); glVertex2i(r->left, r->top + rh);
     }
     glEnd();
+    BindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
 }
 
