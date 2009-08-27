@@ -71,6 +71,7 @@ static unsigned int             g_output_surface;
 
 #if CONFIG_GL
 static int                      gl_enabled;
+static int                      gl_binding;
 static int                      gl_reflect;
 static GLuint                   gl_texture;
 #endif
@@ -290,6 +291,7 @@ static void resize(void)
 static const opt_t subopts[] = {
 #if CONFIG_GL
     { "gl",          OPT_ARG_BOOL, &gl_enabled,   NULL },
+    { "bind",        OPT_ARG_BOOL, &gl_binding,   NULL },
     { "reflect",     OPT_ARG_BOOL, &gl_reflect,   NULL },
 #endif
     { NULL, }
@@ -309,6 +311,8 @@ static int preinit(const char *arg)
 #if CONFIG_GL
                "  gl\n"
                "    Enable OpenGL rendering\n"
+               "  bind\n"
+               "    Use VA surface binding instead of copy\n"
                "  reflect\n"
                "    Enable OpenGL reflection effects\n"
 #endif
@@ -807,15 +811,31 @@ static void put_surface_glx(VASurfaceID surface)
 {
     VAStatus status;
 
-    status = vaCopySurfaceToTextureGLX(va_context->display, surface,
-                                       gl_texture, VA_FRAME_PICTURE);
-    if (!check_status(status, "vaCopySurfaceToTextureGLX()"))
-        return;
+    if (!gl_binding) {
+        status = vaCopySurfaceToTextureGLX(va_context->display, surface,
+                                           gl_texture, VA_FRAME_PICTURE);
+        if (status == VA_STATUS_ERROR_UNIMPLEMENTED) {
+            mp_msg(MSGT_VO, MSGL_WARN,
+                   "[vaapi] vaCopySurfaceToTextureGLX() unimplemented\n");
+            gl_binding = 1;
+        }
+        else {
+            if (!check_status(status, "vaCopySurfaceToTextureGLX()"))
+                return;
+        }
+    }
 
     glClear(GL_COLOR_BUFFER_BIT);
 
     if (gl_reflect) {
         render_background();
+
+        if (gl_binding) {
+            status = vaBindSurfaceToTextureGLX(va_context->display, surface,
+                                               gl_texture, VA_FRAME_PICTURE);
+            if (!check_status(status, "vaBindSurfaceToTextureGLX()"))
+                return;
+        }
 
         glPushMatrix();
         glRotatef(20.0f, 0.0f, 1.0f, 0.0f);
@@ -830,6 +850,12 @@ static void put_surface_glx(VASurfaceID surface)
         render_reflection();
         glPopMatrix();
         glPopMatrix();
+
+        if (gl_binding) {
+            status = vaReleaseSurfaceFromTextureGLX(va_context->display, surface);
+            if (!check_status(status, "vaReleaseSurfaceFromTextureGLX()"))
+                return;
+        }
     }
 
     swapGlBuffers();
