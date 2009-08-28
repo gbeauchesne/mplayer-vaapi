@@ -872,10 +872,6 @@ static void put_surface(VASurfaceID surface)
     if (surface == VA_INVALID_SURFACE)
         return;
 
-    status = vaSyncSurface(va_context->display, va_context->context_id, surface);
-    if (!check_status(status, "vaSyncSurface() for decode"))
-        return;
-
 #if CONFIG_VAAPI_GLX
     if (gl_enabled)
         put_surface_glx(surface);
