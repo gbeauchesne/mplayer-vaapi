@@ -87,6 +87,7 @@ static int                      gl_visual_attr[] = {
     GLX_DOUBLEBUFFER,
     GL_NONE
 };
+static void                    *gl_surface;
 #endif
 
 static struct vaapi_context    *va_context;
@@ -377,6 +378,15 @@ static int preinit(const char *arg)
 
 static void free_video_specific(void)
 {
+#if CONFIG_VAAPI_GLX
+    if (gl_surface) {
+        VAStatus status;
+        status = vaDestroySurfaceGLX(va_context->display, gl_surface);
+        check_status(status, "vaDestroySurfaceGLX()");
+        gl_surface = NULL;
+    }
+#endif
+
     if (va_context && va_context->context_id) {
         vaDestroyContext(va_context->display, va_context->context_id);
         va_context->context_id = 0;
@@ -641,6 +651,17 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
     for (i = 0; i < va_num_surfaces; i++)
         va_free_surfaces[i] = &va_surface_ids[i];
 
+#if CONFIG_VAAPI_GLX
+    /* Create GLX surfaces */
+    if (gl_enabled) {
+        status = vaCreateSurfaceGLX(va_context->display,
+                                    GL_TEXTURE_2D, gl_texture,
+                                    &gl_surface);
+        if (!check_status(status, "vaCreateSurfaceGLX()"))
+            return -1;
+    }
+#endif
+
     /* Create a context for the decode pipeline */
     status = vaCreateContext(va_context->display, va_context->config_id,
                              width, height, VA_PROGRESSIVE,
@@ -724,6 +745,69 @@ static void put_surface_x11(VASurfaceID surface)
 }
 
 #if CONFIG_VAAPI_GLX
+static void put_surface_glx(VASurfaceID surface)
+{
+    VAStatus status;
+
+    if (surface == VA_INVALID_SURFACE)
+        return;
+
+    if (gl_binding) {
+        status = vaAssociateSurfaceGLX(va_context->display,
+                                       gl_surface,
+                                       surface,
+                                       VA_FRAME_PICTURE);
+        if (!check_status(status, "vaAssociateSurfaceGLX()"))
+            return;
+    }
+    else {
+        status = vaCopySurfaceGLX(va_context->display,
+                                  gl_surface,
+                                  surface,
+                                  VA_FRAME_PICTURE);
+        if (status == VA_STATUS_ERROR_UNIMPLEMENTED) {
+            mp_msg(MSGT_VO, MSGL_WARN,
+                   "[vaapi] vaCopySurfaceGLX() is not implemented\n");
+            gl_binding = 1;
+        }
+        else {
+            if (!check_status(status, "vaCopySurfaceGLX()"))
+                return;
+        }
+    }
+    g_output_surfaces[g_output_surface] = surface;
+}
+
+static int glx_bind_texture(void)
+{
+    VAStatus status;
+
+    glEnable(GL_TEXTURE_2D);
+    BindTexture(GL_TEXTURE_2D, gl_texture);
+
+    if (gl_binding) {
+        status = vaBeginRenderSurfaceGLX(va_context->display, gl_surface);
+        if (!check_status(status, "vaBeginRenderSurfaceGLX()"))
+            return -1;
+    }
+    return 0;
+}
+
+static int glx_unbind_texture(void)
+{
+    VAStatus status;
+
+    if (gl_binding) {
+        status = vaEndRenderSurfaceGLX(va_context->display, gl_surface);
+        if (!check_status(status, "vaEndRenderSurfaceGLX()"))
+            return -1;
+    }
+
+    BindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+    return 0;
+}
+
 static void render_background(void)
 {
     /* Original code from Mirco Muller (MacSlow):
@@ -769,8 +853,8 @@ static void render_frame(void)
 {
     struct vo_rect * const r = &g_output_rect;
 
-    glEnable(GL_TEXTURE_2D);
-    BindTexture(GL_TEXTURE_2D, gl_texture);
+    if (glx_bind_texture() < 0)
+        return;
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     glBegin(GL_QUADS);
     {
@@ -780,8 +864,8 @@ static void render_frame(void)
         glTexCoord2f(1.0f, 0.0f); glVertex2i(r->right, r->top);
     }
     glEnd();
-    BindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
+    if (glx_unbind_texture() < 0)
+        return;
 }
 
 static void render_reflection(void)
@@ -790,8 +874,8 @@ static void render_reflection(void)
     const unsigned int rh  = g_output_rect.height / 5;
     GLfloat ry = 1.0f - (GLfloat)rh / (GLfloat)r->height;
 
-    glEnable(GL_TEXTURE_2D);
-    BindTexture(GL_TEXTURE_2D, gl_texture);
+    if (glx_bind_texture() < 0)
+        return;
     glBegin(GL_QUADS);
     {
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -803,39 +887,18 @@ static void render_reflection(void)
         glTexCoord2f(0.0f, ry); glVertex2i(r->left, r->top + rh);
     }
     glEnd();
-    BindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
+    if (glx_unbind_texture() < 0)
+        return;
 }
 
-static void put_surface_glx(VASurfaceID surface)
+static void flip_page_glx(void)
 {
     VAStatus status;
-
-    if (!gl_binding) {
-        status = vaCopySurfaceToTextureGLX(va_context->display, surface,
-                                           gl_texture, VA_FRAME_PICTURE);
-        if (status == VA_STATUS_ERROR_UNIMPLEMENTED) {
-            mp_msg(MSGT_VO, MSGL_WARN,
-                   "[vaapi] vaCopySurfaceToTextureGLX() unimplemented\n");
-            gl_binding = 1;
-        }
-        else {
-            if (!check_status(status, "vaCopySurfaceToTextureGLX()"))
-                return;
-        }
-    }
 
     glClear(GL_COLOR_BUFFER_BIT);
 
     if (gl_reflect) {
         render_background();
-
-        if (gl_binding) {
-            status = vaBindSurfaceToTextureGLX(va_context->display, surface,
-                                               gl_texture, VA_FRAME_PICTURE);
-            if (!check_status(status, "vaBindSurfaceToTextureGLX()"))
-                return;
-        }
 
         glPushMatrix();
         glRotatef(20.0f, 0.0f, 1.0f, 0.0f);
@@ -850,12 +913,6 @@ static void put_surface_glx(VASurfaceID surface)
         render_reflection();
         glPopMatrix();
         glPopMatrix();
-
-        if (gl_binding) {
-            status = vaReleaseSurfaceFromTextureGLX(va_context->display, surface);
-            if (!check_status(status, "vaReleaseSurfaceFromTextureGLX()"))
-                return;
-        }
     }
 
     swapGlBuffers();
@@ -867,8 +924,6 @@ static void put_surface_glx(VASurfaceID surface)
 
 static void put_surface(VASurfaceID surface)
 {
-    VAStatus status;
-
     if (surface == VA_INVALID_SURFACE)
         return;
 
@@ -918,6 +973,11 @@ static void flip_page(void)
             return;
     }
     g_output_surface = (g_output_surface + 1) % MAX_OUTPUT_SURFACES;
+
+#if CONFIG_VAAPI_GLX
+    if (gl_enabled && surface != VA_INVALID_SURFACE)
+        flip_page_glx();
+#endif
 }
 
 static VASurfaceID *get_surface(mp_image_t *mpi)
