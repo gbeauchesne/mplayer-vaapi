@@ -1,15 +1,15 @@
 8
 
 dir
-1174
+1181
 svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdread/src/dvdread
 svn://svn.mplayerhq.hu/dvdnav
 
 
 
-2008-12-31T08:43:03.809552Z
-1162
-reimar
+2009-09-02T01:43:21.419507Z
+1178
+erik
 
 
 svn:special svn:externals svn:needs-lock
@@ -58,11 +58,11 @@ file
 
 
 
-2009-01-29T11:51:04.000000Z
-7cdf69f3363e0e3bdd6cb2951ea288df
-2008-12-31T08:43:03.809552Z
-1162
-reimar
+2009-09-14T08:26:33.000000Z
+a1785c3a2563ceb6f3e2cdb6a4c02920
+2009-09-02T01:43:21.419507Z
+1178
+erik
 has-props
 
 nav_read.h

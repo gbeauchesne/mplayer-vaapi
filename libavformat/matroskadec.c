@@ -241,6 +241,7 @@ typedef struct {
 typedef struct {
     uint64_t duration;
     int64_t  reference;
+    uint64_t non_simple;
     EbmlBin  bin;
 } MatroskaBlock;
 
@@ -479,6 +480,7 @@ static EbmlSyntax matroska_blockgroup[] = {
     { MATROSKA_ID_SIMPLEBLOCK,    EBML_BIN,  0, offsetof(MatroskaBlock,bin) },
     { MATROSKA_ID_BLOCKDURATION,  EBML_UINT, 0, offsetof(MatroskaBlock,duration), {.u=AV_NOPTS_VALUE} },
     { MATROSKA_ID_BLOCKREFERENCE, EBML_UINT, 0, offsetof(MatroskaBlock,reference) },
+    { 1,                          EBML_UINT, 0, offsetof(MatroskaBlock,non_simple), {.u=1} },
     { 0 }
 };
 
@@ -1244,6 +1246,7 @@ static int matroska_read_header(AVFormatContext *s, AVFormatParameters *ap)
             && track->codec_priv.data != NULL) {
             track->video.fourcc = AV_RL32(track->codec_priv.data + 16);
             codec_id = ff_codec_get_id(ff_codec_bmp_tags, track->video.fourcc);
+            extradata_offset = 40;
         } else if (!strcmp(track->codec_id, "A_MS/ACM")
                    && track->codec_priv.size >= 18
                    && track->codec_priv.data != NULL) {
@@ -1252,7 +1255,6 @@ static int matroska_read_header(AVFormatContext *s, AVFormatParameters *ap)
             ff_get_wav_header(&b, st->codec, track->codec_priv.size);
             codec_id = st->codec->codec_id;
             extradata_offset = 18;
-            track->codec_priv.size -= extradata_offset;
         } else if (!strcmp(track->codec_id, "V_QUICKTIME")
                    && (track->codec_priv.size >= 86)
                    && (track->codec_priv.data != NULL)) {
@@ -1304,7 +1306,6 @@ static int matroska_read_header(AVFormatContext *s, AVFormatParameters *ap)
         } else if (codec_id == CODEC_ID_RV10 || codec_id == CODEC_ID_RV20 ||
                    codec_id == CODEC_ID_RV30 || codec_id == CODEC_ID_RV40) {
             extradata_offset = 26;
-            track->codec_priv.size -= extradata_offset;
         } else if (codec_id == CODEC_ID_RA_144) {
             track->audio.out_samplerate = 8000;
             track->audio.channels = 1;
@@ -1325,9 +1326,9 @@ static int matroska_read_header(AVFormatContext *s, AVFormatParameters *ap)
             } else {
                 st->codec->block_align = track->audio.sub_packet_size;
                 extradata_offset = 78;
-                track->codec_priv.size -= extradata_offset;
             }
         }
+        track->codec_priv.size -= extradata_offset;
 
         if (codec_id == CODEC_ID_NONE)
             av_log(matroska->ctx, AV_LOG_INFO,
@@ -1374,6 +1375,7 @@ static int matroska_read_header(AVFormatContext *s, AVFormatParameters *ap)
                       st->codec->height * track->video.display_width,
                       st->codec-> width * track->video.display_height,
                       255);
+            if (st->codec->codec_id != CODEC_ID_H264)
             st->need_parsing = AVSTREAM_PARSE_HEADERS;
         } else if (track->type == MATROSKA_TRACK_TYPE_AUDIO) {
             st->codec->codec_type = CODEC_TYPE_AUDIO;
@@ -1744,12 +1746,14 @@ static int matroska_parse_cluster(MatroskaDemuxContext *matroska)
     blocks_list = &cluster.blocks;
     blocks = blocks_list->elem;
     for (i=0; i<blocks_list->nb_elem; i++)
-        if (blocks[i].bin.size > 0)
+        if (blocks[i].bin.size > 0) {
+            int is_keyframe = blocks[i].non_simple ? !blocks[i].reference : -1;
             res=matroska_parse_block(matroska,
                                      blocks[i].bin.data, blocks[i].bin.size,
                                      blocks[i].bin.pos,  cluster.timecode,
-                                     blocks[i].duration, !blocks[i].reference,
+                                     blocks[i].duration, is_keyframe,
                                      pos);
+        }
     ebml_free(matroska_cluster, &cluster);
     if (res < 0)  matroska->done = 1;
     return res;

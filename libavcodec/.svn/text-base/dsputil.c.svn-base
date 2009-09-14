@@ -86,7 +86,7 @@ const uint8_t ff_zigzag248_direct[64] = {
 };
 
 /* not permutated inverse zigzag_direct + 1 for MMX quantizer */
-DECLARE_ALIGNED_8(uint16_t, inv_zigzag_direct16[64]) = {0, };
+DECLARE_ALIGNED_16(uint16_t, inv_zigzag_direct16[64]);
 
 const uint8_t ff_alternate_horizontal_scan[64] = {
     0,  1,   2,  3,  8,  9, 16, 17,
@@ -3788,7 +3788,7 @@ static int dct264_sad8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *s
 
 static int dct_max8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *src2, int stride, int h){
     MpegEncContext * const s= (MpegEncContext *)c;
-    DECLARE_ALIGNED_8(uint64_t, aligned_temp[sizeof(DCTELEM)*64/8]);
+    DECLARE_ALIGNED_16(uint64_t, aligned_temp[sizeof(DCTELEM)*64/8]);
     DCTELEM * const temp= (DCTELEM*)aligned_temp;
     int sum=0, i;
 
@@ -3805,7 +3805,7 @@ static int dct_max8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *src2
 
 static int quant_psnr8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *src2, int stride, int h){
     MpegEncContext * const s= (MpegEncContext *)c;
-    DECLARE_ALIGNED_8 (uint64_t, aligned_temp[sizeof(DCTELEM)*64*2/8]);
+    DECLARE_ALIGNED_16(uint64_t, aligned_temp[sizeof(DCTELEM)*64*2/8]);
     DCTELEM * const temp= (DCTELEM*)aligned_temp;
     DCTELEM * const bak = ((DCTELEM*)aligned_temp)+64;
     int sum=0, i;
@@ -3830,10 +3830,12 @@ static int quant_psnr8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *s
 static int rd8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *src2, int stride, int h){
     MpegEncContext * const s= (MpegEncContext *)c;
     const uint8_t *scantable= s->intra_scantable.permutated;
-    DECLARE_ALIGNED_8 (uint64_t, aligned_temp[sizeof(DCTELEM)*64/8]);
-    DECLARE_ALIGNED_8 (uint64_t, aligned_bak[stride]);
+    DECLARE_ALIGNED_16(uint64_t, aligned_temp[sizeof(DCTELEM)*64/8]);
+    DECLARE_ALIGNED_16(uint64_t, aligned_src1[8]);
+    DECLARE_ALIGNED_16(uint64_t, aligned_src2[8]);
     DCTELEM * const temp= (DCTELEM*)aligned_temp;
-    uint8_t * const bak= (uint8_t*)aligned_bak;
+    uint8_t * const lsrc1 = (uint8_t*)aligned_src1;
+    uint8_t * const lsrc2 = (uint8_t*)aligned_src2;
     int i, last, run, bits, level, distortion, start_i;
     const int esc_length= s->ac_esc_length;
     uint8_t * length;
@@ -3841,12 +3843,10 @@ static int rd8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *src2, int
 
     assert(h==8);
 
-    for(i=0; i<8; i++){
-        ((uint32_t*)(bak + i*stride))[0]= ((uint32_t*)(src2 + i*stride))[0];
-        ((uint32_t*)(bak + i*stride))[1]= ((uint32_t*)(src2 + i*stride))[1];
-    }
+    copy_block8(lsrc1, src1, 8, stride, 8);
+    copy_block8(lsrc2, src2, 8, stride, 8);
 
-    s->dsp.diff_pixels(temp, src1, src2, stride);
+    s->dsp.diff_pixels(temp, lsrc1, lsrc2, 8);
 
     s->block_last_index[0/*FIXME*/]= last= s->fast_dct_quantize(s, temp, 0/*FIXME*/, s->qscale, &i);
 
@@ -3899,9 +3899,9 @@ static int rd8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *src2, int
             s->dct_unquantize_inter(s, temp, 0, s->qscale);
     }
 
-    s->dsp.idct_add(bak, stride, temp);
+    s->dsp.idct_add(lsrc2, 8, temp);
 
-    distortion= s->dsp.sse[1](NULL, bak, src1, stride, 8);
+    distortion= s->dsp.sse[1](NULL, lsrc2, lsrc1, 8, 8);
 
     return distortion + ((bits*s->qscale*s->qscale*109 + 64)>>7);
 }
@@ -3909,7 +3909,7 @@ static int rd8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *src2, int
 static int bit8x8_c(/*MpegEncContext*/ void *c, uint8_t *src1, uint8_t *src2, int stride, int h){
     MpegEncContext * const s= (MpegEncContext *)c;
     const uint8_t *scantable= s->intra_scantable.permutated;
-    DECLARE_ALIGNED_8 (uint64_t, aligned_temp[sizeof(DCTELEM)*64/8]);
+    DECLARE_ALIGNED_16(uint64_t, aligned_temp[sizeof(DCTELEM)*64/8]);
     DCTELEM * const temp= (DCTELEM*)aligned_temp;
     int i, last, run, bits, level, start_i;
     const int esc_length= s->ac_esc_length;
@@ -4091,6 +4091,51 @@ static void int32_to_float_fmul_scalar_c(float *dst, const int *src, float mul, 
     int i;
     for(i=0; i<len; i++)
         dst[i] = src[i] * mul;
+}
+
+static inline uint32_t clipf_c_one(uint32_t a, uint32_t mini,
+                   uint32_t maxi, uint32_t maxisign)
+{
+
+    if(a > mini) return mini;
+    else if((a^(1<<31)) > maxisign) return maxi;
+    else return a;
+}
+
+static void vector_clipf_c_opposite_sign(float *dst, const float *src, float *min, float *max, int len){
+    int i;
+    uint32_t mini = *(uint32_t*)min;
+    uint32_t maxi = *(uint32_t*)max;
+    uint32_t maxisign = maxi ^ (1<<31);
+    uint32_t *dsti = (uint32_t*)dst;
+    const uint32_t *srci = (const uint32_t*)src;
+    for(i=0; i<len; i+=8) {
+        dsti[i + 0] = clipf_c_one(srci[i + 0], mini, maxi, maxisign);
+        dsti[i + 1] = clipf_c_one(srci[i + 1], mini, maxi, maxisign);
+        dsti[i + 2] = clipf_c_one(srci[i + 2], mini, maxi, maxisign);
+        dsti[i + 3] = clipf_c_one(srci[i + 3], mini, maxi, maxisign);
+        dsti[i + 4] = clipf_c_one(srci[i + 4], mini, maxi, maxisign);
+        dsti[i + 5] = clipf_c_one(srci[i + 5], mini, maxi, maxisign);
+        dsti[i + 6] = clipf_c_one(srci[i + 6], mini, maxi, maxisign);
+        dsti[i + 7] = clipf_c_one(srci[i + 7], mini, maxi, maxisign);
+    }
+}
+static void vector_clipf_c(float *dst, const float *src, float min, float max, int len){
+    int i;
+    if(min < 0 && max > 0) {
+        vector_clipf_c_opposite_sign(dst, src, &min, &max, len);
+    } else {
+        for(i=0; i < len; i+=8) {
+            dst[i    ] = av_clipf(src[i    ], min, max);
+            dst[i + 1] = av_clipf(src[i + 1], min, max);
+            dst[i + 2] = av_clipf(src[i + 2], min, max);
+            dst[i + 3] = av_clipf(src[i + 3], min, max);
+            dst[i + 4] = av_clipf(src[i + 4], min, max);
+            dst[i + 5] = av_clipf(src[i + 5], min, max);
+            dst[i + 6] = av_clipf(src[i + 6], min, max);
+            dst[i + 7] = av_clipf(src[i + 7], min, max);
+        }
+    }
 }
 
 static av_always_inline int float_to_int16_one(const float *src){
@@ -4669,6 +4714,7 @@ void dsputil_init(DSPContext* c, AVCodecContext *avctx)
     c->vector_fmul_add_add = ff_vector_fmul_add_add_c;
     c->vector_fmul_window = ff_vector_fmul_window_c;
     c->int32_to_float_fmul_scalar = int32_to_float_fmul_scalar_c;
+    c->vector_clipf = vector_clipf_c;
     c->float_to_int16 = ff_float_to_int16_c;
     c->float_to_int16_interleave = ff_float_to_int16_interleave_c;
     c->add_int16 = add_int16_c;

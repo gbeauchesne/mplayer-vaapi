@@ -1,15 +1,15 @@
 8
 
 dir
-29473
+29675
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/tech
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-07-30T12:03:42.001710Z
-29459
-compn
+2009-08-26T17:35:40.554505Z
+29552
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-07-06T15:13:52.000000Z
-810ea4fd429ab5580c97313b4548566e
-2009-07-04T13:26:51.123476Z
-29411
+2009-09-14T08:26:27.000000Z
+5b6f6ed504439d95651bc7419c9c6cf7
+2009-08-26T17:35:40.554505Z
+29552
 diego
 has-props
 
@@ -219,19 +219,6 @@ file
 diego
 has-props
 
-codecs.conf.txt
-file
-
-
-
-
-2009-08-03T15:00:34.000000Z
-36fb54ffc6c01d9c8131863f7ce592c5
-2009-07-30T12:03:42.001710Z
-29459
-compn
-has-props
-
 libmpcodecs.txt
 file
 
@@ -245,6 +232,19 @@ bee6714bfdcac53b2836d0a1c6871cce
 diego
 has-props
 
+codecs.conf.txt
+file
+
+
+
+
+2009-08-03T15:00:34.000000Z
+36fb54ffc6c01d9c8131863f7ce592c5
+2009-07-30T12:03:42.001710Z
+29459
+compn
+has-props
+
 snow.txt
 file
 
@@ -253,19 +253,6 @@ file
 
 2009-05-25T08:53:58.000000Z
 64e40f969a570569c06c8e6ce150cc71
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
-
-new_policy_proposal.txt
-file
-
-
-
-
-2009-05-25T08:53:58.000000Z
-639532a95a0b866d7be4ef9e704e8407
 2009-05-13T02:58:57.333510Z
 29305
 diego
@@ -282,6 +269,19 @@ file
 2007-09-18T08:36:30.669322Z
 24563
 reimar
+has-props
+
+new_policy_proposal.txt
+file
+
+
+
+
+2009-05-25T08:53:58.000000Z
+639532a95a0b866d7be4ef9e704e8407
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 wishlist
@@ -375,19 +375,6 @@ file
 diego
 has-props
 
-libao2.txt
-file
-
-
-
-
-2009-05-25T08:53:58.000000Z
-fe9b1c7d519e2aaf60619a21d49d7a61
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
-
 manpage.txt
 file
 
@@ -401,14 +388,14 @@ file
 cehoyos
 has-props
 
-slave.txt
+libao2.txt
 file
 
 
 
 
 2009-05-25T08:53:58.000000Z
-b626339d5a552b3128df7efb0bf256ce
+fe9b1c7d519e2aaf60619a21d49d7a61
 2009-05-13T02:58:57.333510Z
 29305
 diego
@@ -422,6 +409,19 @@ file
 
 2009-05-25T08:53:58.000000Z
 4f0db76d7487b3e01c30bb4fa10096ea
+2009-05-13T02:58:57.333510Z
+29305
+diego
+has-props
+
+slave.txt
+file
+
+
+
+
+2009-05-25T08:53:58.000000Z
+b626339d5a552b3128df7efb0bf256ce
 2009-05-13T02:58:57.333510Z
 29305
 diego

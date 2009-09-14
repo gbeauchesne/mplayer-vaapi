@@ -173,16 +173,18 @@ static int lavf_check_file(demuxer_t *demuxer){
 
 static const char * const preferred_list[] = {
     "dxa",
-    "wv",
-    "nuv",
-    "nut",
-    "gxf",
-    "mxf",
     "flv",
-    "swf",
+    "gxf",
+    "nut",
+    "nuv",
     "mov,mp4,m4a,3gp,3g2,mj2",
     "mpc",
     "mpc8",
+    "mxf",
+    "swf",
+    "vqf",
+    "w64",
+    "wv",
     NULL
 };
 
@@ -221,11 +223,14 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
     AVStream *st= avfc->streams[i];
     AVCodecContext *codec= st->codec;
     AVMetadataTag *lang = av_metadata_get(st->metadata, "language", NULL, 0);
-    int g;
+    int g, override_tag = av_codec_get_tag(mp_codecid_override_taglists,
+                                           codec->codec_id);
+    // For some formats (like PCM) always trust CODEC_ID_* more than codec_tag
+    if (override_tag)
+        codec->codec_tag = override_tag;
 
     switch(codec->codec_type){
         case CODEC_TYPE_AUDIO:{
-            int override_tag;
             WAVEFORMATEX *wf;
             sh_audio_t* sh_audio;
             sh_audio=new_sh_audio(demuxer, i);
@@ -235,15 +240,9 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
             priv->astreams[priv->audio_streams] = i;
             priv->audio_streams++;
             wf= calloc(sizeof(WAVEFORMATEX) + codec->extradata_size, 1);
-            // For some formats (like PCM) always trust CODEC_ID_* more than codec_tag
-            override_tag= av_codec_get_tag(mp_wav_override_taglists, codec->codec_id);
-            if (override_tag)
-                codec->codec_tag= override_tag;
             // mp4a tag is used for all mp4 files no matter what they actually contain
             if(codec->codec_tag == MKTAG('m', 'p', '4', 'a'))
                 codec->codec_tag= 0;
-            if(codec->codec_id == CODEC_ID_ADPCM_IMA_AMV)
-                codec->codec_tag= MKTAG('A','M','V','A');
             if(!codec->codec_tag)
                 codec->codec_tag= av_codec_get_tag(mp_wav_taglists, codec->codec_id);
             wf->wFormatTag= codec->codec_tag;
@@ -422,6 +421,7 @@ static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
     AVFormatContext *avfc;
     AVFormatParameters ap;
     const AVOption *opt;
+    AVMetadataTag *t = NULL;
     lavf_priv_t *priv= demuxer->priv;
     int i;
     char mp_filename[256]="mp:";
@@ -477,22 +477,21 @@ static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
         return NULL;
     }
 
-    if(avfc->title    [0]) demux_info_add(demuxer, "title"    , avfc->title    );
-    if(avfc->author   [0]) demux_info_add(demuxer, "author"   , avfc->author   );
-    if(avfc->copyright[0]) demux_info_add(demuxer, "copyright", avfc->copyright);
-    if(avfc->comment  [0]) demux_info_add(demuxer, "comments" , avfc->comment  );
-    if(avfc->album    [0]) demux_info_add(demuxer, "album"    , avfc->album    );
-//    if(avfc->year        ) demux_info_add(demuxer, "year"     , avfc->year     );
-//    if(avfc->track       ) demux_info_add(demuxer, "track"    , avfc->track    );
-    if(avfc->genre    [0]) demux_info_add(demuxer, "genre"    , avfc->genre    );
+    /* Add metadata. */
+    av_metadata_conv(avfc, NULL, avfc->iformat->metadata_conv);
+    while((t = av_metadata_get(avfc->metadata, "", t, AV_METADATA_IGNORE_SUFFIX)))
+        demux_info_add(demuxer, t->key, t->value);
 
     for(i=0; i < avfc->nb_chapters; i++) {
         AVChapter *c = avfc->chapters[i];
         uint64_t start = av_rescale_q(c->start, c->time_base, (AVRational){1,1000});
         uint64_t end   = av_rescale_q(c->end, c->time_base, (AVRational){1,1000});
-        demuxer_add_chapter(demuxer, c->title, start, end);
+        t = av_metadata_get(c->metadata, "title", NULL, 0);
+        demuxer_add_chapter(demuxer, t ? t->value : NULL, start, end);
     }
 
+    for(i=0; i<avfc->nb_streams; i++)
+        handle_stream(demuxer, avfc, i);
     if(avfc->nb_programs) {
         int p, start=0, found=0;
 
@@ -512,16 +511,13 @@ static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
         p = start;
         do {
             AVProgram *program = avfc->programs[p];
-            mp_msg(MSGT_HEADER,MSGL_INFO,"LAVF: Program %d %s\n", program->id, (program->name ? program->name : ""));
-            for(i=0; i<program->nb_stream_indexes; i++)
-                handle_stream(demuxer, avfc, program->stream_index[i]);
+            t = av_metadata_get(program->metadata, "title", NULL, 0);
+            mp_msg(MSGT_HEADER,MSGL_INFO,"LAVF: Program %d %s\n", program->id, t ? t->value : "");
             if(!priv->cur_program && (demuxer->video->sh || demuxer->audio->sh))
                 priv->cur_program = program->id;
             p = (p + 1) % avfc->nb_programs;
         } while(p!=start);
-    } else
-        for(i=0; i<avfc->nb_streams; i++)
-            handle_stream(demuxer, avfc, i);
+    }
 
     mp_msg(MSGT_HEADER,MSGL_V,"LAVF: %d audio and %d video streams found\n",priv->audio_streams,priv->video_streams);
     mp_msg(MSGT_HEADER,MSGL_V,"LAVF: build %d\n", LIBAVFORMAT_BUILD);
@@ -710,6 +706,7 @@ static int demux_lavf_control(demuxer_t *demuxer, int cmd, void *arg)
             demux_program_t *prog = arg;
             AVProgram *program;
             int p, i;
+            int start;
 
             if(priv->avfc->nb_programs < 2)
                 return DEMUXER_CTRL_NOTIMPL;
@@ -731,6 +728,7 @@ static int demux_lavf_control(demuxer_t *demuxer, int cmd, void *arg)
                 p = i;
             }
             prog->vid = prog->aid = prog->sid = -2;	//no audio and no video by default
+            start = p;
 redo:
             program = priv->avfc->programs[p];
             for(i=0; i<program->nb_stream_indexes; i++)
@@ -754,6 +752,8 @@ redo:
             if(prog->progid == -1 && prog->vid == -2 && prog->aid == -2)
             {
                 p = (p + 1) % priv->avfc->nb_programs;
+                if (p == start)
+                    return DEMUXER_CTRL_DONTKNOW;
                 goto redo;
             }
             priv->cur_program = prog->progid = program->id;

@@ -5,7 +5,7 @@ FFLIBS = avcodec avutil
 
 HEADERS = avformat.h avio.h
 
-OBJS = allformats.o cutils.o metadata.o metadata_compat.o options.o os_support.o sdp.o utils.o
+OBJS = allformats.o cutils.o metadata.o metadata_compat.o options.o os_support.o sdp.o seek.o utils.o
 
 # muxers/demuxers
 OBJS-$(CONFIG_AAC_DEMUXER)               += raw.o id3v1.o id3v2.o
@@ -17,7 +17,7 @@ OBJS-$(CONFIG_AIFF_MUXER)                += aiff.o riff.o
 OBJS-$(CONFIG_AMR_DEMUXER)               += amr.o
 OBJS-$(CONFIG_AMR_MUXER)                 += amr.o
 OBJS-$(CONFIG_APC_DEMUXER)               += apc.o
-OBJS-$(CONFIG_APE_DEMUXER)               += ape.o
+OBJS-$(CONFIG_APE_DEMUXER)               += ape.o apetag.o
 OBJS-$(CONFIG_ASF_DEMUXER)               += asfdec.o asf.o asfcrypt.o riff.o avlanguage.o
 OBJS-$(CONFIG_ASF_MUXER)                 += asfenc.o asf.o riff.o
 OBJS-$(CONFIG_ASS_DEMUXER)               += assdec.o
@@ -95,7 +95,7 @@ OBJS-$(CONFIG_MOV_MUXER)                 += movenc.o riff.o isom.o avc.o
 OBJS-$(CONFIG_MP2_MUXER)                 += mp3.o id3v1.o
 OBJS-$(CONFIG_MP3_DEMUXER)               += mp3.o id3v1.o id3v2.o
 OBJS-$(CONFIG_MP3_MUXER)                 += mp3.o id3v1.o
-OBJS-$(CONFIG_MPC_DEMUXER)               += mpc.o id3v1.o id3v2.o
+OBJS-$(CONFIG_MPC_DEMUXER)               += mpc.o id3v1.o id3v2.o apetag.o
 OBJS-$(CONFIG_MPC8_DEMUXER)              += mpc8.o
 OBJS-$(CONFIG_MPEG1SYSTEM_MUXER)         += mpegenc.o
 OBJS-$(CONFIG_MPEG1VCD_MUXER)            += mpegenc.o
@@ -199,6 +199,7 @@ OBJS-$(CONFIG_SMACKER_DEMUXER)           += smacker.o
 OBJS-$(CONFIG_SOL_DEMUXER)               += sol.o raw.o
 OBJS-$(CONFIG_SOX_DEMUXER)               += soxdec.o raw.o
 OBJS-$(CONFIG_SOX_MUXER)                 += soxenc.o
+OBJS-$(CONFIG_SPDIF_MUXER)               += spdif.o
 OBJS-$(CONFIG_STR_DEMUXER)               += psxstr.o
 OBJS-$(CONFIG_SWF_DEMUXER)               += swfdec.o
 OBJS-$(CONFIG_SWF_MUXER)                 += swfenc.o
@@ -216,6 +217,7 @@ OBJS-$(CONFIG_VMD_DEMUXER)               += sierravmd.o
 OBJS-$(CONFIG_VOC_DEMUXER)               += vocdec.o voc.o
 OBJS-$(CONFIG_VOC_MUXER)                 += vocenc.o voc.o
 OBJS-$(CONFIG_VQF_DEMUXER)               += vqf.o
+OBJS-$(CONFIG_W64_DEMUXER)               += wav.o riff.o raw.o
 OBJS-$(CONFIG_WAV_DEMUXER)               += wav.o riff.o raw.o
 OBJS-$(CONFIG_WAV_MUXER)                 += wav.o riff.o
 OBJS-$(CONFIG_WC3_DEMUXER)               += wc3movie.o

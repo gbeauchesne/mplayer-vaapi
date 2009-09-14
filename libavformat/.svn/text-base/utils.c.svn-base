@@ -1140,7 +1140,7 @@ int av_find_default_stream_index(AVFormatContext *s)
 /**
  * Flush the frame reader.
  */
-static void av_read_frame_flush(AVFormatContext *s)
+void av_read_frame_flush(AVFormatContext *s)
 {
     AVStream *st;
     int i;
@@ -1862,7 +1862,8 @@ static int has_codec_parameters(AVCodecContext *enc)
         val = enc->sample_rate && enc->channels && enc->sample_fmt != SAMPLE_FMT_NONE;
         if(!enc->frame_size &&
            (enc->codec_id == CODEC_ID_VORBIS ||
-            enc->codec_id == CODEC_ID_AAC))
+            enc->codec_id == CODEC_ID_AAC ||
+            enc->codec_id == CODEC_ID_SPEEX))
             return 0;
         break;
     case CODEC_TYPE_VIDEO:
@@ -2916,6 +2917,14 @@ void dump_format(AVFormatContext *ic,
     } else
     for(i=0;i<ic->nb_streams;i++)
         dump_stream_format(ic, i, index, is_output);
+    if (ic->metadata) {
+        AVMetadataTag *tag=NULL;
+        av_log(NULL, AV_LOG_INFO, "  Metadata\n");
+        while((tag=av_metadata_get(ic->metadata, "", tag, AV_METADATA_IGNORE_SUFFIX))) {
+            av_log(NULL, AV_LOG_INFO, "    %-16s: %s\n", tag->key, tag->value);
+        }
+    }
+
 }
 
 #if LIBAVFORMAT_VERSION_MAJOR < 53

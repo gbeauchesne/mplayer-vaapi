@@ -1,15 +1,15 @@
 8
 
 dir
-29473
+29675
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale/sparc
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-03-26T12:41:43.480684Z
-29065
-diego
+2009-08-16T21:11:28.782053Z
+29523
+ramiro
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-03-31T08:46:42.000000Z
-898721096b106bd4507617e94fd03649
-2009-03-26T01:30:10.785945Z
-29063
+2009-09-14T08:26:28.000000Z
+c9fd639645aae45dde9ea688a90dfae1
+2009-08-16T21:11:28.782053Z
+29523
 ramiro
 has-props
 

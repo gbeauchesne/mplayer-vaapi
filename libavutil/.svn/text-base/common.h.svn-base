@@ -190,6 +190,17 @@ static inline av_const uint8_t av_clip_uint8(int a)
 }
 
 /**
+ * Clips a signed integer value into the 0-65535 range.
+ * @param a value to clip
+ * @return clipped value
+ */
+static inline av_const uint16_t av_clip_uint16(int a)
+{
+    if (a&(~65535)) return (-a)>>31;
+    else            return a;
+}
+
+/**
  * Clips a signed integer value into the -32768,32767 range.
  * @param a value to clip
  * @return clipped value
@@ -212,6 +223,15 @@ static inline av_const float av_clipf(float a, float amin, float amax)
     if      (a < amin) return amin;
     else if (a > amax) return amax;
     else               return a;
+}
+
+/** Computes ceil(log2(x)).
+ * @param x value used to compute ceil(log2(x))
+ * @return computed ceiling of log2(x)
+ */
+static inline av_const int av_ceil_log2(int x)
+{
+    return av_log2((x - 1) << 1);
 }
 
 #define MKTAG(a,b,c,d) (a | (b << 8) | (c << 16) | (d << 24))

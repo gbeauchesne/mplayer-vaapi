@@ -47,6 +47,16 @@ void ff_celp_convolve_circ(int16_t* fc_out,
     }
 }
 
+void ff_celp_circ_addf(float *out, const float *in,
+                       const float *lagged, int lag, float fac, int n)
+{
+    int k;
+    for (k = 0; k < lag; k++)
+        out[k] = in[k] + fac * lagged[n + k - lag];
+    for (; k < n; k++)
+        out[k] = in[k] + fac * lagged[    k - lag];
+}
+
 int ff_celp_lp_synthesis_filter(int16_t *out,
                                 const int16_t* filter_coeffs,
                                 const int16_t* in,
@@ -110,6 +120,6 @@ void ff_celp_lp_zero_synthesis_filterf(float *out,
     for (n = 0; n < buffer_length; n++) {
         out[n] = in[n];
         for (i = 1; i < filter_length; i++)
-            out[n] -= filter_coeffs[i-1] * in[n-i];
+            out[n] += filter_coeffs[i-1] * in[n-i];
     }
 }

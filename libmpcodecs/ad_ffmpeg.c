@@ -36,6 +36,7 @@ static int preinit(sh_audio_t *sh)
 
 static int init(sh_audio_t *sh_audio)
 {
+    int tries = 0;
     int x;
     AVCodecContext *lavc_context;
     AVCodec *lavc_codec;
@@ -106,7 +107,9 @@ static int init(sh_audio_t *sh_audio)
    }
 
    // Decode at least 1 byte:  (to get header filled)
-   x=decode_audio(sh_audio,sh_audio->a_buffer,1,sh_audio->a_buffer_size);
+   do {
+       x=decode_audio(sh_audio,sh_audio->a_buffer,1,sh_audio->a_buffer_size);
+   } while (x <= 0 && tries++ < 5);
    if(x>0) sh_audio->a_buffer_len=x;
 
   sh_audio->channels=lavc_context->channels;
@@ -174,27 +177,19 @@ static int decode_audio(sh_audio_t *sh_audio,unsigned char *buf,int minlen,int m
 	if(len2>0){
 	  if (((AVCodecContext *)sh_audio->context)->channels >= 5) {
             int src_ch_layout = AF_CHANNEL_LAYOUT_MPLAYER_DEFAULT;
+            int samplesize = av_get_bits_per_sample_format(((AVCodecContext *)
+                                    sh_audio->context)->sample_fmt) / 8;
             const char *codec=((AVCodecContext*)sh_audio->context)->codec->name;
-            if (!strcasecmp(codec, "ac3")
-                || !strcasecmp(codec, "eac3"))
-              src_ch_layout = AF_CHANNEL_LAYOUT_LAVC_AC3_DEFAULT;
-            else if (!strcasecmp(codec, "dca"))
-              src_ch_layout = AF_CHANNEL_LAYOUT_LAVC_DCA_DEFAULT;
-            else if (!strcasecmp(codec, "libfaad")
-                || !strcasecmp(codec, "mpeg4aac"))
-              src_ch_layout = AF_CHANNEL_LAYOUT_AAC_DEFAULT;
-            else if (!strcasecmp(codec, "liba52"))
-              src_ch_layout = AF_CHANNEL_LAYOUT_LAVC_LIBA52_DEFAULT;
+            if (!strcasecmp(codec, "aac"))
+              src_ch_layout = AF_CHANNEL_LAYOUT_LAVC_AAC_DEC_DEFAULT;
             else if (!strcasecmp(codec, "vorbis"))
               src_ch_layout = AF_CHANNEL_LAYOUT_VORBIS_DEFAULT;
-            else if (!strcasecmp(codec, "flac"))
-              src_ch_layout = AF_CHANNEL_LAYOUT_FLAC_DEFAULT;
             else
-              src_ch_layout = AF_CHANNEL_LAYOUT_MPLAYER_DEFAULT;
+              src_ch_layout = AF_CHANNEL_LAYOUT_LAVC_DEFAULT;
             reorder_channel_nch(buf, src_ch_layout,
                                 AF_CHANNEL_LAYOUT_MPLAYER_DEFAULT,
                                 ((AVCodecContext *)sh_audio->context)->channels,
-                                len2 / 2, 2);
+                                len2 / samplesize, samplesize);
 	  }
 	  //len=len2;break;
 	  if(len<0) len=len2; else len+=len2;

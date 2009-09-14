@@ -1,15 +1,15 @@
 8
 
 dir
-19572
+19836
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/bfin
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-07-22T23:37:53.683721Z
-19499
-mru
+2009-08-24T10:59:14.676171Z
+19692
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -44,10 +44,10 @@ file
 
 
 
-2009-02-16T15:28:16.000000Z
-63b6a27f9baee662d7c64e46ad0a9eaa
-2009-02-09T11:17:54.878008Z
-17097
+2009-09-14T08:26:31.000000Z
+12a3741aefbfc5aabc3ef0ccf980ac0a
+2009-08-24T10:59:14.676171Z
+19692
 diego
 
 idct_bfin.S

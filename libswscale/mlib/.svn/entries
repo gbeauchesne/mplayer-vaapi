@@ -1,15 +1,15 @@
 8
 
 dir
-29473
+29675
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale/mlib
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-03-26T12:41:43.480684Z
-29065
-diego
+2009-08-16T21:11:28.782053Z
+29523
+ramiro
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-03-31T08:46:42.000000Z
-6c720d7ad6cf955df1240df47b827b48
-2009-03-26T01:30:10.785945Z
-29063
+2009-09-14T08:26:28.000000Z
+17f03d7da15382c9fed16c81f8458a10
+2009-08-16T21:11:28.782053Z
+29523
 ramiro
 has-props
 
