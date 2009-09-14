@@ -55,7 +55,7 @@ const LIBVO_EXTERN(vaapi)
 
 /* Numbers of video surfaces */
 #define MAX_OUTPUT_SURFACES       2 /* Maintain synchronisation points in flip_page() */
-#define MAX_VIDEO_SURFACES       24 /* Maintain free surfaces in a queue (use least-recently-used) */
+#define MAX_VIDEO_SURFACES       21 /* Maintain free surfaces in a queue (use least-recently-used) */
 #define NUM_VIDEO_SURFACES_MPEG2  3 /* 1 decode frame, up to  2 references */
 #define NUM_VIDEO_SURFACES_MPEG4  3 /* 1 decode frame, up to  2 references */
 #define NUM_VIDEO_SURFACES_H264  17 /* 1 decode frame, up to 16 references */
