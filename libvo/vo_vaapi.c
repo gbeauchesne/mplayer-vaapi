@@ -55,7 +55,7 @@ const LIBVO_EXTERN(vaapi)
 
 /* Numbers of video surfaces */
 #define MAX_OUTPUT_SURFACES       2 /* Maintain synchronisation points in flip_page() */
-#define MAX_VIDEO_SURFACES       24 /* Maintain free surfaces in a queue (use LRU) */
+#define MAX_VIDEO_SURFACES       24 /* Maintain free surfaces in a queue (use least-recently-used) */
 #define NUM_VIDEO_SURFACES_MPEG2  3 /* 1 decode frame, up to  2 references */
 #define NUM_VIDEO_SURFACES_MPEG4  3 /* 1 decode frame, up to  2 references */
 #define NUM_VIDEO_SURFACES_H264  17 /* 1 decode frame, up to 16 references */
@@ -102,6 +102,9 @@ static int                      va_free_surfaces_head_index;
 static int                      va_free_surfaces_tail_index;
 static VAImageFormat           *va_image_formats;
 static int                      va_num_image_formats;
+
+///< Flag: direct surface mapping: use mpi->number to select free VA surface?
+static int                      va_dm;
 
 static int check_status(VAStatus status, const char *msg)
 {
@@ -289,7 +292,44 @@ static void resize(void)
     flip_page();
 }
 
+static int is_direct_mapping_init(void)
+{
+    VADisplayAttribute attr;
+    VAStatus status;
+
+    if (va_dm < 2)
+        return va_dm;
+
+    attr.type  = VADisplayAttribDirectSurface;
+    attr.flags = VA_DISPLAY_ATTRIB_GETTABLE;
+
+    status = vaGetDisplayAttributes(va_context->display, &attr, 1);
+    if (!check_status(status, "vaGetDisplayAttributes()") &&
+        status != VA_STATUS_ERROR_ATTR_NOT_SUPPORTED)
+        return 0;
+
+    return !attr.value;
+}
+
+static inline int is_direct_mapping(void)
+{
+    static int dm = -1;
+    if (dm < 0) {
+        dm = is_direct_mapping_init();
+        if (dm)
+            mp_msg(MSGT_VO, MSGL_INFO,
+                   "[vo_vaapi] Using 1:1 VA surface mapping\n");
+    }
+    return dm;
+}
+
+static int int_012(int *n)
+{
+    return *n >= 0 && *n <= 2;
+}
+
 static const opt_t subopts[] = {
+    { "dm",          OPT_ARG_INT,  &va_dm,        (opt_test_f)int_012 },
 #if CONFIG_GL
     { "gl",          OPT_ARG_BOOL, &gl_enabled,   NULL },
     { "bind",        OPT_ARG_BOOL, &gl_binding,   NULL },
@@ -304,11 +344,14 @@ static int preinit(const char *arg)
     int va_major_version, va_minor_version;
     int i, max_image_formats, max_profiles;
 
+    va_dm = 2;
     if (subopt_parse(arg, subopts) != 0) {
         mp_msg(MSGT_VO, MSGL_FATAL,
                "\n-vo vaapi command line help:\n"
                "Example: mplayer -vo vaapi:gl\n"
                "\nOptions:\n"
+               "  dm=0|1|2\n"
+               "    Use direct surface mapping (default: 2 - autodetect)\n"
 #if CONFIG_GL
                "  gl\n"
                "    Enable OpenGL rendering\n"
@@ -632,9 +675,8 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
     }
     if (va_num_surfaces == 0)
         return -1;
-    /* XXX: use a better heuristic to cap the total size of video
-       surfaces to 128 MB? */
-    va_num_surfaces = FFMIN(2 * va_num_surfaces, MAX_VIDEO_SURFACES);
+    if (!is_direct_mapping())
+        va_num_surfaces = FFMIN(2 * va_num_surfaces, MAX_VIDEO_SURFACES);
 
     va_surface_ids = calloc(va_num_surfaces, sizeof(*va_surface_ids));
     if (!va_surface_ids)
@@ -993,6 +1035,12 @@ static void flip_page(void)
 static VASurfaceID *get_surface(mp_image_t *mpi)
 {
     VASurfaceID *surface;
+
+    if (is_direct_mapping()) {
+        assert(mpi->number < va_num_surfaces);
+        surface = va_free_surfaces[mpi->number];
+        return surface;
+    }
 
     /* Push current surface to a free slot */
     if (mpi->priv) {
