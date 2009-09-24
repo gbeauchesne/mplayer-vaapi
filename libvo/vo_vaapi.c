@@ -300,15 +300,18 @@ static int is_direct_mapping_init(void)
     if (va_dm < 2)
         return va_dm;
 
+    /* If the driver doesn't make a copy of the VA surface for
+       display, then we have to retain it until it's no longer the
+       visible surface. In other words, if the driver is using
+       DirectSurface mode, we don't want to decode the new surface
+       into the previous one that was used for display. */
     attr.type  = VADisplayAttribDirectSurface;
     attr.flags = VA_DISPLAY_ATTRIB_GETTABLE;
 
     status = vaGetDisplayAttributes(va_context->display, &attr, 1);
-    if (!check_status(status, "vaGetDisplayAttributes()") &&
-        status != VA_STATUS_ERROR_ATTR_NOT_SUPPORTED)
-        return 0;
-
-    return !attr.value;
+    if (status == VA_STATUS_SUCCESS)
+        return !attr.value;
+    return 0;
 }
 
 static inline int is_direct_mapping(void)
