@@ -980,20 +980,6 @@ static void put_surface(VASurfaceID surface)
         put_surface_x11(surface);
 }
 
-static inline int sync_surface(VASurfaceID surface)
-{
-    VAStatus status;
-
-    status = vaSyncSurface(va_context->display,
-#if !VA_CHECK_VERSION(0,31,0)
-                           va_context->context_id,
-#endif
-                           surface);
-    if (!check_status(status, "vaSyncSurface()"))
-        return -1;
-    return 0;
-}
-
 static int draw_slice(uint8_t * image[], int stride[],
                       int w, int h, int x, int y)
 {
@@ -1023,10 +1009,6 @@ static void flip_page(void)
     surface = g_output_surfaces[g_output_surface];
     if (surface != VA_INVALID_SURFACE)
         put_surface(surface);
-
-    surface = g_output_surfaces[(g_output_surface - 1) % MAX_OUTPUT_SURFACES];
-    if (surface != VA_INVALID_SURFACE)
-        sync_surface(surface);
     g_output_surface = (g_output_surface + 1) % MAX_OUTPUT_SURFACES;
 
 #if CONFIG_VAAPI_GLX
