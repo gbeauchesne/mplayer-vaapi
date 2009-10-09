@@ -667,6 +667,7 @@ _mencoder=yes
 _mplayer=yes
 _vaapi=auto
 _vaapi_glx=no
+_libgtop=auto
 _x11=auto
 _xshape=auto
 _xss=auto
@@ -4081,6 +4082,28 @@ statement_check_broken stddef.h sys/time.h 'struct timeval tv; gettimeofday(&tv,
 echores "$gettimeofday"
 
 
+echocheck "clock_gettime()"
+cat > $TMPC << EOF
+#include <time.h>
+int main(void) {
+    struct timespec t;
+    clock_gettime(CLOCK_REALTIME, &t);
+    return 0;
+}
+EOF
+_clock_gettime=no
+cc_check -lrt && _clock_gettime=yes
+if test "$_clock_gettime" = yes ; then
+  def_clock_gettime='#define HAVE_CLOCK_GETTIME 1'
+  extra_ldflags="$extra_ldflags -lrt"
+  _need_clock_gettime=no
+else
+  def_clock_gettime='#undef HAVE_CLOCK_GETTIME'
+  _need_clock_gettime=yes
+fi
+echores "$_clock_gettime"
+
+
 echocheck "glob()"
 # glob_win disables a Windows-specific glob() replacement.
 glob=yes
@@ -4980,6 +5003,31 @@ fi
 echores "$_corevideo"
 
 fi #if darwin
+
+
+echocheck "libgtop"
+if test "$_libgtop" = auto ; then
+  _libgtop=no
+  if $_pkg_config --exists 'libgtop-2.0' ; then
+
+cat > $TMPC << EOF
+#include <glibtop/cpu.h>
+#include <glibtop/proctime.h>
+int main(void) { return 0; }
+EOF
+cc_check $($_pkg_config --libs --cflags libgtop-2.0) && tmp_run && _libgtop=yes
+
+  fi
+fi
+echores "$_libgtop"
+
+if test "$_libgtop" = yes ; then
+  def_libgtop='#define CONFIG_LIBGTOP 1'
+  libs_mplayer="$libs_mplayer $($_pkg_config --libs libgtop-2.0)"
+  extra_cflags="$extra_cflags $($_pkg_config --cflags libgtop-2.0)"
+else
+  def_libgtop='#define CONFIG_LIBGTOP 0'
+fi
 
 
 echocheck "PNG support"
@@ -8761,6 +8809,7 @@ $def_winsock2_h
 
 
 /* system functions */
+$def_clock_gettime
 $def_gethostbyname2
 $def_gettimeofday
 $def_glob
@@ -8790,6 +8839,7 @@ $def_extern_asm
 $def_extern_prefix
 $def_iconv
 $def_kstat
+$def_libgtop
 $def_macosx_bundle
 $def_macosx_finder
 $def_maemo
