@@ -27,21 +27,6 @@ struct proc_stats {
 // Get current process stats
 static int get_proc_stats(struct proc_stats *pstats);
 
-// Get processor ticks
-static inline uint64_t get_ticks(void)
-{
-#if defined(__i386__) || defined(__x86_64__)
-    uint32_t low, high;
-    __asm__ __volatile__ ("rdtsc" : "=a" (low), "=d" (high));
-    return (((uint64_t)high) << 32) | low;
-#else
-    return 0;
-#endif
-}
-
-// Get current value of microsecond timer
-static uint64_t get_ticks_usec(void);
-
 void stats_init(void)
 {
 #if CONFIG_LIBGTOP
@@ -53,20 +38,6 @@ void stats_exit(void)
 {
 #if CONFIG_LIBGTOP
     glibtop_close();
-#endif
-}
-
-// Get current value of microsecond timer
-uint64_t get_ticks_usec(void)
-{
-#ifdef HAVE_CLOCK_GETTIME
-    struct timespec t;
-    clock_gettime(CLOCK_REALTIME, &t);
-    return (uint64_t)t.tv_sec * 1000000 + t.tv_nsec / 1000;
-#else
-    struct timeval t;
-    gettimeofday(&t, NULL);
-    return (uint64_t)t.tv_sec * 1000000 + t.tv_usec;
 #endif
 }
 
@@ -97,7 +68,6 @@ unsigned int get_cpu_frequency(void)
 #endif
     return freq;
 }
-
 
 // Get CPU usage in percent
 static float get_cpu_usage_1(void)
