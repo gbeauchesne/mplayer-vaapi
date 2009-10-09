@@ -141,7 +141,7 @@ function fft16_neon
         vswp            d29, d30                @ q14{r12,i12,i14,r15} q15{r13,i13,i15,r14}
         vadd.f32        q0,  q12, q13           @ {t1,t2,t5,t6}
         vadd.f32        q1,  q14, q15           @ {t1a,t2a,t5a,t6a}
-        movrel          r2,  ff_cos_16
+        movrel          r2,  X(ff_cos_16)
         vsub.f32        q13, q12, q13           @ {t3,t4,t7,t8}
         vrev64.32       d1,  d1
         vsub.f32        q15, q14, q15           @ {t3a,t4a,t7a,t8a}
@@ -288,7 +288,7 @@ function fft\n\()_neon
         bl              fft\n4\()_neon
         mov             r0,  r4
         pop             {r4, lr}
-        movrel          r1,  ff_cos_\n
+        movrel          r1,  X(ff_cos_\n)
         mov             r2,  #\n4/2
         b               fft_pass_neon
 .endfunc
@@ -327,8 +327,10 @@ function ff_fft_permute_neon, export=1
 1:
         vld1.32         {d0-d1}, [r1,:128]!
         ldr             r4,  [r0], #4
-        uxtah           lr,  r3,  r4
-        uxtah           r4,  r3,  r4,  ror #16
+        uxth            lr,  r4
+        uxth            r4,  r4,  ror #16
+        add             lr,  r3,  lr,  lsl #3
+        add             r4,  r3,  r4,  lsl #3
         vst1.32         {d0}, [lr,:64]
         vst1.32         {d1}, [r4,:64]
         subs            r12, r12, #2

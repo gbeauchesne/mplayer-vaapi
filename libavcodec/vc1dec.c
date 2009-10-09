@@ -124,10 +124,6 @@ static int vc1_init_common(VC1Context *v)
                      &vc1_ac_tables[i][0][1], 8, 4,
                      &vc1_ac_tables[i][0][0], 8, 4, INIT_VLC_USE_NEW_STATIC);
         }
-        //FIXME: switching to INIT_VLC_STATIC() results in incorrect decoding
-        init_vlc(&ff_msmp4_mb_i_vlc, MB_INTRA_VLC_BITS, 64,
-                 &ff_msmp4_mb_i_table[0][1], 4, 2,
-                 &ff_msmp4_mb_i_table[0][0], 4, 2, INIT_VLC_USE_STATIC);
         done = 1;
     }
 
@@ -3000,6 +2996,8 @@ static av_cold int vc1_decode_init(AVCodecContext *avctx)
     if(ff_h263_decode_init(avctx) < 0)
         return -1;
     if (vc1_init_common(v) < 0) return -1;
+    // only for ff_msmp4_mb_i_table
+    if (ff_msmpeg4_decode_init(s) < 0) return -1;
 
     avctx->coded_width = avctx->width;
     avctx->coded_height = avctx->height;
@@ -3041,7 +3039,7 @@ static av_cold int vc1_decode_init(AVCodecContext *avctx)
         }
 
         buf2 = av_mallocz(avctx->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
-        if(start[0]) start++; // in WVC1 extradata first byte is its size
+        start = find_next_marker(start, end); // in WVC1 extradata first byte is its size, but can be 0 in mkv
         next = start;
         for(; next < end; start = next){
             next = find_next_marker(start + 4, end);

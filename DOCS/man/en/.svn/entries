@@ -1,15 +1,15 @@
 8
 
 dir
-29675
+29766
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man/en
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-09-08T09:27:48.276052Z
-29661
-diego
+2009-10-08T17:44:23.414938Z
+29766
+ptt
 
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-09-14T08:26:28.000000Z
-7c65b45eac733c49dc2a5eb079dd48ec
-2009-09-08T09:27:48.276052Z
-29661
-diego
+2009-10-09T13:57:30.000000Z
+156e4f5d45becc9e1ebf611c026e62bb
+2009-10-08T17:44:23.414938Z
+29766
+ptt
 has-props
 

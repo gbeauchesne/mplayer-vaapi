@@ -2,7 +2,7 @@
 // Updated by: Roberto Togni <see AUTHORS for email address>
 // Updated by: PaulTT <see AUTHORS for email address>
 
-// Updated to help_mp-en.h r29209
+// Updated to help_mp-en.h r29742
 
 
 // ========================= MPlayer help ===========================
@@ -1274,9 +1274,7 @@ static const char help_text[]=
 #define MSGTR_AO_ALSA_UnableToSetSamplerate2 "[AO_ALSA] Impossibile impostare samplerate-2: %s\n"
 // TODO::
 //#define MSGTR_AO_ALSA_UnableToSetBufferTimeNear "[AO_ALSA] Unable to set buffer time near: %s\n"
-#define MSGTR_AO_ALSA_UnableToSetPeriodTime "[AO_ALSA] Impossibile impostare il tempo del periodo: %s\n"
 #define MSGTR_AO_ALSA_UnableToGetPeriodSize "[AO ALSA] Impossibile ricavare la dimensione periodo: %s\n"
-#define MSGTR_AO_ALSA_UnableToSetPeriodSize "[AO ALSA] Impossibile impostare la dimensione periodo(%ld): %s\n"
 #define MSGTR_AO_ALSA_UnableToSetPeriods "[AO_ALSA] Impossibile impostare i periodi: %s\n"
 #define MSGTR_AO_ALSA_UnableToSetHwParameters "[AO_ALSA] Impossibile impostare hw-parameters: %s\n"
 #define MSGTR_AO_ALSA_UnableToGetBufferSize "[AO_ALSA] Impossibile ricavare buffersize: %s\n"
@@ -1632,8 +1630,6 @@ static const char help_text[]=
 
 // vd.c
 #define MSGTR_CodecDidNotSet "VDec: Il codec non ha impostato sh->disp_w and sh->disp_h, tento di risolvere.\n"
-#define MSGTR_VoConfigRequest "VDec: configurazione chiesta dal vo - %d x %d (sp.col. preferito: %s)\n"
-#define MSGTR_UsingXAsOutputCspNoY "VDec: uso %s come sp.colore di uscita (non %d)\n"
 #define MSGTR_CouldNotFindColorspace "Impossibile trovare uno spazio colore adatto - riprovo con -vf scale...\n"
 #define MSGTR_MovieAspectIsSet "Movie-Aspect è %.2f:1 - riscalo per ottenere un rapporto corretto.\n"
 #define MSGTR_MovieAspectUndefined "Movie-Aspect non definito - nessuna scalatura.\n"

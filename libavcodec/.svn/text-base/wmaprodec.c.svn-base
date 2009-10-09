@@ -98,7 +98,7 @@
 #define WMAPRO_MAX_CHANNELS    8                             ///< max number of handled channels
 #define MAX_SUBFRAMES  32                                    ///< max number of subframes per channel
 #define MAX_BANDS      29                                    ///< max number of scale factor bands
-#define MAX_FRAMESIZE  16384                                 ///< maximum compressed frame size
+#define MAX_FRAMESIZE  32768                                 ///< maximum compressed frame size
 
 #define WMAPRO_BLOCK_MAX_BITS 12                                           ///< log2 of max block size
 #define WMAPRO_BLOCK_MAX_SIZE (1 << WMAPRO_BLOCK_MAX_BITS)                 ///< maximum block size
@@ -166,7 +166,7 @@ typedef struct WMAProDecodeCtx {
     uint8_t          frame_data[MAX_FRAMESIZE +
                       FF_INPUT_BUFFER_PADDING_SIZE];///< compressed frame data
     PutBitContext    pb;                            ///< context for filling the frame_data buffer
-    MDCTContext      mdct_ctx[WMAPRO_BLOCK_SIZES];  ///< MDCT context per block size
+    FFTContext       mdct_ctx[WMAPRO_BLOCK_SIZES];  ///< MDCT context per block size
     DECLARE_ALIGNED_16(float, tmp[WMAPRO_BLOCK_MAX_SIZE]); ///< IMDCT output buffer
     float*           windows[WMAPRO_BLOCK_SIZES];   ///< windows for the different block sizes
 
@@ -426,7 +426,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     /** init MDCT windows: simple sinus window */
     for (i = 0; i < WMAPRO_BLOCK_SIZES; i++) {
         const int n       = 1 << (WMAPRO_BLOCK_MAX_BITS - i);
-        const int win_idx = WMAPRO_BLOCK_MAX_BITS - i - 7;
+        const int win_idx = WMAPRO_BLOCK_MAX_BITS - i;
         ff_sine_window_init(ff_sine_windows[win_idx], n);
         s->windows[WMAPRO_BLOCK_SIZES - i - 1] = ff_sine_windows[win_idx];
     }
@@ -769,7 +769,7 @@ static int decode_coeffs(WMAProDecodeCtx *s, int c)
     int cur_coeff = 0;
     int num_zeros = 0;
     const uint16_t* run;
-    const uint16_t* level;
+    const float* level;
 
     dprintf(s->avctx, "decode coefficients for channel %i\n", c);
 
@@ -981,10 +981,13 @@ static void inverse_channel_transform(WMAProDecodeCtx *s)
                         }
                     }
                 } else if (s->num_channels == 2) {
-                    for (y = sfb[0]; y < FFMIN(sfb[1], s->subframe_len); y++) {
-                        ch_data[0][y] *= 181.0 / 128;
-                        ch_data[1][y] *= 181.0 / 128;
-                    }
+                    int len = FFMIN(sfb[1], s->subframe_len) - sfb[0];
+                    s->dsp.vector_fmul_scalar(ch_data[0] + sfb[0],
+                                              ch_data[0] + sfb[0],
+                                              181.0 / 128, len);
+                    s->dsp.vector_fmul_scalar(ch_data[1] + sfb[0],
+                                              ch_data[1] + sfb[0],
+                                              181.0 / 128, len);
                 }
             }
         }
@@ -1214,10 +1217,10 @@ static int decode_subframe(WMAProDecodeCtx *s)
                             (s->channel[c].max_scale_factor - *sf++) *
                             s->channel[c].scale_factor_step;
                 const float quant = pow(10.0, exp / 20.0);
-                int start;
-
-                for (start = s->cur_sfb_offsets[b]; start < end; start++)
-                    s->tmp[start] = s->channel[c].coeffs[start] * quant;
+                int start = s->cur_sfb_offsets[b];
+                s->dsp.vector_fmul_scalar(s->tmp + start,
+                                          s->channel[c].coeffs + start,
+                                          quant, end - start);
             }
 
             /** apply imdct (ff_imdct_half == DCTIV with reverse) */
@@ -1525,7 +1528,7 @@ static int decode_packet(AVCodecContext *avctx,
     *data_size = (int8_t *)s->samples - (int8_t *)data;
     s->packet_offset = get_bits_count(gb) & 7;
 
-    return get_bits_count(gb) >> 3;
+    return (s->packet_loss) ? AVERROR_INVALIDDATA : get_bits_count(gb) >> 3;
 }
 
 /**
@@ -1557,6 +1560,7 @@ AVCodec wmapro_decoder = {
     NULL,
     decode_end,
     decode_packet,
+    .capabilities = CODEC_CAP_SUBFRAMES,
     .flush= flush,
     .long_name = NULL_IF_CONFIG_SMALL("Windows Media Audio 9 Professional"),
 };

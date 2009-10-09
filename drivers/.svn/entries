@@ -1,14 +1,14 @@
 8
 
 dir
-29675
+29766
 svn://svn.mplayerhq.hu/mplayer/trunk/drivers
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-05-13T02:58:57.333510Z
-29305
+2009-10-08T11:25:01.224546Z
+29759
 diego
 has-props
 
@@ -84,10 +84,10 @@ file
 
 
 
-2009-05-25T08:54:02.000000Z
-8d0407289736a07d6b6adaa035c9d19f
-2009-05-13T02:58:57.333510Z
-29305
+2009-10-09T13:57:31.000000Z
+a0bb802d952ed4dcf78a40a1c66cf88c
+2009-10-08T11:25:01.224546Z
+29759
 diego
 has-props
 
