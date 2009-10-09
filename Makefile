@@ -635,6 +635,7 @@ SRCS_MPLAYER = command.c                \
                libao2/audio_out.c       \
                libvo/aspect.c           \
                libvo/geometry.c         \
+               libvo/stats.c            \
                libvo/video_out.c        \
                libvo/vo_mpegpes.c       \
                libvo/vo_null.c          \
