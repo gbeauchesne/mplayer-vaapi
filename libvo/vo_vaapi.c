@@ -1167,7 +1167,7 @@ static uint32_t draw_image(mp_image_t *mpi)
         static uint64_t ticks;
         if ((ticks++ % 30) == 0) {
             cpu_frequency = get_cpu_frequency();
-            cpu_usage = get_cpu_usage();
+            cpu_usage = get_cpu_usage(CPU_USAGE_QUANTUM);
         }
     }
     return VO_TRUE;

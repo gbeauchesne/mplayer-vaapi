@@ -124,14 +124,19 @@ static float get_cpu_usage_1(void)
     return pcpu;
 }
 
-float get_cpu_usage(void)
+float get_cpu_usage(enum CpuUsageType type)
 {
-    static float pcpu_total;
+    static float pcpu_total = 0.0;
     static unsigned int n_samples;
+    float pcpu;
 
-    pcpu_total += get_cpu_usage_1() / 100.0;
+    pcpu        = get_cpu_usage_1();
+    pcpu_total += pcpu / 100.0;
     ++n_samples;
-    return 100.0 * (pcpu_total / n_samples);
+
+    if (type == CPU_USAGE_AVERAGE)
+        pcpu = 100.0 * (pcpu_total / n_samples);
+    return pcpu;
 }
 
 // For ELF executable, notes are pushed before environment and args
