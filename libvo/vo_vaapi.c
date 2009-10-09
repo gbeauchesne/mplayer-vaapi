@@ -30,6 +30,7 @@
 #include "libavutil/common.h"
 #include "libavcodec/vaapi.h"
 #include "gui/interface.h"
+#include "stats.h"
 
 #if CONFIG_GL
 #include "gl_common.h"
@@ -105,6 +106,11 @@ static int                      va_num_image_formats;
 
 ///< Flag: direct surface mapping: use mpi->number to select free VA surface?
 static int                      va_dm;
+
+///< Flag: gather run-time statistics (CPU usage, frequency)
+static int                      cpu_stats;
+static unsigned int             cpu_frequency;
+static float                    cpu_usage;
 
 static int check_status(VAStatus status, const char *msg)
 {
@@ -333,6 +339,7 @@ static int int_012(int *n)
 
 static const opt_t subopts[] = {
     { "dm",          OPT_ARG_INT,  &va_dm,        (opt_test_f)int_012 },
+    { "stats",       OPT_ARG_BOOL, &cpu_stats,    NULL },
 #if CONFIG_GL
     { "gl",          OPT_ARG_BOOL, &gl_enabled,   NULL },
     { "bind",        OPT_ARG_BOOL, &gl_binding,   NULL },
@@ -371,6 +378,8 @@ static int preinit(const char *arg)
         mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using OpenGL rendering%s\n",
                gl_reflect ? ", with reflection effects" : "");
 #endif
+
+    stats_init();
 
     if (!vo_init())
         return -1;
@@ -502,6 +511,8 @@ static void uninit(void)
     vo_vm_close();
 #endif
     vo_x11_uninit();
+
+    stats_exit();
 }
 
 static int config_x11(uint32_t width, uint32_t height,
@@ -1075,6 +1086,14 @@ static uint32_t draw_image(mp_image_t *mpi)
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] draw_image(): surface 0x%08x\n", surface);
 
     g_output_surfaces[g_output_surface] = surface;
+
+    if (cpu_stats) {
+        static uint64_t ticks;
+        if ((ticks++ % 30) == 0) {
+            cpu_frequency = get_cpu_frequency();
+            cpu_usage = get_cpu_usage();
+        }
+    }
     return VO_TRUE;
 }
 
