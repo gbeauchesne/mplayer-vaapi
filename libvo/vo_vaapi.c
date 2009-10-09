@@ -1044,7 +1044,7 @@ static void flip_page_glx(void)
         gl_draw_rectangle(0, 0, vo_dwidth, 32, 0x000000ff);
         glColor3f(1.0f, 1.0f, 1.0f);
         glRasterPos2i(16, 20);
-        gl_printf("MPlayer: %.2f%% of CPU @ %u MHz", cpu_usage, cpu_frequency);
+        gl_printf("MPlayer: %.1f%% of CPU @ %u MHz", cpu_usage, cpu_frequency);
     }
 
     swapGlBuffers();
