@@ -31,10 +31,12 @@
 #include "libavcodec/vaapi.h"
 #include "gui/interface.h"
 #include "stats.h"
+#include <stdarg.h>
 
 #if CONFIG_GL
 #include "gl_common.h"
 #include <GL/glu.h>
+#include <GL/glx.h>
 #endif
 
 #include <assert.h>
@@ -75,6 +77,7 @@ static int                      gl_enabled;
 static int                      gl_binding;
 static int                      gl_reflect;
 static GLuint                   gl_texture;
+static GLuint                   gl_font_base;
 #endif
 
 #if CONFIG_VAAPI_GLX
@@ -297,6 +300,69 @@ static void resize(void)
 
     flip_page();
 }
+
+#if CONFIG_GL
+static int gl_build_font(void)
+{
+    XFontStruct *fi;
+
+    gl_font_base = glGenLists(96);
+
+    fi = XLoadQueryFont(mDisplay, "-adobe-helvetica-medium-r-normal--16-*-*-*-p-*-iso8859-1" );
+    if (!fi) {
+        fi = XLoadQueryFont(mDisplay, "fixed");
+        if (!fi)
+            return -1;
+    }
+
+    glXUseXFont(fi->fid, 32, 96, gl_font_base);
+    XFreeFont(mDisplay, fi);
+    return 0;
+}
+
+static void gl_printf(const char *format, ...)
+{
+    va_list args;
+    char *text;
+    int textlen;
+
+    va_start(args, format);
+    textlen = vsnprintf(NULL, 0, format, args);
+    va_end(args);
+
+    text = malloc(textlen + 1);
+    if (!text)
+        return;
+
+    va_start(args, format);
+    vsprintf(text, format, args);
+    va_end(args);
+
+    glPushAttrib(GL_LIST_BIT);
+    glListBase(gl_font_base - 32);
+    glCallLists(textlen, GL_UNSIGNED_BYTE, text);
+    glPopAttrib();
+    free(text);
+}
+
+static void gl_draw_rectangle(int x, int y, int w, int h, unsigned int rgba)
+{
+    glColor4f((GLfloat)((rgba >> 24) & 0xff) / 255.0,
+              (GLfloat)((rgba >> 16) & 0xff) / 255.0,
+              (GLfloat)((rgba >> 8) & 0xff) / 255.0,
+              (GLfloat)(rgba & 0xff) / 255.0);
+
+    glTranslatef((GLfloat)x, (GLfloat)y, 0.0f);
+    glBegin(GL_QUADS);
+    {
+        glVertex2i(0, 0);
+        glVertex2i(w, 0);
+        glVertex2i(w, h);
+        glVertex2i(0, h);
+    }
+    glEnd();
+}
+#endif
 
 static int is_direct_mapping_init(void)
 {
@@ -621,6 +687,9 @@ static int config_glx(unsigned int width, unsigned int height)
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    if (gl_build_font() < 0)
+        return -1;
     return 0;
 }
 #endif
@@ -969,6 +1038,13 @@ static void flip_page_glx(void)
         render_reflection();
         glPopMatrix();
         glPopMatrix();
+    }
+
+    if (cpu_stats) {
+        gl_draw_rectangle(0, 0, vo_dwidth, 32, 0x000000ff);
+        glColor3f(1.0f, 1.0f, 1.0f);
+        glRasterPos2i(16, 20);
+        gl_printf("MPlayer: %.2f%% of CPU @ %u MHz", cpu_usage, cpu_frequency);
     }
 
     swapGlBuffers();
