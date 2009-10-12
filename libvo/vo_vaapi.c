@@ -26,6 +26,7 @@
 #include "subopt-helper.h"
 #include "video_out.h"
 #include "video_out_internal.h"
+#include "sub.h"
 #include "x11_common.h"
 #include "libavutil/common.h"
 #include "libavcodec/vaapi.h"
@@ -64,10 +65,15 @@ const LIBVO_EXTERN(vaapi)
 #define NUM_VIDEO_SURFACES_H264  17 /* 1 decode frame, up to 16 references */
 #define NUM_VIDEO_SURFACES_VC1    3 /* 1 decode frame, up to  2 references */
 
+typedef void (*draw_alpha_func)(int x0, int y0, int w, int h,
+                                unsigned char *src, unsigned char *srca,
+                                int stride);
+
 static int                      g_is_paused;
 static uint32_t                 g_image_width;
 static uint32_t                 g_image_height;
 static uint32_t                 g_image_format;
+static struct vo_rect           g_borders;
 static struct vo_rect           g_output_rect;
 static VASurfaceID              g_output_surfaces[MAX_OUTPUT_SURFACES];
 static unsigned int             g_output_surface;
@@ -106,6 +112,14 @@ static int                      va_free_surfaces_head_index;
 static int                      va_free_surfaces_tail_index;
 static VAImageFormat           *va_image_formats;
 static int                      va_num_image_formats;
+static VAImageFormat           *va_subpic_formats;
+static unsigned int            *va_subpic_flags;
+static int                      va_num_subpic_formats;
+static VAImage                  va_osd_image;
+static uint8_t                 *va_osd_image_data;
+static VASubpictureID           va_osd_subpicture;
+static int                      va_osd_associated;
+static draw_alpha_func          va_osd_draw_alpha;
 
 ///< Flag: direct surface mapping: use mpi->number to select free VA surface?
 static int                      va_dm;
@@ -271,7 +285,7 @@ static void resize(void)
     struct vo_rect src;
 
     calc_src_dst_rects(g_image_width, g_image_height,
-                       &src, &g_output_rect, NULL, NULL);
+                       &src, &g_output_rect, &g_borders, NULL);
 
     vo_x11_clearwindow(mDisplay, vo_window);
 
@@ -364,6 +378,27 @@ static void gl_draw_rectangle(int x, int y, int w, int h, unsigned int rgba)
 }
 #endif
 
+static void draw_alpha_bgra(int x0, int y0, int w, int h,
+                            unsigned char *src, unsigned char *srca,
+                            int stride)
+{
+    vo_draw_alpha_rgb32(w, h, src, srca, stride,
+                        va_osd_image_data +
+                        va_osd_image.offsets[0] +
+                        va_osd_image.pitches[0] * y0 + x0,
+                        va_osd_image.pitches[0]);
+}
+
+///< List of subpicture formats in preferred order
+static const struct {
+    uint32_t format;
+    draw_alpha_func draw_alpha;
+}
+va_osd_info[] = {
+    { VA_FOURCC('B','G','R','A'), draw_alpha_bgra },
+    { 0, NULL }
+};
+
 static int is_direct_mapping_init(void)
 {
     VADisplayAttribute attr;
@@ -418,7 +453,7 @@ static int preinit(const char *arg)
 {
     VAStatus status;
     int va_major_version, va_minor_version;
-    int i, max_image_formats, max_profiles;
+    int i, max_image_formats, max_subpic_formats, max_profiles;
 
     va_dm = 2;
     if (subopt_parse(arg, subopts) != 0) {
@@ -482,6 +517,21 @@ static int preinit(const char *arg)
     for (i = 0; i < va_num_image_formats; i++)
         mp_msg(MSGT_VO, MSGL_DBG2, "  %s\n", string_of_VAImageFormat(&va_image_formats[i]));
 
+    max_subpic_formats = vaMaxNumSubpictureFormats(va_context->display);
+    va_subpic_formats = calloc(max_subpic_formats, sizeof(*va_subpic_formats));
+    if (!va_subpic_formats)
+        return -1;
+    va_subpic_flags = calloc(max_subpic_formats, sizeof(*va_subpic_flags));
+    if (!va_subpic_flags)
+        return -1;
+    status = vaQuerySubpictureFormats(va_context->display, va_subpic_formats, va_subpic_flags, &va_num_subpic_formats);
+    if (!check_status(status, "vaQuerySubpictureFormats()"))
+        return -1;
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): %d subpicture formats available\n",
+           va_num_subpic_formats);
+    for (i = 0; i < va_num_subpic_formats; i++)
+        mp_msg(MSGT_VO, MSGL_DBG2, "  %s, flags 0x%x\n", string_of_VAImageFormat(&va_subpic_formats[i]), va_subpic_flags[i]);
+
     max_profiles = vaMaxNumProfiles(va_context->display);
     va_profiles = calloc(max_profiles, sizeof(*va_profiles));
     if (!va_profiles)
@@ -516,6 +566,21 @@ static void free_video_specific(void)
     if (va_free_surfaces) {
         free(va_free_surfaces);
         va_free_surfaces = NULL;
+    }
+
+    if (va_osd_subpicture != VA_INVALID_ID) {
+        if (va_osd_associated) {
+            va_osd_associated = 0;
+            vaDeassociateSubpicture(va_context->display, va_osd_subpicture,
+                                    va_surface_ids, va_num_surfaces);
+        }
+        vaDestroySubpicture(va_context->display, va_osd_subpicture);
+        va_osd_subpicture = VA_INVALID_ID;
+    }
+
+    if (va_osd_image.image_id != VA_INVALID_ID) {
+        vaDestroyImage(va_context->display, va_osd_image.image_id);
+        va_osd_image.image_id = VA_INVALID_ID;
     }
 
     if (va_surface_ids) {
@@ -556,6 +621,16 @@ static void uninit(void)
     if (va_profiles) {
         free(va_profiles);
         va_profiles = NULL;
+    }
+
+    if (va_subpic_flags) {
+        free(va_subpic_flags);
+        va_subpic_flags = NULL;
+    }
+
+    if (va_subpic_formats) {
+        free(va_subpic_formats);
+        va_subpic_formats = NULL;
     }
 
     if (va_image_formats) {
@@ -698,7 +773,7 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
 {
     VAConfigAttrib attrib;
     VAStatus status;
-    int i, profile, entrypoint, max_entrypoints;
+    int i, j, profile, entrypoint, max_entrypoints;
 
     /* Check profile */
     profile = VAProfile_from_imgfmt(format);
@@ -776,6 +851,33 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
     for (i = 0; i < va_num_surfaces; i++)
         va_free_surfaces[i] = &va_surface_ids[i];
 
+    /* Create OSD data */
+    va_osd_draw_alpha     = NULL;
+    va_osd_image.image_id = VA_INVALID_ID;
+    va_osd_image.buf      = VA_INVALID_ID;
+    va_osd_subpicture     = VA_INVALID_ID;
+    va_osd_associated     = 0;
+    for (i = 0; va_osd_info[i].format; i++) {
+        for (j = 0; j < va_num_subpic_formats; j++)
+            if (va_subpic_formats[j].fourcc == va_osd_info[i].format)
+                break;
+        if (j == va_num_subpic_formats)
+            continue;
+        status = vaCreateImage(va_context->display, &va_subpic_formats[j],
+                               width, height, &va_osd_image);
+        if (check_status(status, "vaCreateImage()"))
+            break;
+    }
+    if (va_osd_info[i].format) {
+        status = vaCreateSubpicture(va_context->display, va_osd_image.image_id,
+                                    &va_osd_subpicture);
+        if (check_status(status, "vaCreateSubpicture()")) {
+            va_osd_draw_alpha = va_osd_info[i].draw_alpha;
+            mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] Using %s surface for OSD\n",
+                   string_of_VAImageFormat(&va_osd_info[i].format));
+        }
+    }
+
 #if CONFIG_VAAPI_GLX
     /* Create GLX surfaces */
     if (gl_enabled) {
@@ -834,7 +936,8 @@ static int query_format(uint32_t format)
     const int default_caps = (VFCAP_CSP_SUPPORTED |
                               VFCAP_CSP_SUPPORTED_BY_HW |
                               VFCAP_HWSCALE_UP |
-                              VFCAP_HWSCALE_DOWN);
+                              VFCAP_HWSCALE_DOWN |
+                              VFCAP_OSD);
 
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] query_format(): format %x (%s)\n",
            format, vo_format_name(format));
@@ -892,7 +995,7 @@ static void put_surface_glx(VASurfaceID surface)
                                   VA_FRAME_PICTURE);
         if (status == VA_STATUS_ERROR_UNIMPLEMENTED) {
             mp_msg(MSGT_VO, MSGL_WARN,
-                   "[vaapi] vaCopySurfaceGLX() is not implemented\n");
+                   "[vo_vaapi] vaCopySurfaceGLX() is not implemented\n");
             gl_binding = 1;
         }
         else {
@@ -1084,7 +1187,40 @@ static int draw_frame(uint8_t * src[])
 
 static void draw_osd(void)
 {
-    // XXX: not implemented
+    VAStatus status;
+
+    if (!va_osd_draw_alpha || va_osd_associated < 0)
+        return;
+    if (!vo_update_osd(g_image_width, g_image_height))
+        return;
+    if (!vo_osd_check_range_update(0, 0, g_image_width, g_image_height))
+        return;
+
+    status = vaMapBuffer(va_context->display, va_osd_image.buf,
+                         &va_osd_image_data);
+    if (!check_status(status, "vaMapBuffer()"))
+        return;
+
+    memset(va_osd_image_data, 0, va_osd_image.data_size);
+    vo_draw_text(g_image_width, g_image_height, va_osd_draw_alpha);
+
+    status = vaUnmapBuffer(va_context->display, va_osd_image.buf);
+    if (!check_status(status, "vaUnmapBuffer()"))
+        return;
+    va_osd_image_data = NULL;
+
+    if (!va_osd_associated) {
+        status = vaAssociateSubpicture(va_context->display,
+                                       va_osd_subpicture,
+                                       va_surface_ids, va_num_surfaces,
+                                       0, 0, g_image_width, g_image_height,
+                                       0, 0, g_image_width, g_image_height,
+                                       0);
+        if (check_status(status, "vaAssociateSubpicture()"))
+            va_osd_associated = 1;
+        else
+            va_osd_associated = -1;
+    }
 }
 
 static void flip_page(void)
