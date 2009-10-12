@@ -1187,14 +1187,20 @@ static int draw_frame(uint8_t * src[])
 
 static void draw_osd(void)
 {
+    static int had_osd;
+    int has_osd;
     VAStatus status;
 
     if (!va_osd_draw_alpha || va_osd_associated < 0)
         return;
+
     if (!vo_update_osd(g_image_width, g_image_height))
         return;
-    if (!vo_osd_check_range_update(0, 0, g_image_width, g_image_height))
+
+    has_osd = vo_osd_check_range_update(0, 0, g_image_width, g_image_height);
+    if (!has_osd && !had_osd)
         return;
+    had_osd = has_osd;
 
     status = vaMapBuffer(va_context->display, va_osd_image.buf,
                          &va_osd_image_data);
@@ -1202,7 +1208,9 @@ static void draw_osd(void)
         return;
 
     memset(va_osd_image_data, 0, va_osd_image.data_size);
-    vo_draw_text(g_image_width, g_image_height, va_osd_draw_alpha);
+
+    if (has_osd)
+        vo_draw_text(g_image_width, g_image_height, va_osd_draw_alpha);
 
     status = vaUnmapBuffer(va_context->display, va_osd_image.buf);
     if (!check_status(status, "vaUnmapBuffer()"))
