@@ -862,21 +862,17 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
         for (j = 0; j < va_num_subpic_formats; j++)
             if (va_subpic_formats[j].fourcc == va_osd_info[i].format)
                 break;
-        if (j == va_num_subpic_formats)
-            continue;
-        status = vaCreateImage(va_context->display, &va_subpic_formats[j],
-                               width, height, &va_osd_image);
-        if (check_status(status, "vaCreateImage()"))
+        if (j < va_num_subpic_formats &&
+            vaCreateImage(va_context->display, &va_subpic_formats[j],
+                          width, height, &va_osd_image) == VA_STATUS_SUCCESS)
             break;
     }
-    if (va_osd_info[i].format) {
-        status = vaCreateSubpicture(va_context->display, va_osd_image.image_id,
-                                    &va_osd_subpicture);
-        if (check_status(status, "vaCreateSubpicture()")) {
-            va_osd_draw_alpha = va_osd_info[i].draw_alpha;
-            mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] Using %s surface for OSD\n",
-                   string_of_VAImageFormat(&va_osd_info[i].format));
-        }
+    if (va_osd_info[i].format &&
+        vaCreateSubpicture(va_context->display, va_osd_image.image_id,
+                           &va_osd_subpicture) == VA_STATUS_SUCCESS) {
+        va_osd_draw_alpha = va_osd_info[i].draw_alpha;
+        mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] Using %s surface for OSD\n",
+               string_of_VAImageFormat(&va_osd_info[i].format));
     }
 
 #if CONFIG_VAAPI_GLX
