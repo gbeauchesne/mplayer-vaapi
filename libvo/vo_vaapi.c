@@ -378,9 +378,9 @@ static void gl_draw_rectangle(int x, int y, int w, int h, unsigned int rgba)
 }
 #endif
 
-static void draw_alpha_bgra(int x0, int y0, int w, int h,
-                            unsigned char *src, unsigned char *srca,
-                            int stride)
+static void draw_alpha_rgb32(int x0, int y0, int w, int h,
+                             unsigned char *src, unsigned char *srca,
+                             int stride)
 {
     vo_draw_alpha_rgb32(w, h, src, srca, stride,
                         va_osd_image_data +
@@ -395,7 +395,8 @@ static const struct {
     draw_alpha_func draw_alpha;
 }
 va_osd_info[] = {
-    { VA_FOURCC('B','G','R','A'), draw_alpha_bgra },
+    { VA_FOURCC('B','G','R','A'), draw_alpha_rgb32 },
+    { VA_FOURCC('R','G','B','A'), draw_alpha_rgb32 },
     { 0, NULL }
 };
 
