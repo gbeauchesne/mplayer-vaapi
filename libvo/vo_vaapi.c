@@ -379,6 +379,14 @@ static void gl_draw_rectangle(int x, int y, int w, int h, unsigned int rgba)
 }
 #endif
 
+static inline unsigned char *get_osd_image_data(int x0, int y0)
+{
+    return (va_osd_image_data +
+            va_osd_image.offsets[0] +
+            va_osd_image.pitches[0] * y0 +
+            x0 * ((va_osd_image.format.bits_per_pixel + 7) / 8));
+}
+
 static void draw_alpha_rgb32(int x0, int y0, int w, int h,
                              unsigned char *src, unsigned char *srca,
                              int stride)
@@ -396,10 +404,7 @@ static void draw_alpha_IA44(int x0, int y0, int w, int h,
 {
     int x, y;
     const unsigned int dststride = va_osd_image.pitches[0];
-    unsigned char *dst = (va_osd_image_data +
-                          va_osd_image.offsets[0] +
-                          va_osd_image.pitches[0] * y0 +
-                          x0 * ((va_osd_image.format.bits_per_pixel + 7) / 8));
+    unsigned char *dst = get_osd_image_data(x0, y0);
 
     for (y = 0; y < h; y++, dst += dststride)
         for (x = 0; x < w; x++)
@@ -412,10 +417,7 @@ static void draw_alpha_AI44(int x0, int y0, int w, int h,
 {
     int x, y;
     const unsigned int dststride = va_osd_image.pitches[0];
-    unsigned char *dst = (va_osd_image_data +
-                          va_osd_image.offsets[0] +
-                          va_osd_image.pitches[0] * y0 +
-                          x0 * ((va_osd_image.format.bits_per_pixel + 7) / 8));
+    unsigned char *dst = get_osd_image_data(x0, y0);
 
     for (y = 0; y < h; y++, dst += dststride)
         for (x = 0; x < w; x++)
@@ -428,10 +430,7 @@ static void draw_alpha_IA88(int x0, int y0, int w, int h,
 {
     int x, y;
     const unsigned int dststride = va_osd_image.pitches[0];
-    unsigned char *dst = (va_osd_image_data +
-                          va_osd_image.offsets[0] +
-                          va_osd_image.pitches[0] * y0 +
-                          x0 * ((va_osd_image.format.bits_per_pixel + 7) / 8));
+    unsigned char *dst = get_osd_image_data(x0, y0);
 
     for (y = 0; y < h; y++, dst += dststride)
         for (x = 0; x < w; x++) {
@@ -446,10 +445,7 @@ static void draw_alpha_AI88(int x0, int y0, int w, int h,
 {
     int x, y;
     const unsigned int dststride = va_osd_image.pitches[0];
-    unsigned char *dst = (va_osd_image_data +
-                          va_osd_image.offsets[0] +
-                          va_osd_image.pitches[0] * y0 +
-                          x0 * ((va_osd_image.format.bits_per_pixel + 7) / 8));
+    unsigned char *dst = get_osd_image_data(x0, y0);
 
     for (y = 0; y < h; y++, dst += dststride)
         for (x = 0; x < w; x++) {
