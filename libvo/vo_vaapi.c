@@ -1005,7 +1005,7 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
             check_status(status, "vaSetImagePalette()");
         }
         mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] Using %s surface for OSD\n",
-               string_of_VAImageFormat(&va_osd_info[i].format));
+               string_of_VAImageFormat(&va_osd_image.format));
     }
 
 #if CONFIG_VAAPI_GLX
