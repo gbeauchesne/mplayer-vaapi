@@ -120,6 +120,7 @@ static uint8_t                 *va_osd_image_data;
 static VASubpictureID           va_osd_subpicture;
 static int                      va_osd_associated;
 static draw_alpha_func          va_osd_draw_alpha;
+static uint8_t                 *va_osd_palette;
 
 ///< Flag: direct surface mapping: use mpi->number to select free VA surface?
 static int                      va_dm;
@@ -389,16 +390,137 @@ static void draw_alpha_rgb32(int x0, int y0, int w, int h,
                         va_osd_image.pitches[0]);
 }
 
+static void draw_alpha_IA44(int x0, int y0, int w, int h,
+                            unsigned char *src, unsigned char *srca,
+                            int stride)
+{
+    int x, y;
+    const unsigned int dststride = va_osd_image.pitches[0];
+    unsigned char *dst = (va_osd_image_data +
+                          va_osd_image.offsets[0] +
+                          va_osd_image.pitches[0] * y0 +
+                          x0 * ((va_osd_image.format.bits_per_pixel + 7) / 8));
+
+    for (y = 0; y < h; y++, dst += dststride)
+        for (x = 0; x < w; x++)
+            dst[x] = (src[y*stride + x] & 0xf0) | (-srca[y*stride + x] >> 4);
+}
+
+static void draw_alpha_AI44(int x0, int y0, int w, int h,
+                            unsigned char *src, unsigned char *srca,
+                            int stride)
+{
+    int x, y;
+    const unsigned int dststride = va_osd_image.pitches[0];
+    unsigned char *dst = (va_osd_image_data +
+                          va_osd_image.offsets[0] +
+                          va_osd_image.pitches[0] * y0 +
+                          x0 * ((va_osd_image.format.bits_per_pixel + 7) / 8));
+
+    for (y = 0; y < h; y++, dst += dststride)
+        for (x = 0; x < w; x++)
+            dst[x] = (src[y*stride + x] >> 4) | (-srca[y*stride + x] & 0xf0);
+}
+
+static void draw_alpha_IA88(int x0, int y0, int w, int h,
+                            unsigned char *src, unsigned char *srca,
+                            int stride)
+{
+    int x, y;
+    const unsigned int dststride = va_osd_image.pitches[0];
+    unsigned char *dst = (va_osd_image_data +
+                          va_osd_image.offsets[0] +
+                          va_osd_image.pitches[0] * y0 +
+                          x0 * ((va_osd_image.format.bits_per_pixel + 7) / 8));
+
+    for (y = 0; y < h; y++, dst += dststride)
+        for (x = 0; x < w; x++) {
+            dst[2*x + 0] =  src [y*stride + x];
+            dst[2*x + 1] = -srca[y*stride + x];
+        }
+}
+
+static void draw_alpha_AI88(int x0, int y0, int w, int h,
+                            unsigned char *src, unsigned char *srca,
+                            int stride)
+{
+    int x, y;
+    const unsigned int dststride = va_osd_image.pitches[0];
+    unsigned char *dst = (va_osd_image_data +
+                          va_osd_image.offsets[0] +
+                          va_osd_image.pitches[0] * y0 +
+                          x0 * ((va_osd_image.format.bits_per_pixel + 7) / 8));
+
+    for (y = 0; y < h; y++, dst += dststride)
+        for (x = 0; x < w; x++) {
+            dst[2*x + 0] = -srca[y*stride + x];
+            dst[2*x + 1] =  src [y*stride + x];
+        }
+}
+
 ///< List of subpicture formats in preferred order
 static const struct {
     uint32_t format;
     draw_alpha_func draw_alpha;
 }
 va_osd_info[] = {
+    { VA_FOURCC('I','A','4','4'), draw_alpha_IA44  },
+    { VA_FOURCC('A','I','4','4'), draw_alpha_AI44  },
+    { VA_FOURCC('I','A','8','8'), draw_alpha_IA88  },
+    { VA_FOURCC('A','I','8','8'), draw_alpha_AI88  },
     { VA_FOURCC('B','G','R','A'), draw_alpha_rgb32 },
     { VA_FOURCC('R','G','B','A'), draw_alpha_rgb32 },
     { 0, NULL }
 };
+
+static uint8_t *gen_osd_palette(const VAImage *image)
+{
+    uint8_t *palette;
+    int i, is_rgb;
+    int r_idx = -1, g_idx = -1, b_idx = -1;
+    int y_idx = -1, u_idx = -1, v_idx = -1;
+
+    if (image->num_palette_entries < 1)
+        return NULL;
+
+    palette = malloc(image->num_palette_entries * image->entry_bytes);
+    if (!palette)
+        return NULL;
+
+    for (i = 0; i < image->entry_bytes; i++) {
+        switch (image->component_order[i]) {
+        case 'R': r_idx = i; is_rgb = 1; break;
+        case 'G': g_idx = i; is_rgb = 1; break;
+        case 'B': b_idx = i; is_rgb = 1; break;
+        case 'Y': y_idx = i; is_rgb = 0; break;
+        case 'U': u_idx = i; is_rgb = 0; break;
+        case 'V': v_idx = i; is_rgb = 0; break;
+        }
+    }
+
+    if (r_idx != -1 && g_idx != -1 && b_idx != -1) {      /* RGB format */
+        for (i = 0; i < image->num_palette_entries; i++) {
+            const int n = i * image->entry_bytes;
+            palette[n + r_idx] = i * 0xff / (image->num_palette_entries - 1);
+            palette[n + g_idx] = i * 0xff / (image->num_palette_entries - 1);
+            palette[n + b_idx] = i * 0xff / (image->num_palette_entries - 1);
+        }
+    }
+    else if (y_idx != -1 && u_idx != -1 && v_idx != -1) { /* YUV format */
+        for (i = 0; i < image->num_palette_entries; i++) {
+            const int n = i * image->entry_bytes;
+            palette[n + y_idx] = i * 0xff / (image->num_palette_entries - 1);
+            palette[n + u_idx] = 0xff;
+            palette[n + v_idx] = 0xff;
+        }
+    }
+    else {
+        mp_msg(MSGT_VO, MSGL_ERR, "[vo_vaapi] Could not set up subpicture palette\n");
+        free(palette);
+        palette = NULL;
+    }
+    return palette;
+}
 
 static int is_direct_mapping_init(void)
 {
@@ -567,6 +689,11 @@ static void free_video_specific(void)
     if (va_free_surfaces) {
         free(va_free_surfaces);
         va_free_surfaces = NULL;
+    }
+
+    if (va_osd_palette) {
+        free(va_osd_palette);
+        va_osd_palette = NULL;
     }
 
     if (va_osd_subpicture != VA_INVALID_ID) {
@@ -871,6 +998,12 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
         vaCreateSubpicture(va_context->display, va_osd_image.image_id,
                            &va_osd_subpicture) == VA_STATUS_SUCCESS) {
         va_osd_draw_alpha = va_osd_info[i].draw_alpha;
+        va_osd_palette = gen_osd_palette(&va_osd_image);
+        if (va_osd_palette) {
+            status = vaSetImagePalette(va_context->display,
+                                       va_osd_image.image_id, va_osd_palette);
+            check_status(status, "vaSetImagePalette()");
+        }
         mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] Using %s surface for OSD\n",
                string_of_VAImageFormat(&va_osd_info[i].format));
     }
