@@ -734,6 +734,8 @@ static int preinit(const char *arg)
     for (i = 0; i < va_num_profiles; i++)
         mp_msg(MSGT_VO, MSGL_DBG2, "  %s\n", string_of_VAProfile(va_profiles[i]));
 
+    va_osd_subpicture = VA_INVALID_ID;
+    va_osd_image.image_id = VA_INVALID_ID;
     return 0;
 }
 
