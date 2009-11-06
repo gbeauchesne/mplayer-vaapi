@@ -1,15 +1,15 @@
 8
 
 dir
-29766
+29834
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-09-22T14:38:49.384662Z
-29701
-diego
+2009-10-30T14:13:25.084555Z
+29804
+stefano
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -38,6 +38,9 @@ file
 29523
 ramiro
 
+ppc
+dir
+
 swscale.c
 file
 
@@ -51,7 +54,7 @@ ae47b85afb06db889e4976af92fea9dc
 ramiro
 has-props
 
-ppc
+mlib
 dir
 
 swscale_internal.h
@@ -67,9 +70,6 @@ fd3e37b1ad61870f1e904371d8a1a348
 ramiro
 has-props
 
-mlib
-dir
-
 x86
 dir
 
@@ -79,11 +79,11 @@ file
 
 
 
-2009-09-14T08:26:28.000000Z
-18f0b3319324648d622e5fd6014af173
-2009-09-09T21:43:25.168063Z
-29665
-ramiro
+2009-11-06T14:42:55.000000Z
+4fbabca336810c53fb120f813ac9df1d
+2009-10-30T14:13:25.084555Z
+29804
+stefano
 has-props
 
 colorspace-test.c
@@ -112,6 +112,9 @@ fa28a37276d66a5aac67536940e76180
 ramiro
 has-props
 
+sparc
+dir
+
 rgb2rgb.c
 file
 
@@ -124,9 +127,6 @@ aae4c7fdcf16f6fe0631a01e3981797b
 29654
 ramiro
 has-props
-
-sparc
-dir
 
 swscale-example.c
 file
@@ -154,19 +154,6 @@ file
 ramiro
 has-props
 
-swscale_template.c
-file
-
-
-
-
-2009-10-09T13:57:30.000000Z
-d23ff3808277a3c958af46b8c1088839
-2009-09-22T14:38:49.384662Z
-29701
-diego
-has-props
-
 rgb2rgb.h
 file
 
@@ -178,6 +165,19 @@ cbc6f42d9255f2ffa486ade08e1d5e8d
 2009-08-16T00:32:04.034731Z
 29522
 ramiro
+has-props
+
+swscale_template.c
+file
+
+
+
+
+2009-10-09T13:57:30.000000Z
+d23ff3808277a3c958af46b8c1088839
+2009-09-22T14:38:49.384662Z
+29701
+diego
 has-props
 
 Makefile

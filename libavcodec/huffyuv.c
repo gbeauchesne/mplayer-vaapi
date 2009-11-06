@@ -406,9 +406,7 @@ static av_cold void alloc_temp(HYuvContext *s){
             s->temp[i]= av_malloc(s->width + 16);
         }
     }else{
-        for(i=0; i<2; i++){
-            s->temp[i]= av_malloc(4*s->width + 16);
-        }
+        s->temp[0]= av_malloc(4*s->width + 16);
     }
 }
 
@@ -942,6 +940,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
     if (!s->bitstream_buffer)
         return AVERROR(ENOMEM);
 
+    memset(s->bitstream_buffer + buf_size, 0, FF_INPUT_BUFFER_PADDING_SIZE);
     s->dsp.bswap_buf((uint32_t*)s->bitstream_buffer, (const uint32_t*)buf, buf_size/4);
 
     if(p->data[0])
@@ -1184,6 +1183,9 @@ static av_cold int decode_end(AVCodecContext *avctx)
 {
     HYuvContext *s = avctx->priv_data;
     int i;
+
+    if (s->picture.data[0])
+        avctx->release_buffer(avctx, &s->picture);
 
     common_end(s);
     av_freep(&s->bitstream_buffer);

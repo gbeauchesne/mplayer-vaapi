@@ -1,15 +1,15 @@
 8
 
 dir
-29766
+29834
 svn://svn.mplayerhq.hu/mplayer/trunk
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-10-08T17:44:23.414938Z
-29766
-ptt
+2009-11-06T14:06:58.965930Z
+29834
+attila
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -45,19 +45,6 @@ dir
 libmpcodecs
 dir
 
-AUTHORS
-file
-
-
-
-
-2009-05-25T08:54:02.000000Z
-9b182f444418441846a2838b94dfba80
-2009-05-04T16:55:05.943156Z
-29252
-diego
-has-props
-
 edl.c
 file
 
@@ -68,6 +55,19 @@ file
 b0a42ead8f74d2337bc217af73f42980
 2009-05-13T02:58:57.333510Z
 29305
+diego
+has-props
+
+AUTHORS
+file
+
+
+
+
+2009-05-25T08:54:02.000000Z
+9b182f444418441846a2838b94dfba80
+2009-05-04T16:55:05.943156Z
+29252
 diego
 has-props
 
@@ -84,19 +84,6 @@ d8d61212feb173e36518a2ac832bcfee
 diego
 has-props
 
-edl.h
-file
-
-
-
-
-2009-01-29T11:50:52.000000Z
-b439bf43c439f2d7c3f4fd949be9b803
-2008-02-22T09:09:46.016243Z
-26061
-diego
-has-props
-
 fmt-conversion.c
 file
 
@@ -109,8 +96,18 @@ file
 29487
 cehoyos
 
-stream
-dir
+edl.h
+file
+
+
+
+
+2009-01-29T11:50:52.000000Z
+b439bf43c439f2d7c3f4fd949be9b803
+2008-02-22T09:09:46.016243Z
+26061
+diego
+has-props
 
 codec-cfg.c
 file
@@ -125,6 +122,9 @@ file
 reimar
 has-props
 
+stream
+dir
+
 version.sh
 file
 
@@ -138,8 +138,17 @@ file
 cehoyos
 has-props
 
-input
-dir
+fmt-conversion.h
+file
+
+
+
+
+2009-02-16T15:28:15.000000Z
+7cae69f596f08218a56c901286aa56c3
+2009-02-14T17:57:47.771825Z
+28561
+reimar
 
 mpbswap.h
 file
@@ -153,17 +162,8 @@ e065d1e0fa7a96a03bd233eb18aab5bb
 26235
 diego
 
-fmt-conversion.h
-file
-
-
-
-
-2009-02-16T15:28:15.000000Z
-7cae69f596f08218a56c901286aa56c3
-2009-02-14T17:57:47.771825Z
-28561
-reimar
+input
+dir
 
 codec-cfg.h
 file
@@ -232,11 +232,11 @@ file
 
 
 
-2009-09-14T08:26:28.000000Z
-f34a0d24166255110d9fca3b0cb35a72
-2009-08-28T13:29:07.526499Z
-29575
-reimar
+2009-11-06T14:42:55.000000Z
+89f01d75fdc7ace95445ce77dfebad08
+2009-10-29T22:13:04.454565Z
+29801
+cehoyos
 has-props
 
 liba52
@@ -329,9 +329,6 @@ file
 rathann
 has-props
 
-libmpeg2
-dir
-
 cpudetect.c
 file
 
@@ -340,6 +337,22 @@ file
 
 2009-05-25T08:54:02.000000Z
 abb2c601bd70a0fa31cdbce3775d19dc
+2009-05-13T02:58:57.333510Z
+29305
+diego
+has-props
+
+libmpeg2
+dir
+
+spudec.c
+file
+
+
+
+
+2009-05-25T08:54:02.000000Z
+d247d3ff53a5c31c72b240ce608ef69c
 2009-05-13T02:58:57.333510Z
 29305
 diego
@@ -358,14 +371,14 @@ file
 diego
 has-props
 
-spudec.c
+mixer.c
 file
 
 
 
 
 2009-05-25T08:54:02.000000Z
-d247d3ff53a5c31c72b240ce608ef69c
+3aab6d58ab1c35e970b8e981ac3ba11f
 2009-05-13T02:58:57.333510Z
 29305
 diego
@@ -383,18 +396,17 @@ file
 26061
 diego
 
-mixer.c
+metadata.h
 file
 
 
 
 
-2009-05-25T08:54:02.000000Z
-3aab6d58ab1c35e970b8e981ac3ba11f
-2009-05-13T02:58:57.333510Z
-29305
+2009-01-29T11:50:52.000000Z
+5dbe688f7c703b14ceeabc44f5bbeafc
+2008-05-14T18:02:27.084006Z
+26775
 diego
-has-props
 
 cpudetect.h
 file
@@ -409,18 +421,6 @@ file
 reimar
 has-props
 
-metadata.h
-file
-
-
-
-
-2009-01-29T11:50:52.000000Z
-5dbe688f7c703b14ceeabc44f5bbeafc
-2008-05-14T18:02:27.084006Z
-26775
-diego
-
 mp_osd.h
 file
 
@@ -432,19 +432,6 @@ file
 2009-09-23T21:48:48.105694Z
 29712
 reimar
-
-xvid_vbr.h
-file
-
-
-
-
-2009-05-25T08:54:02.000000Z
-94459e159482f076804de0e3ba2c2f6f
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
 
 spudec.h
 file
@@ -459,30 +446,17 @@ file
 aurel
 has-props
 
-subopt-helper.c
+xvid_vbr.h
 file
 
 
 
 
 2009-05-25T08:54:02.000000Z
-19ab993f3d06561adee15db5d559e3d4
-2009-05-12T02:43:03.425189Z
-29294
-reynaldo
-has-props
-
-parser-cfg.c
-file
-
-
-
-
-2009-09-14T08:26:28.000000Z
-c127fbb40dc7fb60e4489e4e194578b9
-2009-08-31T09:41:27.674493Z
-29602
-reimar
+94459e159482f076804de0e3ba2c2f6f
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 mixer.h
@@ -498,8 +472,31 @@ e5e4529c8022bc875f6fa71ffbbf22b4
 diego
 has-props
 
-libvo
-dir
+parser-cfg.c
+file
+
+
+
+
+2009-09-14T08:26:28.000000Z
+c127fbb40dc7fb60e4489e4e194578b9
+2009-08-31T09:41:27.674493Z
+29602
+reimar
+has-props
+
+subopt-helper.c
+file
+
+
+
+
+2009-05-25T08:54:02.000000Z
+19ab993f3d06561adee15db5d559e3d4
+2009-05-12T02:43:03.425189Z
+29294
+reynaldo
+has-props
 
 parser-mpcmd.c
 file
@@ -513,6 +510,9 @@ aaf92a13f09968dbffcb3bca66005860
 29305
 diego
 has-props
+
+libvo
+dir
 
 get_path.c
 file
@@ -530,17 +530,18 @@ has-props
 libdvdcss
 dir
 
-parser-cfg.h
+subopt-helper.h
 file
 
 
 
 
-2009-09-14T08:26:28.000000Z
-38ddbd6bee3deff3b1225641ff1de1b8
-2009-08-31T09:40:04.015000Z
-29601
-reimar
+2009-05-25T08:54:02.000000Z
+18a8ca638880477ebdbd83aba4b8e9a2
+2009-05-13T02:58:57.333510Z
+29305
+diego
+has-props
 
 sub_cc.c
 file
@@ -555,18 +556,17 @@ file
 diego
 has-props
 
-subopt-helper.h
+parser-cfg.h
 file
 
 
 
 
-2009-05-25T08:54:02.000000Z
-18a8ca638880477ebdbd83aba4b8e9a2
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
+2009-09-14T08:26:28.000000Z
+38ddbd6bee3deff3b1225641ff1de1b8
+2009-08-31T09:40:04.015000Z
+29601
+reimar
 
 parser-mpcmd.h
 file
@@ -580,17 +580,17 @@ file
 26163
 diego
 
-m_property.c
+configure
 file
 
 
 
 
-2009-05-25T08:54:02.000000Z
-ae1819483e095235063e3a4cc2a541a1
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-11-06T14:42:55.000000Z
+3ccde99737383da18529b6e5394da7d6
+2009-11-06T14:06:58.965930Z
+29834
+attila
 has-props
 
 get_path.h
@@ -605,17 +605,17 @@ file
 29254
 diego
 
-configure
+m_property.c
 file
 
 
 
 
-2009-10-09T13:57:31.000000Z
-f39236453ff2978146b28339da6c0650
-2009-10-06T06:43:00.335937Z
-29753
-reimar
+2009-05-25T08:54:02.000000Z
+ae1819483e095235063e3a4cc2a541a1
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 sub_cc.h
@@ -666,10 +666,10 @@ file
 
 
 
-2009-10-09T13:57:31.000000Z
-bbb689d47d2a4a842af853becef27576
-2009-09-29T06:44:10.424797Z
-29732
+2009-11-06T14:42:55.000000Z
+9f80c4d7eab5f20e9b17fe50689252a7
+2009-11-05T20:59:46.734741Z
+29827
 reimar
 has-props
 
@@ -977,11 +977,11 @@ file
 
 
 
-2009-10-09T13:57:31.000000Z
-9b3d0c772d3379ecf3902fe1993af085
-2009-09-23T21:21:58.524611Z
-29710
-reimar
+2009-11-06T14:42:55.000000Z
+0cd899c7a05b7b463bf9db64467b8171
+2009-10-29T22:13:04.454565Z
+29801
+cehoyos
 has-props
 
 common.mak
@@ -1075,10 +1075,10 @@ file
 
 
 
-2009-10-09T13:57:31.000000Z
-73cd463237c2c69bbe0070899bc62419
-2009-09-23T21:48:48.105694Z
-29712
+2009-11-06T14:42:55.000000Z
+50dcf79c5a4fa4969cd8619997a8344b
+2009-11-01T09:48:34.705736Z
+29810
 reimar
 has-props
 
@@ -1088,11 +1088,11 @@ file
 
 
 
-2009-05-25T08:54:02.000000Z
-482cf30ff6a7bd4d1dd62ccd52edb251
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-11-06T14:42:55.000000Z
+c8891d57bc1fe2a1ec19e634de99c53e
+2009-10-10T10:39:05.355072Z
+29768
+adrian
 has-props
 
 m_config.h
@@ -1114,11 +1114,11 @@ file
 
 
 
-2009-01-29T11:50:52.000000Z
-cbcde47768360b4ceb41481b8c628ca8
-2008-03-01T09:50:06.308482Z
-26135
-diego
+2009-11-06T14:42:55.000000Z
+a271a833c5b019a5504ace2be8d72ae2
+2009-10-29T22:39:00.324083Z
+29802
+cehoyos
 has-props
 
 etc

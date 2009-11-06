@@ -1,15 +1,15 @@
 8
 
 dir
-29766
+29834
 svn://svn.mplayerhq.hu/mplayer/trunk/stream
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-10-08T11:25:01.224546Z
-29759
-diego
+2009-11-05T21:29:14.866237Z
+29832
+reimar
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -116,19 +116,6 @@ file
 diego
 has-props
 
-tvi_bsdbt848.c
-file
-
-
-
-
-2009-05-25T08:53:53.000000Z
-c40ccca7c696f67ead1b783dd20aa414
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
-
 http.h
 file
 
@@ -137,6 +124,19 @@ file
 
 2009-05-25T08:53:53.000000Z
 d545b917bc4524d74cf6839f5a9d5474
+2009-05-13T02:58:57.333510Z
+29305
+diego
+has-props
+
+tvi_bsdbt848.c
+file
+
+
+
+
+2009-05-25T08:53:53.000000Z
+c40ccca7c696f67ead1b783dd20aa414
 2009-05-13T02:58:57.333510Z
 29305
 diego
@@ -161,24 +161,11 @@ file
 
 
 
-2009-05-25T08:53:53.000000Z
-4ea4667e25a80d0a2d8002aa85298d96
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
-
-stream_dvd.c
-file
-
-
-
-
-2009-05-25T08:53:53.000000Z
-4b61f5eb07a0e7d8a6ab16c63bdd3cbd
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-11-06T14:42:54.000000Z
+479e8a29eddd9a849fcdf6569fcc9581
+2009-10-30T10:03:54.256718Z
+29803
+cehoyos
 has-props
 
 udp.c
@@ -192,6 +179,19 @@ file
 2009-05-13T02:58:57.333510Z
 29305
 diego
+
+stream_dvd.c
+file
+
+
+
+
+2009-05-25T08:53:53.000000Z
+4b61f5eb07a0e7d8a6ab16c63bdd3cbd
+2009-05-13T02:58:57.333510Z
+29305
+diego
+has-props
 
 network.c
 file
@@ -276,11 +276,11 @@ file
 
 
 
-2009-10-09T13:57:30.000000Z
-e73b8e29511e062ebd3a6344e6edd6ca
-2009-10-08T11:25:01.224546Z
-29759
-diego
+2009-11-06T14:42:54.000000Z
+d78c9717d3be4e90604a740904d03724
+2009-11-05T21:29:14.866237Z
+29832
+reimar
 has-props
 
 stream_dvd.h
@@ -359,19 +359,6 @@ file
 nicodvb
 has-props
 
-tvi_vbi.c
-file
-
-
-
-
-2009-08-03T15:00:34.000000Z
-6344f7aed95a992f5797f08c7566acfb
-2009-08-02T15:39:08.200325Z
-29470
-cehoyos
-has-props
-
 stream_rtsp.c
 file
 
@@ -409,19 +396,6 @@ file
 diego
 has-props
 
-stream_cdda.c
-file
-
-
-
-
-2009-08-03T15:00:34.000000Z
-16a56012926afebdef2c12b578b34799
-2009-07-26T19:53:00.188059Z
-29443
-diego
-has-props
-
 dvb_tune.c
 file
 
@@ -435,16 +409,16 @@ file
 diego
 has-props
 
-tvi_v4l2.c
+stream_cdda.c
 file
 
 
 
 
-2009-05-25T08:53:53.000000Z
-5718608f8b3c9d398ad7d5fdc1022da0
-2009-05-13T02:58:57.333510Z
-29305
+2009-08-03T15:00:34.000000Z
+16a56012926afebdef2c12b578b34799
+2009-07-26T19:53:00.188059Z
+29443
 diego
 has-props
 
@@ -459,6 +433,19 @@ file
 2009-05-13T02:58:57.333510Z
 29305
 diego
+
+tvi_v4l2.c
+file
+
+
+
+
+2009-11-06T14:42:54.000000Z
+609f99d0195773437c3e1e63b41919ac
+2009-10-29T22:39:00.324083Z
+29802
+cehoyos
+has-props
 
 rtp.h
 file
@@ -552,6 +539,19 @@ file
 diego
 has-props
 
+tv.c
+file
+
+
+
+
+2009-11-06T14:42:54.000000Z
+419571e7c994797dfc1f239f808ed9d6
+2009-10-29T22:13:04.454565Z
+29801
+cehoyos
+has-props
+
 ai_alsa.c
 file
 
@@ -565,31 +565,6 @@ file
 diego
 has-props
 
-tv.c
-file
-
-
-
-
-2009-10-09T13:57:30.000000Z
-d16744b0f74932241d68ea4de66899aa
-2009-10-08T11:25:01.224546Z
-29759
-diego
-has-props
-
-stream_nemesi.c
-file
-
-
-
-
-2009-01-29T11:50:41.000000Z
-1b73da7a5d062ebedbc4c13960770b5e
-2008-05-14T17:20:42.498462Z
-26769
-diego
-
 tcp.h
 file
 
@@ -602,18 +577,17 @@ file
 26769
 diego
 
-audio_in.h
+stream_nemesi.c
 file
 
 
 
 
-2009-05-25T08:53:53.000000Z
-c54e569105f427e898098321bfcbeeb0
-2009-05-13T02:58:57.333510Z
-29305
+2009-01-29T11:50:41.000000Z
+1b73da7a5d062ebedbc4c13960770b5e
+2008-05-14T17:20:42.498462Z
+26769
 diego
-has-props
 
 stream_smb.c
 file
@@ -628,8 +602,18 @@ de3ac1217906c3f29f91248e5e5211f6
 diego
 has-props
 
-librtsp
-dir
+audio_in.h
+file
+
+
+
+
+2009-05-25T08:53:53.000000Z
+c54e569105f427e898098321bfcbeeb0
+2009-05-13T02:58:57.333510Z
+29305
+diego
+has-props
 
 tv.h
 file
@@ -637,12 +621,15 @@ file
 
 
 
-2009-09-14T08:26:27.000000Z
-dd8e9bfd43323b2a17e7a662dcc4b7e7
-2009-08-15T23:41:35.755983Z
-29521
+2009-11-06T14:42:54.000000Z
+48e2cc1210be8e5b65e26558766a8004
+2009-10-31T15:30:56.324573Z
+29808
 cehoyos
 has-props
+
+librtsp
+dir
 
 open.c
 file
@@ -676,11 +663,11 @@ file
 
 
 
-2009-05-25T08:53:53.000000Z
-698f037d26d36d0cda1a96f5a5b093b1
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-11-06T14:42:54.000000Z
+99439d2acdc2e454241ee4314f9cde2a
+2009-10-29T22:39:00.324083Z
+29802
+cehoyos
 has-props
 
 freesdp
@@ -712,6 +699,19 @@ edfd6a58ce24ca9c565581551caa5d9a
 diego
 has-props
 
+stream_netstream.c
+file
+
+
+
+
+2009-05-25T08:53:53.000000Z
+85c622f219464784f51052d21d666e7b
+2009-05-13T02:58:57.333510Z
+29305
+diego
+has-props
+
 tvi_dummy.c
 file
 
@@ -725,14 +725,14 @@ file
 diego
 has-props
 
-stream_netstream.c
+stream_netstream.h
 file
 
 
 
 
 2009-05-25T08:53:53.000000Z
-85c622f219464784f51052d21d666e7b
+aea96c287322800a7658a63129156df1
 2009-05-13T02:58:57.333510Z
 29305
 diego
@@ -749,19 +749,6 @@ file
 2009-05-31T13:09:48.302072Z
 29333
 reimar
-has-props
-
-stream_netstream.h
-file
-
-
-
-
-2009-05-25T08:53:53.000000Z
-aea96c287322800a7658a63129156df1
-2009-05-13T02:58:57.333510Z
-29305
-diego
 has-props
 
 stream.c
@@ -973,11 +960,11 @@ file
 
 
 
-2009-05-25T08:53:53.000000Z
-264b6097237fc168b9cbf227d5c3b487
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-11-06T14:42:54.000000Z
+c240b5389e29daa618378811278bcc72
+2009-10-29T22:13:04.454565Z
+29801
+cehoyos
 has-props
 
 stream_vcd.c
@@ -1012,10 +999,10 @@ file
 
 
 
-2009-05-25T08:53:53.000000Z
-d0ae14a12531cc48798ab69a4e95c9b7
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-11-06T14:42:54.000000Z
+9b3760d80f36b90411bff19254c28e7d
+2009-10-29T22:39:00.324083Z
+29802
+cehoyos
 has-props
 

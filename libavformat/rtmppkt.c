@@ -81,14 +81,19 @@ int ff_rtmp_packet_read(URLContext *h, RTMPPacket *p,
         return AVERROR(EIO);
     channel_id = hdr & 0x3F;
 
+    if (channel_id < 2) { //special case for channel number >= 64
+        buf[1] = 0;
+        if (url_read_complete(h, buf, channel_id + 1) != channel_id + 1)
+            return AVERROR(EIO);
+        channel_id = AV_RL16(buf) + 64;
+    }
     data_size = prev_pkt[channel_id].data_size;
     type      = prev_pkt[channel_id].type;
     extra     = prev_pkt[channel_id].extra;
 
     hdr >>= 6;
     if (hdr == RTMP_PS_ONEBYTE) {
-        //todo
-        return -1;
+        timestamp = prev_pkt[channel_id].timestamp;
     } else {
         if (url_read_complete(h, buf, 3) != 3)
             return AVERROR(EIO);
