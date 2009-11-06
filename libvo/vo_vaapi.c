@@ -62,7 +62,7 @@ const LIBVO_EXTERN(vaapi)
 #define MAX_VIDEO_SURFACES       21 /* Maintain free surfaces in a queue (use least-recently-used) */
 #define NUM_VIDEO_SURFACES_MPEG2  3 /* 1 decode frame, up to  2 references */
 #define NUM_VIDEO_SURFACES_MPEG4  3 /* 1 decode frame, up to  2 references */
-#define NUM_VIDEO_SURFACES_H264  17 /* 1 decode frame, up to 16 references */
+#define NUM_VIDEO_SURFACES_H264  21 /* 1 decode frame, up to 20 references */
 #define NUM_VIDEO_SURFACES_VC1    3 /* 1 decode frame, up to  2 references */
 
 typedef void (*draw_alpha_func)(int x0, int y0, int w, int h,
