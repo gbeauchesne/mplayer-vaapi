@@ -1,15 +1,15 @@
 8
 
 dir
-29834
+29911
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man/en
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-11-04T15:30:13.844459Z
-29823
-cehoyos
+2009-11-12T10:39:52.626134Z
+29905
+ptt
 
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-11-06T14:42:54.000000Z
-2ab72e48b1477eef3385c7149f561548
-2009-11-04T15:30:13.844459Z
-29823
-cehoyos
+2009-11-13T16:30:38.000000Z
+5066dd242bc5acf1046b4eb0941f0a41
+2009-11-12T10:39:52.626134Z
+29905
+ptt
 has-props
 

@@ -115,7 +115,7 @@ static int mov_read_udta_string(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
     case MKTAG(0xa9,'d','a','y'): key = "year";      break;
     case MKTAG(0xa9,'g','e','n'): key = "genre";     break;
     case MKTAG(0xa9,'t','o','o'):
-    case MKTAG(0xa9,'e','n','c'): key = "muxer";     break;
+    case MKTAG(0xa9,'e','n','c'): key = "encoder";   break;
     case MKTAG( 't','r','k','n'): key = "track";
         parse = mov_metadata_trkn; break;
     }
@@ -419,7 +419,7 @@ int ff_mov_read_esds(AVFormatContext *fc, ByteIOContext *pb, MOVAtom atom)
         get_be32(pb); /* avg bitrate */
 
         st->codec->codec_id= ff_codec_get_id(ff_mp4_obj_type, object_type_id);
-        dprintf(fc, "esds object type id %d\n", object_type_id);
+        dprintf(fc, "esds object type id 0x%02x\n", object_type_id);
         len = mp4_read_descr(fc, pb, &tag);
         if (tag == MP4DecSpecificDescrTag) {
             dprintf(fc, "Specific MPEG4 header len=%d\n", len);
@@ -434,9 +434,7 @@ int ff_mov_read_esds(AVFormatContext *fc, ByteIOContext *pb, MOVAtom atom)
                 MPEG4AudioConfig cfg;
                 ff_mpeg4audio_get_config(&cfg, st->codec->extradata,
                                          st->codec->extradata_size);
-                if (cfg.chan_config > 7)
-                    return -1;
-                st->codec->channels = ff_mpeg4audio_channels[cfg.chan_config];
+                st->codec->channels = cfg.channels;
                 if (cfg.object_type == 29 && cfg.sampling_index < 3) // old mp3on4
                     st->codec->sample_rate = ff_mpa_freq_tab[cfg.sampling_index];
                 else

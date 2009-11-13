@@ -1,15 +1,15 @@
 8
 
 dir
-29834
+29911
 svn://svn.mplayerhq.hu/mplayer/trunk/input
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-06-26T20:21:38.985701Z
-29403
-ben
+2009-11-07T16:40:42.914700Z
+29851
+cehoyos
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -45,11 +45,11 @@ file
 
 
 
-2009-07-06T15:13:52.000000Z
-d26bc2428ece25cd0bfaad005486e9e2
-2009-06-26T20:21:38.985701Z
-29403
-ben
+2009-11-13T16:30:38.000000Z
+0626b6dc75f8a5593c3f5f09e90fb221
+2009-11-07T16:40:42.914700Z
+29851
+cehoyos
 has-props
 
 joystick.c

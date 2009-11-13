@@ -23,6 +23,13 @@
 #ifndef MPLAYER_DEC_TELETEXT_H
 #define MPLAYER_DEC_TELETEXT_H
 
+struct tt_param {
+    char *device;  ///< teletext device
+    int format;    ///< teletext display format
+    int page;      ///< start teletext page
+    int lang;      ///< primary language code
+};
+
 #define VBI_CONTROL_FALSE              0
 #define VBI_CONTROL_TRUE               1
 #define VBI_CONTROL_UNKNOWN           -1
@@ -62,6 +69,7 @@ int teletext_control(void* p, int cmd, void *arg);
 #define TV_VBI_CONTROL_STOP            0x555   ///< vbi stop
 #define TV_VBI_CONTROL_DECODE_PAGE     0x556   ///< decode vbi page
 #define TV_VBI_CONTROL_GET_NETWORKNAME 0x557   ///< get current network name
+#define TV_VBI_CONTROL_DECODE_DVB      0x558   ///< decode DVB teletext
 
 #define VBI_TFORMAT_TEXT    0               ///< text mode
 #define VBI_TFORMAT_BW      1               ///< black&white mode

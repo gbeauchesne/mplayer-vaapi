@@ -1,15 +1,15 @@
 8
 
 dir
-20467
+20530
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavutil
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-11-05T23:45:15.887935Z
-20467
-stefano
+2009-11-11T00:02:36.746347Z
+20509
+cehoyos
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2009-11-06T14:42:56.000000Z
-cfd724e7d519a7b509979ea84aeb3374
-2009-11-05T23:45:15.887935Z
-20467
-stefano
+2009-11-13T16:30:39.000000Z
+2b7b4eaa9735f651165da71fffde95b1
+2009-11-11T00:02:36.746347Z
+20509
+cehoyos
 has-props
 
 utils.c
@@ -51,18 +51,6 @@ file
 14670
 stefano
 
-x86_cpu.h
-file
-
-
-
-
-2009-03-22T00:23:07.000000Z
-9d1818ee55b0fa6d497a684e8a400447
-2009-03-19T14:49:47.697399Z
-18043
-michael
-
 adler32.h
 file
 
@@ -74,6 +62,18 @@ file
 2008-08-31T07:39:47.782626Z
 15120
 stefano
+
+x86_cpu.h
+file
+
+
+
+
+2009-03-22T00:23:07.000000Z
+9d1818ee55b0fa6d497a684e8a400447
+2009-03-19T14:49:47.697399Z
+18043
+michael
 
 integer.h
 file
@@ -138,19 +138,6 @@ file
 18112
 diego
 
-pixfmt.h
-file
-
-
-
-
-2009-09-14T08:26:30.000000Z
-ceb286a6ee7fe7793eb030771192dc37
-2009-09-05T23:33:25.906096Z
-19775
-ramiro
-has-props
-
 crc.h
 file
 
@@ -162,6 +149,19 @@ file
 2009-01-28T00:16:05.717197Z
 16840
 diego
+has-props
+
+pixfmt.h
+file
+
+
+
+
+2009-11-13T16:30:39.000000Z
+94470b7e54105715a9d16cce14827d7b
+2009-11-10T18:52:39.854562Z
+20502
+cehoyos
 has-props
 
 lfg.h
@@ -189,18 +189,6 @@ file
 bcoudurier
 has-props
 
-md5.c
-file
-
-
-
-
-2009-08-03T15:00:36.000000Z
-41e4a0557a61baac9bef9fe50c5fa57c
-2009-07-26T12:20:04.617603Z
-19508
-mru
-
 random_seed.h
 file
 
@@ -213,6 +201,18 @@ file
 17989
 stefano
 has-props
+
+md5.c
+file
+
+
+
+
+2009-08-03T15:00:36.000000Z
+41e4a0557a61baac9bef9fe50c5fa57c
+2009-07-26T12:20:04.617603Z
+19508
+mru
 
 intfloat_readwrite.c
 file
@@ -400,6 +400,19 @@ file
 16971
 reimar
 
+internal.h
+file
+
+
+
+
+2009-11-13T16:30:39.000000Z
+247b7aff077321454a20662d9e9a2f23
+2009-11-10T12:59:56.090956Z
+20498
+reimar
+has-props
+
 bswap.h
 file
 
@@ -413,17 +426,17 @@ f60d693267ac5c3a875504b619830f77
 mru
 has-props
 
-internal.h
+fifo.c
 file
 
 
 
 
-2009-10-09T13:57:32.000000Z
-4cb90c171be85c7af51a385bdcd610d1
-2009-09-21T03:01:57.977164Z
-19942
-lorenm
+2009-04-03T07:43:02.000000Z
+c72459569171ba546cba885ac9fa02ec
+2009-04-02T23:22:19.381326Z
+18321
+stefano
 has-props
 
 mem.h
@@ -437,19 +450,6 @@ file
 2009-07-09T02:20:29.583042Z
 19384
 ramiro
-has-props
-
-fifo.c
-file
-
-
-
-
-2009-04-03T07:43:02.000000Z
-c72459569171ba546cba885ac9fa02ec
-2009-04-02T23:22:19.381326Z
-18321
-stefano
 has-props
 
 fifo.h
@@ -487,15 +487,12 @@ file
 
 
 
-2009-03-09T16:00:08.000000Z
-36fa8790b7e73c748cb398c14671b08f
-2009-03-09T10:24:47.750310Z
-17903
-diego
+2009-11-13T16:30:39.000000Z
+c411d3d5f522032fc5f2730f99fae7eb
+2009-11-09T09:11:35.286311Z
+20484
+cehoyos
 has-props
-
-ppc
-dir
 
 sha1.h
 file
@@ -508,6 +505,9 @@ cdf202366716111b957b22556a265571
 2009-07-10T15:50:49.894292Z
 19394
 kostya
+
+ppc
+dir
 
 avstring.h
 file
@@ -540,11 +540,11 @@ file
 
 
 
-2009-04-03T07:43:02.000000Z
-daf83f4f02c5ecbe43f2a33b99ab925c
-2009-04-02T23:22:19.381326Z
-18321
-stefano
+2009-11-13T16:30:39.000000Z
+f448aaa27e1496f7e6658bb3fbc17026
+2009-11-09T09:11:35.286311Z
+20484
+cehoyos
 has-props
 
 sha.c
@@ -763,11 +763,11 @@ file
 
 
 
-2009-10-09T13:57:32.000000Z
-4ee81368ef0bb8172d336fc52ffed9cc
-2009-09-23T18:22:00.510432Z
-20006
-diego
+2009-11-13T16:30:39.000000Z
+621c886f946bb3dec5a2ca6c0af7c309
+2009-11-09T09:11:35.286311Z
+20484
+cehoyos
 has-props
 
 integer.c

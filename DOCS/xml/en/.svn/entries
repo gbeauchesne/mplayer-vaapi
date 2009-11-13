@@ -1,15 +1,15 @@
 8
 
 dir
-29834
+29911
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/en
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-07-30T20:10:16.313337Z
-29461
-diego
+2009-11-11T15:15:46.994787Z
+29902
+tack
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -162,11 +162,11 @@ file
 
 
 
-2009-02-17T07:57:10.000000Z
-7672ea76aa1c949eb9561601098e9fb9
-2009-02-16T20:03:32.782878Z
-28615
-bircoph
+2009-11-13T16:30:38.000000Z
+690d3c7ccd36f48fe237002bc54b3478
+2009-11-11T15:15:46.994787Z
+29902
+tack
 has-props
 
 mencoder.xml

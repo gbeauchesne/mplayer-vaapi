@@ -1,15 +1,15 @@
 8
 
 dir
-29834
+29911
 svn://svn.mplayerhq.hu/mplayer/trunk/etc
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-11-05T18:53:05.194711Z
-29825
-reimar
+2009-11-10T19:11:13.165993Z
+29885
+cehoyos
 
 
 svn:special svn:externals svn:needs-lock
@@ -97,11 +97,11 @@ file
 
 
 
-2009-11-06T14:42:55.000000Z
-25a4c150c812bf1721fdf061aac3ba9c
-2009-11-03T20:18:47.936151Z
-29817
-compn
+2009-11-13T16:30:38.000000Z
+6b0001aafccbafbe81d6b759fd684801
+2009-11-10T19:11:13.165993Z
+29885
+cehoyos
 has-props
 
 inttypes.h
@@ -123,11 +123,11 @@ file
 
 
 
-2009-05-25T08:54:02.000000Z
-09fbe6aab949a8270b3a5063a62b5a56
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-11-13T16:30:38.000000Z
+658fa331ccfa9de6809a19d80ca8f194
+2009-11-10T11:51:22.316251Z
+29876
+zuxy
 has-props
 
 mplayer.xpm

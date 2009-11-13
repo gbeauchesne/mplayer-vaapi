@@ -1,15 +1,15 @@
 8
 
 dir
-29834
+29911
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/ru
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-11-11T15:15:46.994787Z
+29902
+tack
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -175,11 +175,11 @@ file
 
 
 
-2009-02-17T07:57:10.000000Z
-8f49b8f40914f81ff8fead213ac9c19e
-2009-02-16T20:07:52.208058Z
-28616
-bircoph
+2009-11-13T16:30:38.000000Z
+8aa885fde7282ff955048a82b5bfb8c4
+2009-11-11T15:15:46.994787Z
+29902
+tack
 has-props
 
 radio.xml
