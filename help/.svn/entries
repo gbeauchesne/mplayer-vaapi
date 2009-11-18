@@ -1,15 +1,15 @@
 8
 
 dir
-29911
+29931
 svn://svn.mplayerhq.hu/mplayer/trunk/help
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-10-08T10:18:19.794507Z
-29757
-ptt
+2009-11-16T15:20:57.576017Z
+29918
+Gabrov
 
 
 svn:special svn:externals svn:needs-lock
@@ -26,14 +26,14 @@ svn:special svn:externals svn:needs-lock
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
 
-help_mp-es.h
+help_mp-mk.h
 file
 
 
 
 
 2009-10-09T13:57:31.000000Z
-3a321cb21c3b82e3818bceadacea1279
+7f3d327db274fa73ebc43bf7526d838a
 2009-09-30T14:55:43.332379Z
 29742
 diego
@@ -52,27 +52,14 @@ file
 diego
 has-props
 
-help_mp-mk.h
+help_mp-es.h
 file
 
 
 
 
 2009-10-09T13:57:31.000000Z
-7f3d327db274fa73ebc43bf7526d838a
-2009-09-30T14:55:43.332379Z
-29742
-diego
-has-props
-
-help_mp-ko.h
-file
-
-
-
-
-2009-10-09T13:57:31.000000Z
-106d6a3c5c65593e0109a4308e0b2177
+3a321cb21c3b82e3818bceadacea1279
 2009-09-30T14:55:43.332379Z
 29742
 diego
@@ -91,6 +78,19 @@ file
 diego
 has-props
 
+help_mp-ko.h
+file
+
+
+
+
+2009-10-09T13:57:31.000000Z
+106d6a3c5c65593e0109a4308e0b2177
+2009-09-30T14:55:43.332379Z
+29742
+diego
+has-props
+
 help_mp-pl.h
 file
 
@@ -104,6 +104,32 @@ file
 diego
 has-props
 
+help_mp-it.h
+file
+
+
+
+
+2009-11-18T15:27:27.000000Z
+9f47f351d3ff58d2b8fe68f0502fa13b
+2009-11-16T14:26:18.156018Z
+29917
+ptt
+has-props
+
+help_mp-hu.h
+file
+
+
+
+
+2009-11-18T15:27:27.000000Z
+650b3fe1d8c7800ab8384fb400ef4521
+2009-11-16T15:20:57.576017Z
+29918
+Gabrov
+has-props
+
 help_create.sh
 file
 
@@ -115,32 +141,6 @@ file
 2009-02-04T19:17:03.625978Z
 28467
 diego
-has-props
-
-help_mp-hu.h
-file
-
-
-
-
-2009-10-09T13:57:31.000000Z
-85fc3c5f60259fa9ae870ca1f6d73c31
-2009-09-30T14:55:43.332379Z
-29742
-diego
-has-props
-
-help_mp-it.h
-file
-
-
-
-
-2009-10-09T13:57:31.000000Z
-ff0e4154d402a090f0ec36a4002714ef
-2009-10-08T10:18:19.794507Z
-29757
-ptt
 has-props
 
 help_mp-sk.h
@@ -331,11 +331,11 @@ file
 
 
 
-2009-10-09T13:57:31.000000Z
-44f21b504f37f9b5e7d0765605ef9c9a
-2009-09-30T14:55:43.332379Z
-29742
-diego
+2009-11-18T15:27:27.000000Z
+12266da6b43362e86b8a0e49c2d1312d
+2009-11-14T12:46:14.044529Z
+29912
+cehoyos
 has-props
 
 help_mp-cs.h

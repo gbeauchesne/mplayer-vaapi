@@ -1,7 +1,7 @@
 8
 
 dir
-1184
+1187
 svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdread/src
 svn://svn.mplayerhq.hu/dvdnav
 
@@ -52,19 +52,6 @@ file
 nicodvb
 has-props
 
-bitreader.c
-file
-
-
-
-
-2009-05-25T08:54:09.000000Z
-9048cf8bf6fe99c81d21c94876e2ae78
-2009-04-28T13:26:33.798743Z
-1172
-nicodvb
-has-props
-
 dvd_input.h
 file
 
@@ -76,6 +63,19 @@ c6709a9858812bcda21288d69b4d9169
 2008-09-14T20:37:38.705801Z
 1143
 diego
+has-props
+
+bitreader.c
+file
+
+
+
+
+2009-05-25T08:54:09.000000Z
+9048cf8bf6fe99c81d21c94876e2ae78
+2009-04-28T13:26:33.798743Z
+1172
+nicodvb
 has-props
 
 ifo_read.c
@@ -156,9 +156,6 @@ file
 nicodvb
 has-props
 
-dvdread
-dir
-
 Makefile.am
 file
 
@@ -171,6 +168,9 @@ ab4a7f88a4237b8c3e36aac76e51a6bb
 1162
 reimar
 has-props
+
+dvdread
+dir
 
 ifo_print.c
 file

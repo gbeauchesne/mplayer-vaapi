@@ -1,15 +1,15 @@
 8
 
 dir
-29911
+29931
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/hu
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-11-11T15:15:46.994787Z
-29902
-tack
+2009-11-16T15:20:57.576017Z
+29918
+Gabrov
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -162,11 +162,11 @@ file
 
 
 
-2009-11-13T16:30:38.000000Z
-2321b7d4be599623c405815272b8af34
-2009-11-11T15:15:46.994787Z
-29902
-tack
+2009-11-18T15:27:27.000000Z
+328a19217617c6554d4f90e15cdf440e
+2009-11-16T15:20:57.576017Z
+29918
+Gabrov
 has-props
 
 mencoder.xml
