@@ -77,6 +77,9 @@ static struct vo_rect           g_borders;
 static struct vo_rect           g_output_rect;
 static VASurfaceID              g_output_surfaces[MAX_OUTPUT_SURFACES];
 static unsigned int             g_output_surface;
+static int                      g_top_field_first;
+static int                      g_deint;
+static int                      g_deint_type;
 
 #if CONFIG_GL
 static int                      gl_enabled;
@@ -631,6 +634,7 @@ static int int_012(int *n)
 static const opt_t subopts[] = {
     { "dm",          OPT_ARG_INT,  &va_dm,        (opt_test_f)int_012 },
     { "stats",       OPT_ARG_BOOL, &cpu_stats,    NULL },
+    { "deint",       OPT_ARG_INT,  &g_deint,      (opt_test_f)int_012 },
 #if CONFIG_GL
     { "gl",          OPT_ARG_BOOL, &gl_enabled,   NULL },
     { "bind",        OPT_ARG_BOOL, &gl_binding,   NULL },
@@ -646,6 +650,8 @@ static int preinit(const char *arg)
     int i, max_image_formats, max_subpic_formats, max_profiles;
 
     va_dm = 2;
+    g_deint = 0;
+    g_deint_type = 2;
     if (subopt_parse(arg, subopts) != 0) {
         mp_msg(MSGT_VO, MSGL_FATAL,
                "\n-vo vaapi command line help:\n"
@@ -653,6 +659,10 @@ static int preinit(const char *arg)
                "\nOptions:\n"
                "  dm=0|1|2\n"
                "    Use direct surface mapping (default: 2 - autodetect)\n"
+               "  deint=0|1|2 (all modes > 0 respect -field-dominance)\n"
+               "    0: no deinterlacing\n"
+               "    1: only show first field\n"
+               "    2: bob deinterlacing\n"
 #if CONFIG_GL
                "  gl\n"
                "    Enable OpenGL rendering\n"
@@ -664,6 +674,8 @@ static int preinit(const char *arg)
                "\n" );
         return -1;
     }
+    if (g_deint)
+        g_deint_type = g_deint;
 #if CONFIG_GL
     if (gl_enabled)
         mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using OpenGL rendering%s\n",
@@ -1152,19 +1164,26 @@ static int query_format(uint32_t format)
 static void put_surface_x11(VASurfaceID surface)
 {
     VAStatus status;
+    int i;
 
-    status = vaPutSurface(va_context->display,
-                          surface,
-                          vo_window,
-                          0, 0, g_image_width, g_image_height,
-                          g_output_rect.left,
-                          g_output_rect.top,
-                          g_output_rect.width,
-                          g_output_rect.height,
-                          NULL, 0,
-                          VA_FRAME_PICTURE);
-    if (!check_status(status, "vaPutSurface()"))
-        return;
+    for (i = 0; i <= !!(g_deint > 1); i++) {
+        int field = VA_FRAME_PICTURE;
+        if (g_deint)
+            field = (g_top_field_first == i) ^ (g_deint > 1) ? VA_BOTTOM_FIELD : VA_TOP_FIELD;
+
+        status = vaPutSurface(va_context->display,
+                              surface,
+                              vo_window,
+                              0, 0, g_image_width, g_image_height,
+                              g_output_rect.left,
+                              g_output_rect.top,
+                              g_output_rect.width,
+                              g_output_rect.height,
+                              NULL, 0,
+                              field);
+        if (!check_status(status, "vaPutSurface()"))
+            return;
+    }
 }
 
 #if CONFIG_VAAPI_GLX
@@ -1489,6 +1508,11 @@ static uint32_t draw_image(mp_image_t *mpi)
 
     g_output_surfaces[g_output_surface] = surface;
 
+    if (mpi->fields & MP_IMGFIELD_ORDERED)
+        g_top_field_first = !!(mpi->fields & MP_IMGFIELD_TOP_FIRST);
+    else
+        g_top_field_first = 1;
+
     if (cpu_stats) {
         static uint64_t ticks;
         if ((ticks++ % 30) == 0) {
@@ -1516,6 +1540,14 @@ static void check_events(void)
 static int control(uint32_t request, void *data, ...)
 {
     switch (request) {
+    case VOCTRL_GET_DEINTERLACE:
+        *(int*)data = g_deint;
+        return VO_TRUE;
+    case VOCTRL_SET_DEINTERLACE:
+        g_deint = *(int*)data;
+        if (g_deint)
+            g_deint = g_deint_type;
+        return VO_TRUE;
     case VOCTRL_PAUSE:
         return (g_is_paused = 1);
     case VOCTRL_RESUME:
