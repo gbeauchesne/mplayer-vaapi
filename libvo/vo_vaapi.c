@@ -87,6 +87,7 @@ static unsigned int             g_output_surface;
 static int                      g_top_field_first;
 static int                      g_deint;
 static int                      g_deint_type;
+static int                      g_colorspace;
 
 #if CONFIG_GL
 static int                      gl_enabled;
@@ -643,6 +644,7 @@ static const opt_t subopts[] = {
     { "dm",          OPT_ARG_INT,  &va_dm,        (opt_test_f)int_012 },
     { "stats",       OPT_ARG_BOOL, &cpu_stats,    NULL },
     { "deint",       OPT_ARG_INT,  &g_deint,      (opt_test_f)int_012 },
+    { "colorspace",  OPT_ARG_INT,  &g_colorspace, (opt_test_f)int_012 },
 #if CONFIG_GL
     { "gl",          OPT_ARG_BOOL, &gl_enabled,   NULL },
     { "bind",        OPT_ARG_BOOL, &gl_binding,   NULL },
@@ -662,6 +664,7 @@ static int preinit(const char *arg)
     va_dm = 2;
     g_deint = 0;
     g_deint_type = 2;
+    g_colorspace = 1;
     if (subopt_parse(arg, subopts) != 0) {
         mp_msg(MSGT_VO, MSGL_FATAL,
                "\n-vo vaapi command line help:\n"
@@ -673,6 +676,10 @@ static int preinit(const char *arg)
                "    0: no deinterlacing\n"
                "    1: only show first field\n"
                "    2: bob deinterlacing\n"
+               "  colorspace\n"
+               "    0: guess based on video resolution\n"
+               "    1: ITU-R BT.601 (default)\n"
+               "    2: ITU-R BT.709\n"
 #if CONFIG_GL
                "  gl\n"
                "    Enable OpenGL rendering\n"
@@ -1214,6 +1221,19 @@ static void put_surface_x11(VASurfaceID surface)
         if (g_deint)
             field = (g_top_field_first == i) ^ (g_deint > 1) ? VA_BOTTOM_FIELD : VA_TOP_FIELD;
 
+        int csp = 0;
+        switch (g_colorspace) {
+        case 0:
+            csp = (g_image_width >= 1280 || g_image_height > 576) ? VA_SRC_BT709 : VA_SRC_BT601;
+            break;
+        case 1:
+            csp = VA_SRC_BT601;
+            break;
+        case 2:
+            csp = VA_SRC_BT709;
+            break;
+        }
+
         status = vaPutSurface(va_context->display,
                               surface,
                               vo_window,
@@ -1223,7 +1243,7 @@ static void put_surface_x11(VASurfaceID surface)
                               g_output_rect.width,
                               g_output_rect.height,
                               NULL, 0,
-                              field);
+                              field|csp);
         if (!check_status(status, "vaPutSurface()"))
             return;
     }
