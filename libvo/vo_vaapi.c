@@ -69,6 +69,13 @@ typedef void (*draw_alpha_func)(int x0, int y0, int w, int h,
                                 unsigned char *src, unsigned char *srca,
                                 int stride);
 
+struct vaapi_equalizer {
+    VADisplayAttribute brightness;
+    VADisplayAttribute contrast;
+    VADisplayAttribute hue;
+    VADisplayAttribute saturation;
+};
+
 static int                      g_is_paused;
 static uint32_t                 g_image_width;
 static uint32_t                 g_image_height;
@@ -125,6 +132,7 @@ static VASubpictureID           va_osd_subpicture;
 static int                      va_osd_associated;
 static draw_alpha_func          va_osd_draw_alpha;
 static uint8_t                 *va_osd_palette;
+static struct vaapi_equalizer   va_equalizer;
 
 ///< Flag: direct surface mapping: use mpi->number to select free VA surface?
 static int                      va_dm;
@@ -645,9 +653,11 @@ static const opt_t subopts[] = {
 
 static int preinit(const char *arg)
 {
+    VADisplayAttribute *display_attrs;
     VAStatus status;
     int va_major_version, va_minor_version;
     int i, max_image_formats, max_subpic_formats, max_profiles;
+    int num_display_attrs, max_display_attrs;
 
     va_dm = 2;
     g_deint = 0;
@@ -748,6 +758,39 @@ static int preinit(const char *arg)
 
     va_osd_subpicture = VA_INVALID_ID;
     va_osd_image.image_id = VA_INVALID_ID;
+
+    max_display_attrs = vaMaxNumDisplayAttributes(va_context->display);
+    display_attrs = calloc(max_display_attrs, sizeof(*display_attrs));
+    if (display_attrs) {
+        num_display_attrs = 0;
+        status = vaQueryDisplayAttributes(va_context->display,
+                                          display_attrs, &num_display_attrs);
+        if (check_status(status, "vaQueryDisplayAttributes()")) {
+            for (i = 0; i < num_display_attrs; i++) {
+                VADisplayAttribute *attr;
+                switch (display_attrs[i].type) {
+                case VADisplayAttribBrightness:
+                    attr = &va_equalizer.brightness;
+                    break;
+                case VADisplayAttribContrast:
+                    attr = &va_equalizer.contrast;
+                    break;
+                case VADisplayAttribHue:
+                    attr = &va_equalizer.hue;
+                    break;
+                case VADisplayAttribSaturation:
+                    attr = &va_equalizer.saturation;
+                    break;
+                default:
+                    attr = NULL;
+                    break;
+                }
+                if (attr)
+                    *attr = display_attrs[i];
+            }
+        }
+        free(display_attrs);
+    }
     return 0;
 }
 
@@ -1537,6 +1580,59 @@ static void check_events(void)
     }
 }
 
+static VADisplayAttribute *get_display_attribute(const char *name)
+{
+    VADisplayAttribute *attr;
+    if (!strcasecmp(name, "brightness"))
+        attr = &va_equalizer.brightness;
+    else if (!strcasecmp(name, "contrast"))
+        attr = &va_equalizer.contrast;
+    else if (!strcasecmp(name, "saturation"))
+        attr = &va_equalizer.saturation;
+    else if (!strcasecmp(name, "hue"))
+        attr = &va_equalizer.hue;
+    else
+        attr = NULL;
+    return attr;
+}
+
+static int get_equalizer(const char *name, int *value)
+{
+    VADisplayAttribute * const attr = get_display_attribute(name);
+    int r;
+
+    if (!attr || !(attr->flags & VA_DISPLAY_ATTRIB_GETTABLE))
+        return VO_NOTIMPL;
+
+    /* normalize to -100 .. 100 range */
+    r = attr->max_value - attr->min_value;
+    if (r == 0)
+        return VO_NOTIMPL;
+    *value = ((attr->value - attr->min_value) * 200) / r - 100;
+    return VO_TRUE;
+}
+
+static int set_equalizer(const char *name, int value)
+{
+    VADisplayAttribute * const attr = get_display_attribute(name);
+    VAStatus status;
+    int r;
+
+    if (!attr || !(attr->flags & VA_DISPLAY_ATTRIB_SETTABLE))
+        return VO_NOTIMPL;
+
+    /* normalize to attribute value range */
+    r = attr->max_value - attr->min_value;
+    if (r == 0)
+        return VO_NOTIMPL;
+    attr->value = ((value + 100) * r) / 200 + attr->min_value;
+
+    status = vaSetDisplayAttributes(va_context->display, attr, 1);
+    if (!check_status(status, "vaSetDisplayAttributes()"))
+        return VO_FALSE;
+    return VO_TRUE;
+}
+
 static int control(uint32_t request, void *data, ...)
 {
     switch (request) {
@@ -1568,6 +1664,26 @@ static int control(uint32_t request, void *data, ...)
         vo_x11_fullscreen();
         resize();
         return VO_TRUE;
+    case VOCTRL_SET_EQUALIZER: {
+        va_list ap;
+        int value;
+
+        va_start(ap, data);
+        value = va_arg(ap, int);
+
+        va_end(ap);
+        return set_equalizer(data, value);
+    }
+    case VOCTRL_GET_EQUALIZER: {
+        va_list ap;
+        int *value;
+
+        va_start(ap, data);
+        value = va_arg(ap, int *);
+
+        va_end(ap);
+        return get_equalizer(data, value);
+    }
     case VOCTRL_ONTOP:
         vo_x11_ontop();
         return VO_TRUE;
