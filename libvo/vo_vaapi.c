@@ -1213,29 +1213,40 @@ static int query_format(uint32_t format)
     return 0;
 }
 
+static inline int get_field_flags(int i)
+{
+    return (g_deint ? 
+            ((g_top_field_first == i) ^ (g_deint > 1) ?
+             VA_BOTTOM_FIELD : VA_TOP_FIELD) : VA_FRAME_PICTURE);
+}
+
+static inline int get_colorspace_flags(void)
+{
+    int csp;
+    switch (g_colorspace) {
+    case 0:
+        csp = ((g_image_width >= 1280 || g_image_height > 576) ?
+               VA_SRC_BT709 : VA_SRC_BT601);
+        break;
+    case 1:
+        csp = VA_SRC_BT601;
+        break;
+    case 2:
+        csp = VA_SRC_BT709;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+    return csp;
+}
+
 static void put_surface_x11(VASurfaceID surface)
 {
     VAStatus status;
     int i;
 
     for (i = 0; i <= !!(g_deint > 1); i++) {
-        int field = VA_FRAME_PICTURE;
-        if (g_deint)
-            field = (g_top_field_first == i) ^ (g_deint > 1) ? VA_BOTTOM_FIELD : VA_TOP_FIELD;
-
-        int csp = 0;
-        switch (g_colorspace) {
-        case 0:
-            csp = (g_image_width >= 1280 || g_image_height > 576) ? VA_SRC_BT709 : VA_SRC_BT601;
-            break;
-        case 1:
-            csp = VA_SRC_BT601;
-            break;
-        case 2:
-            csp = VA_SRC_BT709;
-            break;
-        }
-
         status = vaPutSurface(va_context->display,
                               surface,
                               vo_window,
@@ -1245,7 +1256,7 @@ static void put_surface_x11(VASurfaceID surface)
                               g_output_rect.width,
                               g_output_rect.height,
                               NULL, 0,
-                              field|csp);
+                              get_field_flags(i) | get_colorspace_flags());
         if (!check_status(status, "vaPutSurface()"))
             return;
     }
@@ -1255,31 +1266,37 @@ static void put_surface_x11(VASurfaceID surface)
 static void put_surface_glx(VASurfaceID surface)
 {
     VAStatus status;
+    int i;
 
     if (surface == VA_INVALID_SURFACE)
         return;
 
     if (gl_binding) {
-        status = vaAssociateSurfaceGLX(va_context->display,
-                                       gl_surface,
-                                       surface,
-                                       VA_FRAME_PICTURE);
-        if (!check_status(status, "vaAssociateSurfaceGLX()"))
-            return;
+        for (i = 0; i <= !!(g_deint > 1); i++) {
+            status = vaAssociateSurfaceGLX(va_context->display,
+                                           gl_surface,
+                                           surface,
+                                           get_field_flags(i) | get_colorspace_flags());
+            if (!check_status(status, "vaAssociateSurfaceGLX()"))
+                return;
+        }
     }
     else {
-        status = vaCopySurfaceGLX(va_context->display,
-                                  gl_surface,
-                                  surface,
-                                  VA_FRAME_PICTURE);
-        if (status == VA_STATUS_ERROR_UNIMPLEMENTED) {
-            mp_msg(MSGT_VO, MSGL_WARN,
-                   "[vo_vaapi] vaCopySurfaceGLX() is not implemented\n");
-            gl_binding = 1;
-        }
-        else {
-            if (!check_status(status, "vaCopySurfaceGLX()"))
-                return;
+        for (i = 0; i <= !!(g_deint > 1); i++) {
+            status = vaCopySurfaceGLX(va_context->display,
+                                      gl_surface,
+                                      surface,
+                                      get_field_flags(i) | get_colorspace_flags());
+
+            if (status == VA_STATUS_ERROR_UNIMPLEMENTED) {
+                mp_msg(MSGT_VO, MSGL_WARN,
+                       "[vo_vaapi] vaCopySurfaceGLX() is not implemented\n");
+                gl_binding = 1;
+            }
+            else {
+                if (!check_status(status, "vaCopySurfaceGLX()"))
+                    return;
+            }
         }
     }
     g_output_surfaces[g_output_surface] = surface;
