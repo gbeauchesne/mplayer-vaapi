@@ -1,15 +1,15 @@
 8
 
 dir
-29931
+29968
 svn://svn.mplayerhq.hu/mplayer/trunk/etc
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-11-10T19:11:13.165993Z
-29885
-cehoyos
+2009-11-26T18:01:13.266057Z
+29967
+compn
 
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2009-11-06T14:42:55.000000Z
-4377ad3fde0edd4cadf697c29474c395
-2009-11-05T18:53:05.194711Z
-29825
-reimar
+2009-11-27T10:03:36.000000Z
+0527f0f2d0b46cfee94a3d782f438669
+2009-11-26T18:01:13.266057Z
+29967
+compn
 has-props
 
 dvb-menu.conf
@@ -97,11 +97,11 @@ file
 
 
 
-2009-11-13T16:30:38.000000Z
-6b0001aafccbafbe81d6b759fd684801
-2009-11-10T19:11:13.165993Z
-29885
-cehoyos
+2009-11-27T10:03:36.000000Z
+84a1105b5ef86a6c54d1d9b1449b16bf
+2009-11-26T18:00:45.254915Z
+29966
+compn
 has-props
 
 inttypes.h

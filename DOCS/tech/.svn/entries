@@ -1,15 +1,15 @@
 8
 
 dir
-29931
+29968
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/tech
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-11-11T11:38:41.916057Z
-29900
-reimar
+2009-11-23T20:41:06.884526Z
+29963
+compn
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -219,19 +219,6 @@ file
 diego
 has-props
 
-libmpcodecs.txt
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-bee6714bfdcac53b2836d0a1c6871cce
-2009-01-11T19:48:51.883031Z
-28304
-diego
-has-props
-
 codecs.conf.txt
 file
 
@@ -245,6 +232,19 @@ file
 compn
 has-props
 
+libmpcodecs.txt
+file
+
+
+
+
+2009-01-29T11:50:47.000000Z
+bee6714bfdcac53b2836d0a1c6871cce
+2009-01-11T19:48:51.883031Z
+28304
+diego
+has-props
+
 snow.txt
 file
 
@@ -253,6 +253,19 @@ file
 
 2009-05-25T08:53:58.000000Z
 64e40f969a570569c06c8e6ce150cc71
+2009-05-13T02:58:57.333510Z
+29305
+diego
+has-props
+
+new_policy_proposal.txt
+file
+
+
+
+
+2009-05-25T08:53:58.000000Z
+639532a95a0b866d7be4ef9e704e8407
 2009-05-13T02:58:57.333510Z
 29305
 diego
@@ -271,29 +284,16 @@ file
 reimar
 has-props
 
-new_policy_proposal.txt
-file
-
-
-
-
-2009-05-25T08:53:58.000000Z
-639532a95a0b866d7be4ef9e704e8407
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
-
 wishlist
 file
 
 
 
 
-2009-04-06T14:43:47.000000Z
-222a2a9a3006666b0ef36be6d0a2fe95
-2009-04-04T21:21:40.368552Z
-29142
+2009-11-27T10:03:35.000000Z
+97d7e16728476a9b1ea3587df26a447c
+2009-11-23T20:41:06.884526Z
+29963
 compn
 has-props
 
@@ -375,19 +375,6 @@ file
 diego
 has-props
 
-manpage.txt
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-28675276d54d90c9f610faf48ab101c4
-2007-10-30T22:35:42.789596Z
-24904
-cehoyos
-has-props
-
 libao2.txt
 file
 
@@ -401,17 +388,17 @@ fe9b1c7d519e2aaf60619a21d49d7a61
 diego
 has-props
 
-codec-devel.txt
+manpage.txt
 file
 
 
 
 
-2009-05-25T08:53:58.000000Z
-4f0db76d7487b3e01c30bb4fa10096ea
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-01-29T11:50:47.000000Z
+28675276d54d90c9f610faf48ab101c4
+2007-10-30T22:35:42.789596Z
+24904
+cehoyos
 has-props
 
 slave.txt
@@ -425,6 +412,19 @@ file
 2009-11-11T11:38:41.916057Z
 29900
 reimar
+has-props
+
+codec-devel.txt
+file
+
+
+
+
+2009-05-25T08:53:58.000000Z
+4f0db76d7487b3e01c30bb4fa10096ea
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 win32-codec-howto.txt
