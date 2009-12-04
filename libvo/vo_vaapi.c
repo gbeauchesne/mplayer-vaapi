@@ -426,13 +426,20 @@ static void draw_alpha_rgb32(int x0, int y0, int w, int h,
                              unsigned char *src, unsigned char *srca,
                              int stride)
 {
+    int x, y;
+    const unsigned int dststride = va_osd_image.pitches[0];
+    unsigned char *dst = get_osd_image_data(x0, y0);
+
     update_osd_image_dirty_rect(x0, y0, w, h);
 
-    vo_draw_alpha_rgb32(w, h, src, srca, stride,
-                        va_osd_image_data +
-                        va_osd_image.offsets[0] +
-                        va_osd_image.pitches[0] * y0 + x0,
-                        va_osd_image.pitches[0]);
+    for (y = 0; y < h; y++, dst += dststride, src += stride, srca += stride)
+        for (x = 0; x < w; x++) {
+            const unsigned char c = src[x];
+            dst[4*x + 0] = c;
+            dst[4*x + 1] = c;
+            dst[4*x + 2] = c;
+            dst[4*x + 3] = -srca[x];
+        }
 }
 
 static void draw_alpha_IA44(int x0, int y0, int w, int h,
