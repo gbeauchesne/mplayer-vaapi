@@ -1127,14 +1127,16 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
                 break;
         if (j < va_num_subpic_formats &&
             vaCreateImage(va_context->display, &va_subpic_formats[j],
-                          width, height, &va_osd_image) == VA_STATUS_SUCCESS)
-            break;
+                          width, height, &va_osd_image) == VA_STATUS_SUCCESS) {
+            va_osd_palette = gen_osd_palette(&va_osd_image);
+            if (((!va_osd_image.num_palette_entries) ^ (!va_osd_palette)) == 0)
+                break;
+        }
     }
     if (va_osd_info[i].format &&
         vaCreateSubpicture(va_context->display, va_osd_image.image_id,
                            &va_osd_subpicture) == VA_STATUS_SUCCESS) {
         va_osd_draw_alpha = va_osd_info[i].draw_alpha;
-        va_osd_palette = gen_osd_palette(&va_osd_image);
         if (va_osd_palette) {
             status = vaSetImagePalette(va_context->display,
                                        va_osd_image.image_id, va_osd_palette);
