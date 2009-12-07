@@ -1,14 +1,14 @@
 8
 
 dir
-20627
+20757
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/arm
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-10-11T16:16:08.975468Z
-20208
+2009-12-02T17:21:43.976480Z
+20705
 mru
 has-props
 
@@ -25,6 +25,190 @@ svn:special svn:externals svn:needs-lock
 
 
 9553f0bf-9b14-0410-a0b8-cfaf0461ba5b
+
+simple_idct_arm.S
+file
+
+
+
+
+2009-10-09T13:57:36.000000Z
+adb73c6703c665f5c6dc624e64dfca51
+2009-10-06T21:55:41.715587Z
+20186
+mru
+has-props
+
+vp3dsp_neon.S
+file
+
+
+
+
+2009-07-06T15:13:54.000000Z
+15a6c2949761f3b61de3cb8eb7196137
+2009-07-04T20:41:11.313346Z
+19345
+conrad
+
+simple_idct_armv5te.S
+file
+
+
+
+
+2009-10-09T13:57:36.000000Z
+40a815311a6350acbc07b1bed60d9df7
+2009-10-04T13:13:12.902703Z
+20167
+mru
+
+dsputil_armv6.S
+file
+
+
+
+
+2009-10-09T13:57:36.000000Z
+18d3f570fed849f16939743674da6250
+2009-10-06T21:55:35.705641Z
+20184
+mru
+
+h264pred_init_arm.c
+file
+
+
+
+
+2009-12-07T11:27:34.000000Z
+0079385102f1e71314510dce1fe21dc7
+2009-12-02T17:21:43.976480Z
+20705
+mru
+
+jrevdct_arm.S
+file
+
+
+
+
+2009-10-09T13:57:36.000000Z
+51ac17b81aa5f7b7a4cbbd91050025fa
+2009-10-06T21:55:41.715587Z
+20186
+mru
+has-props
+
+dsputil_init_armv6.c
+file
+
+
+
+
+2009-10-09T13:57:36.000000Z
+6edeb174dbcc37c15622c96f35a2e57a
+2009-10-06T21:55:35.705641Z
+20184
+mru
+
+mpegvideo_armv5te_s.S
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+d5b7a353f6a81c7cb452a19df1d2051b
+2008-12-17T00:54:54.689120Z
+16179
+mru
+
+dsputil_init_neon.c
+file
+
+
+
+
+2009-12-07T11:27:34.000000Z
+bdc7cfcf07383d82d77cce128d9ed3f8
+2009-12-02T00:37:36.525955Z
+20696
+mru
+
+mdct_neon.S
+file
+
+
+
+
+2009-10-09T13:57:36.000000Z
+85bd5b1c38fffe5f3d9803d3234501e1
+2009-10-02T19:35:12.666795Z
+20151
+mru
+
+h264idct_neon.S
+file
+
+
+
+
+2009-12-07T11:27:34.000000Z
+6ed022be36f6add1c9e2710aa1c4c5c3
+2009-12-02T00:37:39.489586Z
+20697
+mru
+
+dsputil_iwmmxt_rnd_template.c
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+13d0b80246331bf23aa18f5016b9d8ab
+2008-12-17T00:54:54.689120Z
+16179
+mru
+has-props
+
+dsputil_iwmmxt.c
+file
+
+
+
+
+2009-10-09T13:57:36.000000Z
+3a8c723f788a19278e483a2576077fb6
+2009-10-04T13:13:12.902703Z
+20167
+mru
+has-props
+
+simple_idct_neon.S
+file
+
+
+
+
+2009-10-09T13:57:36.000000Z
+e5f691e6c75b8eba3b8594ca5ee88456
+2009-10-02T19:35:12.666795Z
+20151
+mru
+
+h264pred_neon.S
+file
+
+
+
+
+2009-12-07T11:27:34.000000Z
+73b57965a8b93254d5e09084e2b6e55d
+2009-12-02T14:56:45.604913Z
+20704
+mru
 
 asm.S
 file
@@ -88,19 +272,6 @@ file
 20167
 mru
 
-simple_idct_arm.S
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-adb73c6703c665f5c6dc624e64dfca51
-2009-10-06T21:55:41.715587Z
-20186
-mru
-has-props
-
 fft_neon.S
 file
 
@@ -126,18 +297,6 @@ db8762191682cd15343c7971143ede22
 aurel
 has-props
 
-vp3dsp_neon.S
-file
-
-
-
-
-2009-07-06T15:13:54.000000Z
-15a6c2949761f3b61de3cb8eb7196137
-2009-07-04T20:41:11.313346Z
-19345
-conrad
-
 dsputil_vfp.S
 file
 
@@ -148,30 +307,6 @@ file
 eee630b611ee5c9ba5ad03d42a4a2f4a
 2009-10-02T19:35:07.753027Z
 20150
-mru
-
-simple_idct_armv5te.S
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-40a815311a6350acbc07b1bed60d9df7
-2009-10-04T13:13:12.902703Z
-20167
-mru
-
-dsputil_armv6.S
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-18d3f570fed849f16939743674da6250
-2009-10-06T21:55:35.705641Z
-20184
 mru
 
 mathops.h
@@ -186,18 +321,17 @@ e56d81b5ba9da27d09b383ea5d440ee7
 19692
 diego
 
-jrevdct_arm.S
+dsputil_init_vfp.c
 file
 
 
 
 
 2009-10-09T13:57:36.000000Z
-51ac17b81aa5f7b7a4cbbd91050025fa
-2009-10-06T21:55:41.715587Z
-20186
+efb562bdb9b534a0679bd0f08bac12bf
+2009-10-04T13:13:02.092866Z
+20164
 mru
-has-props
 
 mpegvideo_armv5te.c
 file
@@ -209,30 +343,6 @@ file
 889fa66860865db477fa07c2800387da
 2008-12-17T00:54:54.689120Z
 16179
-mru
-
-dsputil_init_armv6.c
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-6edeb174dbcc37c15622c96f35a2e57a
-2009-10-06T21:55:35.705641Z
-20184
-mru
-
-dsputil_init_vfp.c
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-efb562bdb9b534a0679bd0f08bac12bf
-2009-10-04T13:13:02.092866Z
-20164
 mru
 
 dsputil_neon.S
@@ -255,67 +365,6 @@ file
 
 2009-01-29T11:51:00.000000Z
 f73f2d3646f3529cbbd29ff6aeb97e98
-2008-12-17T00:54:54.689120Z
-16179
-mru
-has-props
-
-mpegvideo_armv5te_s.S
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-d5b7a353f6a81c7cb452a19df1d2051b
-2008-12-17T00:54:54.689120Z
-16179
-mru
-
-h264idct_neon.S
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-948bd7f62af94ae35088acadbdf0eb3d
-2009-10-02T19:35:12.666795Z
-20151
-mru
-
-mdct_neon.S
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-85bd5b1c38fffe5f3d9803d3234501e1
-2009-10-02T19:35:12.666795Z
-20151
-mru
-
-dsputil_init_neon.c
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-1c1fa700a3a418f493481e27f32b1674
-2009-10-07T21:35:19.165789Z
-20190
-mru
-
-dsputil_iwmmxt_rnd_template.c
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-13d0b80246331bf23aa18f5016b9d8ab
 2008-12-17T00:54:54.689120Z
 16179
 mru
@@ -351,34 +400,9 @@ file
 
 
 
-2009-11-06T14:42:57.000000Z
-57dd6e62c7f6674176d016dda37517b7
-2009-10-11T16:16:08.975468Z
-20208
-mru
-
-dsputil_iwmmxt.c
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-3a8c723f788a19278e483a2576077fb6
-2009-10-04T13:13:12.902703Z
-20167
-mru
-has-props
-
-simple_idct_neon.S
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-e5f691e6c75b8eba3b8594ca5ee88456
-2009-10-02T19:35:12.666795Z
-20151
+2009-12-07T11:27:34.000000Z
+0e4c2f522662568b384d264cc687fd46
+2009-12-02T00:37:36.525955Z
+20696
 mru
 

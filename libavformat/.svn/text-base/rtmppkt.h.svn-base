@@ -34,6 +34,7 @@
 enum RTMPChannel {
     RTMP_NETWORK_CHANNEL = 2,   ///< channel for network-related messages (bandwidth report, ping, etc)
     RTMP_SYSTEM_CHANNEL,        ///< channel for sending server control messages
+    RTMP_SOURCE_CHANNEL,        ///< channel for sending a/v to server
     RTMP_VIDEO_CHANNEL = 8,     ///< channel for video data
     RTMP_AUDIO_CHANNEL,         ///< channel for audio data
 };
@@ -72,9 +73,10 @@ enum RTMPPacketSize {
  * structure for holding RTMP packets
  */
 typedef struct RTMPPacket {
-    uint8_t        channel_id; ///< RTMP channel ID (nothing to do with audio/video channels though)
+    int            channel_id; ///< RTMP channel ID (nothing to do with audio/video channels though)
     RTMPPacketType type;       ///< packet payload type
-    uint32_t       timestamp;  ///< packet full timestamp or timestamp increment to the previous one in milliseconds (latter only for media packets)
+    uint32_t       timestamp;  ///< packet full timestamp
+    uint32_t       ts_delta;   ///< timestamp increment to the previous one in milliseconds (latter only for media packets)
     uint32_t       extra;      ///< probably an additional channel ID used during streaming data
     uint8_t        *data;      ///< packet payload
     int            data_size;  ///< packet payload size
