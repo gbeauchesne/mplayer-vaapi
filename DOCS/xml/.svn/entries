@@ -1,15 +1,15 @@
 8
 
 dir
-29978
+30099
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-11-16T15:20:57.576017Z
-29918
-Gabrov
+2009-12-16T11:59:53.635722Z
+30045
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-05-25T08:53:57.000000Z
-10a7baa3beed38816057d326a9ba613a
-2009-05-13T02:58:57.333510Z
-29305
+2009-12-21T08:10:48.000000Z
+68890217da45a195fece9a5f22cf01ac
+2009-12-13T23:48:20.295872Z
+30010
 diego
 has-props
 
@@ -45,10 +45,10 @@ file
 
 
 
-2009-01-29T11:50:47.000000Z
-8f6ea8f95835c809c16d664ff0aeea73
-2009-01-05T00:04:34.312317Z
-28256
+2009-12-21T08:10:48.000000Z
+eccd9695ba73e39327e99c0d9cda1d4e
+2009-12-14T12:03:02.344775Z
+30040
 diego
 has-props
 
@@ -106,26 +106,26 @@ dir
 cs
 dir
 
-xsl
-dir
-
 README.maintainers
 file
 
 
 
 
-2009-01-29T11:50:47.000000Z
-d6e00e9d4a8bf9add86bd157fb10dd08
-2006-12-17T08:42:37.795443Z
-21643
-torinthiel
+2009-12-21T08:10:48.000000Z
+dd62dc524dbf27cc82d0eafcc2b96ade
+2009-12-14T02:34:41.804671Z
+30022
+diego
 has-props
 
-fr
+xsl
 dir
 
 es
+dir
+
+fr
 dir
 
 pl
@@ -156,10 +156,10 @@ file
 
 
 
-2009-01-29T11:50:47.000000Z
-e9e3da4c46bf816a94bf1adf8be45ac0
-2009-01-05T00:08:23.547562Z
-28258
+2009-12-21T08:10:48.000000Z
+20cc342e6ab90c961db304e7888a4ec3
+2009-12-16T11:59:53.635722Z
+30045
 diego
 has-props
 

@@ -1,9 +1,11 @@
 K 10
 svn:ignore
-V 25
+V 64
 *.d
 *.ho
-pci_*.c
-pci_*.h
+pci_dev_ids.c
+pci_ids.h
+pci_vendor_ids.h
+pci_vendors.h
 
 END
