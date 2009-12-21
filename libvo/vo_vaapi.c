@@ -90,6 +90,7 @@ static int                      g_deint_type;
 static int                      g_colorspace;
 
 #if CONFIG_GL
+static MPGLContext              gl_context;
 static int                      gl_enabled;
 static int                      gl_binding;
 static int                      gl_reflect;
@@ -98,8 +99,6 @@ static GLuint                   gl_font_base;
 #endif
 
 #if CONFIG_VAAPI_GLX
-static GLXContext               gl_context;
-static XVisualInfo             *gl_visual_info;
 static int                      gl_visual_attr[] = {
     GLX_RGBA,
     GLX_RED_SIZE, 1,
@@ -710,6 +709,11 @@ static int preinit(const char *arg)
 
     stats_init();
 
+#if CONFIG_GL
+    if (gl_enabled && !init_mpglcontext(&gl_context, GLTYPE_X11))
+        return -1;
+    else
+#endif
     if (!vo_init())
         return -1;
 
@@ -870,13 +874,6 @@ static void free_video_specific(void)
         gl_texture = GL_NONE;
     }
 #endif
-
-#if CONFIG_VAAPI_GLX
-    if (gl_enabled) {
-        releaseGlContext(&gl_visual_info, &gl_context);
-        gl_visual_info = NULL;
-    }
-#endif
 }
 
 static void uninit(void)
@@ -915,6 +912,11 @@ static void uninit(void)
 
 #ifdef CONFIG_XF86VM
     vo_vm_close();
+#endif
+#if CONFIG_GL
+    if (gl_enabled)
+        uninit_mpglcontext(&gl_context);
+    else
 #endif
     vo_x11_uninit();
 
@@ -998,7 +1000,7 @@ static int config_x11(uint32_t width, uint32_t height,
 #if CONFIG_VAAPI_GLX
 static int config_glx(unsigned int width, unsigned int height)
 {
-    if (setGlWindow(&gl_visual_info, &gl_context, vo_window) < 0)
+    if (gl_context.setGlWindow(&gl_context) == SET_WINDOW_FAILED)
         return -1;
 
     glDisable(GL_DEPTH_TEST);
@@ -1455,7 +1457,7 @@ static void flip_page_glx(void)
         gl_printf("MPlayer: %.1f%% of CPU @ %u MHz", cpu_usage, cpu_frequency);
     }
 
-    swapGlBuffers();
+    gl_context.swapGlBuffers(&gl_context);
 
     if (vo_fs) /* avoid flickering borders in fullscreen mode */
         glClear(GL_COLOR_BUFFER_BIT);
