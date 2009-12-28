@@ -1,15 +1,15 @@
 8
 
 dir
-30099
+30134
 svn://svn.mplayerhq.hu/mplayer/trunk/gui
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-07-26T19:53:00.188059Z
-29443
-diego
+2009-12-24T10:26:29.625232Z
+30105
+reimar
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2009-05-25T08:53:55.000000Z
-102a8b39115179b303161d0af2558291
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-12-28T14:39:01.000000Z
+820b9fbfd57e41ee4f900b317929d075
+2009-12-24T10:26:29.625232Z
+30105
+reimar
 has-props
 
 app.c
@@ -58,11 +58,11 @@ file
 
 
 
-2009-05-25T08:53:55.000000Z
-0ee4cd454bc96ccd2b0567d50a788ccb
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2009-12-28T14:39:01.000000Z
+c5a04490fc6ad38832315cfb53774642
+2009-12-24T10:26:29.625232Z
+30105
+reimar
 has-props
 
 win32

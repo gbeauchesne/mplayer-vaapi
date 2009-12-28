@@ -142,7 +142,7 @@ static int vaapi_vc1_start_frame(AVCodecContext *avctx, av_unused const uint8_t 
     vactx->slice_param_size = sizeof(VASliceParameterBufferVC1);
 
     /* Fill in VAPictureParameterBufferVC1 */
-    pic_param = ff_vaapi_alloc_picture(vactx, sizeof(VAPictureParameterBufferVC1));
+    pic_param = ff_vaapi_alloc_pic_param(vactx, sizeof(VAPictureParameterBufferVC1));
     if (!pic_param)
         return -1;
     pic_param->forward_reference_picture                            = 0xffffffff;
@@ -242,10 +242,10 @@ static int vaapi_vc1_start_frame(AVCodecContext *avctx, av_unused const uint8_t 
 
     switch (s->pict_type) {
     case FF_B_TYPE:
-        pic_param->backward_reference_picture = ff_vaapi_get_surface(&s->next_picture);
+        pic_param->backward_reference_picture = ff_vaapi_get_surface_id(&s->next_picture);
         // fall-through
     case FF_P_TYPE:
-        pic_param->forward_reference_picture = ff_vaapi_get_surface(&s->last_picture);
+        pic_param->forward_reference_picture = ff_vaapi_get_surface_id(&s->last_picture);
         break;
     }
 

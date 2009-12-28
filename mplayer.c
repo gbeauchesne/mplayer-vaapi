@@ -315,7 +315,6 @@ char *vobsub_name=NULL;
 int   subcc_enabled=0;
 int suboverlap_enabled = 1;
 
-#include "libass/ass.h"
 #include "libass/ass_mp.h"
 
 char* current_module=NULL; // for debugging
@@ -700,6 +699,7 @@ void exit_player_with_rc(exit_reason_t how, int rc){
 
 #ifdef CONFIG_ASS
   ass_library_done(ass_library);
+  ass_library = NULL;
 #endif
 
   current_module="exit_player";
@@ -707,12 +707,18 @@ void exit_player_with_rc(exit_reason_t how, int rc){
 // free mplayer config
   if(mconfig)
     m_config_free(mconfig);
+  mconfig = NULL;
 
+  if(mpctx->playtree_iter)
+    play_tree_iter_free(mpctx->playtree_iter);
+  mpctx->playtree_iter = NULL;
   if(mpctx->playtree)
     play_tree_free(mpctx->playtree, 1);
+  mpctx->playtree = NULL;
 
 
   if(edl_records != NULL) free(edl_records); // free mem allocated for EDL
+  edl_records = NULL;
   switch(how) {
   case EXIT_QUIT:
     mp_msg(MSGT_CPLAYER,MSGL_INFO,MSGTR_ExitingHow,MSGTR_Exit_quit);

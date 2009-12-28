@@ -1,7 +1,7 @@
 8
 
 dir
-30099
+30134
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/pl
 svn://svn.mplayerhq.hu/mplayer
 
@@ -37,44 +37,6 @@ ff4fce7caf9b5413ac21cf7a22170c73
 2009-05-13T02:58:57.333510Z
 29305
 diego
-
-bugreports.xml
-file
-
-
-
-
-2009-11-13T16:30:38.000000Z
-f3d8249755877a89ed0890892c66dc50
-2009-11-11T15:15:46.994787Z
-29902
-tack
-has-props
-
-mencoder.xml
-file
-
-
-
-
-2009-05-25T08:53:57.000000Z
-73056929e417e6d064380038831d8167
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
-
-radio.xml
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-1d165d466b08505d1b06e682bdc33746
-2007-07-07T10:36:37.804444Z
-23737
-torinthiel
 
 cd-dvd.xml
 file
@@ -192,6 +154,44 @@ e6a4061a980246c204443f39de2f8968
 23738
 torinthiel
 has-props
+
+bugreports.xml
+file
+
+
+
+
+2009-11-13T16:30:38.000000Z
+f3d8249755877a89ed0890892c66dc50
+2009-11-11T15:15:46.994787Z
+29902
+tack
+has-props
+
+mencoder.xml
+file
+
+
+
+
+2009-05-25T08:53:57.000000Z
+73056929e417e6d064380038831d8167
+2009-05-13T02:58:57.333510Z
+29305
+diego
+has-props
+
+radio.xml
+file
+
+
+
+
+2009-01-29T11:50:47.000000Z
+1d165d466b08505d1b06e682bdc33746
+2007-07-07T10:36:37.804444Z
+23737
+torinthiel
 
 Makefile
 file
