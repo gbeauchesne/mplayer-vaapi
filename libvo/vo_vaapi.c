@@ -758,7 +758,7 @@ static int preinit(const char *arg)
         return -1;
     status = vaQuerySubpictureFormats(va_context->display, va_subpic_formats, va_subpic_flags, &va_num_subpic_formats);
     if (!check_status(status, "vaQuerySubpictureFormats()"))
-        return -1;
+        va_num_subpic_formats = 0; /* XXX: don't error out for IEGD */
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): %d subpicture formats available\n",
            va_num_subpic_formats);
     for (i = 0; i < va_num_subpic_formats; i++)
