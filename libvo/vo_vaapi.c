@@ -1600,8 +1600,10 @@ static int draw_slice(uint8_t * image[], int stride[],
     dst = image_data + va_image->offsets[1] + y * va_image->pitches[1] + x;
     memcpy_pic(dst, image[1], w, h, va_image->pitches[1], stride[1]);
 
-    dst = image_data + va_image->offsets[2] + y * va_image->pitches[2] + x;
-    memcpy_pic(dst, image[2], w, h, va_image->pitches[2], stride[2]);
+    if (image[2]) { /* NV12 only has two planes */
+        dst = image_data + va_image->offsets[2] + y * va_image->pitches[2] + x;
+        memcpy_pic(dst, image[2], w, h, va_image->pitches[2], stride[2]);
+    }
 
     status = vaUnmapBuffer(va_context->display, surface->image.buf);
     if (!check_status(status, "vaUnmapBuffer()"))
