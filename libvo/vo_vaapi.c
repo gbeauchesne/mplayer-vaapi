@@ -1465,8 +1465,6 @@ static void render_reflection(void)
 
 static void flip_page_glx(void)
 {
-    VAStatus status;
-
     glClear(GL_COLOR_BUFFER_BIT);
 
     if (gl_reflect) {
