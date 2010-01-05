@@ -69,6 +69,10 @@ typedef void (*draw_alpha_func)(int x0, int y0, int w, int h,
                                 unsigned char *src, unsigned char *srca,
                                 int stride);
 
+struct vaapi_surface {
+    VASurfaceID id;
+};
+
 struct vaapi_equalizer {
     VADisplayAttribute brightness;
     VADisplayAttribute contrast;
@@ -82,7 +86,7 @@ static uint32_t                 g_image_height;
 static uint32_t                 g_image_format;
 static struct vo_rect           g_borders;
 static struct vo_rect           g_output_rect;
-static VASurfaceID              g_output_surfaces[MAX_OUTPUT_SURFACES];
+static struct vaapi_surface    *g_output_surfaces[MAX_OUTPUT_SURFACES];
 static unsigned int             g_output_surface;
 static int                      g_top_field_first;
 static int                      g_deint;
@@ -117,7 +121,7 @@ static VAEntrypoint            *va_entrypoints;
 static int                      va_num_entrypoints;
 static VASurfaceID             *va_surface_ids;
 static int                      va_num_surfaces;
-static VASurfaceID            **va_free_surfaces;
+static struct vaapi_surface   **va_free_surfaces;
 static int                      va_free_surfaces_head_index;
 static int                      va_free_surfaces_tail_index;
 static VAImageFormat           *va_image_formats;
@@ -291,6 +295,45 @@ static int VAEntrypoint_from_imgfmt(uint32_t format)
         return has_entrypoint(entrypoint);
 
     return -1;
+}
+
+static struct vaapi_surface *alloc_vaapi_surface(unsigned int width,
+                                                 unsigned int height,
+                                                 unsigned int format)
+{
+    struct vaapi_surface *surface = NULL;
+    struct vaapi_surface **surfaces;
+    VASurfaceID *surface_ids;
+    VAStatus status;
+
+    surface = malloc(sizeof(*surface));
+    if (!surface)
+        goto error;
+
+    surfaces = realloc(va_free_surfaces,
+                       (1 + va_num_surfaces) * sizeof(surfaces[0]));
+    if (!surfaces)
+        goto error;
+
+    surface_ids = realloc(va_surface_ids,
+                          (1 + va_num_surfaces) * sizeof(surface_ids[0]));
+    if (!surface_ids)
+        goto error;
+
+    status = vaCreateSurfaces(va_context->display, width, height, format,
+                              1, &surface->id);
+    if (!check_status(status, "vaCreateSurfaces()"))
+        goto error;
+
+    va_surface_ids                    = surface_ids;
+    va_surface_ids[va_num_surfaces]   = surface->id;
+    va_free_surfaces                  = surfaces;
+    va_free_surfaces[va_num_surfaces] = surface;
+    ++va_num_surfaces;
+    return surface;
+error:
+    free(surface);
+    return NULL;
 }
 
 static void resize(void)
@@ -816,6 +859,8 @@ static int preinit(const char *arg)
 
 static void free_video_specific(void)
 {
+    int i;
+
 #if CONFIG_VAAPI_GLX
     if (gl_surface) {
         VAStatus status;
@@ -831,6 +876,12 @@ static void free_video_specific(void)
     }
 
     if (va_free_surfaces) {
+        for (i = 0; i < va_num_surfaces; i++) {
+            if (!va_free_surfaces[i])
+                continue;
+            free(va_free_surfaces[i]);
+            va_free_surfaces[i] = NULL;
+        }
         free(va_free_surfaces);
         va_free_surfaces = NULL;
     }
@@ -856,6 +907,7 @@ static void free_video_specific(void)
         vaDestroySurfaces(va_context->display, va_surface_ids, va_num_surfaces);
         free(va_surface_ids);
         va_surface_ids = NULL;
+        va_num_surfaces = 0;
     }
 
     if (va_context && va_context->config_id) {
@@ -1040,7 +1092,78 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
 {
     VAConfigAttrib attrib;
     VAStatus status;
-    int i, j, profile, entrypoint, max_entrypoints;
+    int i, j, profile, entrypoint, max_entrypoints, num_surfaces;
+
+    /* Create video surfaces */
+    switch (IMGFMT_VAAPI_CODEC(format)) {
+    case IMGFMT_VAAPI_CODEC_MPEG2:
+        num_surfaces = NUM_VIDEO_SURFACES_MPEG2;
+        break;
+    case IMGFMT_VAAPI_CODEC_MPEG4:
+        num_surfaces = NUM_VIDEO_SURFACES_MPEG4;
+        break;
+    case IMGFMT_VAAPI_CODEC_H264:
+        num_surfaces = NUM_VIDEO_SURFACES_H264;
+        break;
+    case IMGFMT_VAAPI_CODEC_VC1:
+        num_surfaces = NUM_VIDEO_SURFACES_VC1;
+        break;
+    default:
+        num_surfaces = 0;
+        break;
+    }
+    if (num_surfaces == 0)
+        return -1;
+    if (!is_direct_mapping())
+        num_surfaces = FFMIN(2 * num_surfaces, MAX_VIDEO_SURFACES);
+    for (i = 0; i < num_surfaces; i++) {
+        struct vaapi_surface *surface;
+        surface = alloc_vaapi_surface(width, height, VA_RT_FORMAT_YUV420);
+        if (!surface)
+            return -1;
+    }
+    assert(va_num_surfaces == num_surfaces);
+
+#if CONFIG_VAAPI_GLX
+    /* Create GLX surfaces */
+    if (gl_enabled) {
+        status = vaCreateSurfaceGLX(va_context->display,
+                                    GL_TEXTURE_2D, gl_texture,
+                                    &gl_surface);
+        if (!check_status(status, "vaCreateSurfaceGLX()"))
+            return -1;
+    }
+#endif
+
+    /* Create OSD data */
+    va_osd_draw_alpha     = NULL;
+    va_osd_image.image_id = VA_INVALID_ID;
+    va_osd_image.buf      = VA_INVALID_ID;
+    va_osd_subpicture     = VA_INVALID_ID;
+    for (i = 0; va_osd_info[i].format; i++) {
+        for (j = 0; j < va_num_subpic_formats; j++)
+            if (va_subpic_formats[j].fourcc == va_osd_info[i].format)
+                break;
+        if (j < va_num_subpic_formats &&
+            vaCreateImage(va_context->display, &va_subpic_formats[j],
+                          width, height, &va_osd_image) == VA_STATUS_SUCCESS) {
+            va_osd_palette = gen_osd_palette(&va_osd_image);
+            if (((!va_osd_image.num_palette_entries) ^ (!va_osd_palette)) == 0)
+                break;
+        }
+    }
+    if (va_osd_info[i].format &&
+        vaCreateSubpicture(va_context->display, va_osd_image.image_id,
+                           &va_osd_subpicture) == VA_STATUS_SUCCESS) {
+        va_osd_draw_alpha = va_osd_info[i].draw_alpha;
+        if (va_osd_palette) {
+            status = vaSetImagePalette(va_context->display,
+                                       va_osd_image.image_id, va_osd_palette);
+            check_status(status, "vaSetImagePalette()");
+        }
+        mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] Using %s surface for OSD\n",
+               string_of_VAImageFormat(&va_osd_image.format));
+    }
 
     /* Check profile */
     profile = VAProfile_from_imgfmt(format);
@@ -1080,85 +1203,6 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
     if (!check_status(status, "vaCreateConfig()"))
         return -1;
 
-    /* Create video surfaces */
-    switch (IMGFMT_VAAPI_CODEC(format)) {
-    case IMGFMT_VAAPI_CODEC_MPEG2:
-        va_num_surfaces = NUM_VIDEO_SURFACES_MPEG2;
-        break;
-    case IMGFMT_VAAPI_CODEC_MPEG4:
-        va_num_surfaces = NUM_VIDEO_SURFACES_MPEG4;
-        break;
-    case IMGFMT_VAAPI_CODEC_H264:
-        va_num_surfaces = NUM_VIDEO_SURFACES_H264;
-        break;
-    case IMGFMT_VAAPI_CODEC_VC1:
-        va_num_surfaces = NUM_VIDEO_SURFACES_VC1;
-        break;
-    default:
-        va_num_surfaces = 0;
-        break;
-    }
-    if (va_num_surfaces == 0)
-        return -1;
-    if (!is_direct_mapping())
-        va_num_surfaces = FFMIN(2 * va_num_surfaces, MAX_VIDEO_SURFACES);
-
-    va_surface_ids = calloc(va_num_surfaces, sizeof(*va_surface_ids));
-    if (!va_surface_ids)
-        return -1;
-
-    status = vaCreateSurfaces(va_context->display, width, height, VA_RT_FORMAT_YUV420,
-                              va_num_surfaces, va_surface_ids);
-    if (!check_status(status, "vaCreateSurfaces()"))
-        return -1;
-
-    va_free_surfaces = calloc(va_num_surfaces, sizeof(*va_free_surfaces));
-    if (!va_free_surfaces)
-        return -1;
-    for (i = 0; i < va_num_surfaces; i++)
-        va_free_surfaces[i] = &va_surface_ids[i];
-
-    /* Create OSD data */
-    va_osd_draw_alpha     = NULL;
-    va_osd_image.image_id = VA_INVALID_ID;
-    va_osd_image.buf      = VA_INVALID_ID;
-    va_osd_subpicture     = VA_INVALID_ID;
-    for (i = 0; va_osd_info[i].format; i++) {
-        for (j = 0; j < va_num_subpic_formats; j++)
-            if (va_subpic_formats[j].fourcc == va_osd_info[i].format)
-                break;
-        if (j < va_num_subpic_formats &&
-            vaCreateImage(va_context->display, &va_subpic_formats[j],
-                          width, height, &va_osd_image) == VA_STATUS_SUCCESS) {
-            va_osd_palette = gen_osd_palette(&va_osd_image);
-            if (((!va_osd_image.num_palette_entries) ^ (!va_osd_palette)) == 0)
-                break;
-        }
-    }
-    if (va_osd_info[i].format &&
-        vaCreateSubpicture(va_context->display, va_osd_image.image_id,
-                           &va_osd_subpicture) == VA_STATUS_SUCCESS) {
-        va_osd_draw_alpha = va_osd_info[i].draw_alpha;
-        if (va_osd_palette) {
-            status = vaSetImagePalette(va_context->display,
-                                       va_osd_image.image_id, va_osd_palette);
-            check_status(status, "vaSetImagePalette()");
-        }
-        mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] Using %s surface for OSD\n",
-               string_of_VAImageFormat(&va_osd_image.format));
-    }
-
-#if CONFIG_VAAPI_GLX
-    /* Create GLX surfaces */
-    if (gl_enabled) {
-        status = vaCreateSurfaceGLX(va_context->display,
-                                    GL_TEXTURE_2D, gl_texture,
-                                    &gl_surface);
-        if (!check_status(status, "vaCreateSurfaceGLX()"))
-            return -1;
-    }
-#endif
-
     /* Create a context for the decode pipeline */
     status = vaCreateContext(va_context->display, va_context->config_id,
                              width, height, VA_PROGRESSIVE,
@@ -1166,10 +1210,6 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
                              &va_context->context_id);
     if (!check_status(status, "vaCreateContext()"))
         return -1;
-
-    g_output_surface = 0;
-    for (i = 0; i < MAX_OUTPUT_SURFACES; i++)
-        g_output_surfaces[i] = VA_INVALID_SURFACE;
     return 0;
 }
 
@@ -1252,14 +1292,14 @@ static inline int get_colorspace_flags(void)
     return csp;
 }
 
-static void put_surface_x11(VASurfaceID surface)
+static void put_surface_x11(struct vaapi_surface *surface)
 {
     VAStatus status;
     int i;
 
     for (i = 0; i <= !!(g_deint > 1); i++) {
         status = vaPutSurface(va_context->display,
-                              surface,
+                              surface->id,
                               vo_window,
                               0, 0, g_image_width, g_image_height,
                               g_output_rect.left,
@@ -1274,19 +1314,16 @@ static void put_surface_x11(VASurfaceID surface)
 }
 
 #if CONFIG_VAAPI_GLX
-static void put_surface_glx(VASurfaceID surface)
+static void put_surface_glx(struct vaapi_surface *surface)
 {
     VAStatus status;
     int i;
-
-    if (surface == VA_INVALID_SURFACE)
-        return;
 
     if (gl_binding) {
         for (i = 0; i <= !!(g_deint > 1); i++) {
             status = vaAssociateSurfaceGLX(va_context->display,
                                            gl_surface,
-                                           surface,
+                                           surface->id,
                                            get_field_flags(i) | get_colorspace_flags());
             if (!check_status(status, "vaAssociateSurfaceGLX()"))
                 return;
@@ -1296,7 +1333,7 @@ static void put_surface_glx(VASurfaceID surface)
         for (i = 0; i <= !!(g_deint > 1); i++) {
             status = vaCopySurfaceGLX(va_context->display,
                                       gl_surface,
-                                      surface,
+                                      surface->id,
                                       get_field_flags(i) | get_colorspace_flags());
 
             if (status == VA_STATUS_ERROR_UNIMPLEMENTED) {
@@ -1464,9 +1501,9 @@ static void flip_page_glx(void)
 }
 #endif
 
-static void put_surface(VASurfaceID surface)
+static void put_surface(struct vaapi_surface *surface)
 {
-    if (surface == VA_INVALID_SURFACE)
+    if (!surface || surface->id == VA_INVALID_SURFACE)
         return;
 
 #if CONFIG_VAAPI_GLX
@@ -1527,24 +1564,24 @@ static void draw_osd(void)
 
 static void flip_page(void)
 {
-    VASurfaceID surface;
+    struct vaapi_surface *surface;
 
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] flip_page()\n");
 
     surface = g_output_surfaces[g_output_surface];
-    if (surface != VA_INVALID_SURFACE)
+    if (surface)
         put_surface(surface);
     g_output_surface = (g_output_surface + 1) % MAX_OUTPUT_SURFACES;
 
 #if CONFIG_VAAPI_GLX
-    if (gl_enabled && surface != VA_INVALID_SURFACE)
+    if (gl_enabled && surface)
         flip_page_glx();
 #endif
 }
 
-static VASurfaceID *get_surface(mp_image_t *mpi)
+static struct vaapi_surface *get_surface(mp_image_t *mpi)
 {
-    VASurfaceID *surface;
+    struct vaapi_surface *surface;
 
     if (is_direct_mapping()) {
         assert(mpi->number < va_num_surfaces);
@@ -1569,7 +1606,7 @@ static VASurfaceID *get_surface(mp_image_t *mpi)
 
 static uint32_t get_image(mp_image_t *mpi)
 {
-    VASurfaceID *surface;
+    struct vaapi_surface *surface;
 
     if (mpi->type != MP_IMGTYPE_NUMBERED)
         return VO_FALSE;
@@ -1584,20 +1621,21 @@ static uint32_t get_image(mp_image_t *mpi)
     mpi->flags |= MP_IMGFLAG_DIRECT;
     mpi->stride[0] = mpi->stride[1] = mpi->stride[2] = mpi->stride[3] = 0;
     mpi->planes[0] = mpi->planes[1] = mpi->planes[2] = mpi->planes[3] = NULL;
-    mpi->planes[0] = mpi->planes[3] = (char *)(uintptr_t)*surface;
+    mpi->planes[0] = (char *)surface;
+    mpi->planes[3] = (char *)(uintptr_t)surface->id;
     mpi->num_planes = 1;
     mpi->priv = surface;
 
-    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] get_image(): surface 0x%08x\n", *surface);
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] get_image(): surface 0x%08x\n", surface->id);
 
     return VO_TRUE;
 }
 
 static uint32_t draw_image(mp_image_t *mpi)
 {
-    VASurfaceID surface = (uintptr_t)mpi->planes[3];
+    struct vaapi_surface *surface = (struct vaapi_surface *)mpi->planes[0];
 
-    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] draw_image(): surface 0x%08x\n", surface);
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] draw_image(): surface 0x%08x\n", surface->id);
 
     g_output_surfaces[g_output_surface] = surface;
 
@@ -1624,8 +1662,8 @@ static void check_events(void)
         resize();
 
     if ((events & (VO_EVENT_EXPOSE|VO_EVENT_RESIZE)) && g_is_paused) {
-        VASurfaceID surface = g_output_surfaces[g_output_surface];
-        if (surface != VA_INVALID_SURFACE)
+        struct vaapi_surface *surface = g_output_surfaces[g_output_surface];
+        if (surface)
             put_surface(surface);
     }
 }
