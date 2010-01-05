@@ -1,15 +1,15 @@
 8
 
 dir
-20947
+21030
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavformat
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-12-28T13:41:09.047223Z
-20946
-lucabe
+2010-01-04T22:59:43.259599Z
+21025
+bcoudurier
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -193,10 +193,10 @@ file
 
 
 
-2009-11-18T15:27:30.000000Z
-3c21c1169dbc892757423df1e7cd1508
-2009-11-15T03:26:47.855443Z
-20539
+2010-01-05T14:46:27.000000Z
+9114f3aad010a1d357cf71870c4d48ad
+2010-01-04T22:51:38.023877Z
+21023
 bcoudurier
 has-props
 
@@ -237,19 +237,6 @@ file
 14731
 diego
 
-electronicarts.c
-file
-
-
-
-
-2009-10-09T13:57:37.000000Z
-7ff3e868651aab437883843950285d25
-2009-09-17T18:07:27.150174Z
-19896
-reimar
-has-props
-
 adtsenc.c
 file
 
@@ -261,6 +248,19 @@ c264bb9f77027f8425335bdc59b4127c
 2009-06-29T22:48:07.186322Z
 19299
 alexc
+has-props
+
+electronicarts.c
+file
+
+
+
+
+2009-10-09T13:57:37.000000Z
+7ff3e868651aab437883843950285d25
+2009-09-17T18:07:27.150174Z
+19896
+reimar
 has-props
 
 mpjpeg.c
@@ -289,18 +289,6 @@ file
 jbr
 has-props
 
-pva.c
-file
-
-
-
-
-2009-06-01T12:23:35.000000Z
-5f7ced0e02c09fb6c9974a4c839e9634
-2009-05-27T06:58:22.353472Z
-18966
-bcoudurier
-
 aea.c
 file
 
@@ -312,6 +300,18 @@ file
 2009-09-13T18:27:53.078060Z
 19833
 banan
+
+pva.c
+file
+
+
+
+
+2009-06-01T12:23:35.000000Z
+5f7ced0e02c09fb6c9974a4c839e9634
+2009-05-27T06:58:22.353472Z
+18966
+bcoudurier
 
 siff.c
 file
@@ -338,18 +338,17 @@ be6e7071712c63593446907518973667
 conrad
 has-props
 
-rtpproto.c
+rdt.c
 file
 
 
 
 
-2009-03-06T08:48:44.000000Z
-2bb494726aca074aeec7233d5aaee0a6
-2009-03-03T17:04:51.294126Z
-17779
+2009-08-03T15:00:38.000000Z
+333f95c2056ad7d9c24cf49f8f3304ac
+2009-07-30T15:04:19.213343Z
+19539
 rbultje
-has-props
 
 avs.c
 file
@@ -364,29 +363,17 @@ file
 aurel
 has-props
 
-rdt.c
+rtpproto.c
 file
 
 
 
 
-2009-08-03T15:00:38.000000Z
-333f95c2056ad7d9c24cf49f8f3304ac
-2009-07-30T15:04:19.213343Z
-19539
+2009-03-06T08:48:44.000000Z
+2bb494726aca074aeec7233d5aaee0a6
+2009-03-03T17:04:51.294126Z
+17779
 rbultje
-
-rtpenc.c
-file
-
-
-
-
-2009-12-28T14:39:04.000000Z
-a8fc36d74ac8e4f74370880bb0bc7aac
-2009-12-28T13:41:09.047223Z
-20946
-lucabe
 has-props
 
 asfcrypt.c
@@ -400,6 +387,19 @@ file
 2009-02-03T14:20:55.999196Z
 16970
 reimar
+
+rtpenc.c
+file
+
+
+
+
+2010-01-05T14:46:27.000000Z
+e63f8448dc6c8be4b398a2982d484f7b
+2009-12-30T17:12:29.226155Z
+20983
+lucabe
+has-props
 
 oggparsevorbis.c
 file
@@ -806,6 +806,18 @@ e1ac19aa2b4da0cb1e1c75838ecd936f
 astrange
 has-props
 
+rtmp.h
+file
+
+
+
+
+2009-08-03T15:00:38.000000Z
+afb659da66fbd7319e64db6f3e3f9827
+2009-07-31T06:49:36.176766Z
+19556
+kostya
+
 rtp_mpv.c
 file
 
@@ -818,18 +830,6 @@ file
 19142
 lu_zero
 has-props
-
-rtmp.h
-file
-
-
-
-
-2009-08-03T15:00:38.000000Z
-afb659da66fbd7319e64db6f3e3f9827
-2009-07-31T06:49:36.176766Z
-19556
-kostya
 
 rtp_vorbis.c
 file
@@ -855,17 +855,17 @@ file
 20837
 michael
 
-cdg.c
+libnut.c
 file
 
 
 
 
-2009-12-21T08:10:53.000000Z
-e6f3711e1d8b7c1f1bac3a9b61c79a26
-2009-12-17T17:25:31.426922Z
-20890
-vitor
+2009-07-06T15:13:56.000000Z
+368b8829476ccb1020c1159a955b71c1
+2009-06-22T23:09:34.302908Z
+19254
+diego
 
 crcenc.c
 file
@@ -880,29 +880,17 @@ e1451216852602299820a806c84a90c1
 diego
 has-props
 
-libnut.c
+cdg.c
 file
 
 
 
 
-2009-07-06T15:13:56.000000Z
-368b8829476ccb1020c1159a955b71c1
-2009-06-22T23:09:34.302908Z
-19254
-diego
-
-rtp_vorbis.h
-file
-
-
-
-
-2009-04-16T16:02:27.000000Z
-0189070be5b2dff5e58eb5b70583464b
-2009-04-14T15:01:46.813659Z
-18509
-rbultje
+2009-12-21T08:10:53.000000Z
+e6f3711e1d8b7c1f1bac3a9b61c79a26
+2009-12-17T17:25:31.426922Z
+20890
+vitor
 
 rtp_asf.c
 file
@@ -914,6 +902,18 @@ file
 c06bee0cf6c660fa2a2534c2015ab2bf
 2009-07-27T14:32:54.136638Z
 19519
+rbultje
+
+rtp_vorbis.h
+file
+
+
+
+
+2009-04-16T16:02:27.000000Z
+0189070be5b2dff5e58eb5b70583464b
+2009-04-14T15:01:46.813659Z
+18509
 rbultje
 
 soxenc.c
@@ -934,11 +934,11 @@ file
 
 
 
-2009-12-07T11:27:34.000000Z
-72f8cd077d5ee87d3a84aa4f4dbdd807
-2009-11-27T13:10:56.225909Z
-20628
-jai_menon
+2010-01-05T14:46:27.000000Z
+59485b7713305499f8ba9142a7b678ee
+2010-01-04T22:59:43.259599Z
+21025
+bcoudurier
 has-props
 
 rtp_asf.h
@@ -966,6 +966,18 @@ e138727152955c89d28b23cf31ea4492
 cehoyos
 has-props
 
+ape.c
+file
+
+
+
+
+2009-09-14T08:26:33.000000Z
+9aa4e8f6a69f470f11c848391c718897
+2009-08-11T17:08:09.355278Z
+19629
+kostya
+
 avienc.c
 file
 
@@ -978,18 +990,6 @@ file
 19254
 diego
 has-props
-
-ape.c
-file
-
-
-
-
-2009-09-14T08:26:33.000000Z
-9aa4e8f6a69f470f11c848391c718897
-2009-08-11T17:08:09.355278Z
-19629
-kostya
 
 rtmpproto.c
 file
@@ -1016,19 +1016,6 @@ e03cead18cc28f481649c89b6d1d970e
 reimar
 has-props
 
-oggparsetheora.c
-file
-
-
-
-
-2009-07-06T15:13:56.000000Z
-66573196b1551ee31d1978049abe62e9
-2009-07-03T11:31:09.263152Z
-19334
-reimar
-has-props
-
 oggparseogm.c
 file
 
@@ -1042,17 +1029,18 @@ e13c1d47a21859dc7fe31da1aa8ff2f1
 conrad
 has-props
 
-ncdec.c
+oggparsetheora.c
 file
 
 
 
 
-2009-10-09T13:57:37.000000Z
-5ea53fda03a9ce046a5bb6f1c2a69ade
-2009-09-15T13:28:14.797764Z
-19857
-michael
+2009-07-06T15:13:56.000000Z
+66573196b1551ee31d1978049abe62e9
+2009-07-03T11:31:09.263152Z
+19334
+reimar
+has-props
 
 assenc.c
 file
@@ -1064,6 +1052,18 @@ file
 a0443fad0fdc19694d60d9381e3246a0
 2008-09-26T19:42:21.727441Z
 15430
+michael
+
+ncdec.c
+file
+
+
+
+
+2009-10-09T13:57:37.000000Z
+5ea53fda03a9ce046a5bb6f1c2a69ade
+2009-09-15T13:28:14.797764Z
+19857
 michael
 
 flvenc.c
@@ -1115,18 +1115,6 @@ file
 17608
 aurel
 
-audiointerleave.h
-file
-
-
-
-
-2009-03-09T16:00:09.000000Z
-6d1a8c3e50b34bed7cc07e7530bf1fa4
-2009-03-08T14:16:55.803410Z
-17869
-michael
-
 soxdec.c
 file
 
@@ -1137,6 +1125,18 @@ file
 0812b2c3eb6f4332386c8bbf775f8c62
 2009-12-13T20:27:29.966115Z
 20836
+michael
+
+audiointerleave.h
+file
+
+
+
+
+2009-03-09T16:00:09.000000Z
+6d1a8c3e50b34bed7cc07e7530bf1fa4
+2009-03-08T14:16:55.803410Z
+17869
 michael
 
 tta.c
@@ -1263,19 +1263,6 @@ file
 20815
 conrad
 
-amr.c
-file
-
-
-
-
-2009-01-29T11:50:56.000000Z
-50fc6296463da12352b8d1e70382d80d
-2009-01-13T23:44:16.634366Z
-16590
-aurel
-has-props
-
 mmf.c
 file
 
@@ -1287,6 +1274,19 @@ file
 2009-06-22T23:09:34.302908Z
 19254
 diego
+has-props
+
+amr.c
+file
+
+
+
+
+2009-01-29T11:50:56.000000Z
+50fc6296463da12352b8d1e70382d80d
+2009-01-13T23:44:16.634366Z
+16590
+aurel
 has-props
 
 mxfenc.c
@@ -1307,11 +1307,11 @@ file
 
 
 
-2009-12-21T08:10:53.000000Z
-7529d1838dd2588e5f021f92f61564cb
-2009-12-17T17:25:31.426922Z
-20890
-vitor
+2010-01-05T14:46:27.000000Z
+0e75ee5c8ebc352bb03d7378417b8267
+2010-01-03T14:31:25.217274Z
+21005
+stefano
 has-props
 
 riff.c
@@ -1338,19 +1338,6 @@ file
 20839
 michael
 
-rtsp.c
-file
-
-
-
-
-2009-11-13T16:30:40.000000Z
-7eae3682651900875e0f6079e4368a26
-2009-11-13T10:19:42.065271Z
-20530
-lucabe
-has-props
-
 r3d.c
 file
 
@@ -1363,17 +1350,17 @@ file
 19702
 bcoudurier
 
-options.c
+rtsp.c
 file
 
 
 
 
-2009-11-13T16:30:40.000000Z
-00fa6d40e8315e1a8f9ba028e1b9e6b4
-2009-11-09T01:10:55.561670Z
-20483
-cehoyos
+2010-01-05T14:46:27.000000Z
+a209343a5fa97acea9b8db6dff3719ec
+2010-01-04T19:55:43.245129Z
+21020
+rbultje
 has-props
 
 riff.h
@@ -1388,17 +1375,18 @@ f89e3e4f6c6825aab67bb5f674e56730
 20250
 cehoyos
 
-vqf.c
+options.c
 file
 
 
 
 
-2009-12-21T08:10:53.000000Z
-70e594adce3a048f5746008a032bd0d3
-2009-12-13T20:27:29.966115Z
-20836
-michael
+2009-11-13T16:30:40.000000Z
+00fa6d40e8315e1a8f9ba028e1b9e6b4
+2009-11-09T01:10:55.561670Z
+20483
+cehoyos
+has-props
 
 id3v2.h
 file
@@ -1411,6 +1399,18 @@ d31924a780269b840ce607184bfd3207
 2009-10-17T14:07:28.131642Z
 20263
 mru
+
+vqf.c
+file
+
+
+
+
+2009-12-21T08:10:53.000000Z
+70e594adce3a048f5746008a032bd0d3
+2009-12-13T20:27:29.966115Z
+20836
+michael
 
 rtsp.h
 file
@@ -1443,11 +1443,11 @@ file
 
 
 
-2009-12-21T08:10:53.000000Z
-68cfd3ca141bfb05cf56b9a400f4fc65
-2009-12-13T23:39:20.072115Z
-20850
-michael
+2010-01-05T14:46:27.000000Z
+69b71ef81487d88ad710e8c0a5d59781
+2010-01-03T14:31:25.217274Z
+21005
+stefano
 has-props
 
 cutils.c
@@ -1488,6 +1488,18 @@ file
 19674
 bwolowiec
 
+nut.c
+file
+
+
+
+
+2009-01-29T11:50:56.000000Z
+49f492d0a106210707e91cdf5ea1cbb8
+2008-12-11T19:06:24.961816Z
+16057
+michael
+
 mxfdec.c
 file
 
@@ -1500,18 +1512,6 @@ file
 20567
 reimar
 has-props
-
-nut.c
-file
-
-
-
-
-2009-01-29T11:50:56.000000Z
-49f492d0a106210707e91cdf5ea1cbb8
-2008-12-11T19:06:24.961816Z
-16057
-michael
 
 rtp_h263.c
 file
@@ -2010,11 +2010,11 @@ file
 
 
 
-2009-12-07T11:27:34.000000Z
-c72c7f20331389329e7f3e97cd17974a
-2009-11-29T18:26:51.731575Z
-20661
-bcoudurier
+2010-01-05T14:46:27.000000Z
+3051b5210fb7fa3c0697cd0a01fa6199
+2010-01-04T02:52:40.349587Z
+21010
+melanson
 has-props
 
 mpeg.c

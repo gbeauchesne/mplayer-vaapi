@@ -203,6 +203,7 @@ static int drop_frame_cnt=0; // total number of dropped frames
 int benchmark=0;
 
 // options:
+#define DEFAULT_STARTUP_DECODE_RETRY 8
        int auto_quality=0;
 static int output_quality=0;
 
@@ -1163,7 +1164,11 @@ void init_vo_spudec(void) {
  * will be done automatically by replacing our main() if we include SDL.h.
  */
 #if defined(__APPLE__) && defined(CONFIG_SDL)
+#ifdef CONFIG_SDL_SDL_H
+#include <SDL/SDL.h>
+#else
 #include <SDL.h>
+#endif
 #endif
 
 /**
@@ -2535,15 +2540,18 @@ static int seek(MPContext *mpctx, double amount, int style)
     if (demux_seek(mpctx->demuxer, amount, audio_delay, style) == 0)
 	return -1;
 
+    mpctx->startup_decode_retry = DEFAULT_STARTUP_DECODE_RETRY;
     if (mpctx->sh_video) {
 	current_module = "seek_video_reset";
 	resync_video_stream(mpctx->sh_video);
 	if (vo_config_count)
 	    mpctx->video_out->control(VOCTRL_RESET, NULL);
+	mpctx->sh_video->next_frame_time = 0;
 	mpctx->sh_video->num_buffered_pts = 0;
 	mpctx->sh_video->last_pts = MP_NOPTS_VALUE;
 	mpctx->num_buffered_frames = 0;
 	mpctx->delay = 0;
+	mpctx->time_frame = 0;
 	// Not all demuxers set d_video->pts during seek, so this value
 	// (which is used by at least vobsub and edl code below) may
 	// be completely wrong (probably 0).
@@ -3606,7 +3614,6 @@ if(verbose) term_osd = 0;
 {
 //int frame_corr_num=0;   //
 //float v_frame=0;    // Video
-float time_frame=0; // Timer
 //float num_frames=0;      // number of frames played
 
 int frame_time_remaining=0; // flag
@@ -3692,6 +3699,7 @@ total_time_usage_start=GetTimer();
 audio_time_usage=0; video_time_usage=0; vout_time_usage=0;
 total_frame_cnt=0; drop_frame_cnt=0; // fix for multifile fps benchmark
 play_n_frames=play_n_frames_mf;
+mpctx->startup_decode_retry = DEFAULT_STARTUP_DECODE_RETRY;
 
 if(play_n_frames==0){
   mpctx->eof=PT_NEXT_ENTRY; goto goto_next_file;
@@ -3764,6 +3772,15 @@ if(!mpctx->sh_video) {
 
   if (!mpctx->num_buffered_frames) {
       double frame_time = update_video(&blit_frame);
+      while (!blit_frame && mpctx->startup_decode_retry > 0) {
+          double delay = mpctx->delay;
+          // these initial decode failures are probably due to codec delay,
+          // ignore them and also their probably nonsense durations
+          update_video(&blit_frame);
+          mpctx->delay = delay;
+          mpctx->startup_decode_retry--;
+      }
+      mpctx->startup_decode_retry = 0;
       mp_dbg(MSGT_AVSYNC,MSGL_DBG2,"*** ftime=%5.3f ***\n",frame_time);
       if (mpctx->sh_video->vf_initialized < 0) {
 	  mp_msg(MSGT_CPLAYER,MSGL_FATAL, MSGTR_NotInitializeVOPorVO);
@@ -3774,7 +3791,7 @@ if(!mpctx->sh_video) {
       else {
 	  // might return with !eof && !blit_frame if !correct_pts
 	  mpctx->num_buffered_frames += blit_frame;
-	  time_frame += frame_time / playback_speed;  // for nosound
+	  mpctx->time_frame += frame_time / playback_speed;  // for nosound
       }
   }
 
@@ -3805,7 +3822,7 @@ if(!mpctx->sh_video) {
         }
     }
 
-    frame_time_remaining = sleep_until_update(&time_frame, &aq_sleep_time);
+    frame_time_remaining = sleep_until_update(&mpctx->time_frame, &aq_sleep_time);
 
 //====================== FLIP PAGE (VIDEO BLT): =========================
 
@@ -3820,7 +3837,7 @@ if(!mpctx->sh_video) {
         }
 //====================== A-V TIMESTAMP CORRECTION: =========================
 
-  adjust_sync_and_print_status(frame_time_remaining, time_frame);
+  adjust_sync_and_print_status(frame_time_remaining, mpctx->time_frame);
 
 //============================ Auto QUALITY ============================
 

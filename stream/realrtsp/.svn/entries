@@ -1,15 +1,15 @@
 8
 
 dir
-30134
+30226
 svn://svn.mplayerhq.hu/mplayer/trunk/stream/realrtsp
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-09-02T10:55:36.736213Z
-29626
-reimar
+2010-01-04T09:48:14.035690Z
+30194
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -123,10 +123,10 @@ file
 
 
 
-2009-05-25T08:53:53.000000Z
-b20d04660f14c9bca044c1958790344a
-2009-05-13T02:58:57.333510Z
-29305
+2010-01-05T14:46:25.000000Z
+4c47dd755ec2781f650d38f2f81c2b26
+2010-01-04T09:48:14.035690Z
+30194
 diego
 has-props
 
