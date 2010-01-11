@@ -86,7 +86,6 @@ static int                      g_is_paused;
 static uint32_t                 g_image_width;
 static uint32_t                 g_image_height;
 static uint32_t                 g_image_format;
-static struct vo_rect           g_borders;
 static struct vo_rect           g_output_rect;
 static struct vaapi_surface    *g_output_surfaces[MAX_OUTPUT_SURFACES];
 static unsigned int             g_output_surface;
@@ -374,7 +373,7 @@ static void resize(void)
     struct vo_rect src;
 
     calc_src_dst_rects(g_image_width, g_image_height,
-                       &src, &g_output_rect, &g_borders, NULL);
+                       &src, &g_output_rect, NULL, NULL);
 
     vo_x11_clearwindow(mDisplay, vo_window);
 
