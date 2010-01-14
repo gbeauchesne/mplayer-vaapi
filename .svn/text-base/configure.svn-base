@@ -338,7 +338,7 @@ Codecs:
   --enable-libdca           enable libdca support [autodetect]
   --disable-mp3lib          disable builtin mp3lib [autodetect]
   --disable-liba52          disable liba52 [autodetect]
-  --disable-liba52-internal disable builtin liba52 [autodetect]
+  --enable-liba52-internal  enable builtin liba52 [disabled]
   --disable-libmpeg2        disable builtin libmpeg2 [autodetect]
   --disable-musepack        disable musepack support [autodetect]
   --disable-libopencore_amrnb disable libopencore_amr narrowband [autodetect]
@@ -475,6 +475,7 @@ Advanced options:
   --enable-neon             enable NEON (ARM) [autodetect]
   --enable-iwmmxt           enable iWMMXt (ARM) [autodetect]
   --disable-fastmemcpy      disable 3DNow!/SSE/MMX optimized memcpy [enable]
+  --enable-hardcoded-tables put tables in binary instead of calculating them at startup [disable]
   --enable-big-endian       force byte order to big-endian [autodetect]
   --enable-debug[=1-3]      compile-in debugging information [disable]
   --enable-profile          compile-in profiling information [disable]
@@ -629,7 +630,7 @@ _speex=auto
 _theora=auto
 _mp3lib=auto
 _liba52=auto
-_liba52_internal=auto
+_liba52_internal=no
 _libdca=auto
 _libmpeg2=auto
 _faad=auto
@@ -662,6 +663,7 @@ _sgiaudio=auto
 _sunaudio=auto
 _alsa=auto
 _fastmemcpy=yes
+hardcoded_tables=no
 _unrar_exec=auto
 _win32dll=auto
 _select=yes
@@ -678,6 +680,9 @@ _tv_dshow=auto
 _pvr=auto
 _network=yes
 _winsock2_h=auto
+_struct_addrinfo=auto
+_getaddrinfo=auto
+_struct_sockaddr_storage=auto
 _smb=auto
 _vidix=auto
 _vidix_pcidb=yes
@@ -1117,6 +1122,8 @@ for ac_option do
   --disable-pvr)        _pvr=no         ;;
   --enable-fastmemcpy)  _fastmemcpy=yes ;;
   --disable-fastmemcpy) _fastmemcpy=no  ;;
+  --enable-hardcoded-tables)  hardcoded_tables=yes ;;
+  --disable-hardcoded-tables) hardcoded_tables=no  ;;
   --enable-network)     _network=yes    ;;
   --disable-network)    _network=no     ;;
   --enable-winsock2_h)  _winsock2_h=yes ;;
@@ -1563,7 +1570,7 @@ if test "$(basename $_cc)" = "icc" || test "$(basename $_cc)" = "ecc"; then
   esac
   echores "$cc_version"
 else
-  for _cc in "$_cc" cc gcc ; do
+  for _cc in "$_cc" gcc cc ; do
     cc_name_tmp=$($_cc -v 2>&1 | tail -n 1 | cut -d ' ' -f 1)
     if test "$cc_name_tmp" = "gcc"; then
     cc_name=$cc_name_tmp
@@ -1582,6 +1589,15 @@ else
     esac
     echores "$cc_version"
     break
+    fi
+    cc_name_tmp=$($_cc -V 2>&1 | head -n 1 | cut -d ' ' -f 2,3)
+    if test "$cc_name_tmp" = "Sun C"; then
+      echocheck "$_cc version"
+      cc_vendor=sun
+      cc_version=$($_cc -V 2>&1 | head -n 1 | cut -d ' ' -f 4)
+      _res_comment="experimental support only"
+      echores "Sun C $cc_version"
+      break
     fi
   done
 fi # icc
@@ -1644,9 +1660,10 @@ if test "$_runtime_cpudetection" = no ; then
 if test -r /proc/cpuinfo && ! cygwin; then
   # Linux with /proc mounted, extract CPU information from it
   _cpuinfo="cat /proc/cpuinfo"
-elif test -r /compat/linux/proc/cpuinfo && ! x86_32 ; then
+elif test -r /compat/linux/proc/cpuinfo && ! x86 ; then
   # FreeBSD with Linux emulation /proc mounted,
   # extract CPU information from it
+  # Don't use it on x86 though, it never reports 3Dnow
   _cpuinfo="cat /compat/linux/proc/cpuinfo"
 elif darwin && ! x86 ; then
   # use hostinfo on Darwin
@@ -2410,7 +2427,8 @@ echocheck "assembler support of -pipe option"
 cat > $TMPC << EOF
 int main(void) { return 0; }
 EOF
-cc_check -pipe && _pipe="-pipe" && echores "yes" || echores "no"
+# -I. helps to detect compilers that just misunderstand -pipe like Sun C
+cc_check -pipe -I. && _pipe="-pipe" && echores "yes" || echores "no"
 
 
 echocheck "compiler support of named assembler arguments"
@@ -2451,6 +2469,8 @@ if test "$_profile" != "" || test "$_debug" != "" ; then
 elif test -z "$CFLAGS" ; then
   if test "$cc_vendor" = "intel" ; then
     CFLAGS="-O2 $_march $_mcpu $_pipe -fomit-frame-pointer -wd167 -wd556 -wd144"
+  elif test "$cc_vendor" = "sun" ; then
+    CFLAGS="-O2 $_march $_mcpu $_pipe -xc99 -xregs=frameptr"
   elif test "$cc_vendor" != "gnu" ; then
     CFLAGS="-O2 $_march $_mcpu $_pipe"
   else
@@ -3001,7 +3021,7 @@ if test "$_posix4" = yes ; then
 fi
 echores "$_posix4"
 
-for func in llrint log2 lrint lrintf round roundf truncf; do
+for func in exp2 exp2f llrint log2 log2f lrint lrintf round roundf truncf; do
 echocheck $func
 cat > $TMPC << EOF
 #include <math.h>
@@ -3083,6 +3103,64 @@ else
 fi
 
 
+echocheck "netdb.h, struct addrinfo"
+if test "$_struct_addrinfo" = auto; then
+  _struct_addrinfo=no
+  cat > $TMPC << EOF
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+int main(void) { struct addrinfo ai; return 0; }
+EOF
+  cc_check && _struct_addrinfo=yes
+fi
+echores "$_struct_addrinfo"
+
+if test "$_struct_addrinfo" = yes; then
+  def_addrinfo="#define HAVE_STRUCT_ADDRINFO 1"
+else
+  def_addrinfo="#define HAVE_STRUCT_ADDRINFO 0"
+fi
+
+
+echocheck "netdb.h, getaddrinfo()"
+if test "$_getaddrinfo" = auto; then
+  _getaddrinfo=no
+  cat > $TMPC << EOF
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+int main(void) { (void) getaddrinfo(0, 0, 0, 0); return 0; }
+EOF
+  cc_check && _getaddrinfo=yes
+fi
+echores "$_getaddrinfo"
+
+if test "$_getaddrinfo" = yes; then
+  def_getaddrinfo="#define HAVE_GETADDRINFO 1"
+else
+  def_getaddrinfo="define HAVE_GETADDRINFO 0"
+fi
+
+
+echocheck "sockaddr_storage"
+if test "$_struct_sockaddr_storage" = auto; then
+  _struct_sockaddr_storage=no
+  cat > $TMPC << EOF
+#include <sys/socket.h>
+int main(void) { struct sockaddr_storage sas; return 0; }
+EOF
+  cc_check && _struct_sockaddr_storage=yes
+fi
+echores "$_struct_sockaddr_storage"
+
+if test "$_struct_sockaddr_storage" = yes; then
+  def_sockaddr_storage="#define HAVE_STRUCT_SOCKADDR_STORAGE 1"
+else
+  def_sockaddr_storage="#define HAVE_STRUCT_SOCKADDR_STORAGE 0"
+fi
+
+
 echocheck "arpa/inet.h"
 arpa_inet_h=no
 def_arpa_inet_h='#define HAVE_ARPA_INET_H 0'
@@ -3107,7 +3185,7 @@ for _ld_tmp in "$_ld_sock" "$_ld_sock -lresolv" ; do
   cc_check $_ld_tmp && inet_pton=yes && break
 done
 if test $inet_pton = yes ; then
-  test $_ld_tmp && _res_comment="using $_ld_tmp"
+  test "$_ld_tmp" && _res_comment="using $_ld_tmp"
   def_inet_pton='#define HAVE_INET_PTON 1'
 fi
 echores "$inet_pton"
@@ -3126,7 +3204,7 @@ for _ld_tmp in "$_ld_sock" "$_ld_sock -lresolv" ; do
   cc_check $_ld_tmp && inet_aton=yes && break
 done
 if test $inet_aton = yes ; then
-  test $_ld_tmp && _res_comment="using $_ld_tmp"
+  test "$_ld_tmp" && _res_comment="using $_ld_tmp"
   def_inet_aton='#define HAVE_INET_ATON 1'
 fi
 echores "$inet_aton"
@@ -3342,6 +3420,16 @@ else
   def_fastmemcpy='#undef CONFIG_FASTMEMCPY'
 fi
 echores "$_fastmemcpy"
+
+
+echocheck "hard-coded tables"
+if test "$hardcoded_tables" = yes ; then
+  def_hardcoded_tables='#define CONFIG_HARDCODED_TABLES 1'
+  mak_hardcoded_tables='CONFIG_HARDCODED_TABLES = yes'
+else
+  def_hardcoded_tables='#define CONFIG_HARDCODED_TABLES 0'
+fi
+echores "$hardcoded_tables"
 
 
 echocheck "mman.h"
@@ -4208,7 +4296,7 @@ echocheck "X11 headers presence"
     fi
   done
   if test $_cross_compile = no; then
-    for I in /usr/X11/include /usr/X11R7/include /usr/X11R6/include \
+    for I in /usr/X11/include /usr/X11R7/include /usr/local/include /usr/X11R6/include \
              /usr/include/X11R6 /usr/openwin/include ; do
       if test -f "$I/X11/Xlib.h" ; then
         extra_cflags="$extra_cflags -I$I"
@@ -4228,8 +4316,8 @@ if test "$_x11" = auto && test "$_x11_headers" = yes ; then
 #include <X11/Xutil.h>
 int main(void) { (void) XCreateWindow(0,0,0,0,0,0,0,0,0,0,0,0); return 0; }
 EOF
-  for I in "" -L/usr/X11R7/lib -L/usr/X11R6/lib -L/usr/lib/X11R6 \
-           -L/usr/X11/lib -L/usr/lib32 -L/usr/openwin/lib -L/usr/X11R6/lib64 \
+  for I in "" -L/usr/X11R7/lib -L/usr/local/lib -L/usr/X11R6/lib -L/usr/lib/X11R6 \
+           -L/usr/X11/lib -L/usr/lib32 -L/usr/openwin/lib -L/usr/local/lib64 -L/usr/X11R6/lib64 \
            -L/usr/lib ; do
     if netbsd; then
       _ld_tmp="$I -lXext -lX11 $_ld_pthread -Wl,-R$(echo $I | sed s/^-L//)"
@@ -4932,15 +5020,14 @@ int main(void) {
 }
 EOF
   _gl=no
-  if cc_check -lGL $_ld_lm ; then
-    _gl=yes
-    _gl_x11=yes
-    libs_mplayer="$libs_mplayer -lGL $_ld_dl"
-  elif cc_check -lGL $_ld_lm $_ld_pthread ; then
-    _gl=yes
-    _gl_x11=yes
-    libs_mplayer="$libs_mplayer -lGL $_ld_pthread $_ld_dl"
-  fi
+  for _ld_tmp in -lGL "-lGL -lXdamage" "-lGL $_ld_pthread" ; do
+    if cc_check $_ld_tmp $_ld_lm ; then
+      _gl=yes
+      _gl_x11=yes
+      libs_mplayer="$libs_mplayer $_ld_tmp $_ld_dl"
+      break
+    fi
+  done
   if cc_check -DGL_WIN32 -lopengl32 ; then
     _gl=yes
     _gl_win32=yes
@@ -5244,6 +5331,7 @@ EOF
     fi
   done
   if test "$_sdl" = no && "$_sdlconfig" --version >>"$TMPLOG" 2>&1 ; then
+    _res_comment="using $_sdlconfig"
     if cygwin ; then
       _inc_tmp="$($_sdlconfig --cflags | cut -d " " -f 1,5,6 | sed s/no-cygwin/cygwin/)"
       _ld_tmp="$($_sdlconfig --libs | cut -d " " -f 1,4,6 | sed s/no-cygwin/cygwin/)"
@@ -5273,7 +5361,6 @@ if test "$_sdl" = yes ; then
   libs_mplayer="$libs_mplayer $_ld_tmp"
   _vomodules="sdl $_vomodules"
   _aomodules="sdl $_aomodules"
-  _res_comment="using $_sdlconfig"
 else
   def_sdl='#undef CONFIG_SDL'
   _novomodules="sdl $_novomodules"
@@ -6223,8 +6310,8 @@ if test "$_ass" = auto ; then
     cat > $TMPC << EOF
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#if ((FREETYPE_MAJOR < 2) || (FREETYPE_MINOR < 1) || ((FREETYPE_MINOR == 1) && (FREETYPE_PATCH < 8)))
-#error "Need FreeType 2.1.8 or newer"
+#if ((FREETYPE_MAJOR < 2) || (FREETYPE_MINOR < 2) || ((FREETYPE_MINOR == 2) && (FREETYPE_PATCH < 1)))
+#error "Need FreeType 2.2.1 or newer"
 #endif
 int main(void) { return 0; }
 EOF
@@ -6232,7 +6319,7 @@ EOF
     cc_check $($_freetypeconfig --cflags) $($_freetypeconfig --libs) && _ass=yes
     if test "$_ass" = no ; then
         ass_internal=no
-        _res_comment="FreeType >= 2.1.8 needed"
+        _res_comment="FreeType >= 2.2.1 needed"
     elif test "$ass_internal" = no ; then
         _res_comment="external"
         extra_ldflags="$extra_ldflags -lass"
@@ -6659,7 +6746,7 @@ if test "$_libdca" = auto ; then
 #include <dts.h>
 int main(void) { dts_init(0); return 0; }
 EOF
-  for _ld_dca in -ldts -ldca ; do
+  for _ld_dca in -ldca -ldts ; do
     cc_check $_ld_dca $_ld_lm && extra_ldflags="$extra_ldflags $_ld_dca" \
       && _libdca=yes && break
   done
@@ -7100,7 +7187,8 @@ test "$_libavcodec"    = yes && def_libavcodec='#define CONFIG_LIBAVCODEC 1'
 test "$_libavcodec_a"  = yes && def_libavcodec_a='#define CONFIG_LIBAVCODEC_A 1'
 test "$_libavcodec_so" = yes && def_libavcodec_so='#define CONFIG_LIBAVCODEC_SO 1'
 test "$_libavcodec_mpegaudio_hp" = yes \
-  && def_libavcodec_mpegaudio_hp='#define CONFIG_MPEGAUDIO_HP 1'
+  && def_libavcodec_mpegaudio_hp='#define CONFIG_MPEGAUDIO_HP 1' \
+  && mak_libavcodec_mpegaudio_hp='CONFIG_MPEGAUDIO_HP = yes'
 if test "$_libavcodec_a" = yes ; then
   _codecmodules="libavcodec(internal) $_codecmodules"
 elif test "$_libavcodec_so" = yes ; then
@@ -8364,6 +8452,8 @@ FAAC=$_faac
 FAAD = $_faad
 FAAD_INTERNAL = $_faad_internal
 FASTMEMCPY = $_fastmemcpy
+$mak_hardcoded_tables
+$mak_libavcodec_mpegaudio_hp
 FBDEV = $_fbdev
 FREETYPE = $_freetype
 FTP = $_ftp
@@ -8506,6 +8596,9 @@ LIBSWSCALE = $_libswscale
 LIBSWSCALE_A = $_libswscale_a
 LIBSWSCALE_SO = $_libswscale_so
 
+HOSTCC=\$(HOST_CC)
+HOSTCFLAGS=-D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -O3
+HOSTLIBS=-lm
 CC_O=-o \$@
 LD=gcc
 CONFIG_STATIC=yes
@@ -8514,6 +8607,7 @@ BUILD_ROOT=..
 LIBPREF=lib
 LIBSUF=.a
 LIBNAME=\$(LIBPREF)\$(NAME)\$(LIBSUF)
+FULLNAME=\$(NAME)\$(BUILDSUF)
 
 # Some FFmpeg codecs depend on these. Enable them unconditionally for now.
 CONFIG_AANDCT=yes
@@ -8661,12 +8755,15 @@ $def_winsock2_h
 
 
 /* system functions */
+$def_exp2
+$def_exp2f
 $def_gethostbyname2
 $def_gettimeofday
 $def_glob
 $def_langinfo
 $def_llrint
 $def_log2
+$def_log2f
 $def_lrint
 $def_lrintf
 $def_map_memalign
@@ -8713,6 +8810,7 @@ $def_crash_debug
 $def_debug
 $def_dynamic_plugins
 $def_fastmemcpy
+$def_hardcoded_tables
 $def_menu
 $def_runtime_cpudetection
 $def_sighandler
@@ -8870,6 +8968,9 @@ $def_network
 $def_smb
 $def_socklen_t
 $def_vstream
+$def_addrinfo
+$def_getaddrinfo
+$def_sockaddr_storage
 
 
 /* libvo options */
@@ -8995,14 +9096,13 @@ $def_yasm
 #define CONFIG_FFSERVER 0
 #define CONFIG_GPL 1
 #define CONFIG_GRAY 0
-#define CONFIG_HARDCODED_TABLES 0
 #define CONFIG_LIBVORBIS 0
 #define CONFIG_POWERPC_PERF 0
 #define CONFIG_SMALL 0
 #define CONFIG_SWSCALE 1
 #define CONFIG_SWSCALE_ALPHA 1
 
-#ifdef HAVE_AF_INET6
+#if defined(HAVE_AF_INET6) && (!defined(_WIN32) || defined(__CYGWIN__))
 #define CONFIG_IPV6 1
 #else
 #define CONFIG_IPV6 0

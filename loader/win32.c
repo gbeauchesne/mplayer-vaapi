@@ -208,8 +208,8 @@ static inline void dbgprintf(char* fmt, ...)
 	vprintf(fmt, va);
 //	mp_dbg(MSGT_WIN32, MSGL_DBG3, fmt, va);
 	va_end(va);
+	fflush(stdout);
     }
-  fflush(stdout);
 }
 
 
@@ -3839,7 +3839,7 @@ HRESULT WINAPI CoInitialize(LPVOID lpReserved)
 }
 void WINAPI CoUninitialize(void)
 {
-    return expCoUninitialize();
+    expCoUninitialize();
 }
 
 static DWORD WINAPI expSetThreadAffinityMask
@@ -5326,9 +5326,9 @@ struct libs libraries[]={
 
 static WIN_BOOL WINAPI ext_stubs(void)
 {
-    volatile int idx = 0xdeadabcd;
+    volatile int idx = 0x0deadabc;
     // make sure gcc does not do eip-relative call or something like that
-    volatile void (*my_printf)(char *, char *) = (void *)0xdeadfbcd;
+    void (* volatile my_printf)(char *, char *) = (void *)0xdeadfbcd;
     my_printf("Called unk_%s\n", export_names[idx]);
     return 0;
 }

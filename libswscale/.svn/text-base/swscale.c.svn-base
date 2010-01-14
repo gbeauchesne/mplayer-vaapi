@@ -157,6 +157,12 @@ const char *swscale_license(void)
         || (x)==PIX_FMT_YUV422P16BE   \
         || (x)==PIX_FMT_YUV444P16BE   \
     )
+
+int sws_isSupportedInput(enum PixelFormat pix_fmt)
+{
+    return isSupportedIn(pix_fmt);
+}
+
 #define isSupportedOut(x)   (       \
            (x)==PIX_FMT_YUV420P     \
         || (x)==PIX_FMT_YUVA420P    \
@@ -181,6 +187,12 @@ const char *swscale_license(void)
         || (x)==PIX_FMT_YUV422P16BE   \
         || (x)==PIX_FMT_YUV444P16BE   \
     )
+
+int sws_isSupportedOutput(enum PixelFormat pix_fmt)
+{
+    return isSupportedOut(pix_fmt);
+}
+
 #define isPacked(x)         (       \
            (x)==PIX_FMT_PAL8        \
         || (x)==PIX_FMT_YUYV422     \
@@ -1085,7 +1097,8 @@ static void fillPlane(uint8_t* plane, int stride, int width, int height, int y, 
     }
 }
 
-static inline void rgb48ToY(uint8_t *dst, const uint8_t *src, int width)
+static inline void rgb48ToY(uint8_t *dst, const uint8_t *src, int width,
+                            uint32_t *unused)
 {
     int i;
     for (i = 0; i < width; i++) {
@@ -1098,7 +1111,8 @@ static inline void rgb48ToY(uint8_t *dst, const uint8_t *src, int width)
 }
 
 static inline void rgb48ToUV(uint8_t *dstU, uint8_t *dstV,
-                             uint8_t *src1, uint8_t *src2, int width)
+                             const uint8_t *src1, const uint8_t *src2,
+                             int width, uint32_t *unused)
 {
     int i;
     assert(src1==src2);
@@ -1113,7 +1127,8 @@ static inline void rgb48ToUV(uint8_t *dstU, uint8_t *dstV,
 }
 
 static inline void rgb48ToUV_half(uint8_t *dstU, uint8_t *dstV,
-                                  uint8_t *src1, uint8_t *src2, int width)
+                                  const uint8_t *src1, const uint8_t *src2,
+                                  int width, uint32_t *unused)
 {
     int i;
     assert(src1==src2);
@@ -2953,6 +2968,10 @@ int sws_scale(SwsContext *c, uint8_t* src[], int srcStride[], int srcSliceY,
     int i;
     uint8_t* src2[4]= {src[0], src[1], src[2], src[3]};
     uint8_t* dst2[4]= {dst[0], dst[1], dst[2], dst[3]};
+
+    // do not mess up sliceDir if we have a "trailing" 0-size slice
+    if (srcSliceH == 0)
+        return 0;
 
     if (c->sliceDir == 0 && srcSliceY != 0 && srcSliceY + srcSliceH != c->srcH) {
         av_log(c, AV_LOG_ERROR, "Slices start in the middle!\n");

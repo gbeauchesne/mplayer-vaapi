@@ -1,15 +1,15 @@
 8
 
 dir
-30226
+30302
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale/x86
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-08-16T21:11:28.782053Z
-29523
-ramiro
+2010-01-12T19:03:09.484708Z
+30289
+conrad
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2009-09-14T08:26:28.000000Z
-a3c57bb1e98eff9081523bd3f4725ed1
-2009-08-16T21:11:28.782053Z
-29523
-ramiro
+2010-01-14T12:04:43.000000Z
+081910b2254032b4843db7f72f186784
+2010-01-09T17:20:49.846400Z
+30254
+zuxy
 has-props
 
 yuv2rgb_template.c
@@ -45,10 +45,10 @@ file
 
 
 
-2009-09-14T08:26:28.000000Z
-16c572e5ba6abe6df63d49bdc55b939e
-2009-08-16T21:11:28.782053Z
-29523
-ramiro
+2010-01-14T12:04:43.000000Z
+61c292151ae4398c5cfa7dddb5ccfca8
+2010-01-12T19:03:09.484708Z
+30289
+conrad
 has-props
 

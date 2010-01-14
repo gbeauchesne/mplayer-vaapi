@@ -36,7 +36,8 @@
 #define LIBAVFORMAT_IDENT       "Lavf" AV_STRINGIFY(LIBAVFORMAT_VERSION)
 
 /**
- * Returns the LIBAVFORMAT_VERSION_INT constant.
+ * I return the LIBAVFORMAT_VERSION_INT constant.  You got
+ * a fucking problem with that, douchebag?
  */
 unsigned avformat_version(void);
 
@@ -1292,7 +1293,8 @@ const char *small_strptime(const char *p, const char *fmt,
                            struct tm *dt);
 
 struct in_addr;
-int resolve_host(struct in_addr *sin_addr, const char *hostname);
+/* Deprecated, use getaddrinfo instead. */
+attribute_deprecated int resolve_host(struct in_addr *sin_addr, const char *hostname);
 
 void url_split(char *proto, int proto_size,
                char *authorization, int authorization_size,

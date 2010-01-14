@@ -25,6 +25,7 @@ OBJS-$(CONFIG_AIFF_DEMUXER)              += aiffdec.o riff.o raw.o
 OBJS-$(CONFIG_AIFF_MUXER)                += aiffenc.o riff.o
 OBJS-$(CONFIG_AMR_DEMUXER)               += amr.o
 OBJS-$(CONFIG_AMR_MUXER)                 += amr.o
+OBJS-$(CONFIG_ANM_DEMUXER)               += anm.o
 OBJS-$(CONFIG_APC_DEMUXER)               += apc.o
 OBJS-$(CONFIG_APE_DEMUXER)               += ape.o apetag.o
 OBJS-$(CONFIG_ASF_DEMUXER)               += asfdec.o asf.o asfcrypt.o \
@@ -137,6 +138,7 @@ OBJS-$(CONFIG_NUT_DEMUXER)               += nutdec.o nut.o riff.o
 OBJS-$(CONFIG_NUT_MUXER)                 += nutenc.o nut.o riff.o
 OBJS-$(CONFIG_NUV_DEMUXER)               += nuv.o riff.o
 OBJS-$(CONFIG_OGG_DEMUXER)               += oggdec.o         \
+                                            oggparsedirac.o  \
                                             oggparseflac.o   \
                                             oggparseogm.o    \
                                             oggparsespeex.o  \
@@ -199,7 +201,6 @@ OBJS-$(CONFIG_RPL_DEMUXER)               += rpl.o
 OBJS-$(CONFIG_RTP_MUXER)                 += rtp.o         \
                                             rtp_aac.o     \
                                             rtp_amr.o     \
-                                            rtp_asf.o     \
                                             rtp_h263.o    \
                                             rtp_mpv.o     \
                                             rtpenc.o      \

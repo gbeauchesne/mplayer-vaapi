@@ -106,8 +106,7 @@ SRCS_COMMON-$(HAVE_POSIX_SELECT)     += libmpcodecs/vf_bmovl.c
 SRCS_COMMON-$(HAVE_SYS_MMAN_H)       += libaf/af_export.c osdep/mmap_anon.c
 SRCS_COMMON-$(JPEG)                  += libmpcodecs/vd_ijpg.c
 SRCS_COMMON-$(LADSPA)                += libaf/af_ladspa.c
-SRCS_COMMON-$(LIBA52)                += libmpcodecs/ad_hwac3.c \
-                                        libmpcodecs/ad_liba52.c
+SRCS_COMMON-$(LIBA52)                += libmpcodecs/ad_liba52.c
 SRCS_COMMON-$(LIBA52_INTERNAL)       += liba52/crc.c \
                                         liba52/resample.c \
                                         liba52/bit_allocate.c \
@@ -122,10 +121,13 @@ SRCS_COMMON-$(LIBASS)                += libmpcodecs/vf_ass.c \
 SRCS_COMMON-$(LIBASS_INTERNAL)       += libass/ass.c \
                                         libass/ass_bitmap.c \
                                         libass/ass_cache.c \
+                                        libass/ass_drawing.c \
                                         libass/ass_font.c \
                                         libass/ass_fontconfig.c \
                                         libass/ass_library.c \
+                                        libass/ass_parse.c \
                                         libass/ass_render.c \
+                                        libass/ass_strtod.c \
                                         libass/ass_utils.c \
 
 SRCS_COMMON-$(LIBAVCODEC)            += av_opts.c \
@@ -377,6 +379,7 @@ SRCS_COMMON = asxparser.c \
               libmpcodecs/ad_alaw.c \
               libmpcodecs/ad_dk3adpcm.c \
               libmpcodecs/ad_dvdpcm.c \
+              libmpcodecs/ad_hwac3.c \
               libmpcodecs/ad_hwmpa.c \
               libmpcodecs/ad_imaadpcm.c \
               libmpcodecs/ad_msadpcm.c \

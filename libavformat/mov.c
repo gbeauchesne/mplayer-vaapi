@@ -228,8 +228,9 @@ static int mov_read_default(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
             int err = parse(c, pb, a);
             if (err < 0)
                 return err;
-            if (url_is_streamed(pb) && c->found_moov && c->found_mdat)
-                break;
+            if (c->found_moov && c->found_mdat &&
+                (url_is_streamed(pb) || start_pos + a.size == url_fsize(pb)))
+                return 0;
             left = a.size - url_ftell(pb) + start_pos;
             if (left > 0) /* skip garbage at atom end */
                 url_fskip(pb, left);
@@ -923,6 +924,16 @@ static int mov_read_stsd(MOVContext *c, ByteIOContext *pb, MOVAtom atom)
 
             st->codec->width = get_be16(pb); /* width */
             st->codec->height = get_be16(pb); /* height */
+
+            if (st->codec->width != sc->width || st->codec->height != sc->height) {
+                AVRational r = av_d2q(
+                    ((double)st->codec->height * sc->width) /
+                    ((double)st->codec->width * sc->height), INT_MAX);
+                if (st->sample_aspect_ratio.num)
+                    st->sample_aspect_ratio = av_mul_q(st->sample_aspect_ratio, r);
+                else
+                    st->sample_aspect_ratio = r;
+            }
 
             get_be32(pb); /* horiz resolution */
             get_be32(pb); /* vert resolution */
