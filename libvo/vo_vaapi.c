@@ -925,6 +925,9 @@ static void free_video_specific(void)
         va_free_surfaces_tail_index = 0;
     }
 
+    g_output_surface = 0;
+    memset(g_output_surfaces, 0, sizeof(g_output_surfaces));
+
     if (va_osd_palette) {
         free(va_osd_palette);
         va_osd_palette = NULL;
