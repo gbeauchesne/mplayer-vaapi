@@ -921,6 +921,8 @@ static void free_video_specific(void)
         }
         free(va_free_surfaces);
         va_free_surfaces = NULL;
+        va_free_surfaces_head_index = 0;
+        va_free_surfaces_tail_index = 0;
     }
 
     if (va_osd_palette) {
@@ -967,6 +969,9 @@ static void free_video_specific(void)
 
 static void uninit(void)
 {
+    if (!vo_config_count)
+        return;
+
     free_video_specific();
 
     if (va_profiles) {
