@@ -1588,7 +1588,9 @@ static int draw_slice(uint8_t * image[], int stride[],
     struct vaapi_surface * const surface = va_free_surfaces[g_output_surface];
     VAImage * const va_image = &surface->image;
     VAStatus status;
-    uint8_t *dst, *image_data = NULL;
+    uint8_t *image_data = NULL;
+    uint8_t *dst[3] = { 0, };
+    unsigned int dst_stride[3];
 
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] draw_slice(): location (%d,%d), size %dx%d\n", x, y, w, h);
 
@@ -1596,21 +1598,39 @@ static int draw_slice(uint8_t * image[], int stride[],
     if (!check_status(status, "vaMapBuffer()"))
         return VO_FALSE;
 
-    dst = image_data + va_image->offsets[0] + y * va_image->pitches[0] + x;
-    memcpy_pic(dst, image[0], w, h, va_image->pitches[0], stride[0]);
+    dst_stride[0] = va_image->pitches[0];
+    dst[0] = image_data + va_image->offsets[0] + y * dst_stride[0] + x;
+
+    memcpy_pic(dst[0], image[0], w, h, dst_stride[0], stride[0]);
 
     x /= 2;
     y /= 2;
     w /= 2;
     h /= 2;
 
-    dst = image_data + va_image->offsets[1] + y * va_image->pitches[1] + x;
-    memcpy_pic(dst, image[1], w, h, va_image->pitches[1], stride[1]);
-
-    if (image[2]) { /* NV12 only has two planes */
-        dst = image_data + va_image->offsets[2] + y * va_image->pitches[2] + x;
-        memcpy_pic(dst, image[2], w, h, va_image->pitches[2], stride[2]);
+    if (g_image_format == IMGFMT_YV12) {
+        /* MPlayer's YV12 is actually I420, so swap U/V components */
+        dst_stride[1] = va_image->pitches[2];
+        dst[1] = image_data + va_image->offsets[2] + y * dst_stride[1] + x;
+        dst_stride[2] = va_image->pitches[1];
+        dst[2] = image_data + va_image->offsets[1] + y * dst_stride[2] + x;
     }
+    else {
+        if (image[1]) {
+            dst_stride[1] = va_image->pitches[1];
+            dst[1] = image_data + va_image->offsets[1] + y * dst_stride[1] + x;
+        }
+        if (image[2]) {
+            dst_stride[2] = va_image->pitches[2];
+            dst[2] = image_data + va_image->offsets[2] + y * dst_stride[2] + x;
+        }
+    }
+
+    if (image[1]) /* RGBA only has a single plane */
+        memcpy_pic(dst[1], image[1], w, h, dst_stride[1], stride[1]);
+
+    if (image[2]) /* NV12 only has two planes */
+        memcpy_pic(dst[2], image[2], w, h, dst_stride[2], stride[2]);
 
     status = vaUnmapBuffer(va_context->display, surface->image.buf);
     if (!check_status(status, "vaUnmapBuffer()"))
