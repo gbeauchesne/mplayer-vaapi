@@ -33,6 +33,7 @@
 #include "libavcodec/vaapi.h"
 #include "gui/interface.h"
 #include "stats.h"
+#include "libass/ass_mp.h"
 #include <stdarg.h>
 
 #if CONFIG_GL
@@ -69,6 +70,11 @@ const LIBVO_EXTERN(vaapi)
 typedef void (*draw_alpha_func)(int x0, int y0, int w, int h,
                                 unsigned char *src, unsigned char *srca,
                                 int stride);
+
+typedef void (*eosd_draw_alpha_func)(unsigned char *src,
+                                     int src_w, int src_h, int src_stride,
+                                     int dst_x, int dst_y,
+                                     uint32_t color);
 
 struct vaapi_surface {
     VASurfaceID id;
@@ -138,6 +144,11 @@ static int                      va_osd_associated;
 static draw_alpha_func          va_osd_draw_alpha;
 static uint8_t                 *va_osd_palette;
 static struct vaapi_equalizer   va_equalizer;
+static int                      va_eosd_used;
+static VAImage                  va_eosd_image;
+static uint8_t                 *va_eosd_image_data;
+static VASubpictureID           va_eosd_subpicture;
+static eosd_draw_alpha_func     va_eosd_draw_alpha;
 
 ///< Flag: direct surface mapping: use mpi->number to select free VA surface?
 static int                      va_dm;
@@ -374,6 +385,11 @@ static void resize(void)
 
     calc_src_dst_rects(g_image_width, g_image_height,
                        &src, &g_output_rect, NULL, NULL);
+
+#ifdef CONFIG_FREETYPE
+    // Adjust font size to display size
+    force_load_font = 1;
+#endif
 
     vo_x11_clearwindow(mDisplay, vo_window);
 
@@ -682,6 +698,48 @@ static int enable_osd(const struct vo_rect *src_rect,
     return 0;
 }
 
+static inline unsigned char *get_eosd_image_data(int x0, int y0)
+{
+    return (va_eosd_image_data +
+            va_eosd_image.offsets[0] +
+            va_eosd_image.pitches[0] * y0 +
+            x0 * ((va_eosd_image.format.bits_per_pixel + 7) / 8));
+}
+
+static void eosd_draw_alpha_rgba(unsigned char *src,
+                                 int src_w, int src_h, int src_stride,
+                                 int dst_x, int dst_y,
+                                 uint32_t color)
+{
+    int x, y;
+    const unsigned int dst_stride = va_eosd_image.pitches[0];
+    unsigned char *dst = get_eosd_image_data(dst_x, dst_y);
+    const unsigned int r = color >> 24;
+    const unsigned int g = (color >> 16) & 0xff;
+    const unsigned int b = (color >> 8) & 0xff;
+    const unsigned int a = 0xff - (color & 0xff);
+
+    // XXX: handle dirty rects
+    for (y = 0; y < src_h; y++, dst += dst_stride, src += src_stride)
+        for (x = 0; x < src_w; x++) {
+            const unsigned int v = src[x];
+            dst[4*x + 0] = r * v / 255;
+            dst[4*x + 1] = g * v / 255;
+            dst[4*x + 2] = b * v / 255;
+            dst[4*x + 3] = a;
+        }
+}
+
+///< List of subpicture formats in preferred order
+static const struct {
+    uint32_t format;
+    eosd_draw_alpha_func draw_alpha;
+}
+va_eosd_info[] = {
+    { VA_FOURCC('R','G','B','A'), eosd_draw_alpha_rgba },
+    { 0, NULL }
+};
+
 static int is_direct_mapping_init(void)
 {
     VADisplayAttribute attr;
@@ -851,8 +909,10 @@ static int preinit(const char *arg)
     for (i = 0; i < va_num_profiles; i++)
         mp_msg(MSGT_VO, MSGL_DBG2, "  %s\n", string_of_VAProfile(va_profiles[i]));
 
-    va_osd_subpicture = VA_INVALID_ID;
-    va_osd_image.image_id = VA_INVALID_ID;
+    va_osd_subpicture      = VA_INVALID_ID;
+    va_osd_image.image_id  = VA_INVALID_ID;
+    va_eosd_subpicture     = VA_INVALID_ID;
+    va_eosd_image.image_id = VA_INVALID_ID;
 
     max_display_attrs = vaMaxNumDisplayAttributes(va_context->display);
     display_attrs = calloc(max_display_attrs, sizeof(*display_attrs));
@@ -934,6 +994,16 @@ static void free_video_specific(void)
     }
 
     disable_osd();
+
+    if (va_eosd_subpicture != VA_INVALID_ID) {
+        vaDestroySubpicture(va_context->display, va_eosd_subpicture);
+        va_eosd_subpicture = VA_INVALID_ID;
+    }
+
+    if (va_eosd_image.image_id != VA_INVALID_ID) {
+        vaDestroyImage(va_context->display, va_eosd_image.image_id);
+        va_eosd_image.image_id = VA_INVALID_ID;
+    }
 
     if (va_osd_subpicture != VA_INVALID_ID) {
         vaDestroySubpicture(va_context->display, va_osd_subpicture);
@@ -1214,6 +1284,28 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
                string_of_VAImageFormat(&va_osd_image.format));
     }
 
+    /* Create EOSD data */
+    va_eosd_draw_alpha     = NULL;
+    va_eosd_image.image_id = VA_INVALID_ID;
+    va_eosd_image.buf      = VA_INVALID_ID;
+    va_eosd_subpicture     = VA_INVALID_ID;
+    for (i = 0; va_eosd_info[i].format; i++) {
+        for (j = 0; j < va_num_subpic_formats; j++)
+            if (va_subpic_formats[j].fourcc == va_eosd_info[i].format)
+                break;
+        if (j < va_num_subpic_formats &&
+            vaCreateImage(va_context->display, &va_subpic_formats[j],
+                          width, height, &va_eosd_image) == VA_STATUS_SUCCESS)
+            break;
+    }
+    if (va_eosd_info[i].format &&
+        vaCreateSubpicture(va_context->display, va_eosd_image.image_id,
+                           &va_eosd_subpicture) == VA_STATUS_SUCCESS) {
+        va_eosd_draw_alpha = va_eosd_info[i].draw_alpha;
+        mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] Using %s surface for EOSD\n",
+               string_of_VAImageFormat(&va_eosd_image.format));
+    }
+
     /* Allocate VA images */
     if (!IMGFMT_IS_VAAPI(format)) {
         VAImageFormat *image_format = VAImageFormat_from_imgfmt(format);
@@ -1310,7 +1402,8 @@ static int query_format(uint32_t format)
                               VFCAP_CSP_SUPPORTED_BY_HW |
                               VFCAP_HWSCALE_UP |
                               VFCAP_HWSCALE_DOWN |
-                              VFCAP_OSD);
+                              VFCAP_OSD |
+                              VFCAP_EOSD);
 
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] query_format(): format %x (%s)\n",
            format, vo_format_name(format));
@@ -1574,12 +1667,24 @@ static void put_surface(struct vaapi_surface *surface)
     if (!surface || surface->id == VA_INVALID_SURFACE)
         return;
 
+    if (va_eosd_used)
+        vaAssociateSubpicture(va_context->display,
+                              va_eosd_subpicture,
+                              &surface->id, 1,
+                              0, 0, g_image_width, g_image_height,
+                              0, 0, g_image_width, g_image_height,
+                              0);
+
 #if CONFIG_VAAPI_GLX
     if (gl_enabled)
         put_surface_glx(surface);
     else
 #endif
         put_surface_x11(surface);
+
+    if (va_eosd_used)
+        vaDeassociateSubpicture(va_context->display, va_eosd_subpicture,
+                                &surface->id, 1);
 }
 
 static int draw_slice(uint8_t * image[], int stride[],
@@ -1677,6 +1782,48 @@ static void draw_osd(void)
     va_osd_image_data = NULL;
 
     enable_osd(&va_osd_image_dirty_rect, &va_osd_image_dirty_rect);
+}
+
+static void draw_eosd(mp_eosd_images_t *imgs)
+{
+    ass_image_t *img = imgs->imgs;
+    ass_image_t *i;
+    VAStatus status;
+
+    if (!va_eosd_draw_alpha)
+        return;
+
+    // Nothing changed, no need to redraw
+    if (imgs->changed == 0)
+        return;
+
+    // There's nothing to render!
+    if (!img) {
+        va_eosd_used = 0;
+        return;
+    }
+
+    if (imgs->changed == 1)
+        goto eosd_skip_upload;
+
+    status = vaMapBuffer(va_context->display, va_eosd_image.buf,
+                         &va_eosd_image_data);
+    if (!check_status(status, "vaMapBuffer()"))
+        return;
+
+    memset(va_eosd_image_data, 0, va_eosd_image.data_size);
+
+    for (i = img; i; i = i->next)
+        va_eosd_draw_alpha(i->bitmap, i->w, i->h, i->stride,
+                           i->dst_x, i->dst_y, i->color);
+
+    status = vaUnmapBuffer(va_context->display, va_eosd_image.buf);
+    if (!check_status(status, "vaUnmapBuffer()"))
+        return;
+    va_eosd_image_data = NULL;
+
+eosd_skip_upload:
+    va_eosd_used = 1;
 }
 
 static void flip_page(void)
@@ -1930,6 +2077,20 @@ static int control(uint32_t request, void *data, ...)
     case VOCTRL_GET_HWACCEL_CONTEXT:
         *((void **)data) = va_context;
         return VO_TRUE;
+    case VOCTRL_DRAW_EOSD:
+        if (!data)
+            return VO_FALSE;
+        draw_eosd(data);
+        return VO_TRUE;
+    case VOCTRL_GET_EOSD_RES: {
+        mp_eosd_res_t *r = data;
+        r->mt = r->mb = r->ml = r->mr = 0;
+        r->srcw = g_image_width;
+        r->srch = g_image_height;
+        r->w    = g_image_width;
+        r->h    = g_image_height;
+        return VO_TRUE;
+    }
     }
     return VO_NOTIMPL;
 }
