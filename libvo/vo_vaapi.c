@@ -714,19 +714,19 @@ static void eosd_draw_alpha_rgba(unsigned char *src,
     int x, y;
     const unsigned int dst_stride = va_eosd_image.pitches[0];
     unsigned char *dst = get_eosd_image_data(dst_x, dst_y);
-    const unsigned int r = color >> 24;
+    const unsigned int r = (color >> 24) & 0xff;
     const unsigned int g = (color >> 16) & 0xff;
-    const unsigned int b = (color >> 8) & 0xff;
+    const unsigned int b = (color >>  8) & 0xff;
     const unsigned int a = 0xff - (color & 0xff);
 
     // XXX: handle dirty rects
     for (y = 0; y < src_h; y++, dst += dst_stride, src += src_stride)
         for (x = 0; x < src_w; x++) {
             const unsigned int v = src[x];
-            dst[4*x + 0] = r * v / 255;
-            dst[4*x + 1] = g * v / 255;
-            dst[4*x + 2] = b * v / 255;
-            dst[4*x + 3] = a;
+            dst[4*x + 0] = (r * v + dst[4*x + 0] * (0xff - v)) / 255;
+            dst[4*x + 1] = (g * v + dst[4*x + 1] * (0xff - v)) / 255;
+            dst[4*x + 2] = (b * v + dst[4*x + 2] * (0xff - v)) / 255;
+            dst[4*x + 3] = (a * v + dst[4*x + 3] * (0xff - v)) / 255;
         }
 }
 
