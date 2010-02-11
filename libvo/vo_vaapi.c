@@ -386,11 +386,6 @@ static void resize(void)
     calc_src_dst_rects(g_image_width, g_image_height,
                        &src, &g_output_rect, NULL, NULL);
 
-#ifdef CONFIG_FREETYPE
-    // Adjust font size to display size
-    force_load_font = 1;
-#endif
-
     vo_x11_clearwindow(mDisplay, vo_window);
 
 #if CONFIG_GL
