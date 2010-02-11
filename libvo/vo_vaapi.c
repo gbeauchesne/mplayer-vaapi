@@ -701,6 +701,30 @@ static inline unsigned char *get_eosd_image_data(int x0, int y0)
             x0 * ((va_eosd_image.format.bits_per_pixel + 7) / 8));
 }
 
+static void eosd_draw_alpha_bgra(unsigned char *src,
+                                 int src_w, int src_h, int src_stride,
+                                 int dst_x, int dst_y,
+                                 uint32_t color)
+{
+    int x, y;
+    const unsigned int dst_stride = va_eosd_image.pitches[0];
+    unsigned char *dst = get_eosd_image_data(dst_x, dst_y);
+    const unsigned int r = (color >> 24) & 0xff;
+    const unsigned int g = (color >> 16) & 0xff;
+    const unsigned int b = (color >>  8) & 0xff;
+    const unsigned int a = 0xff - (color & 0xff);
+
+    // XXX: handle dirty rects
+    for (y = 0; y < src_h; y++, dst += dst_stride, src += src_stride)
+        for (x = 0; x < src_w; x++) {
+            const unsigned int v = src[x];
+            dst[4*x + 0] = (b * v + dst[4*x + 0] * (0xff - v)) / 255;
+            dst[4*x + 1] = (g * v + dst[4*x + 1] * (0xff - v)) / 255;
+            dst[4*x + 2] = (r * v + dst[4*x + 2] * (0xff - v)) / 255;
+            dst[4*x + 3] = (a * v + dst[4*x + 3] * (0xff - v)) / 255;
+        }
+}
+
 static void eosd_draw_alpha_rgba(unsigned char *src,
                                  int src_w, int src_h, int src_stride,
                                  int dst_x, int dst_y,
@@ -731,6 +755,7 @@ static const struct {
     eosd_draw_alpha_func draw_alpha;
 }
 va_eosd_info[] = {
+    { VA_FOURCC('B','G','R','A'), eosd_draw_alpha_bgra },
     { VA_FOURCC('R','G','B','A'), eosd_draw_alpha_rgba },
     { 0, NULL }
 };
