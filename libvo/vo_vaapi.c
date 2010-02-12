@@ -144,10 +144,10 @@ static int                      va_osd_associated;
 static draw_alpha_func          va_osd_draw_alpha;
 static uint8_t                 *va_osd_palette;
 static struct vaapi_equalizer   va_equalizer;
-static int                      va_eosd_used;
 static VAImage                  va_eosd_image;
 static uint8_t                 *va_eosd_image_data;
 static VASubpictureID           va_eosd_subpicture;
+static int                      va_eosd_associated;
 static eosd_draw_alpha_func     va_eosd_draw_alpha;
 
 ///< Flag: direct surface mapping: use mpi->number to select free VA surface?
@@ -714,7 +714,6 @@ static void eosd_draw_alpha_bgra(unsigned char *src,
     const unsigned int b = (color >>  8) & 0xff;
     const unsigned int a = 0xff - (color & 0xff);
 
-    // XXX: handle dirty rects
     for (y = 0; y < src_h; y++, dst += dst_stride, src += src_stride)
         for (x = 0; x < src_w; x++) {
             const unsigned int v = src[x];
@@ -738,7 +737,6 @@ static void eosd_draw_alpha_rgba(unsigned char *src,
     const unsigned int b = (color >>  8) & 0xff;
     const unsigned int a = 0xff - (color & 0xff);
 
-    // XXX: handle dirty rects
     for (y = 0; y < src_h; y++, dst += dst_stride, src += src_stride)
         for (x = 0; x < src_w; x++) {
             const unsigned int v = src[x];
@@ -747,6 +745,38 @@ static void eosd_draw_alpha_rgba(unsigned char *src,
             dst[4*x + 2] = (b * v + dst[4*x + 2] * (0xff - v)) / 255;
             dst[4*x + 3] = (a * v + dst[4*x + 3] * (0xff - v)) / 255;
         }
+}
+
+static void disable_eosd(void)
+{
+    if (!va_eosd_associated)
+        return;
+
+    vaDeassociateSubpicture(va_context->display,
+                            va_eosd_subpicture,
+                            va_surface_ids, va_num_surfaces);
+
+    va_eosd_associated = 0;
+}
+
+static int enable_eosd(void)
+{
+    VAStatus status;
+
+    if (va_eosd_associated)
+        return 0;
+
+    status = vaAssociateSubpicture(va_context->display,
+                                   va_eosd_subpicture,
+                                   va_surface_ids, va_num_surfaces,
+                                   0, 0, g_image_width, g_image_height,
+                                   0, 0, g_image_width, g_image_height,
+                                   0);
+    if (!check_status(status, "vaAssociateSubpicture()"))
+        return -1;
+
+    va_eosd_associated = 1;
+    return 0;
 }
 
 ///< List of subpicture formats in preferred order
@@ -1013,6 +1043,7 @@ static void free_video_specific(void)
         va_osd_palette = NULL;
     }
 
+    disable_eosd();
     disable_osd();
 
     if (va_eosd_subpicture != VA_INVALID_ID) {
@@ -1687,24 +1718,12 @@ static void put_surface(struct vaapi_surface *surface)
     if (!surface || surface->id == VA_INVALID_SURFACE)
         return;
 
-    if (va_eosd_used)
-        vaAssociateSubpicture(va_context->display,
-                              va_eosd_subpicture,
-                              &surface->id, 1,
-                              0, 0, g_image_width, g_image_height,
-                              0, 0, g_image_width, g_image_height,
-                              0);
-
 #if CONFIG_VAAPI_GLX
     if (gl_enabled)
         put_surface_glx(surface);
     else
 #endif
         put_surface_x11(surface);
-
-    if (va_eosd_used)
-        vaDeassociateSubpicture(va_context->display, va_eosd_subpicture,
-                                &surface->id, 1);
 }
 
 static int draw_slice(uint8_t * image[], int stride[],
@@ -1819,7 +1838,7 @@ static void draw_eosd(mp_eosd_images_t *imgs)
 
     // There's nothing to render!
     if (!img) {
-        va_eosd_used = 0;
+        disable_eosd();
         return;
     }
 
@@ -1843,7 +1862,7 @@ static void draw_eosd(mp_eosd_images_t *imgs)
     va_eosd_image_data = NULL;
 
 eosd_skip_upload:
-    va_eosd_used = 1;
+    enable_eosd();
 }
 
 static void flip_page(void)
