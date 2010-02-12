@@ -50,6 +50,31 @@
 #include <va/va_glx.h>
 #endif
 
+/* Compatibility glue with VA-API >= 0.30 */
+#ifndef VA_INVALID_ID
+#define VA_INVALID_ID           0xffffffff
+#endif
+#ifndef VA_FOURCC
+#define VA_FOURCC(ch0, ch1, ch2, ch3)           \
+    ((uint32_t)(uint8_t)(ch0) |                 \
+     ((uint32_t)(uint8_t)(ch1) << 8) |          \
+     ((uint32_t)(uint8_t)(ch2) << 16) |         \
+     ((uint32_t)(uint8_t)(ch3) << 24 ))
+#endif
+#if defined VA_SRC_BT601 && defined VA_SRC_BT709
+#define USE_VAAPI_COLORSPACE 1
+#else
+#define USE_VAAPI_COLORSPACE 0
+#endif
+
+/* Compatibility glue with VA-API >= 0.31 */
+#if defined VA_CHECK_VERSION
+#if VA_CHECK_VERSION(0,31,0)
+#define vaPutImage2             vaPutImage
+#define vaAssociateSubpicture2  vaAssociateSubpicture
+#endif
+#endif
+
 static vo_info_t info = {
     "VA API with X11",
     "vaapi",
@@ -674,18 +699,18 @@ static int enable_osd(const struct vo_rect *src_rect,
 
     disable_osd();
 
-    status = vaAssociateSubpicture(va_context->display,
-                                   va_osd_subpicture,
-                                   va_surface_ids, va_num_surfaces,
-                                   src_rect->left,
-                                   src_rect->top,
-                                   src_rect->right - src_rect->left,
-                                   src_rect->bottom - src_rect->top,
-                                   dst_rect->left,
-                                   dst_rect->top,
-                                   dst_rect->right - dst_rect->left,
-                                   dst_rect->bottom - dst_rect->top,
-                                   0);
+    status = vaAssociateSubpicture2(va_context->display,
+                                    va_osd_subpicture,
+                                    va_surface_ids, va_num_surfaces,
+                                    src_rect->left,
+                                    src_rect->top,
+                                    src_rect->right - src_rect->left,
+                                    src_rect->bottom - src_rect->top,
+                                    dst_rect->left,
+                                    dst_rect->top,
+                                    dst_rect->right - dst_rect->left,
+                                    dst_rect->bottom - dst_rect->top,
+                                    0);
     if (!check_status(status, "vaAssociateSubpicture()"))
         return -1;
 
@@ -766,12 +791,12 @@ static int enable_eosd(void)
     if (va_eosd_associated)
         return 0;
 
-    status = vaAssociateSubpicture(va_context->display,
-                                   va_eosd_subpicture,
-                                   va_surface_ids, va_num_surfaces,
-                                   0, 0, g_image_width, g_image_height,
-                                   0, 0, g_image_width, g_image_height,
-                                   0);
+    status = vaAssociateSubpicture2(va_context->display,
+                                    va_eosd_subpicture,
+                                    va_surface_ids, va_num_surfaces,
+                                    0, 0, g_image_width, g_image_height,
+                                    0, 0, g_image_width, g_image_height,
+                                    0);
     if (!check_status(status, "vaAssociateSubpicture()"))
         return -1;
 
@@ -833,7 +858,9 @@ static const opt_t subopts[] = {
     { "dm",          OPT_ARG_INT,  &va_dm,        (opt_test_f)int_012 },
     { "stats",       OPT_ARG_BOOL, &cpu_stats,    NULL },
     { "deint",       OPT_ARG_INT,  &g_deint,      (opt_test_f)int_012 },
+#if USE_VAAPI_COLORSPACE
     { "colorspace",  OPT_ARG_INT,  &g_colorspace, (opt_test_f)int_012 },
+#endif
 #if CONFIG_GL
     { "gl",          OPT_ARG_BOOL, &gl_enabled,   NULL },
     { "bind",        OPT_ARG_BOOL, &gl_binding,   NULL },
@@ -1487,7 +1514,8 @@ static inline int get_field_flags(int i)
 
 static inline int get_colorspace_flags(void)
 {
-    int csp;
+    int csp = 0;
+#if USE_VAAPI_COLORSPACE
     switch (g_colorspace) {
     case 0:
         csp = ((g_image_width >= 1280 || g_image_height > 576) ?
@@ -1503,6 +1531,7 @@ static inline int get_colorspace_flags(void)
         assert(0);
         break;
     }
+#endif
     return csp;
 }
 
@@ -1946,11 +1975,11 @@ static int put_image(mp_image_t *mpi, struct vaapi_surface *surface)
             return VO_FALSE;
     }
 
-    status = vaPutImage(va_context->display,
-                        surface->id,
-                        surface->image.image_id,
-                        mpi->x, mpi->y, mpi->w, mpi->h,
-                        mpi->x, mpi->y, mpi->w, mpi->h);
+    status = vaPutImage2(va_context->display,
+                         surface->id,
+                         surface->image.image_id,
+                         mpi->x, mpi->y, mpi->w, mpi->h,
+                         mpi->x, mpi->y, mpi->w, mpi->h);
     if (!check_status(status, "vaPutImage()"))
         return VO_FALSE;
 
