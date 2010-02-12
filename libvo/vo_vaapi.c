@@ -2137,6 +2137,9 @@ static int control(uint32_t request, void *data, ...)
     case VOCTRL_ONTOP:
         vo_x11_ontop();
         return VO_TRUE;
+    case VOCTRL_UPDATE_SCREENINFO:
+        update_xinerama_info();
+        return VO_TRUE;
     case VOCTRL_GET_PANSCAN:
         return VO_TRUE;
     case VOCTRL_SET_PANSCAN:
