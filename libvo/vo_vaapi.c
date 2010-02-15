@@ -67,6 +67,14 @@
 #define USE_VAAPI_COLORSPACE 0
 #endif
 
+/* Defined to 1 if VA/GLX 'bind' API is available */
+#define USE_VAAPI_GLX_BIND                                \
+    (VA_MAJOR_VERSION == 0 &&                             \
+     ((VA_MINOR_VERSION == 30 &&                          \
+       VA_MICRO_VERSION == 4 && VA_SDS_VERSION >= 5) ||   \
+      (VA_MINOR_VERSION == 31 &&                          \
+       VA_MICRO_VERSION == 0 && VA_SDS_VERSION < 5)))
+
 /* Compatibility glue with VA-API >= 0.31 */
 #if defined VA_CHECK_VERSION
 #if VA_CHECK_VERSION(0,31,0)
@@ -863,7 +871,9 @@ static const opt_t subopts[] = {
 #endif
 #if CONFIG_GL
     { "gl",          OPT_ARG_BOOL, &gl_enabled,   NULL },
+#if USE_VAAPI_GLX_BIND
     { "bind",        OPT_ARG_BOOL, &gl_binding,   NULL },
+#endif
     { "reflect",     OPT_ARG_BOOL, &gl_reflect,   NULL },
 #endif
     { NULL, }
@@ -901,8 +911,10 @@ static int preinit(const char *arg)
 #if CONFIG_GL
                "  gl\n"
                "    Enable OpenGL rendering\n"
+#if USE_VAAPI_GLX_BIND
                "  bind\n"
                "    Use VA surface binding instead of copy\n"
+#endif
                "  reflect\n"
                "    Enable OpenGL reflection effects\n"
 #endif
@@ -1563,6 +1575,7 @@ static void put_surface_glx(struct vaapi_surface *surface)
     int i;
 
     if (gl_binding) {
+#if USE_VAAPI_GLX_BIND
         for (i = 0; i <= !!(g_deint > 1); i++) {
             status = vaAssociateSurfaceGLX(va_context->display,
                                            gl_surface,
@@ -1571,8 +1584,13 @@ static void put_surface_glx(struct vaapi_surface *surface)
             if (!check_status(status, "vaAssociateSurfaceGLX()"))
                 return;
         }
+#else
+        mp_msg(MSGT_VO, MSGL_WARN, "vaAssociateSurfaceGLX() is not implemented\n");
+        gl_binding = 0;
+#endif
     }
-    else {
+
+    if (!gl_binding) {
         for (i = 0; i <= !!(g_deint > 1); i++) {
             status = vaCopySurfaceGLX(va_context->display,
                                       gl_surface,
@@ -1600,11 +1618,13 @@ static int glx_bind_texture(void)
     glEnable(GL_TEXTURE_2D);
     BindTexture(GL_TEXTURE_2D, gl_texture);
 
+#if USE_VAAPI_GLX_BIND
     if (gl_binding) {
         status = vaBeginRenderSurfaceGLX(va_context->display, gl_surface);
         if (!check_status(status, "vaBeginRenderSurfaceGLX()"))
             return -1;
     }
+#endif
     return 0;
 }
 
@@ -1612,11 +1632,13 @@ static int glx_unbind_texture(void)
 {
     VAStatus status;
 
+#if USE_VAAPI_GLX_BIND
     if (gl_binding) {
         status = vaEndRenderSurfaceGLX(va_context->display, gl_surface);
         if (!check_status(status, "vaEndRenderSurfaceGLX()"))
             return -1;
     }
+#endif
 
     BindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
