@@ -1520,7 +1520,7 @@ static int query_format(uint32_t format)
 static inline int get_field_flags(int i)
 {
     return (g_deint ? 
-            ((g_top_field_first == i) ^ (g_deint > 1) ?
+            ((g_top_field_first ^ i) == 0 ?
              VA_BOTTOM_FIELD : VA_TOP_FIELD) : VA_FRAME_PICTURE);
 }
 
