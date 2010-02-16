@@ -1,3 +1,21 @@
+/*
+ * This file is part of MPlayer.
+ *
+ * MPlayer is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MPlayer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with MPlayer; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,28 +39,28 @@
 
 //#include "vd_internal.h"
 
-extern vd_functions_t mpcodecs_vd_null;
-extern vd_functions_t mpcodecs_vd_ffmpeg;
-extern vd_functions_t mpcodecs_vd_theora;
-extern vd_functions_t mpcodecs_vd_dshow;
-extern vd_functions_t mpcodecs_vd_dmo;
-extern vd_functions_t mpcodecs_vd_vfw;
-extern vd_functions_t mpcodecs_vd_vfwex;
-extern vd_functions_t mpcodecs_vd_raw;
-extern vd_functions_t mpcodecs_vd_hmblck;
-extern vd_functions_t mpcodecs_vd_xanim;
-extern vd_functions_t mpcodecs_vd_mpng;
-extern vd_functions_t mpcodecs_vd_ijpg;
-extern vd_functions_t mpcodecs_vd_mtga;
-extern vd_functions_t mpcodecs_vd_sgi;
-extern vd_functions_t mpcodecs_vd_libmpeg2;
-extern vd_functions_t mpcodecs_vd_mpegpes;
-extern vd_functions_t mpcodecs_vd_zrmjpeg;
-extern vd_functions_t mpcodecs_vd_realvid;
-extern vd_functions_t mpcodecs_vd_xvid;
-extern vd_functions_t mpcodecs_vd_libdv;
-extern vd_functions_t mpcodecs_vd_lzo;
-extern vd_functions_t mpcodecs_vd_qtvideo;
+extern const vd_functions_t mpcodecs_vd_null;
+extern const vd_functions_t mpcodecs_vd_ffmpeg;
+extern const vd_functions_t mpcodecs_vd_theora;
+extern const vd_functions_t mpcodecs_vd_dshow;
+extern const vd_functions_t mpcodecs_vd_dmo;
+extern const vd_functions_t mpcodecs_vd_vfw;
+extern const vd_functions_t mpcodecs_vd_vfwex;
+extern const vd_functions_t mpcodecs_vd_raw;
+extern const vd_functions_t mpcodecs_vd_hmblck;
+extern const vd_functions_t mpcodecs_vd_xanim;
+extern const vd_functions_t mpcodecs_vd_mpng;
+extern const vd_functions_t mpcodecs_vd_ijpg;
+extern const vd_functions_t mpcodecs_vd_mtga;
+extern const vd_functions_t mpcodecs_vd_sgi;
+extern const vd_functions_t mpcodecs_vd_libmpeg2;
+extern const vd_functions_t mpcodecs_vd_mpegpes;
+extern const vd_functions_t mpcodecs_vd_zrmjpeg;
+extern const vd_functions_t mpcodecs_vd_realvid;
+extern const vd_functions_t mpcodecs_vd_xvid;
+extern const vd_functions_t mpcodecs_vd_libdv;
+extern const vd_functions_t mpcodecs_vd_lzo;
+extern const vd_functions_t mpcodecs_vd_qtvideo;
 
 /* Please do not add any new decoders here. If you want to implement a new
  * decoder, add it to libavcodec, except for wrappers around external
@@ -206,7 +224,7 @@ csp_again:
 	    goto csp_again;
 	} else
 	{ // sws failed, if the last filter (vf_vo) support MPEGPES try to append vf_lavc
-	     vf_instance_t* vo, *vp = NULL, *ve;
+	     vf_instance_t* vo, *vp = NULL, *ve, *vpp = NULL;
 	     // Remove the scale filter if we added it ourself
 	     if(vf == sc) {
 	       ve = vf;
@@ -214,13 +232,20 @@ csp_again:
 	       vf_uninit_filter(ve);
 	     }
 	     // Find the last filter (vf_vo)
-	     for(vo = vf ; vo->next ; vo = vo->next)
+	     for(vo = vf ; vo->next ; vo = vo->next) {
+               vpp = vp;
 	       vp = vo;
+             }
 	     if(vo->query_format(vo,IMGFMT_MPEGPES) && (!vp || (vp && strcmp(vp->info->name,"lavc")))) {
 	       ve = vf_open_filter(vo,"lavc",NULL);
 	       if(vp) vp->next = ve;
 		 else vf = ve;
 	       goto csp_again;
+	     }
+	     if (vp && !strcmp(vp->info->name,"lavc")) {
+		if (vpp) vpp->next = vo;
+		else vf = vo;
+		vf_uninit_filter(vp);
 	     }
 	}
 	mp_msg(MSGT_CPLAYER,MSGL_WARN,MSGTR_VOincompCodec);

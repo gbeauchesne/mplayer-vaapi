@@ -25,7 +25,7 @@
 
 #include "mp_msg.h"
 #include "help_mp.h"
-#include "mplayer.h" /* for exit_player() */
+#include "mp_core.h" /* for exit_player() */
 
 // there are some globals:
 ao_data_t ao_data={0,0,0,0,OUTBURST,-1,0};
@@ -47,6 +47,7 @@ extern const ao_functions_t audio_out_sun;
 extern const ao_functions_t audio_out_sgi;
 extern const ao_functions_t audio_out_win32;
 extern const ao_functions_t audio_out_dsound;
+extern const ao_functions_t audio_out_kai;
 extern const ao_functions_t audio_out_dart;
 extern const ao_functions_t audio_out_dxr2;
 extern const ao_functions_t audio_out_ivtv;
@@ -63,6 +64,9 @@ const ao_functions_t* const audio_out_drivers[] =
 #endif
 #ifdef CONFIG_WIN32WAVEOUT
         &audio_out_win32,
+#endif
+#ifdef CONFIG_KAI
+        &audio_out_kai,
 #endif
 #ifdef CONFIG_DART
         &audio_out_dart,
@@ -143,7 +147,7 @@ const ao_functions_t* init_best_audio_out(char** ao_list,int use_plugin,int rate
         int ao_len;
         if (strncmp(ao, "alsa9", 5) == 0 || strncmp(ao, "alsa1x", 6) == 0) {
             mp_msg(MSGT_AO, MSGL_FATAL, MSGTR_AO_ALSA9_1x_Removed);
-            exit_player(NULL);
+            exit_player(EXIT_NONE);
         }
         if (ao_subdevice) {
             free(ao_subdevice);

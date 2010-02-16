@@ -1,15 +1,15 @@
 8
 
 dir
-30302
+30589
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man/it
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-12-18T15:55:45.066001Z
-30056
-ptt
+2010-01-24T03:15:18.984995Z
+30414
+Gabrov
 
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-12-21T08:10:48.000000Z
-1023cb962717a57f5e3ae2c8ac0a0f54
-2009-12-18T15:55:45.066001Z
-30056
-ptt
+2010-02-16T08:45:21.000000Z
+58e3a1ff47fe1564874e47948b83be37
+2010-01-24T03:15:18.984995Z
+30414
+Gabrov
 has-props
 

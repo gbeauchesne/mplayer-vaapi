@@ -1,3 +1,21 @@
+/*
+ * This file is part of MPlayer.
+ *
+ * MPlayer is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MPlayer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with MPlayer; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +33,7 @@
 #include "mp_msg.h"
 #include "help_mp.h"
 #include "av_opts.h"
+#include "osdep/strsep.h"
 
 #include "codec-cfg.h"
 #include "stream/stream.h"
@@ -24,6 +43,7 @@
 #include "libmpdemux/muxer.h"
 
 #include "img_format.h"
+#include "fmt-conversion.h"
 #include "mp_image.h"
 #include "vf.h"
 
@@ -593,30 +613,9 @@ static int config(struct vf_instance_s* vf,
     }
 
     mux_v->imgfmt = lavc_param_format;
-    switch(lavc_param_format)
-    {
-	case IMGFMT_YV12:
-	    lavc_venc_context->pix_fmt = PIX_FMT_YUV420P;
-	    break;
-	case IMGFMT_422P:
-	    lavc_venc_context->pix_fmt = PIX_FMT_YUV422P;
-	    break;
-	case IMGFMT_444P:
-	    lavc_venc_context->pix_fmt = PIX_FMT_YUV444P;
-	    break;
-	case IMGFMT_411P:
-	    lavc_venc_context->pix_fmt = PIX_FMT_YUV411P;
-	    break;
-	case IMGFMT_YVU9:
-	    lavc_venc_context->pix_fmt = PIX_FMT_YUV410P;
-	    break;
-	case IMGFMT_BGR32:
-	    lavc_venc_context->pix_fmt = PIX_FMT_RGB32;
-	    break;
-	default:
-    	    mp_msg(MSGT_MENCODER,MSGL_ERR,"%s is not a supported format\n", vo_format_name(lavc_param_format));
-    	    return 0;
-    }
+    lavc_venc_context->pix_fmt = imgfmt2pixfmt(lavc_param_format);
+    if (lavc_venc_context->pix_fmt == PIX_FMT_NONE)
+        return 0;
 
     if(!stats_file) {
     /* lavc internal 2pass bitrate control */

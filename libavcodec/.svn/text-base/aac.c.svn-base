@@ -93,6 +93,10 @@
 #include <math.h>
 #include <string.h>
 
+#if ARCH_ARM
+#   include "arm/aac.h"
+#endif
+
 union float754 {
     float f;
     uint32_t i;
@@ -165,7 +169,7 @@ static ChannelElement *get_che(AACContext *ac, int type, int elem_id)
  *
  * @return  Returns error status. 0 - OK, !0 - error
  */
-static int che_configure(AACContext *ac,
+static av_cold int che_configure(AACContext *ac,
                          enum ChannelPosition che_pos[4][MAX_ELEM_ID],
                          int type, int id,
                          int *channels)
@@ -192,7 +196,7 @@ static int che_configure(AACContext *ac,
  *
  * @return  Returns error status. 0 - OK, !0 - error
  */
-static int output_configure(AACContext *ac,
+static av_cold int output_configure(AACContext *ac,
                             enum ChannelPosition che_pos[4][MAX_ELEM_ID],
                             enum ChannelPosition new_che_pos[4][MAX_ELEM_ID],
                             int channel_config, enum OCStatus oc_type)
@@ -320,7 +324,7 @@ static int decode_pce(AACContext *ac, enum ChannelPosition new_che_pos[4][MAX_EL
  *
  * @return  Returns error status. 0 - OK, !0 - error
  */
-static int set_default_channel_config(AACContext *ac,
+static av_cold int set_default_channel_config(AACContext *ac,
                                       enum ChannelPosition new_che_pos[4][MAX_ELEM_ID],
                                       int channel_config)
 {
@@ -862,6 +866,7 @@ static void decode_mid_side_stereo(ChannelElement *cpe, GetBitContext *gb,
     }
 }
 
+#ifndef VMUL2
 static inline float *VMUL2(float *dst, const float *v, unsigned idx,
                            const float *scale)
 {
@@ -870,7 +875,9 @@ static inline float *VMUL2(float *dst, const float *v, unsigned idx,
     *dst++ = v[idx>>4 & 15] * s;
     return dst;
 }
+#endif
 
+#ifndef VMUL4
 static inline float *VMUL4(float *dst, const float *v, unsigned idx,
                            const float *scale)
 {
@@ -881,7 +888,9 @@ static inline float *VMUL4(float *dst, const float *v, unsigned idx,
     *dst++ = v[idx>>6 & 3] * s;
     return dst;
 }
+#endif
 
+#ifndef VMUL2S
 static inline float *VMUL2S(float *dst, const float *v, unsigned idx,
                             unsigned sign, const float *scale)
 {
@@ -896,7 +905,9 @@ static inline float *VMUL2S(float *dst, const float *v, unsigned idx,
 
     return dst;
 }
+#endif
 
+#ifndef VMUL4S
 static inline float *VMUL4S(float *dst, const float *v, unsigned idx,
                             unsigned sign, const float *scale)
 {
@@ -921,6 +932,7 @@ static inline float *VMUL4S(float *dst, const float *v, unsigned idx,
 
     return dst;
 }
+#endif
 
 /**
  * Decode spectral data; reference: table 4.50.
@@ -981,6 +993,7 @@ static int decode_spectrum_and_dequant(AACContext *ac, float coef[1024],
                 const uint16_t *cb_vector_idx = ff_aac_codebook_vector_idx[cbt_m1];
                 VLC_TYPE (*vlc_tab)[2] = vlc_spectral[cbt_m1].table;
                 const int cb_size = ff_aac_spectral_sizes[cbt_m1];
+                OPEN_READER(re, gb);
 
                 switch (cbt_m1 >> 1) {
                 case 0:
@@ -989,15 +1002,18 @@ static int decode_spectrum_and_dequant(AACContext *ac, float coef[1024],
                         int len = off_len;
 
                         do {
-                            const int index = get_vlc2(gb, vlc_tab, 8, 2);
+                            int code;
                             unsigned cb_idx;
 
-                            if (index >= cb_size) {
-                                err_idx = index;
+                            UPDATE_CACHE(re, gb);
+                            GET_VLC(code, re, gb, vlc_tab, 8, 2);
+
+                            if (code >= cb_size) {
+                                err_idx = code;
                                 goto err_cb_overflow;
                             }
 
-                            cb_idx = cb_vector_idx[index];
+                            cb_idx = cb_vector_idx[code];
                             cf = VMUL4(cf, vq, cb_idx, sf + idx);
                         } while (len -= 4);
                     }
@@ -1009,19 +1025,26 @@ static int decode_spectrum_and_dequant(AACContext *ac, float coef[1024],
                         int len = off_len;
 
                         do {
-                            const int index = get_vlc2(gb, vlc_tab, 8, 2);
+                            int code;
                             unsigned nnz;
                             unsigned cb_idx;
                             uint32_t bits;
 
-                            if (index >= cb_size) {
-                                err_idx = index;
+                            UPDATE_CACHE(re, gb);
+                            GET_VLC(code, re, gb, vlc_tab, 8, 2);
+
+                            if (code >= cb_size) {
+                                err_idx = code;
                                 goto err_cb_overflow;
                             }
 
-                            cb_idx = cb_vector_idx[index];
+#if MIN_CACHE_BITS < 20
+                            UPDATE_CACHE(re, gb);
+#endif
+                            cb_idx = cb_vector_idx[code];
                             nnz = cb_idx >> 8 & 15;
-                            bits = get_bits(gb, nnz) << (32-nnz);
+                            bits = SHOW_UBITS(re, gb, nnz) << (32-nnz);
+                            LAST_SKIP_BITS(re, gb, nnz);
                             cf = VMUL4S(cf, vq, cb_idx, bits, sf + idx);
                         } while (len -= 4);
                     }
@@ -1033,15 +1056,18 @@ static int decode_spectrum_and_dequant(AACContext *ac, float coef[1024],
                         int len = off_len;
 
                         do {
-                            const int index = get_vlc2(gb, vlc_tab, 8, 2);
+                            int code;
                             unsigned cb_idx;
 
-                            if (index >= cb_size) {
-                                err_idx = index;
+                            UPDATE_CACHE(re, gb);
+                            GET_VLC(code, re, gb, vlc_tab, 8, 2);
+
+                            if (code >= cb_size) {
+                                err_idx = code;
                                 goto err_cb_overflow;
                             }
 
-                            cb_idx = cb_vector_idx[index];
+                            cb_idx = cb_vector_idx[code];
                             cf = VMUL2(cf, vq, cb_idx, sf + idx);
                         } while (len -= 2);
                     }
@@ -1054,19 +1080,23 @@ static int decode_spectrum_and_dequant(AACContext *ac, float coef[1024],
                         int len = off_len;
 
                         do {
-                            const int index = get_vlc2(gb, vlc_tab, 8, 2);
+                            int code;
                             unsigned nnz;
                             unsigned cb_idx;
                             unsigned sign;
 
-                            if (index >= cb_size) {
-                                err_idx = index;
+                            UPDATE_CACHE(re, gb);
+                            GET_VLC(code, re, gb, vlc_tab, 8, 2);
+
+                            if (code >= cb_size) {
+                                err_idx = code;
                                 goto err_cb_overflow;
                             }
 
-                            cb_idx = cb_vector_idx[index];
+                            cb_idx = cb_vector_idx[code];
                             nnz = cb_idx >> 8 & 15;
-                            sign = get_bits(gb, nnz) << (cb_idx >> 12);
+                            sign = SHOW_UBITS(re, gb, nnz) << (cb_idx >> 12);
+                            LAST_SKIP_BITS(re, gb, nnz);
                             cf = VMUL2S(cf, vq, cb_idx, sign, sf + idx);
                         } while (len -= 2);
                     }
@@ -1079,39 +1109,56 @@ static int decode_spectrum_and_dequant(AACContext *ac, float coef[1024],
                         int len = off_len;
 
                         do {
-                            const int index = get_vlc2(gb, vlc_tab, 8, 2);
+                            int code;
                             unsigned nzt, nnz;
                             unsigned cb_idx;
                             uint32_t bits;
                             int j;
 
-                            if (!index) {
+                            UPDATE_CACHE(re, gb);
+                            GET_VLC(code, re, gb, vlc_tab, 8, 2);
+
+                            if (!code) {
                                 *icf++ = 0;
                                 *icf++ = 0;
                                 continue;
                             }
 
-                            if (index >= cb_size) {
-                                err_idx = index;
+                            if (code >= cb_size) {
+                                err_idx = code;
                                 goto err_cb_overflow;
                             }
 
-                            cb_idx = cb_vector_idx[index];
+                            cb_idx = cb_vector_idx[code];
                             nnz = cb_idx >> 12;
                             nzt = cb_idx >> 8;
-                            bits = get_bits(gb, nnz) << (32-nnz);
+                            bits = SHOW_UBITS(re, gb, nnz) << (32-nnz);
+                            LAST_SKIP_BITS(re, gb, nnz);
 
                             for (j = 0; j < 2; j++) {
                                 if (nzt & 1<<j) {
-                                    int n = 4;
+                                    uint32_t b;
+                                    int n;
                                     /* The total length of escape_sequence must be < 22 bits according
                                        to the specification (i.e. max is 111111110xxxxxxxxxxxx). */
-                                    while (get_bits1(gb) && n < 13) n++;
-                                    if (n == 13) {
+                                    UPDATE_CACHE(re, gb);
+                                    b = GET_CACHE(re, gb);
+                                    b = 31 - av_log2(~b);
+
+                                    if (b > 8) {
                                         av_log(ac->avccontext, AV_LOG_ERROR, "error in spectral data, ESC overflow\n");
                                         return -1;
                                     }
-                                    n = (1 << n) + get_bits(gb, n);
+
+#if MIN_CACHE_BITS < 21
+                                    LAST_SKIP_BITS(re, gb, b + 1);
+                                    UPDATE_CACHE(re, gb);
+#else
+                                    SKIP_BITS(re, gb, b + 1);
+#endif
+                                    b += 4;
+                                    n = (1 << b) + SHOW_UBITS(re, gb, b);
+                                    LAST_SKIP_BITS(re, gb, b);
                                     *icf++ = cbrt_tab[n] | (bits & 1<<31);
                                     bits <<= 1;
                                 } else {
@@ -1126,6 +1173,8 @@ static int decode_spectrum_and_dequant(AACContext *ac, float coef[1024],
                         ac->dsp.vector_fmul_scalar(cfo, cfo, sf[idx], off_len);
                     }
                 }
+
+                CLOSE_READER(re, gb);
             }
         }
         coef += g_len << 7;
@@ -1958,12 +2007,6 @@ static int aac_decode_frame(AVCodecContext *avccontext, void *data,
     }
 
     spectral_to_sample(ac);
-
-    if (!ac->is_saved) {
-        ac->is_saved = 1;
-        *data_size = 0;
-        return buf_size;
-    }
 
     data_size_tmp = 1024 * avccontext->channels * sizeof(int16_t);
     if (*data_size < data_size_tmp) {

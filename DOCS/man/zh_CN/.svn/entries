@@ -1,14 +1,14 @@
 8
 
 dir
-30302
+30589
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man/zh_CN
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-01-08T11:25:18.494579Z
-30237
+2010-02-06T00:55:42.816008Z
+30521
 jrash
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2010-01-14T12:04:42.000000Z
-bb730bc7bdf74e6833edf6d6727e20dd
-2010-01-08T11:25:18.494579Z
-30237
+2010-02-16T08:45:20.000000Z
+2ef460065b4440db705458879a5cd00c
+2010-02-06T00:55:42.816008Z
+30521
 jrash
 has-props
 

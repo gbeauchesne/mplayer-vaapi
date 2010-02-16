@@ -94,6 +94,7 @@ static int use_ycbcr;
 #define MASK_GAMMA_SUPPORT (MASK_NOT_COMBINERS & ~(1 << YUV_CONVERSION_FRAGMENT))
 static int use_yuv;
 static int colorspace;
+static int levelconv;
 static int is_yuv;
 static int lscale;
 static int cscale;
@@ -217,7 +218,7 @@ static void update_yuvconv(void) {
   float ggamma = exp(log(8.0) * eq_ggamma / 100.0);
   float bgamma = exp(log(8.0) * eq_bgamma / 100.0);
   gl_conversion_params_t params = {gl_target, yuvconvtype,
-      {colorspace, bri, cont, hue, sat, rgamma, ggamma, bgamma},
+      {colorspace, levelconv, bri, cont, hue, sat, rgamma, ggamma, bgamma},
       texture_width, texture_height, 0, 0, filter_strength};
   mp_get_chroma_shift(image_format, &xs, &ys);
   params.chrom_texw = params.texw >> xs;
@@ -458,11 +459,12 @@ static void autodetectGlExtensions(void) {
   if (ati_hack      == -1) ati_hack      = ati_broken_pbo;
   if (force_pbo     == -1) force_pbo     = strstr(extensions, "_pixel_buffer_object")      ? is_ati : 0;
   if (use_rectangle == -1) use_rectangle = strstr(extensions, "_texture_non_power_of_two") ?      0 : 0;
+  if (use_yuv       == -1) use_yuv       = strstr(extensions, "GL_ARB_fragment_program")   ?      2 : 0;
   if (is_ati && (lscale == 1 || lscale == 2 || cscale == 1 || cscale == 2))
     mp_msg(MSGT_VO, MSGL_WARN, "[gl] Selected scaling mode may be broken on ATI cards.\n"
              "Tell _them_ to fix GL_REPEAT if you have issues.\n");
-  mp_msg(MSGT_VO, MSGL_V, "[gl] Settings after autodetection: ati-hack = %i, force-pbo = %i, rectangle = %i\n",
-         ati_hack, force_pbo, use_rectangle);
+  mp_msg(MSGT_VO, MSGL_V, "[gl] Settings after autodetection: ati-hack = %i, force-pbo = %i, rectangle = %i, yuv = %i\n",
+         ati_hack, force_pbo, use_rectangle, use_yuv);
 }
 
 /**
@@ -472,6 +474,9 @@ static void autodetectGlExtensions(void) {
 static int initGl(uint32_t d_width, uint32_t d_height) {
   int scale_type = mipmap_gen ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR;
   autodetectGlExtensions();
+  gl_target = use_rectangle == 1 ? GL_TEXTURE_RECTANGLE : GL_TEXTURE_2D;
+  yuvconvtype = use_yuv | lscale << YUV_LUM_SCALER_SHIFT | cscale << YUV_CHROM_SCALER_SHIFT;
+
   texSize(image_width, image_height, &texture_width, &texture_height);
 
   Disable(GL_BLEND);
@@ -536,6 +541,30 @@ static int initGl(uint32_t d_width, uint32_t d_height) {
   return 1;
 }
 
+static int create_window(uint32_t d_width, uint32_t d_height, uint32_t flags, const char *title)
+{
+#ifdef CONFIG_GL_WIN32
+  if (glctx.type == GLTYPE_W32 && !vo_w32_config(d_width, d_height, flags))
+    return -1;
+#endif
+#ifdef CONFIG_GL_X11
+  if (glctx.type == GLTYPE_X11) {
+    XVisualInfo *vinfo=glXChooseVisual( mDisplay,mScreen,wsGLXAttrib );
+    if (vinfo == NULL)
+    {
+      mp_msg(MSGT_VO, MSGL_ERR, "[gl] no GLX support present\n");
+      return -1;
+    }
+    mp_msg(MSGT_VO, MSGL_V, "[gl] GLX chose visual with ID 0x%x\n", (int)vinfo->visualid);
+
+    vo_x11_create_vo_window(vinfo, vo_dx, vo_dy, d_width, d_height, flags,
+            XCreateColormap(mDisplay, mRootWin, vinfo->visual, AllocNone),
+            "gl", title);
+  }
+#endif
+  return 0;
+}
+
 /* connect to server, create and map window,
  * allocate colors and (shared) memory
  */
@@ -560,25 +589,8 @@ config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_height, uin
     goto glconfig;
   }
 #endif
-#ifdef CONFIG_GL_WIN32
-  if (glctx.type == GLTYPE_W32 && !vo_w32_config(d_width, d_height, flags))
+  if (create_window(d_width, d_height, flags, title) < 0)
     return -1;
-#endif
-#ifdef CONFIG_GL_X11
-  if (glctx.type == GLTYPE_X11) {
-    XVisualInfo *vinfo=glXChooseVisual( mDisplay,mScreen,wsGLXAttrib );
-    if (vinfo == NULL)
-    {
-      mp_msg(MSGT_VO, MSGL_ERR, "[gl] no GLX support present\n");
-      return -1;
-    }
-    mp_msg(MSGT_VO, MSGL_V, "[gl] GLX chose visual with ID 0x%x\n", (int)vinfo->visualid);
-
-    vo_x11_create_vo_window(vinfo, vo_dx, vo_dy, d_width, d_height, flags,
-            XCreateColormap(mDisplay, mRootWin, vinfo->visual, AllocNone),
-            "gl", title);
-  }
-#endif
 
 glconfig:
   if (vo_config_count)
@@ -992,7 +1004,6 @@ query_format(uint32_t format)
 static void
 uninit(void)
 {
-  if (!vo_config_count) return;
   uninitGl();
   if (custom_prog) free(custom_prog);
   custom_prog = NULL;
@@ -1007,6 +1018,12 @@ static int valid_csp(void *p)
   return *csp >= -1 && *csp < MP_CSP_COUNT;
 }
 
+static int valid_csp_lvl(void *p)
+{
+  int *lvl = p;
+  return *lvl >= -1 && *lvl < MP_CSP_LEVELCONV_COUNT;
+}
+
 static const opt_t subopts[] = {
   {"manyfmts",     OPT_ARG_BOOL, &many_fmts,    NULL},
   {"osd",          OPT_ARG_BOOL, &use_osd,      NULL},
@@ -1017,6 +1034,7 @@ static const opt_t subopts[] = {
   {"rectangle",    OPT_ARG_INT,  &use_rectangle,int_non_neg},
   {"yuv",          OPT_ARG_INT,  &use_yuv,      int_non_neg},
   {"colorspace",   OPT_ARG_INT,  &colorspace,   valid_csp},
+  {"levelconv",    OPT_ARG_INT,  &levelconv,    valid_csp_lvl},
   {"lscale",       OPT_ARG_INT,  &lscale,       int_non_neg},
   {"cscale",       OPT_ARG_INT,  &cscale,       int_non_neg},
   {"filter-strength", OPT_ARG_FLOAT, &filter_strength, NULL},
@@ -1046,8 +1064,9 @@ static int preinit(const char *arg)
     scaled_osd = 0;
     use_aspect = 1;
     use_ycbcr = 0;
-    use_yuv = 0;
+    use_yuv = -1;
     colorspace = -1;
+    levelconv = -1;
     lscale = 0;
     cscale = 0;
     filter_strength = 0.5;
@@ -1110,6 +1129,10 @@ static int preinit(const char *arg)
               "    3: YUV to RGB according to SMPT-240M\n"
               "    4: YUV to RGB according to EBU\n"
               "    5: XYZ to RGB\n"
+              "  levelconv=<n>\n"
+              "    0: YUV to RGB converting TV to PC levels\n"
+              "    1: YUV to RGB converting PC to TV levels\n"
+              "    2: YUV to RGB without converting levels\n"
               "  lscale=<n>\n"
               "    0: use standard bilinear scaling for luma.\n"
               "    1: use improved bicubic scaling for luma.\n"
@@ -1136,19 +1159,26 @@ static int preinit(const char *arg)
               "\n" );
       return -1;
     }
-    if (use_rectangle == 1)
-      gl_target = GL_TEXTURE_RECTANGLE;
-    else
-      gl_target = GL_TEXTURE_2D;
-    yuvconvtype = use_yuv | lscale << YUV_LUM_SCALER_SHIFT | cscale << YUV_CHROM_SCALER_SHIFT;
+    if (!init_mpglcontext(&glctx, gltype))
+      goto err_out;
+    if (use_yuv == -1) {
+      if (create_window(320, 200, VOFLAG_HIDDEN, NULL) < 0)
+        goto err_out;
+      if (glctx.setGlWindow(&glctx) == SET_WINDOW_FAILED)
+        goto err_out;
+      autodetectGlExtensions();
+    }
     if (many_fmts)
       mp_msg(MSGT_VO, MSGL_INFO, "[gl] using extended formats. "
                "Use -vo gl:nomanyfmts if playback fails.\n");
     mp_msg(MSGT_VO, MSGL_V, "[gl] Using %d as slice height "
              "(0 means image height).\n", slice_height);
-    if (!init_mpglcontext(&glctx, gltype)) return -1;
 
     return 0;
+
+err_out:
+    uninit();
+    return -1;
 }
 
 static const struct {

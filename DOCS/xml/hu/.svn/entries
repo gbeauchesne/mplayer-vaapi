@@ -1,15 +1,15 @@
 8
 
 dir
-30302
+30589
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/hu
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-12-14T01:51:42.054570Z
-30018
-diego
+2010-02-06T17:43:04.510927Z
+30522
+Gabrov
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -71,10 +71,10 @@ file
 
 
 
-2009-05-25T08:53:57.000000Z
-ede51030bd8cb138d7a2c7c83d9fbb32
-2009-05-24T09:54:25.418903Z
-29319
+2010-02-16T08:45:20.000000Z
+41219aa436b6954bcfd68d804f1a9314
+2010-02-06T17:43:04.510927Z
+30522
 Gabrov
 has-props
 
@@ -136,10 +136,10 @@ file
 
 
 
-2009-05-25T08:53:57.000000Z
-4deceb131ba928121983d4a6e8600300
-2009-05-24T09:54:25.418903Z
-29319
+2010-02-16T08:45:20.000000Z
+cda6bad60ba57f67e9e73be95a56b31b
+2010-01-24T03:15:18.984995Z
+30414
 Gabrov
 has-props
 

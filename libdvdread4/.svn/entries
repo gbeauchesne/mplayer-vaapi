@@ -1,15 +1,15 @@
 8
 
 dir
-1188
+1189
 svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdread/src
 svn://svn.mplayerhq.hu/dvdnav
 
 
 
-2009-12-07T03:50:20.870742Z
-1188
-erik
+2010-01-30T15:15:23.355660Z
+1189
+reimar
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2009-12-07T11:27:35.000000Z
-6dc553fbc2d1325007ba02560958d989
-2009-12-07T03:50:20.870742Z
-1188
-erik
+2010-02-16T08:45:27.000000Z
+da4c9c4d6205f3e375d82effd3d50817
+2010-01-30T15:15:23.355660Z
+1189
+reimar
 has-props
 
 nav_print.c
@@ -47,6 +47,19 @@ file
 
 2009-05-25T08:54:09.000000Z
 92ad4db8151844ad0e2221a0eee9d0da
+2009-04-28T13:26:33.798743Z
+1172
+nicodvb
+has-props
+
+bitreader.c
+file
+
+
+
+
+2009-05-25T08:54:09.000000Z
+9048cf8bf6fe99c81d21c94876e2ae78
 2009-04-28T13:26:33.798743Z
 1172
 nicodvb
@@ -63,19 +76,6 @@ c6709a9858812bcda21288d69b4d9169
 2008-09-14T20:37:38.705801Z
 1143
 diego
-has-props
-
-bitreader.c
-file
-
-
-
-
-2009-05-25T08:54:09.000000Z
-9048cf8bf6fe99c81d21c94876e2ae78
-2009-04-28T13:26:33.798743Z
-1172
-nicodvb
 has-props
 
 ifo_read.c
@@ -156,6 +156,9 @@ file
 nicodvb
 has-props
 
+dvdread
+dir
+
 Makefile.am
 file
 
@@ -168,9 +171,6 @@ ab4a7f88a4237b8c3e36aac76e51a6bb
 1162
 reimar
 has-props
-
-dvdread
-dir
 
 ifo_print.c
 file

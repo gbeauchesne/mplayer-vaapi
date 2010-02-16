@@ -1,15 +1,15 @@
 8
 
 dir
-30302
+30589
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-01-08T18:19:10.934505Z
-30241
-cehoyos
+2010-02-14T11:13:01.535991Z
+30566
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock

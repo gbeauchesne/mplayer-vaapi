@@ -3,7 +3,7 @@
 //... Okay enough of the hw, now send the other two!
 //
 // Updated by: Gabrov <gabrov@freemail.hu>
-// Sync'ed with help_mp-en.h r29912 (2009. 11. 16.)
+// Sync'ed with help_mp-en.h r30515 (2010. 02. 06.)
 
 
 // ========================= MPlayer help ===========================
@@ -855,6 +855,7 @@ static const char help_text[]=
 #define MSGTR_LIBVO_FONT_LOAD_FT_CannotPrepareOSDFont "Nem lehet előkészíteni az OSD betűtípusát.\n"
 #define MSGTR_LIBVO_FONT_LOAD_FT_CannotGenerateTables "Nem generálhatóak a táblázatok.\n"
 #define MSGTR_LIBVO_FONT_LOAD_FT_DoneFreeTypeFailed "FT_Done_FreeType sikertelen.\n"
+#define MSGTR_LIBVO_FONT_LOAD_FT_FontconfigNoMatch "A Fontconfig-nak nem sikerült kiválasztani a betűtípust. Megpróbálom fontconfig nélkül...\n"
 
 // sub.c
 #define MSGTR_VO_SUB_Seekbar "Keresősáv"
@@ -1717,7 +1718,7 @@ static const char help_text[]=
 #define MSGTR_LIBASS_ErrorRecodingFile "[ass] hiba a fájl rögzítésekor.\n"
 #define MSGTR_LIBASS_FopenFailed "[ass] ass_read_file(%s): fopen sikertelen\n"
 #define MSGTR_LIBASS_FseekFailed "[ass] ass_read_file(%s): fseek sikertelen\n"
-#define MSGTR_LIBASS_RefusingToLoadSubtitlesLargerThan10M "[ass] ass_read_file(%s): 10M-nél nagyobb felirat fájl betöltése visszautasítva\n"
+#define MSGTR_LIBASS_RefusingToLoadSubtitlesLargerThan100M "[ass] ass_read_file(%s): 100M-nél nagyobb felirat fájl betöltése visszautasítva\n"
 #define MSGTR_LIBASS_ReadFailed "Olvasás sikertelen, %d: %s\n"
 #define MSGTR_LIBASS_AddedSubtitleFileMemory "[ass] Felirat fájl hozzáadása: <memória> (%d stílus, %d esemény)\n"
 #define MSGTR_LIBASS_AddedSubtitleFileFname "[ass] Felirat fájl hozzáadása: %s (%d stílus, %d esemény)\n"

@@ -383,18 +383,15 @@ int ds_get_packet_pts(demux_stream_t *ds, unsigned char **start, double *pts);
 int ds_get_packet_sub(demux_stream_t *ds,unsigned char **start);
 double ds_get_next_pts(demux_stream_t *ds);
 int ds_parse(demux_stream_t *sh, uint8_t **buffer, int *len, double pts, off_t pos);
+void ds_clear_parser(demux_stream_t *sh);
 
 // This is defined here because demux_stream_t ins't defined in stream.h
 stream_t* new_ds_stream(demux_stream_t *ds);
 
 static inline int avi_stream_id(unsigned int id){
-  unsigned char *p=(unsigned char *)&id;
   unsigned char a,b;
-#if HAVE_BIGENDIAN
-  a=p[3]-'0'; b=p[2]-'0';
-#else
-  a=p[0]-'0'; b=p[1]-'0';
-#endif
+  a = id - '0';
+  b = (id >> 8) - '0';
   if(a>9 || b>9) return 100; // invalid ID
   return a*10+b;
 }

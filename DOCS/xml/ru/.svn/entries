@@ -1,15 +1,15 @@
 8
 
 dir
-30302
+30589
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/ru
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-12-14T01:51:42.054570Z
-30018
-diego
+2010-01-24T03:15:18.984995Z
+30414
+Gabrov
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -136,11 +136,11 @@ file
 
 
 
-2009-05-25T08:53:57.000000Z
-d10c7876b35e5eda7c04add524bce05a
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2010-02-16T08:45:20.000000Z
+b50dded96ee7dde46733b2b0159e2471
+2010-01-24T03:15:18.984995Z
+30414
+Gabrov
 has-props
 
 tvinput.xml

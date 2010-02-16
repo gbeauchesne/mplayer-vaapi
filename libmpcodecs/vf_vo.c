@@ -1,3 +1,21 @@
+/*
+ * This file is part of MPlayer.
+ *
+ * MPlayer is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MPlayer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with MPlayer; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -130,10 +148,11 @@ static int control(struct vf_instance_s* vf, int request, void* data)
             mp_eosd_res_t res;
             memset(&res, 0, sizeof(res));
             if (video_out->control(VOCTRL_GET_EOSD_RES, &res) == VO_TRUE) {
+                double dar = (double) (res.w - res.ml - res.mr) / (res.h - res.mt - res.mb);
                 ass_set_frame_size(vf->priv->ass_priv, res.w, res.h);
                 ass_set_margins(vf->priv->ass_priv, res.mt, res.mb, res.ml, res.mr);
 #if defined(LIBASS_VERSION) && LIBASS_VERSION >= 0x00908000
-                ass_set_aspect_ratio(vf->priv->ass_priv, (double)res.w / res.h, (double)res.srcw/res.srch);
+                ass_set_aspect_ratio(vf->priv->ass_priv, dar, (double)res.srcw/res.srch);
 #else
                 ass_set_aspect_ratio(vf->priv->ass_priv, (double)res.w / res.h);
 #endif

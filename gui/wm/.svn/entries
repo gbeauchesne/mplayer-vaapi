@@ -1,15 +1,15 @@
 8
 
 dir
-30302
+30589
 svn://svn.mplayerhq.hu/mplayer/trunk/gui/wm
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-01-10T14:03:10.776052Z
-30260
-reimar
+2010-02-14T14:02:09.095792Z
+30577
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -71,11 +71,11 @@ file
 
 
 
-2010-01-14T12:04:42.000000Z
-c5d46d68b485fff44e33fcce94df4745
-2010-01-10T14:03:10.776052Z
-30260
-reimar
+2010-02-16T08:45:20.000000Z
+3b62f3910fbc039acbcedf17e3b938e2
+2010-02-14T14:02:09.095792Z
+30577
+diego
 has-props
 
 wskeys.h

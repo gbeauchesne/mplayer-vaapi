@@ -1,15 +1,15 @@
 8
 
 dir
-30302
+30589
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale/x86
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-01-12T19:03:09.484708Z
-30289
-conrad
+2010-01-15T08:51:51.484695Z
+30306
+zuxy
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -45,10 +45,10 @@ file
 
 
 
-2010-01-14T12:04:43.000000Z
-61c292151ae4398c5cfa7dddb5ccfca8
-2010-01-12T19:03:09.484708Z
-30289
-conrad
+2010-02-16T08:45:21.000000Z
+ce7ef9fd89ef81feda51cedd88581ff4
+2010-01-15T08:51:51.484695Z
+30306
+zuxy
 has-props
 

@@ -35,13 +35,14 @@ OBJS-$(CONFIG_ASS_DEMUXER)               += assdec.o
 OBJS-$(CONFIG_ASS_MUXER)                 += assenc.o
 OBJS-$(CONFIG_AU_DEMUXER)                += au.o raw.o
 OBJS-$(CONFIG_AU_MUXER)                  += au.o
-OBJS-$(CONFIG_AVI_DEMUXER)               += avidec.o riff.o
-OBJS-$(CONFIG_AVI_MUXER)                 += avienc.o riff.o
+OBJS-$(CONFIG_AVI_DEMUXER)               += avidec.o riff.o avi.o
+OBJS-$(CONFIG_AVI_MUXER)                 += avienc.o riff.o avi.o
 OBJS-$(CONFIG_AVISYNTH)                  += avisynth.o
 OBJS-$(CONFIG_AVM2_MUXER)                += swfenc.o
 OBJS-$(CONFIG_AVS_DEMUXER)               += avs.o vocdec.o voc.o
 OBJS-$(CONFIG_BETHSOFTVID_DEMUXER)       += bethsoftvid.o
 OBJS-$(CONFIG_BFI_DEMUXER)               += bfi.o
+OBJS-$(CONFIG_BINK_DEMUXER)              += bink.o
 OBJS-$(CONFIG_C93_DEMUXER)               += c93.o vocdec.o voc.o
 OBJS-$(CONFIG_CAF_DEMUXER)               += cafdec.o caf.o mov.o riff.o isom.o
 OBJS-$(CONFIG_CAVSVIDEO_DEMUXER)         += raw.o
@@ -65,6 +66,8 @@ OBJS-$(CONFIG_EAC3_DEMUXER)              += raw.o id3v2.o
 OBJS-$(CONFIG_EAC3_MUXER)                += raw.o
 OBJS-$(CONFIG_FFM_DEMUXER)               += ffmdec.o
 OBJS-$(CONFIG_FFM_MUXER)                 += ffmenc.o
+OBJS-$(CONFIG_FILMSTRIP_DEMUXER)         += filmstripdec.o
+OBJS-$(CONFIG_FILMSTRIP_MUXER)           += filmstripenc.o
 OBJS-$(CONFIG_FLAC_DEMUXER)              += flacdec.o raw.o id3v1.o \
                                             id3v2.o oggparsevorbis.o
 OBJS-$(CONFIG_FLAC_MUXER)                += flacenc.o
@@ -199,10 +202,10 @@ OBJS-$(CONFIG_ROQ_DEMUXER)               += idroq.o
 OBJS-$(CONFIG_ROQ_MUXER)                 += raw.o
 OBJS-$(CONFIG_RPL_DEMUXER)               += rpl.o
 OBJS-$(CONFIG_RTP_MUXER)                 += rtp.o         \
-                                            rtp_aac.o     \
-                                            rtp_amr.o     \
-                                            rtp_h263.o    \
-                                            rtp_mpv.o     \
+                                            rtpenc_aac.o     \
+                                            rtpenc_amr.o     \
+                                            rtpenc_h263.o    \
+                                            rtpenc_mpv.o     \
                                             rtpenc.o      \
                                             rtpenc_h264.o \
                                             avc.o
@@ -211,6 +214,8 @@ OBJS-$(CONFIG_SDP_DEMUXER)               += rtsp.o        \
                                             rdt.o         \
                                             rtp.o         \
                                             rtpdec.o      \
+                                            rtpdec_amr.o  \
+                                            rtpdec_h263.o \
                                             rtp_asf.o     \
                                             rtp_h264.o    \
                                             rtp_vorbis.o
@@ -265,6 +270,7 @@ OBJS-$(CONFIG_RTMP_PROTOCOL)             += rtmpproto.o rtmppkt.o
 OBJS-$(CONFIG_RTP_PROTOCOL)              += rtpproto.o
 OBJS-$(CONFIG_TCP_PROTOCOL)              += tcp.o
 OBJS-$(CONFIG_UDP_PROTOCOL)              += udp.o
+OBJS-$(CONFIG_CONCAT_PROTOCOL)           += concat.o
 
 # libavdevice dependencies
 OBJS-$(CONFIG_JACK_INDEV)                += timefilter.o

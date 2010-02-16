@@ -1,15 +1,15 @@
 8
 
 dir
-21211
+21847
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/sparc
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2009-02-09T11:17:54.878008Z
-17097
-diego
+2010-01-22T03:25:11.885568Z
+21377
+mru
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -58,9 +58,9 @@ file
 
 
 
-2009-01-29T11:50:58.000000Z
-604510424584153973e0cd62b90d1009
-2008-12-09T20:11:37.695406Z
-16042
-diego
+2010-02-16T08:45:22.000000Z
+6a742d3d72f4c2ca6ce121caeb96431f
+2010-01-22T03:25:11.885568Z
+21377
+mru
 
