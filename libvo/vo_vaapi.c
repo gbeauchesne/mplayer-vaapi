@@ -679,8 +679,8 @@ static uint8_t *gen_osd_palette(const VAImage *image)
         for (i = 0; i < image->num_palette_entries; i++) {
             const int n = i * image->entry_bytes;
             palette[n + y_idx] = i * 0xff / (image->num_palette_entries - 1);
-            palette[n + u_idx] = 0xff;
-            palette[n + v_idx] = 0xff;
+            palette[n + u_idx] = 0x80;
+            palette[n + v_idx] = 0x80;
         }
     }
     else if (i_idx != -1 && a_idx != -1) {/* AYUV format (GMA500 "psb" bug) */
