@@ -645,6 +645,7 @@ static uint8_t *gen_osd_palette(const VAImage *image)
     int i, is_rgb;
     int r_idx = -1, g_idx = -1, b_idx = -1;
     int y_idx = -1, u_idx = -1, v_idx = -1;
+    int i_idx = -1, a_idx = -1;
 
     if (image->num_palette_entries < 1)
         return NULL;
@@ -661,6 +662,8 @@ static uint8_t *gen_osd_palette(const VAImage *image)
         case 'Y': y_idx = i; is_rgb = 0; break;
         case 'U': u_idx = i; is_rgb = 0; break;
         case 'V': v_idx = i; is_rgb = 0; break;
+        case 'I': i_idx = i; break;
+        case 'A': a_idx = i; break;
         }
     }
 
@@ -678,6 +681,15 @@ static uint8_t *gen_osd_palette(const VAImage *image)
             palette[n + y_idx] = i * 0xff / (image->num_palette_entries - 1);
             palette[n + u_idx] = 0xff;
             palette[n + v_idx] = 0xff;
+        }
+    }
+    else if (i_idx != -1 && a_idx != -1) {/* AYUV format (GMA500 "psb" bug) */
+        for (i = 0; i < image->num_palette_entries; i++) {
+            const int n = i * image->entry_bytes;
+            palette[n + 0] = 0x80;
+            palette[n + 1] = 0x80;
+            palette[n + 2] = 16 + i * 220 / (image->num_palette_entries - 1);
+            palette[n + 3] = 0;
         }
     }
     else {
