@@ -121,6 +121,7 @@ struct vaapi_equalizer {
     VADisplayAttribute saturation;
 };
 
+static int                      g_is_visible;
 static int                      g_is_paused;
 static uint32_t                 g_image_width;
 static uint32_t                 g_image_height;
@@ -444,7 +445,8 @@ static void resize(void)
     }
 #endif
 
-    flip_page();
+    if (g_is_visible)
+        flip_page();
 }
 
 #if CONFIG_GL
@@ -1140,6 +1142,8 @@ static void free_video_specific(void)
         gl_texture = GL_NONE;
     }
 #endif
+
+    g_is_visible = 0;
 }
 
 static void uninit(void)
@@ -1260,9 +1264,6 @@ static int config_x11(uint32_t width, uint32_t height,
         }
 #endif
     }
-
-    if ((flags & VOFLAG_FULLSCREEN) && WinID <= 0)
-        vo_fs = VO_TRUE;
     return 0;
 }
 
@@ -1490,6 +1491,7 @@ static int config(uint32_t width, uint32_t height,
     if (config_vaapi(width, height, format) < 0)
         return -1;
 
+    g_is_visible   = 0;
     g_is_paused    = 0;
     g_image_width  = width;
     g_image_height = height;
@@ -1935,12 +1937,15 @@ static void flip_page(void)
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] flip_page()\n");
 
     surface = g_output_surfaces[g_output_surface];
-    if (surface)
-        put_surface(surface);
+    if (!surface)
+        return;
+
+    put_surface(surface);
     g_output_surface = (g_output_surface + 1) % MAX_OUTPUT_SURFACES;
+    g_is_visible     = 1;
 
 #if CONFIG_VAAPI_GLX
-    if (gl_enabled && surface)
+    if (gl_enabled)
         flip_page_glx();
 #endif
 }
@@ -2058,9 +2063,12 @@ static void check_events(void)
         resize();
 
     if ((events & (VO_EVENT_EXPOSE|VO_EVENT_RESIZE)) && g_is_paused) {
-        struct vaapi_surface *surface = g_output_surfaces[g_output_surface];
-        if (surface)
-            put_surface(surface);
+        /* Redraw the last visible buffer  */
+        if (g_is_visible) {
+            struct vaapi_surface *surface = g_output_surfaces[g_output_surface];
+            if (surface)
+                put_surface(surface);
+        }
     }
 }
 
