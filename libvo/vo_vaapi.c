@@ -1627,13 +1627,12 @@ static void put_surface_glx(struct vaapi_surface *surface)
 
 static int glx_bind_texture(void)
 {
-    VAStatus status;
-
     glEnable(GL_TEXTURE_2D);
     BindTexture(GL_TEXTURE_2D, gl_texture);
 
 #if USE_VAAPI_GLX_BIND
     if (gl_binding) {
+        VAStatus status;
         status = vaBeginRenderSurfaceGLX(va_context->display, gl_surface);
         if (!check_status(status, "vaBeginRenderSurfaceGLX()"))
             return -1;
@@ -1644,10 +1643,9 @@ static int glx_bind_texture(void)
 
 static int glx_unbind_texture(void)
 {
-    VAStatus status;
-
 #if USE_VAAPI_GLX_BIND
     if (gl_binding) {
+        VAStatus status;
         status = vaEndRenderSurfaceGLX(va_context->display, gl_surface);
         if (!check_status(status, "vaEndRenderSurfaceGLX()"))
             return -1;
@@ -1803,7 +1801,8 @@ static int draw_slice(uint8_t * image[], int stride[],
 
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] draw_slice(): location (%d,%d), size %dx%d\n", x, y, w, h);
 
-    status = vaMapBuffer(va_context->display, va_image->buf, &image_data);
+    status = vaMapBuffer(va_context->display, va_image->buf,
+                         (void *)&image_data);
     if (!check_status(status, "vaMapBuffer()"))
         return VO_FALSE;
 
@@ -1871,7 +1870,7 @@ static void draw_osd(void)
     }
 
     status = vaMapBuffer(va_context->display, va_osd_image.buf,
-                         &va_osd_image_data);
+                         (void *)&va_osd_image_data);
     if (!check_status(status, "vaMapBuffer()"))
         return;
 
@@ -1911,7 +1910,7 @@ static void draw_eosd(mp_eosd_images_t *imgs)
         goto eosd_skip_upload;
 
     status = vaMapBuffer(va_context->display, va_eosd_image.buf,
-                         &va_eosd_image_data);
+                         (void *)&va_eosd_image_data);
     if (!check_status(status, "vaMapBuffer()"))
         return;
 
