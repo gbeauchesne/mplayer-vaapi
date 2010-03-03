@@ -58,9 +58,6 @@ static void *ThreadProc(void *s);
 #include "cache2.h"
 extern int use_gui;
 
-int stream_fill_buffer(stream_t *s);
-int stream_seek_long(stream_t *s,off_t pos);
-
 typedef struct {
   // constats:
   unsigned char *buffer;      // base pointer of the alllocated buffer memory
@@ -93,13 +90,15 @@ static int min_fill=0;
 
 int cache_fill_status=0;
 
-void cache_stats(cache_vars_t* s){
+static void cache_stats(cache_vars_t *s)
+{
   int newb=s->max_filepos-s->read_filepos; // new bytes in the buffer
   mp_msg(MSGT_CACHE,MSGL_INFO,"0x%06X  [0x%06X]  0x%06X   ",(int)s->min_filepos,(int)s->read_filepos,(int)s->max_filepos);
   mp_msg(MSGT_CACHE,MSGL_INFO,"%3d %%  (%3d%%)\n",100*newb/s->buffer_size,100*min_fill/s->buffer_size);
 }
 
-int cache_read(cache_vars_t* s,unsigned char* buf,int size){
+static int cache_read(cache_vars_t *s, unsigned char *buf, int size)
+{
   int total=0;
   while(size>0){
     int pos,newb,len;
@@ -145,7 +144,8 @@ int cache_read(cache_vars_t* s,unsigned char* buf,int size){
   return total;
 }
 
-int cache_fill(cache_vars_t* s){
+static int cache_fill(cache_vars_t *s)
+{
   int back,back2,newb,space,len,pos;
   off_t read=s->read_filepos;
 
@@ -222,14 +222,14 @@ int cache_fill(cache_vars_t* s){
 }
 
 static int cache_execute_control(cache_vars_t *s) {
-  int res = 1;
   static unsigned last;
-  if (!s->stream->control) {
+  int quit = s->control == -2;
+  if (quit || !s->stream->control) {
     s->stream_time_length = 0;
     s->control_new_pos = 0;
     s->control_res = STREAM_UNSUPPORTED;
     s->control = -1;
-    return res;
+    return !quit;
   }
   if (GetTimerMS() - last > 99) {
     double len;
@@ -239,7 +239,7 @@ static int cache_execute_control(cache_vars_t *s) {
       s->stream_time_length = 0;
     last = GetTimerMS();
   }
-  if (s->control == -1) return res;
+  if (s->control == -1) return 1;
   switch (s->control) {
     case STREAM_CTRL_GET_CURRENT_TIME:
     case STREAM_CTRL_SEEK_TO_TIME:
@@ -254,15 +254,13 @@ static int cache_execute_control(cache_vars_t *s) {
     case STREAM_CTRL_SET_ANGLE:
       s->control_res = s->stream->control(s->stream, s->control, &s->control_uint_arg);
       break;
-    case -2:
-      res = 0;
     default:
       s->control_res = STREAM_UNSUPPORTED;
       break;
   }
   s->control_new_pos = s->stream->pos;
   s->control = -1;
-  return res;
+  return 1;
 }
 
 static cache_vars_t* cache_init(int size,int sector){
@@ -314,9 +312,9 @@ void cache_uninit(stream_t *s) {
   }
   if(!c) return;
 #if defined(__MINGW32__) || defined(PTHREAD_CACHE) || defined(__OS2__)
-  free(c->stream);
   free(c->buffer);
   c->buffer = NULL;
+  c->stream = NULL;
   free(s->cache_data);
 #else
   shmem_free(c->buffer,c->buffer_size);
@@ -430,12 +428,12 @@ static void ThreadProc( void *s ){
   } while (cache_execute_control(s));
 #if defined(__MINGW32__) || defined(__OS2__)
   _endthread();
-#endif
-#ifdef PTHREAD_CACHE
+#elif defined(PTHREAD_CACHE)
   return NULL;
-#endif
+#else
   // make sure forked code never leaves this function
   exit(0);
+#endif
 }
 
 int cache_stream_fill_buffer(stream_t *s){

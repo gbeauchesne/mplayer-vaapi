@@ -24,7 +24,9 @@ for DLL to know too much about its environment.
 
 /* Hack to make sure the correct function declaration in com.h is used when
  * this file is built for the test applications with WIN32_LOADER disabled. */
+#ifndef WIN32_LOADER
 #define WIN32_LOADER
+#endif
 
 #ifdef CONFIG_QTX_CODECS
 #define PSEUDO_SCREEN_WIDTH	/*640*/800
@@ -356,7 +358,7 @@ void* mreq_private(int size, int to_zero, int type);
 void* mreq_private(int size, int to_zero, int type)
 {
     int nsize = size + sizeof(alloc_header);
-    alloc_header* header = (alloc_header* ) malloc(nsize);
+    alloc_header* header = malloc(nsize);
     if (!header)
         return 0;
     if (to_zero)
@@ -594,6 +596,19 @@ static HMODULE WINAPI expGetModuleHandleA(const char* name)
     }
     dbgprintf("GetModuleHandleA('%s') => 0x%x\n", name, result);
     return result;
+}
+
+static HMODULE WINAPI expGetModuleHandleW(const uint16_t* name)
+{
+    char aname[256];
+    int pos = 0;
+    while (*name) {
+        if (*name > 256 || pos >= sizeof(aname) - 1)
+            return NULL;
+        aname[pos++] = *name++;
+    }
+    aname[pos] = 0;
+    return expGetModuleHandleA(aname);
 }
 
 static void* WINAPI expCreateThread(void* pSecAttr, long dwStackSize,
@@ -1333,6 +1348,11 @@ static void WINAPI expInitializeCriticalSection(CRITICAL_SECTION* c)
     }
 #endif
     return;
+}
+
+static void WINAPI expInitializeCriticalSectionAndSpinCount(CRITICAL_SECTION* c, DWORD spin)
+{
+    expInitializeCriticalSection(c);
 }
 
 static void WINAPI expEnterCriticalSection(CRITICAL_SECTION* c)
@@ -4113,11 +4133,9 @@ static int expfprintf(void* stream, const char* format, ...)
     va_list args;
     int r = 0;
     dbgprintf("fprintf(%p, %s, ...)\n", stream, format);
-#if 1
     va_start(args, format);
     r = vfprintf((FILE*) stream, format, args);
     va_end(args);
-#endif
     return r;
 }
 
@@ -4406,7 +4424,6 @@ static int exp_setjmp3(void* jmpbuf, int x)
 	 : "d"(jmpbuf) // input
 	 : "eax"
 	);
-#if 1
     __asm__ volatile
 	(
 	 "mov %%fs:0, %%eax	\n\t" // unsure
@@ -4419,7 +4436,6 @@ static int exp_setjmp3(void* jmpbuf, int x)
 	 :
 	 : "eax"
 	);
-#endif
 
 	return 0;
 }
@@ -4476,7 +4492,6 @@ static void WINAPI expGlobalMemoryStatus(
 	return;
     }
 
-#if 1
     f = fopen( "/proc/meminfo", "r" );
     if (f)
     {
@@ -4524,7 +4539,6 @@ static void WINAPI expGlobalMemoryStatus(
                                       / (TotalPhysical / 100);
         }
     } else
-#endif
     {
 	/* FIXME: should do something for other systems */
 	lpmem->dwMemoryLoad    = 0;
@@ -4597,6 +4611,7 @@ static INT WINAPI expMessageBoxA(HWND hWnd, LPCSTR text, LPCSTR title, UINT type
  * \param dest jump target
  */
 void exp_EH_prolog(void *dest);
+void exp_EH_prolog_dummy(void);
 //! just a dummy function that acts a container for the asm section
 void exp_EH_prolog_dummy(void) {
   __asm__ volatile (
@@ -4701,7 +4716,7 @@ static HPALETTE WINAPI expCreatePalette(CONST LOGPALETTE *lpgpl)
     dbgprintf("CreatePalette(%x) => NULL\n", lpgpl);
 
     i = sizeof(LOGPALETTE)+((lpgpl->palNumEntries-1)*sizeof(PALETTEENTRY));
-    test = (HPALETTE)malloc(i);
+    test = malloc(i);
     memcpy((void *)test, lpgpl, i);
 
     return test;
@@ -4971,6 +4986,7 @@ struct exports exp_kernel32[]=
     FF(VirtualAlloc, -1)
     FF(VirtualFree, -1)
     FF(InitializeCriticalSection, -1)
+    FF(InitializeCriticalSectionAndSpinCount, -1)
     FF(EnterCriticalSection, -1)
     FF(LeaveCriticalSection, -1)
     FF(DeleteCriticalSection, -1)
@@ -5030,6 +5046,7 @@ struct exports exp_kernel32[]=
     FF(UnmapViewOfFile, -1)
     FF(Sleep, -1)
     FF(GetModuleHandleA, -1)
+    FF(GetModuleHandleW, -1)
     FF(GetProfileIntA, -1)
     FF(GetPrivateProfileIntA, -1)
     FF(GetPrivateProfileStringA, -1)
@@ -5516,7 +5533,7 @@ void* LookupExternal(const char* library, int ordinal)
 
 no_dll:
     if(pos>150)return 0;
-    sprintf(export_names[pos], "%s:%d", library, ordinal);
+    snprintf(export_names[pos], sizeof(export_names[pos]), "%s:%d", library, ordinal);
     return add_stub();
 }
 
@@ -5583,7 +5600,7 @@ void* LookupExternalByName(const char* library, const char* name)
 
 no_dll_byname:
     if(pos>150)return 0;// to many symbols
-    strcpy(export_names[pos], name);
+    snprintf(export_names[pos], sizeof(export_names[pos]), "%s", name);
     return add_stub();
 }
 

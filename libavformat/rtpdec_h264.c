@@ -20,7 +20,7 @@
  */
 
 /**
-* @file libavformat/rtp_h264.c
+* @file libavformat/rtpdec_h264.c
  * @brief H.264 / RTP Code (RFC3984)
  * @author Ryan Martell <rdm4@martellventures.com>
  *
@@ -47,7 +47,7 @@
 #include <assert.h>
 
 #include "rtpdec.h"
-#include "rtp_h264.h"
+#include "rtpdec_h264.h"
 
 /**
     RTP/H264 specific private data.
@@ -388,7 +388,7 @@ static int parse_h264_sdp_line(AVFormatContext *s, int st_index,
         while (*p && *p == ' ') p++; // strip trailing spaces.
 
         /* loop on each attribute */
-        while (rtsp_next_attr_and_value
+        while (ff_rtsp_next_attr_and_value
                (&p, attr, sizeof(attr), value, sizeof(value))) {
             /* grab the codec extra_data from the config parameter of the fmtp line */
             sdp_parse_fmtp_config_h264(stream, h264_data, attr, value);

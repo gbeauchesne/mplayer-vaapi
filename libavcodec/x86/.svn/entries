@@ -1,15 +1,15 @@
 8
 
 dir
-21847
+22169
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/x86
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2010-02-10T02:02:06.436609Z
-21736
-conrad
+2010-02-17T23:58:59.656125Z
+21873
+mru
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -216,18 +216,6 @@ ce7fabfcb6734307b2d9afbf49744c98
 mru
 has-props
 
-vp6dsp_sse2.c
-file
-
-
-
-
-2009-02-16T15:28:16.000000Z
-ff23240ae388de4830a5f5fb13dd6eb1
-2009-02-13T00:02:33.268424Z
-17195
-aurel
-
 snowdsp_mmx.c
 file
 
@@ -241,6 +229,18 @@ b58e8e0fdfe443c627b99b43b5d65070
 mru
 has-props
 
+vp6dsp_sse2.c
+file
+
+
+
+
+2009-02-16T15:28:16.000000Z
+ff23240ae388de4830a5f5fb13dd6eb1
+2009-02-13T00:02:33.268424Z
+17195
+aurel
+
 fft.c
 file
 
@@ -252,18 +252,6 @@ a119e2be9da17bdc2e1719a3d51bb151
 2009-09-15T21:14:14.395913Z
 19864
 mru
-
-vp3dsp_sse2.h
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-d6f841fd99b20209cd1128850a9e5db8
-2008-12-22T09:12:42.514770Z
-16270
-diego
 
 h264_idct_sse2.asm
 file
@@ -277,6 +265,18 @@ file
 19580
 darkshikari
 
+vp3dsp_sse2.h
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+d6f841fd99b20209cd1128850a9e5db8
+2008-12-22T09:12:42.514770Z
+16270
+diego
+
 vc1dsp_mmx.c
 file
 
@@ -288,18 +288,6 @@ file
 2010-01-22T03:25:11.885568Z
 21377
 mru
-
-vp6dsp_sse2.h
-file
-
-
-
-
-2009-02-16T15:28:16.000000Z
-05495abb74a11dc58180c50b9dd5788e
-2009-02-13T00:02:33.268424Z
-17195
-aurel
 
 fft_3dn.c
 file
@@ -314,17 +302,17 @@ f9d46e16b88bc8673e3b3ad7a5030e91
 lorenm
 has-props
 
-cavsdsp_mmx.c
+vp6dsp_sse2.h
 file
 
 
 
 
-2010-02-16T08:45:22.000000Z
-1bf7f59e7322e443ec28233f31bdb865
-2010-01-22T03:25:11.885568Z
-21377
-mru
+2009-02-16T15:28:16.000000Z
+05495abb74a11dc58180c50b9dd5788e
+2009-02-13T00:02:33.268424Z
+17195
+aurel
 
 fft.h
 file
@@ -336,6 +324,18 @@ file
 cda545ff8f5a6b043608d17693b4cc42
 2009-09-20T17:30:20.105479Z
 19931
+mru
+
+cavsdsp_mmx.c
+file
+
+
+
+
+2010-02-16T08:45:22.000000Z
+1bf7f59e7322e443ec28233f31bdb865
+2010-01-22T03:25:11.885568Z
+21377
 mru
 
 dnxhd_mmx.c
@@ -388,6 +388,18 @@ file
 19086
 ramiro
 
+h264_deblock_sse2.asm
+file
+
+
+
+
+2009-09-14T08:26:31.000000Z
+a249bd6f17b57fd548023bb83cc285b5
+2009-08-04T07:42:55.232907Z
+19580
+darkshikari
+
 mpegvideo_mmx.c
 file
 
@@ -400,18 +412,6 @@ file
 18330
 stefano
 has-props
-
-h264_deblock_sse2.asm
-file
-
-
-
-
-2009-09-14T08:26:31.000000Z
-a249bd6f17b57fd548023bb83cc285b5
-2009-08-04T07:42:55.232907Z
-19580
-darkshikari
 
 vp3dsp_mmx.c
 file
@@ -545,10 +545,10 @@ file
 
 
 
-2010-02-16T08:45:22.000000Z
-f7aeca6e2d4e6c851d784fdfcd277a75
-2010-01-20T06:01:54.316706Z
-21346
+2010-03-03T12:50:44.000000Z
+59e27df643b4a080303484a38317c1cc
+2010-02-17T23:58:59.656125Z
+21873
 mru
 
 dsputil_mmx_qns_template.c

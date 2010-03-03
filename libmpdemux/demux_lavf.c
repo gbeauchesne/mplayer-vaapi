@@ -29,6 +29,7 @@
 #include "av_opts.h"
 
 #include "stream/stream.h"
+#include "aviprint.h"
 #include "demuxer.h"
 #include "stheader.h"
 #include "m_option.h"
@@ -80,9 +81,6 @@ typedef struct lavf_priv_t{
     int cur_program;
 }lavf_priv_t;
 
-void print_wave_header(WAVEFORMATEX *h, int verbose_level);
-void print_video_header(BITMAPINFOHEADER *h, int verbose_level);
-
 static int mp_read(void *opaque, uint8_t *buf, int size) {
     stream_t *stream = opaque;
     int ret;
@@ -98,7 +96,7 @@ static int mp_read(void *opaque, uint8_t *buf, int size) {
 static int64_t mp_seek(void *opaque, int64_t pos, int whence) {
     stream_t *stream = opaque;
     int64_t current_pos;
-    mp_msg(MSGT_HEADER,MSGL_DBG2,"mp_seek(%p, %d, %d)\n", stream, (int)pos, whence);
+    mp_msg(MSGT_HEADER,MSGL_DBG2,"mp_seek(%p, %"PRId64", %d)\n", stream, pos, whence);
     if(whence == SEEK_CUR)
         pos +=stream_tell(stream);
     else if(whence == SEEK_END && stream->end_pos > 0)

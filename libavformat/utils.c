@@ -1914,6 +1914,8 @@ static int has_codec_parameters(AVCodecContext *enc)
         if(!enc->frame_size &&
            (enc->codec_id == CODEC_ID_VORBIS ||
             enc->codec_id == CODEC_ID_AAC ||
+            enc->codec_id == CODEC_ID_MP1 ||
+            enc->codec_id == CODEC_ID_MP2 ||
             enc->codec_id == CODEC_ID_MP3 ||
             enc->codec_id == CODEC_ID_SPEEX))
             return 0;
@@ -2072,7 +2074,6 @@ int av_find_stream_info(AVFormatContext *ic)
     double (*duration_error)[MAX_STD_TIMEBASES];
     int64_t old_offset = url_ftell(ic->pb);
     int64_t codec_info_duration[MAX_STREAMS]={0};
-    int codec_info_nb_frames[MAX_STREAMS]={0};
 
     duration_error = av_mallocz(MAX_STREAMS * sizeof(*duration_error));
     if (!duration_error) return AVERROR(ENOMEM);
@@ -2120,7 +2121,7 @@ int av_find_stream_info(AVFormatContext *ic)
             if (!has_codec_parameters(st->codec))
                 break;
             /* variable fps and no guess at the real fps */
-            if(   tb_unreliable(st->codec)
+            if(   tb_unreliable(st->codec) && !(st->r_frame_rate.num && st->avg_frame_rate.num)
                && duration_count[i]<20 && st->codec->codec_type == CODEC_TYPE_VIDEO)
                 break;
             if(st->parser && st->parser->parser->split && !st->codec->extradata)
@@ -2176,15 +2177,14 @@ int av_find_stream_info(AVFormatContext *ic)
         read_size += pkt->size;
 
         st = ic->streams[pkt->stream_index];
-        if(codec_info_nb_frames[st->index]>1) {
+        if(st->codec_info_nb_frames>1) {
             if (st->time_base.den > 0 && av_rescale_q(codec_info_duration[st->index], st->time_base, AV_TIME_BASE_Q) >= ic->max_analyze_duration){
                 av_log(ic, AV_LOG_WARNING, "max_analyze_duration reached\n");
                 break;
             }
             codec_info_duration[st->index] += pkt->duration;
         }
-        if (pkt->duration != 0)
-            codec_info_nb_frames[st->index]++;
+            st->codec_info_nb_frames++;
 
         {
             int index= pkt->stream_index;
@@ -2240,9 +2240,9 @@ int av_find_stream_info(AVFormatContext *ic)
     }
     for(i=0;i<ic->nb_streams;i++) {
         st = ic->streams[i];
-        if(codec_info_nb_frames[i]>2 && !st->avg_frame_rate.num)
+        if(st->codec_info_nb_frames>2 && !st->avg_frame_rate.num && codec_info_duration[i])
             av_reduce(&st->avg_frame_rate.num, &st->avg_frame_rate.den,
-                     (codec_info_nb_frames[i]-2)*(int64_t)st->time_base.den,
+                     (st->codec_info_nb_frames-2)*(int64_t)st->time_base.den,
                       codec_info_duration[i]    *(int64_t)st->time_base.num, 60000);
         if (st->codec->codec_type == CODEC_TYPE_VIDEO) {
             if(st->codec->codec_id == CODEC_ID_RAWVIDEO && !st->codec->codec_tag && !st->codec->bits_per_coded_sample)
@@ -2251,9 +2251,9 @@ int av_find_stream_info(AVFormatContext *ic)
             // the check for tb_unreliable() is not completely correct, since this is not about handling
             // a unreliable/inexact time base, but a time base that is finer than necessary, as e.g.
             // ipmovie.c produces.
-            if (tb_unreliable(st->codec) && duration_count[i] > 15 && duration_gcd[i] > 1)
+            if (tb_unreliable(st->codec) && duration_count[i] > 15 && duration_gcd[i] > 1 && !st->r_frame_rate.num)
                 av_reduce(&st->r_frame_rate.num, &st->r_frame_rate.den, st->time_base.den, st->time_base.num * duration_gcd[i], INT_MAX);
-            if(duration_count[i]
+            if(duration_count[i] && !st->r_frame_rate.num
                && tb_unreliable(st->codec) /*&&
                //FIXME we should not special-case MPEG-2, but this needs testing with non-MPEG-2 ...
                st->time_base.num*duration_sum[i]/duration_count[i]*101LL > st->time_base.den*/){
@@ -2582,6 +2582,20 @@ int av_write_header(AVFormatContext *s)
 #if LIBAVFORMAT_VERSION_MAJOR < 53
     ff_metadata_mux_compat(s);
 #endif
+
+    /* set muxer identification string */
+    if (!(s->streams[0]->codec->flags & CODEC_FLAG_BITEXACT)) {
+        AVMetadata *m;
+        AVMetadataTag *t;
+
+        if (!(m = av_mallocz(sizeof(AVMetadata))))
+            return AVERROR(ENOMEM);
+        av_metadata_set2(&m, "encoder", LIBAVFORMAT_IDENT, 0);
+        metadata_conv(&m, s->oformat->metadata_conv, NULL);
+        if ((t = av_metadata_get(m, "", NULL, AV_METADATA_IGNORE_SUFFIX)))
+            av_metadata_set2(&s->metadata, t->key, t->value, 0);
+        av_metadata_free(&m);
+    }
 
     if(s->oformat->write_header){
         ret = s->oformat->write_header(s);
@@ -2921,7 +2935,7 @@ static void dump_stream_format(AVFormatContext *ic, int i, int index, int is_out
         av_log(NULL, AV_LOG_INFO, "[0x%x]", st->id);
     if (lang)
         av_log(NULL, AV_LOG_INFO, "(%s)", lang->value);
-    av_log(NULL, AV_LOG_DEBUG, ", %d/%d", st->time_base.num/g, st->time_base.den/g);
+    av_log(NULL, AV_LOG_DEBUG, ", %d, %d/%d", st->codec_info_nb_frames, st->time_base.num/g, st->time_base.den/g);
     av_log(NULL, AV_LOG_INFO, ": %s", buf);
     if (st->sample_aspect_ratio.num && // default
         av_cmp_q(st->sample_aspect_ratio, st->codec->sample_aspect_ratio)) {
@@ -2994,6 +3008,14 @@ void dump_format(AVFormatContext *ic,
             av_log(NULL, AV_LOG_INFO, "N/A");
         }
         av_log(NULL, AV_LOG_INFO, "\n");
+    }
+    for (i = 0; i < ic->nb_chapters; i++) {
+        AVChapter *ch = ic->chapters[i];
+        av_log(NULL, AV_LOG_INFO, "    Chapter #%d.%d: ", index, i);
+        av_log(NULL, AV_LOG_INFO, "start %f, ", ch->start * av_q2d(ch->time_base));
+        av_log(NULL, AV_LOG_INFO, "end %f\n",   ch->end   * av_q2d(ch->time_base));
+
+        dump_metadata(NULL, ch->metadata, "    ");
     }
     if(ic->nb_programs) {
         int j, k, total = 0;

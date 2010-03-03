@@ -1,14 +1,14 @@
 8
 
 dir
-30589
+30819
 svn://svn.mplayerhq.hu/mplayer/trunk/debian
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-08-02T15:17:26.925961Z
-29469
+2010-02-20T21:02:49.035536Z
+30675
 diego
 has-props
 
@@ -149,11 +149,11 @@ file
 
 
 
-2009-01-29T11:50:40.000000Z
-e43ae37eb2f37ea75c5845344b5b0195
-2002-05-14T12:15:32.000000Z
-6091
-pl
+2010-03-03T12:50:30.000000Z
+61754fef0f360bd73623a1bca95d85f8
+2010-02-20T21:02:49.035536Z
+30675
+diego
 has-props
 
 rules

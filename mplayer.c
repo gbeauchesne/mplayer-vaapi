@@ -83,9 +83,10 @@
 #include "codec-cfg.h"
 
 #include "edl.h"
-
+#include "mplayer.h"
 #include "spudec.h"
 #include "vobsub.h"
+#include "access_mpcontext.h"
 
 #include "osdep/getch2.h"
 #include "osdep/timer.h"
@@ -1650,7 +1651,6 @@ void reinit_audio_chain(void) {
     ao_data.samplerate=force_srate;
     ao_data.channels=0;
     ao_data.format=audio_output_format;
-#if 1
     // first init to detect best values
     if(!init_audio_filters(mpctx->sh_audio,   // preliminary init
                            // input:
@@ -1660,7 +1660,6 @@ void reinit_audio_chain(void) {
         mp_msg(MSGT_CPLAYER,MSGL_ERR,MSGTR_AudioFilterChainPreinitError);
         exit_player(EXIT_ERROR);
     }
-#endif
     current_module="ao2_init";
     mpctx->audio_out = init_best_audio_out(audio_driver_list,
                                            0, // plugin flag
@@ -1682,13 +1681,11 @@ void reinit_audio_chain(void) {
     if(strlen(mpctx->audio_out->info->comment) > 0)
         mp_msg(MSGT_CPLAYER,MSGL_V,"AO: Comment: %s\n", mpctx->audio_out->info->comment);
     // init audio filters:
-#if 1
     current_module="af_init";
     if(!build_afilter_chain(mpctx->sh_audio, &ao_data)) {
         mp_msg(MSGT_CPLAYER,MSGL_ERR,MSGTR_NoMatchingFilter);
         goto init_error;
     }
-#endif
     mpctx->mixer.audio_out = mpctx->audio_out;
     mpctx->mixer.volstep = volstep;
     return;
@@ -3062,6 +3059,8 @@ if(!noconsolecontrols && !slave_mode){
 while (player_idle_mode && !filename) {
     play_tree_t * entry = NULL;
     mp_cmd_t * cmd;
+    if (mpctx->video_out && vo_config_count)
+        mpctx->video_out->control(VOCTRL_PAUSE, NULL);
     while (!(cmd = mp_input_get_cmd(0,1,0))) { // wait for command
         if (mpctx->video_out && vo_config_count) mpctx->video_out->check_events();
         usec_sleep(20000);
@@ -3112,6 +3111,9 @@ while (player_idle_mode && !filename) {
     }
 }
 //---------------------------------------------------------------------------
+
+    if (mpctx->video_out && vo_config_count)
+        mpctx->video_out->control(VOCTRL_RESUME, NULL);
 
     if(filename) {
 	mp_msg(MSGT_CPLAYER,MSGL_INFO,MSGTR_Playing,

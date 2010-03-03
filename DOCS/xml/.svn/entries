@@ -1,14 +1,14 @@
 8
 
 dir
-30589
+30819
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-02-14T11:13:01.535991Z
-30566
+2010-03-02T19:57:17.045874Z
+30818
 diego
 has-props
 
@@ -90,10 +90,10 @@ file
 
 
 
-2009-05-25T08:53:57.000000Z
-e16bce7b031b0d25d4edc3d49a374935
-2009-05-13T02:58:57.333510Z
-29305
+2010-03-03T12:50:36.000000Z
+071067051a01d770f9fd8c555bb231c2
+2010-02-20T21:02:49.035536Z
+30675
 diego
 has-props
 
@@ -104,6 +104,9 @@ en
 dir
 
 cs
+dir
+
+xsl
 dir
 
 README.maintainers
@@ -119,13 +122,10 @@ dd62dc524dbf27cc82d0eafcc2b96ade
 diego
 has-props
 
-xsl
+fr
 dir
 
 es
-dir
-
-fr
 dir
 
 pl

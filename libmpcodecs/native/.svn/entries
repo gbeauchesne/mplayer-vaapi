@@ -1,15 +1,15 @@
 8
 
 dir
-30589
+30819
 svn://svn.mplayerhq.hu/mplayer/trunk/libmpcodecs/native
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-01-30T16:57:40.024358Z
-30463
-diego
+2010-02-27T21:02:14.384794Z
+30772
+cehoyos
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -45,11 +45,11 @@ file
 
 
 
-2009-05-25T08:53:52.000000Z
-434781ad3decf422e9efd670c7858761
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2010-03-03T12:50:31.000000Z
+7c72d95cd86c1e2391682743e0dc828a
+2010-02-27T21:02:14.384794Z
+30772
+cehoyos
 has-props
 
 xa_gsm.h

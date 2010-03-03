@@ -1,15 +1,15 @@
 8
 
 dir
-30589
+30819
 svn://svn.mplayerhq.hu/mplayer/trunk/help
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-02-12T13:47:11.274754Z
-30543
-jrash
+2010-02-26T15:33:45.815892Z
+30745
+ptt
 
 
 svn:special svn:externals svn:needs-lock
@@ -26,17 +26,17 @@ svn:special svn:externals svn:needs-lock
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
 
-help_mp-es.h
+help_mp-mk.h
 file
 
 
 
 
-2010-02-16T08:45:21.000000Z
-4373acfc6dabfde39ea22517ab228da1
-2010-02-05T17:13:47.976604Z
-30515
-reimar
+2009-10-09T13:57:31.000000Z
+7f3d327db274fa73ebc43bf7526d838a
+2009-09-30T14:55:43.332379Z
+29742
+diego
 has-props
 
 help_mp-fr.h
@@ -52,14 +52,27 @@ file
 reimar
 has-props
 
-help_mp-mk.h
+help_mp-es.h
+file
+
+
+
+
+2010-03-03T12:50:38.000000Z
+81a23c404930854f6c0ccedffc4fe665
+2010-02-20T21:02:49.035536Z
+30675
+diego
+has-props
+
+help_mp-nl.h
 file
 
 
 
 
 2009-10-09T13:57:31.000000Z
-7f3d327db274fa73ebc43bf7526d838a
+3614c87b03eb1f5fc0270de52724b491
 2009-09-30T14:55:43.332379Z
 29742
 diego
@@ -78,29 +91,42 @@ file
 diego
 has-props
 
-help_mp-nl.h
-file
-
-
-
-
-2009-10-09T13:57:31.000000Z
-3614c87b03eb1f5fc0270de52724b491
-2009-09-30T14:55:43.332379Z
-29742
-diego
-has-props
-
 help_mp-pl.h
 file
 
 
 
 
-2009-10-09T13:57:31.000000Z
-0335b3d92b299e7c6d74a7b94be84b81
-2009-09-30T14:55:43.332379Z
-29742
+2010-03-03T12:50:38.000000Z
+8ac939ab7ebe010bf4399158731e11ae
+2010-02-20T21:02:49.035536Z
+30675
+diego
+has-props
+
+help_mp-it.h
+file
+
+
+
+
+2010-03-03T12:50:38.000000Z
+e55b1a47317204caa8efd58ca313374b
+2010-02-26T15:33:45.815892Z
+30745
+ptt
+has-props
+
+help_mp-hu.h
+file
+
+
+
+
+2010-03-03T12:50:38.000000Z
+f5d71acdf02f9833cad3b8a3ec71f05a
+2010-02-20T21:02:49.035536Z
+30675
 diego
 has-props
 
@@ -117,42 +143,16 @@ file
 diego
 has-props
 
-help_mp-hu.h
-file
-
-
-
-
-2010-02-16T08:45:21.000000Z
-da7ba25a96596faacdfff1f9c074248f
-2010-02-06T17:43:04.510927Z
-30522
-Gabrov
-has-props
-
-help_mp-it.h
-file
-
-
-
-
-2010-02-16T08:45:21.000000Z
-3c1e06f481c91ce25448c3f74fa43096
-2010-02-05T17:13:47.976604Z
-30515
-reimar
-has-props
-
 help_mp-sk.h
 file
 
 
 
 
-2009-10-09T13:57:31.000000Z
-73ad8c758fbe338a9376a200d98fc8fc
-2009-09-30T14:55:43.332379Z
-29742
+2010-03-03T12:50:38.000000Z
+6bbc35711eaf1913ae63ccf17194e17c
+2010-02-20T21:02:49.035536Z
+30675
 diego
 has-props
 
@@ -162,10 +162,10 @@ file
 
 
 
-2009-10-09T13:57:31.000000Z
-d85193bbfceae68a1684be4fa787fd8a
-2009-09-30T14:55:43.332379Z
-29742
+2010-03-03T12:50:38.000000Z
+ad5853bef3ceaf358cc2b4c556a87c3b
+2010-02-20T21:02:49.035536Z
+30675
 diego
 has-props
 
@@ -201,11 +201,11 @@ file
 
 
 
-2010-02-16T08:45:21.000000Z
-e128be71e4bd871cfcec5479d2eb0100
-2010-02-05T17:13:47.976604Z
-30515
-reimar
+2010-03-03T12:50:38.000000Z
+37f252a27f61984a8a35e44eb7fda0ce
+2010-02-20T21:02:49.035536Z
+30675
+diego
 has-props
 
 help_mp-bg.h
@@ -240,10 +240,10 @@ file
 
 
 
-2009-10-09T13:57:31.000000Z
-0ba8a9c1c8333757c6ea74b28520a275
-2009-09-30T14:55:43.332379Z
-29742
+2010-03-03T12:50:38.000000Z
+44fdb3e1309b3cded3f8edbd51928fc9
+2010-02-20T21:02:49.035536Z
+30675
 diego
 has-props
 

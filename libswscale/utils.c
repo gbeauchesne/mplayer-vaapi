@@ -787,7 +787,6 @@ SwsContext *sws_getContext(int srcW, int srcH, enum PixelFormat srcFormat,
                            int dstW, int dstH, enum PixelFormat dstFormat, int flags,
                            SwsFilter *srcFilter, SwsFilter *dstFilter, const double *param)
 {
-
     SwsContext *c;
     int i;
     int usesVFilter, usesHFilter;
@@ -1312,7 +1311,7 @@ SwsVector *sws_getIdentityVec(void)
     return sws_getConstVec(1.0, 1);
 }
 
-double sws_dcVec(SwsVector *a)
+static double sws_dcVec(SwsVector *a)
 {
     int i;
     double sum=0;
@@ -1566,17 +1565,20 @@ struct SwsContext *sws_getCachedContext(struct SwsContext *context,
     if (!param)
         param = default_param;
 
-    if (context) {
-        if (context->srcW != srcW || context->srcH != srcH ||
-            context->srcFormat != srcFormat ||
-            context->dstW != dstW || context->dstH != dstH ||
-            context->dstFormat != dstFormat || context->flags != flags ||
-            context->param[0] != param[0] || context->param[1] != param[1])
-        {
-            sws_freeContext(context);
-            context = NULL;
-        }
+    if (context &&
+        (context->srcW      != srcW      ||
+         context->srcH      != srcH      ||
+         context->srcFormat != srcFormat ||
+         context->dstW      != dstW      ||
+         context->dstH      != dstH      ||
+         context->dstFormat != dstFormat ||
+         context->flags     != flags     ||
+         context->param[0]  != param[0]  ||
+         context->param[1]  != param[1])) {
+        sws_freeContext(context);
+        context = NULL;
     }
+
     if (!context) {
         return sws_getContext(srcW, srcH, srcFormat,
                               dstW, dstH, dstFormat, flags,

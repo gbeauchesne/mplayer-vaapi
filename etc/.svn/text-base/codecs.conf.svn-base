@@ -9,6 +9,18 @@ release 20090308
 ;                   VIDEO CODECS
 ;=============================================================================
 
+videocodec ffbinkvideo
+  info "FFmpeg Bink Video"
+  status working
+  fourcc BIKf ; internal MPlayer FourCC
+  fourcc BIKg ; internal MPlayer FourCC
+  fourcc BIKh ; internal MPlayer FourCC
+  fourcc BIKi ; internal MPlayer FourCC
+  driver ffmpeg
+  dll binkvideo
+  out YV12
+  out 420A
+
 videocodec ffcdgraphics
   info "FFmpeg CD-Graphics"
   status working
@@ -3756,6 +3768,20 @@ audiocodec ffsmkaud
   driver ffmpeg
   dll "smackaud"
 
+audiocodec ffbinkdctaud
+  info "FFmpeg Bink Audio (DCT)"
+  status buggy
+  fourcc BAU1 ; internal MPlayer FourCC
+  driver ffmpeg
+  dll "binkaudio_dct"
+
+audiocodec ffbinkrdftaud
+  info "FFmpeg Bink Audio (RDFT)"
+  status working
+  fourcc BAU2 ; internal MPlayer FourCC
+  driver ffmpeg
+  dll "binkaudio_rdft"
+
 audiocodec ffdsicinaudio
   info "FFmpeg Delphine CIN audio"
   status working
@@ -3925,6 +3951,13 @@ audiocodec ffape
   driver ffmpeg
   dll "ape"
 
+audiocodec ffals
+  info "FFmpeg ALS"
+  status working
+  fourcc "ALS " ; internal MPlayer FourCC
+  driver ffmpeg
+  dll "als"
+
 audiocodec ffmlp
   info "FFmpeg MLP"
   status working
@@ -4024,6 +4057,13 @@ audiocodec ffwmapro
   fourcc "WMA3"
   driver ffmpeg
   dll "wmapro"
+
+audiocodec ffwmavoice
+  info "WMA Voice audio (FFmpeg)"
+  status untested
+  format 0xA
+  driver ffmpeg
+  dll "wmavoice"
 
 audiocodec ffmac3
   info "Macintosh Audio Compression and Expansion 3:1"
@@ -4498,6 +4538,16 @@ audiocodec lhacm
   format 0x1104 ; SBC
   driver acm
   dll "lhacm.acm"
+
+audiocodec lhacm2
+  info "Voxware AC aka Lernout & Hauspie CELP and CBS codecs"
+  status working
+  format 0x70
+  format 0x71
+  format 0x72
+  format 0x73
+  driver acm
+  dll "lhacm2.acm" ; aka lhacm.acm md5sum 4585780a8eb71d86df64553b34ba8f79
 
 audiocodec pscelp
   info "Philips Speech Processing CELP"

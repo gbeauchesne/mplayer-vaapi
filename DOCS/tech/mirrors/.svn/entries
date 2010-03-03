@@ -1,14 +1,14 @@
 8
 
 dir
-30589
+30819
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/tech/mirrors
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-01-20T23:23:53.925705Z
-28347
+2010-02-20T21:02:49.035536Z
+30675
 diego
 
 
@@ -44,10 +44,10 @@ file
 
 
 
-2009-01-29T11:50:47.000000Z
-4b134eb410dfecf6df218a063cc40c60
-2006-06-24T21:51:51.417751Z
-18810
-attila
+2010-03-03T12:50:36.000000Z
+24c616370c382ef0b4f4e2364155f3e8
+2010-02-20T21:02:49.035536Z
+30675
+diego
 has-props
 
