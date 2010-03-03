@@ -1,5 +1,6 @@
 /*
  * VA API output module
+ *
  * Copyright (C) 2008-2009 Splitted-Desktop Systems
  *
  * This file is part of MPlayer.
@@ -23,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 
 #include <va/va_x11.h>
 #include <X11/Xlib.h>
@@ -77,7 +77,6 @@ static VASurfaceID g_output_surface;
         if ((status) != VA_STATUS_SUCCESS) {                            \
             mp_msg(MSGT_VO, MSGL_ERR, "vo_vaapi:(%s:%d): status (%d) != VA_STATUS_SUCCESS\n", \
                    __FILE__, __LINE__, status);                         \
-            /*assert((status) == VA_STATUS_SUCCESS);*/                  \
         }                                                               \
     } while (0)
 #else
@@ -86,7 +85,7 @@ static VASurfaceID g_output_surface;
 
 static const char *string_of_VAImageFormat(VAImageFormat *imgfmt)
 {
-    static char str[5]; /* XXX: not MT-safe */
+    static char str[5];
     str[0] = imgfmt->fourcc;
     str[1] = imgfmt->fourcc >> 8;
     str[2] = imgfmt->fourcc >> 16;
@@ -133,10 +132,12 @@ static const char *string_of_VAEntrypoint(VAEntrypoint entrypoint)
 
 static int has_profile(VAProfile profile)
 {
-    assert(va_profiles && va_num_profiles > 0);
-    for (int i = 0; i < va_num_profiles; i++) {
-        if (va_profiles[i] == profile)
-            return 1;
+    if (va_profiles && va_num_profiles > 0) {
+        int i;
+        for (i = 0; i < va_num_profiles; i++) {
+            if (va_profiles[i] == profile)
+                return 1;
+        }
     }
     return 0;
 }
@@ -188,10 +189,12 @@ static int VAProfile_from_imgfmt(uint32_t format)
 
 static int has_entrypoint(VAEntrypoint entrypoint)
 {
-    assert(va_entrypoints && va_num_entrypoints > 0);
-    for (int i = 0; i < va_num_entrypoints; i++) {
-        if (va_entrypoints[i] == entrypoint)
-            return 1;
+    if (va_entrypoints && va_num_entrypoints > 0) {
+        int i;
+        for (i = 0; i < va_num_entrypoints; i++) {
+            if (va_entrypoints[i] == entrypoint)
+                return 1;
+        }
     }
     return 0;
 }
@@ -244,10 +247,10 @@ static int init_entrypoints(VAProfile profile)
     if (status != VA_STATUS_SUCCESS)
         return -1;
 
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::init_entrypoints(%s): %d entrypoints available\n",
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] init_entrypoints(%s): %d entrypoints available\n",
            string_of_VAProfile(profile), va_num_entrypoints);
     for (i = 0; i < va_num_entrypoints; i++)
-        mp_msg(MSGT_VO, MSGL_DBG2, " %s\n", string_of_VAEntrypoint(va_entrypoints[i]));
+        mp_msg(MSGT_VO, MSGL_DBG2, "  %s\n", string_of_VAEntrypoint(va_entrypoints[i]));
     return 0;
 }
 
@@ -283,7 +286,7 @@ static int preinit(const char *arg)
     int i, max_image_formats, max_profiles;
 
     if (arg) {
-        mp_msg(MSGT_VO, MSGL_ERR, "vo_vaapi: unknown subdevice: %s\n", arg);
+        mp_msg(MSGT_VO, MSGL_ERR, "[vo_vaapi]  unknown subdevice: %s\n", arg);
         return ENOSYS;
     }
 
@@ -297,13 +300,13 @@ static int preinit(const char *arg)
     va_context->display = vaGetDisplay(mDisplay);
     if (va_context->display == NULL)
         return -1;
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::preinit(): VA display %p\n", va_context->display);
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): VA display %p\n", va_context->display);
 
     va_status = vaInitialize(va_context->display, &va_major_version, &va_minor_version);
     VA_CHECK_STATUS(va_status);
     if (va_status != VA_STATUS_SUCCESS)
         return -1;
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::preinit(): VA API version %d.%d\n",
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): VA API version %d.%d\n",
            va_major_version, va_minor_version);
 
     max_image_formats = vaMaxNumImageFormats(va_context->display);
@@ -314,10 +317,10 @@ static int preinit(const char *arg)
     VA_CHECK_STATUS(va_status);
     if (va_status != VA_STATUS_SUCCESS)
         return -1;
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::preinit(): %d image formats available\n",
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): %d image formats available\n",
            va_num_image_formats);
     for (i = 0; i < va_num_image_formats; i++)
-        mp_msg(MSGT_VO, MSGL_DBG2, " %s\n", string_of_VAImageFormat(&va_image_formats[i]));
+        mp_msg(MSGT_VO, MSGL_DBG2, "  %s\n", string_of_VAImageFormat(&va_image_formats[i]));
 
     max_profiles = vaMaxNumProfiles(va_context->display);
     va_profiles = calloc(max_profiles, sizeof(*va_profiles));
@@ -327,10 +330,10 @@ static int preinit(const char *arg)
     VA_CHECK_STATUS(va_status);
     if (va_status != VA_STATUS_SUCCESS)
         return -1;
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::preinit(): %d profiles available\n",
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] preinit(): %d profiles available\n",
            va_num_profiles);
     for (i = 0; i < va_num_profiles; i++)
-        mp_msg(MSGT_VO, MSGL_DBG2, " %s\n", string_of_VAProfile(va_profiles[i]));
+        mp_msg(MSGT_VO, MSGL_DBG2, "  %s\n", string_of_VAProfile(va_profiles[i]));
 
     return 0;
 }
@@ -424,19 +427,16 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
 
     /* Check profile */
     profile = VAProfile_from_imgfmt(format);
-    if (profile < 0) {
-        assert(profile >= 0);
+    if (profile < 0)
         return -1;
-    }
 
-    /* Check entry-point */
-    /* XXX: only VLD is supported at this time */
+    /* Check entry-point (only VLD for now) */
     init_entrypoints(profile);
     entrypoint = VAEntrypoint_from_imgfmt(format);
     if (entrypoint != VAEntrypointVLD)
         return -1;
 
-    /* check chroma format (only 4:2:0 for now) */
+    /* Check chroma format (only 4:2:0 for now) */
     attrib.type = VAConfigAttribRTFormat;
     status = vaGetConfigAttributes(va_context->display, profile, entrypoint, &attrib, 1);
     VA_CHECK_STATUS(status);
@@ -466,9 +466,11 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
         va_num_surfaces = NUM_VIDEO_SURFACES_VC1;
         break;
     default:
-        assert(0);
-        return -1;
+        va_num_surfaces = 0;
+        break;
     }
+    if (va_num_surfaces == 0)
+        return -1;
     va_surface_ids = calloc(va_num_surfaces, sizeof(*va_surface_ids));
     if (va_surface_ids == NULL)
         return -1;
@@ -494,7 +496,7 @@ static int config(uint32_t width, uint32_t height,
                   uint32_t display_width, uint32_t display_height,
                   uint32_t flags, char *title, uint32_t format)
 {
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::config(): size %dx%d, display size %dx%d, flags %x, title '%s', format %x (%s)\n",
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] config(): size %dx%d, display size %dx%d, flags %x, title '%s', format %x (%s)\n",
            width, height, display_width, display_height, flags, title, format, vo_format_name(format));
 
     if (config_x11(width, height, display_width, display_height, flags, title) < 0)
@@ -519,7 +521,7 @@ static int query_format(uint32_t format)
                               VFCAP_HWSCALE_UP |
                               VFCAP_HWSCALE_DOWN);
 
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::query_format(): format %x (%s)\n",
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] query_format(): format %x (%s)\n",
            format, vo_format_name(format));
 
     switch (format) {
@@ -560,7 +562,7 @@ static int put_surface(VASurfaceID surface)
 static int draw_slice(uint8_t * image[], int stride[],
                       int w, int h, int x, int y)
 {
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::draw_slice(): location (%d,%d), size %dx%d\n", x, y, w, h);
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] draw_slice(): location (%d,%d), size %dx%d\n", x, y, w, h);
 
     return VO_TRUE;
 }
@@ -579,7 +581,7 @@ static void draw_osd(void)
 
 static void flip_page(void)
 {
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::flip_page()\n");
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] flip_page()\n");
 
     if (g_output_surface == 0)
         return;
@@ -591,8 +593,6 @@ static uint32_t get_image(mp_image_t *mpi)
 {
     VASurfaceID surface;
 
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::get_image()\n");
-
     if (mpi->type != MP_IMGTYPE_NUMBERED)
         return VO_FALSE;
 
@@ -600,7 +600,8 @@ static uint32_t get_image(mp_image_t *mpi)
         return VO_FALSE;
 
     surface = get_surface(mpi->number);
-    assert(surface != 0);
+    if (surface == 0)
+        return VO_FALSE;
 
     mpi->flags |= MP_IMGFLAG_DIRECT;
     mpi->stride[0] = mpi->stride[1] = mpi->stride[2] = mpi->stride[3] = 0;
@@ -608,7 +609,7 @@ static uint32_t get_image(mp_image_t *mpi)
     mpi->planes[0] = mpi->planes[3] = (char *)(uintptr_t)surface;
     mpi->num_planes = 1;
 
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::get_image(): surface 0x%08x\n", surface);
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] get_image(): surface 0x%08x\n", surface);
 
     return VO_TRUE;
 }
@@ -617,7 +618,7 @@ static uint32_t draw_image(mp_image_t *mpi)
 {
     VASurfaceID surface = (uintptr_t)mpi->planes[3];
 
-    mp_msg(MSGT_VO, MSGL_DBG2, "vo_vaapi::draw_image(): surface 0x%08x\n", surface);
+    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] draw_image(): surface 0x%08x\n", surface);
 
     g_output_surface = surface;
     return VO_TRUE;
