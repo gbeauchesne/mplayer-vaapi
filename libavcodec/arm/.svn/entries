@@ -1,7 +1,7 @@
 8
 
 dir
-22169
+22201
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/arm
 svn://svn.ffmpeg.org/ffmpeg
 
@@ -296,18 +296,6 @@ file
 20167
 mru
 
-fft_neon.S
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-01710762cd58a539a3dddcec53abf09c
-2009-10-02T08:42:00.480358Z
-20147
-mru
-
 mpegvideo_arm.c
 file
 
@@ -320,6 +308,18 @@ db8762191682cd15343c7971143ede22
 16590
 aurel
 has-props
+
+fft_neon.S
+file
+
+
+
+
+2009-10-09T13:57:36.000000Z
+01710762cd58a539a3dddcec53abf09c
+2009-10-02T08:42:00.480358Z
+20147
+mru
 
 dsputil_vfp.S
 file
@@ -345,18 +345,6 @@ e56d81b5ba9da27d09b383ea5d440ee7
 19692
 diego
 
-dsputil_init_vfp.c
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-efb562bdb9b534a0679bd0f08bac12bf
-2009-10-04T13:13:02.092866Z
-20164
-mru
-
 mpegvideo_armv5te.c
 file
 
@@ -367,6 +355,18 @@ file
 889fa66860865db477fa07c2800387da
 2008-12-17T00:54:54.689120Z
 16179
+mru
+
+dsputil_init_vfp.c
+file
+
+
+
+
+2009-10-09T13:57:36.000000Z
+efb562bdb9b534a0679bd0f08bac12bf
+2009-10-04T13:13:02.092866Z
+20164
 mru
 
 dsputil_neon.S
