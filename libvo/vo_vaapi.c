@@ -112,6 +112,7 @@ typedef void (*eosd_draw_alpha_func)(unsigned char *src,
 struct vaapi_surface {
     VASurfaceID id;
     VAImage     image;
+    int         is_bound; /* Flag: image bound to the surface? */
 };
 
 struct vaapi_equalizer {
@@ -1415,10 +1416,31 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
         if (!image_format)
             return -1;
         for (i = 0; i < va_num_surfaces; i++) {
-            status = vaCreateImage(va_context->display, image_format,
-                                   width, height, &va_free_surfaces[i]->image);
-            if (!check_status(status, "vaCreateImage()"))
-                return -1;
+            struct vaapi_surface * const s = va_free_surfaces[i];
+            s->is_bound = 0;
+            status = vaDeriveImage(va_context->display, s->id, &s->image);
+            if (status == VA_STATUS_SUCCESS) {
+                /* vaDeriveImage() is supported, check format */
+                if (s->image.format.fourcc != image_format->fourcc) {
+                    vaDestroyImage(va_context->display, s->image.image_id);
+                    return -1;
+                }
+                if (s->image.width == width && s->image.height == height) {
+                    s->is_bound = 1;
+                    mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] Using vaDeriveImage()\n");
+                }
+                else {
+                    vaDestroyImage(va_context->display, s->image.image_id);
+                    status = VA_STATUS_ERROR_OPERATION_FAILED;
+                }
+                
+            }
+            if (status != VA_STATUS_SUCCESS) {
+                status = vaCreateImage(va_context->display, image_format,
+                                       width, height, &s->image);
+                if (!check_status(status, "vaCreateImage()"))
+                    return -1;
+            }
         }
         return 0;
     }
@@ -2013,13 +2035,15 @@ static int put_image(mp_image_t *mpi, struct vaapi_surface *surface)
             return VO_FALSE;
     }
 
-    status = vaPutImage2(va_context->display,
-                         surface->id,
-                         surface->image.image_id,
-                         mpi->x, mpi->y, mpi->w, mpi->h,
-                         mpi->x, mpi->y, mpi->w, mpi->h);
-    if (!check_status(status, "vaPutImage()"))
-        return VO_FALSE;
+    if (!surface->is_bound) {
+        status = vaPutImage2(va_context->display,
+                             surface->id,
+                             surface->image.image_id,
+                             mpi->x, mpi->y, mpi->w, mpi->h,
+                             mpi->x, mpi->y, mpi->w, mpi->h);
+        if (!check_status(status, "vaPutImage()"))
+            return VO_FALSE;
+    }
 
     return VO_TRUE;
 }
