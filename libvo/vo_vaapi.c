@@ -382,7 +382,7 @@ static struct vaapi_surface *alloc_vaapi_surface(unsigned int width,
     VASurfaceID *surface_ids;
     VAStatus status;
 
-    surface = malloc(sizeof(*surface));
+    surface = calloc(1, sizeof(*surface));
     if (!surface)
         goto error;
 
