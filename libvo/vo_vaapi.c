@@ -68,7 +68,7 @@
 #endif
 
 /* Defined to 1 if IA44/AI44 subpicture formats are allowed */
-/* XXX: they are visually un-attractive... */
+/* XXX: they are not visually attractive... */
 #define USE_VAAPI_IA44_FORMATS 0
 
 /* Defined to 1 if VA/GLX 'bind' API is available */
