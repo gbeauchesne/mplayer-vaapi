@@ -1295,7 +1295,7 @@ static int config_glx(unsigned int width, unsigned int height)
     /* XXX: assume GL_ARB_texture_non_power_of_two is available */
     glEnable(GL_TEXTURE_2D);
     glGenTextures(1, &gl_texture);
-    BindTexture(GL_TEXTURE_2D, gl_texture);
+    mpglBindTexture(GL_TEXTURE_2D, gl_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1303,7 +1303,7 @@ static int config_glx(unsigned int width, unsigned int height)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
                  GL_BGRA, GL_UNSIGNED_BYTE, NULL);
-    BindTexture(GL_TEXTURE_2D, 0);
+    mpglBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -1658,7 +1658,7 @@ static void put_surface_glx(struct vaapi_surface *surface)
 static int glx_bind_texture(void)
 {
     glEnable(GL_TEXTURE_2D);
-    BindTexture(GL_TEXTURE_2D, gl_texture);
+    mpglBindTexture(GL_TEXTURE_2D, gl_texture);
 
 #if USE_VAAPI_GLX_BIND
     if (gl_binding) {
@@ -1682,7 +1682,7 @@ static int glx_unbind_texture(void)
     }
 #endif
 
-    BindTexture(GL_TEXTURE_2D, 0);
+    mpglBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
     return 0;
 }
