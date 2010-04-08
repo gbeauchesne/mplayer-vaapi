@@ -943,8 +943,8 @@ static void postfilter(AMRContext *p, float *lpc, float *buf_out)
     ff_tilt_compensation(&p->tilt_mem, tilt_factor(lpc_n, lpc_d), buf_out,
                          AMR_SUBFRAME_SIZE);
 
-    ff_adaptative_gain_control(buf_out, speech_gain, AMR_SUBFRAME_SIZE,
-                               AMR_AGC_ALPHA, &p->postfilter_agc);
+    ff_adaptive_gain_control(buf_out, speech_gain, AMR_SUBFRAME_SIZE,
+                             AMR_AGC_ALPHA, &p->postfilter_agc);
 }
 
 /// @}
@@ -1071,7 +1071,7 @@ static int amrnb_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
 
 AVCodec amrnb_decoder = {
     .name           = "amrnb",
-    .type           = CODEC_TYPE_AUDIO,
+    .type           = AVMEDIA_TYPE_AUDIO,
     .id             = CODEC_ID_AMR_NB,
     .priv_data_size = sizeof(AMRContext),
     .init           = amrnb_decode_init,

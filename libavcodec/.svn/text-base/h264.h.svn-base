@@ -32,6 +32,7 @@
 #include "dsputil.h"
 #include "cabac.h"
 #include "mpegvideo.h"
+#include "h264dsp.h"
 #include "h264pred.h"
 #include "rectangle.h"
 
@@ -262,6 +263,7 @@ typedef struct MMCO{
  */
 typedef struct H264Context{
     MpegEncContext s;
+    H264DSPContext h264dsp;
     int chroma_qp[2]; //QPc
 
     int qp_thresh;      ///< QP threshold to skip loopfilter
@@ -299,7 +301,7 @@ typedef struct H264Context{
      * non zero coeff count cache.
      * is 64 if not available.
      */
-    DECLARE_ALIGNED_8(uint8_t, non_zero_count_cache)[6*8];
+    DECLARE_ALIGNED(8, uint8_t, non_zero_count_cache)[6*8];
 
     /*
     .UU.YYYY
@@ -312,8 +314,8 @@ typedef struct H264Context{
     /**
      * Motion vector cache.
      */
-    DECLARE_ALIGNED_16(int16_t, mv_cache)[2][5*8][2];
-    DECLARE_ALIGNED_8(int8_t, ref_cache)[2][5*8];
+    DECLARE_ALIGNED(16, int16_t, mv_cache)[2][5*8][2];
+    DECLARE_ALIGNED(8, int8_t, ref_cache)[2][5*8];
 #define LIST_NOT_USED -1 //FIXME rename?
 #define PART_NOT_AVAILABLE -2
 
@@ -366,7 +368,7 @@ typedef struct H264Context{
     int mb_field_decoding_flag;
     int mb_mbaff;              ///< mb_aff_frame && mb_field_decoding_flag
 
-    DECLARE_ALIGNED_8(uint16_t, sub_mb_type)[4];
+    DECLARE_ALIGNED(8, uint16_t, sub_mb_type)[4];
 
     //Weighted pred stuff
     int use_weight;
@@ -376,7 +378,7 @@ typedef struct H264Context{
     //The following 2 can be changed to int8_t but that causes 10cpu cycles speedloss
     int luma_weight[48][2][2];
     int chroma_weight[48][2][2][2];
-    int implicit_weight[48][48];
+    int implicit_weight[48][48][2];
 
     int direct_spatial_mv_pred;
     int col_parity;
@@ -403,7 +405,7 @@ typedef struct H264Context{
     GetBitContext *intra_gb_ptr;
     GetBitContext *inter_gb_ptr;
 
-    DECLARE_ALIGNED_16(DCTELEM, mb)[16*24];
+    DECLARE_ALIGNED(16, DCTELEM, mb)[16*24];
     DCTELEM mb_padding[256];        ///< as mb is addressed by scantable[i] and scantable is uint8_t we can either check that i is not too large or ensure that there is some unused stuff after mb
 
     /**
@@ -421,7 +423,7 @@ typedef struct H264Context{
     uint8_t     *chroma_pred_mode_table;
     int         last_qscale_diff;
     uint8_t     (*mvd_table[2])[2];
-    DECLARE_ALIGNED_16(uint8_t, mvd_cache)[2][5*8][2];
+    DECLARE_ALIGNED(16, uint8_t, mvd_cache)[2][5*8][2];
     uint8_t     *direct_table;
     uint8_t     direct_cache[5*8];
 
@@ -621,7 +623,7 @@ int ff_h264_decode_picture_parameter_set(H264Context *h, int bit_length);
  * @param consumed is the number of bytes used as input
  * @param length is the length of the array
  * @param dst_length is the number of decoded bytes FIXME here or a decode rbsp tailing?
- * @returns decoded bytes, might be src+1 if no escapes
+ * @return decoded bytes, might be src+1 if no escapes
  */
 const uint8_t *ff_h264_decode_nal(H264Context *h, const uint8_t *src, int *dst_length, int *consumed, int length);
 
@@ -683,13 +685,13 @@ av_cold void ff_h264_decode_init_vlc(void);
 
 /**
  * decodes a macroblock
- * @returns 0 if OK, AC_ERROR / DC_ERROR / MV_ERROR if an error is noticed
+ * @return 0 if OK, AC_ERROR / DC_ERROR / MV_ERROR if an error is noticed
  */
 int ff_h264_decode_mb_cavlc(H264Context *h);
 
 /**
  * decodes a CABAC coded macroblock
- * @returns 0 if OK, AC_ERROR / DC_ERROR / MV_ERROR if an error is noticed
+ * @return 0 if OK, AC_ERROR / DC_ERROR / MV_ERROR if an error is noticed
  */
 int ff_h264_decode_mb_cabac(H264Context *h);
 
@@ -1097,7 +1099,7 @@ static void fill_decode_caches(H264Context *h, int mb_type){
                     fill_rectangle(&h->direct_cache[scan8[0]], 4, 4, 8, MB_TYPE_16x16>>1, 1);
 
                     if(IS_DIRECT(top_type)){
-                        AV_WN32A(&h->direct_cache[scan8[0] - 1*8], 0x01010101*(MB_TYPE_DIRECT2>>1));
+                        AV_WN32A(&h->direct_cache[scan8[0] - 1*8], 0x01010101u*(MB_TYPE_DIRECT2>>1));
                     }else if(IS_8X8(top_type)){
                         int b8_xy = 4*top_xy;
                         h->direct_cache[scan8[0] + 0 - 1*8]= h->direct_table[b8_xy + 2];
@@ -1163,7 +1165,7 @@ static void fill_decode_caches(H264Context *h, int mb_type){
 
 /**
  *
- * @returns non zero if the loop filter can be skiped
+ * @return non zero if the loop filter can be skiped
  */
 static int fill_filter_caches(H264Context *h, int mb_type){
     MpegEncContext * const s = &h->s;

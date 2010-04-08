@@ -111,7 +111,7 @@ static int read_header(AVFormatContext *s, AVFormatParameters *ap)
     }
     av_set_pts_info(vst, 64, fps_den, fps_num);
 
-    vst->codec->codec_type = CODEC_TYPE_VIDEO;
+    vst->codec->codec_type = AVMEDIA_TYPE_VIDEO;
     vst->codec->codec_id   = CODEC_ID_BINKVIDEO;
     vst->codec->extradata  = av_mallocz(4 + FF_INPUT_BUFFER_PADDING_SIZE);
     vst->codec->extradata_size = 4;
@@ -133,7 +133,7 @@ static int read_header(AVFormatContext *s, AVFormatParameters *ap)
             ast = av_new_stream(s, 1);
             if (!ast)
                 return AVERROR(ENOMEM);
-            ast->codec->codec_type  = CODEC_TYPE_AUDIO;
+            ast->codec->codec_type  = AVMEDIA_TYPE_AUDIO;
             ast->codec->codec_tag   = 0;
             ast->codec->sample_rate = get_le16(pb);
             av_set_pts_info(ast, 64, 1, ast->codec->sample_rate);
@@ -210,29 +210,30 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
         }
         bink->remain_packet_size -= 4 + audio_size;
         bink->current_track++;
-        if (audio_size > 0) {
+        if (audio_size >= 4) {
             /* get one audio packet per track */
-            if ((ret = av_get_packet(pb, pkt, audio_size))
-                                           != audio_size)
+            if ((ret = av_get_packet(pb, pkt, audio_size)) < 0)
                 return ret;
             pkt->stream_index = bink->current_track;
             pkt->pts = bink->audio_pts[bink->current_track - 1];
 
             /* Each audio packet reports the number of decompressed samples
                (in bytes). We use this value to calcuate the audio PTS */
-            bink->audio_pts[bink->current_track -1] +=
-                AV_RL32(pkt->data) / (2 * s->streams[bink->current_track]->codec->channels);
+            if (pkt->size >= 4)
+                bink->audio_pts[bink->current_track -1] +=
+                    AV_RL32(pkt->data) / (2 * s->streams[bink->current_track]->codec->channels);
             return 0;
+        } else {
+            url_fseek(pb, audio_size, SEEK_CUR);
         }
     }
 
     /* get video packet */
-    if ((ret = av_get_packet(pb, pkt, bink->remain_packet_size))
-                                   != bink->remain_packet_size)
+    if ((ret = av_get_packet(pb, pkt, bink->remain_packet_size)) < 0)
         return ret;
     pkt->stream_index = 0;
     pkt->pts = bink->video_pts++;
-    pkt->flags |= PKT_FLAG_KEY;
+    pkt->flags |= AV_PKT_FLAG_KEY;
 
     /* -1 instructs the next call to read_packet() to read the next frame */
     bink->current_track = -1;

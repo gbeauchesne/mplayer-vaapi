@@ -322,6 +322,7 @@ SRCS_COMMON-$(WIN32DLL)              += libmpcodecs/ad_acm.c \
                                         loader/dshow/DS_VideoDecoder.c \
                                         loader/dshow/allocator.c \
                                         loader/dshow/cmediasample.c \
+                                        loader/dshow/graph.c \
                                         loader/dshow/guids.c \
                                         loader/dshow/inputpin.c \
                                         loader/dshow/mediatype.c \
@@ -343,12 +344,12 @@ SRCS_COMMON = asxparser.c \
               edl.c \
               find_sub.c \
               fmt-conversion.c \
-              get_path.c \
               m_config.c \
               m_option.c \
               m_struct.c \
               mpcommon.c \
               parser-cfg.c \
+              path.c \
               playtree.c \
               playtreeparser.c \
               spudec.c \
@@ -430,6 +431,7 @@ SRCS_COMMON = asxparser.c \
               libmpcodecs/vf_field.c \
               libmpcodecs/vf_fil.c \
               libmpcodecs/vf_filmdint.c \
+              libmpcodecs/vf_fixpts.c \
               libmpcodecs/vf_flip.c \
               libmpcodecs/vf_format.c \
               libmpcodecs/vf_framestep.c \
@@ -554,7 +556,8 @@ SRCS_MPLAYER-$(ESD)          += libao2/ao_esd.c
 SRCS_MPLAYER-$(FBDEV)        += libvo/vo_fbdev.c libvo/vo_fbdev2.c
 SRCS_MPLAYER-$(GGI)          += libvo/vo_ggi.c
 SRCS_MPLAYER-$(GIF)          += libvo/vo_gif89a.c
-SRCS_MPLAYER-$(GL)           += libvo/gl_common.c libvo/vo_gl.c libvo/vo_gl2.c libvo/csputils.c
+SRCS_MPLAYER-$(GL)           += libvo/gl_common.c libvo/vo_gl.c \
+                                libvo/vo_gl2.c libvo/csputils.c
 SRCS_MPLAYER-$(GL_WIN32)     += libvo/w32_common.c
 SRCS_MPLAYER-$(GL_X11)       += libvo/x11_common.c
 SRCS_MPLAYER-$(MATRIXVIEW)   += libvo/vo_matrixview.c libvo/matrixview.c
@@ -661,7 +664,8 @@ SRCS_MPLAYER-$(VIDIX_UNICHROME)     += vidix/unichrome_vid.c
 SRCS_MPLAYER-$(WII)           += libvo/vo_wii.c
 SRCS_MPLAYER-$(WIN32WAVEOUT)  += libao2/ao_win32.c
 SRCS_MPLAYER-$(WINVIDIX)      += libvo/vo_winvidix.c
-SRCS_MPLAYER-$(X11)           += libvo/vo_x11.c libvo/vo_xover.c libvo/x11_common.c
+SRCS_MPLAYER-$(X11)           += libvo/vo_x11.c libvo/vo_xover.c \
+                                 libvo/x11_common.c
 SRCS_MPLAYER-$(XMGA)          += libvo/vo_xmga.c
 SRCS_MPLAYER-$(XV)            += libvo/vo_xv.c
 SRCS_MPLAYER-$(XVIDIX)        += libvo/vo_xvidix.c
@@ -695,7 +699,8 @@ SRCS_MENCODER-$(FAAC)             += libmpcodecs/ae_faac.c
 SRCS_MENCODER-$(LIBAVCODEC)       += libmpcodecs/ae_lavc.c libmpcodecs/ve_lavc.c
 SRCS_MENCODER-$(LIBAVFORMAT)      += libmpdemux/muxer_lavf.c
 SRCS_MENCODER-$(LIBDV)            += libmpcodecs/ve_libdv.c
-SRCS_MENCODER-$(LIBLZO)           += libmpcodecs/ve_nuv.c libmpcodecs/native/rtjpegn.c
+SRCS_MENCODER-$(LIBLZO)           += libmpcodecs/ve_nuv.c \
+                                     libmpcodecs/native/rtjpegn.c
 SRCS_MENCODER-$(MP3LAME)          += libmpcodecs/ae_lame.c
 SRCS_MENCODER-$(QTX_CODECS_WIN32) += libmpcodecs/ve_qtvideo.c
 SRCS_MENCODER-$(TOOLAME)          += libmpcodecs/ae_toolame.c
@@ -825,15 +830,6 @@ FFMPEGFILES = $(foreach part, $(FFMPEGPARTS), $(wildcard $(part)/*.[chS] $(part)
 ###### generic rules #######
 
 all: $(ALL_PRG-yes)
-
-%.d: %.c
-	$(MPDEPEND_CMD) > $@
-
-%.d: %.cpp
-	$(MPDEPEND_CMD_CXX) > $@
-
-%.d: %.m
-	$(MPDEPEND_CMD) > $@
 
 %.ho: %.h
 	$(CC) $(CFLAGS) -Wno-unused -c -o $@ -x c $<

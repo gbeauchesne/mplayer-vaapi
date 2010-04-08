@@ -7,7 +7,7 @@ The latest version can be found at http://www.linuxstb.org/dvbstream
 
 Modified for use with MPlayer, for details see the changelog at
 http://svn.mplayerhq.hu/mplayer/trunk/
-$Id: stream_dvb.c 30818 2010-03-02 19:57:17Z diego $
+$Id: stream_dvb.c 30943 2010-03-20 23:38:27Z diego $
 
 Copyright notice:
 
@@ -44,7 +44,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #include "help_mp.h"
 #include "m_option.h"
 #include "m_struct.h"
-#include "get_path.h"
+#include "path.h"
 #include "libavutil/avstring.h"
 
 #include "dvbin.h"

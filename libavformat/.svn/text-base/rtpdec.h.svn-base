@@ -48,6 +48,7 @@ typedef struct rtp_payload_data
         int rap_flag;
         int streamstate;
     } *au_headers;
+    int au_headers_allocated;
     int nb_au_headers;
     int au_headers_length_bytes;
     int cur_au_index;
@@ -132,7 +133,7 @@ typedef int (*DynamicPayloadPacketHandlerProc) (AVFormatContext *ctx,
 struct RTPDynamicProtocolHandler_s {
     // fields from AVRtpDynamicPayloadType_s
     const char enc_name[50];    /* XXX: still why 50 ? ;-) */
-    enum CodecType codec_type;
+    enum AVMediaType codec_type;
     enum CodecID codec_id;
 
     // may be null
@@ -140,7 +141,7 @@ struct RTPDynamicProtocolHandler_s {
                              int st_index,
                              PayloadContext *priv_data,
                              const char *line); ///< Parse the a= line from the sdp field
-    PayloadContext *(*open) (); ///< allocate any data needed by the rtp parsing for this dynamic data.
+    PayloadContext *(*open) (void); ///< allocate any data needed by the rtp parsing for this dynamic data.
     void (*close)(PayloadContext *protocol_data); ///< free any data needed by the rtp parsing for this dynamic data.
     DynamicPayloadPacketHandlerProc parse_packet; ///< parse handler for this dynamic packet.
 

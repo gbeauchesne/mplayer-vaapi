@@ -1,15 +1,15 @@
 8
 
 dir
-30827
+31027
 svn://svn.mplayerhq.hu/mplayer/trunk/loader/qtx/qtxsdk
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2010-03-15T12:05:56.854990Z
+30899
+sesse
 
 
 svn:special svn:externals svn:needs-lock
@@ -45,10 +45,10 @@ file
 
 
 
-2009-05-25T08:54:01.000000Z
-cb163bf6f74430221f47a8e7b3e8a408
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2010-04-08T06:58:17.000000Z
+478b56b71c1cdf3afc3e5390a878546f
+2010-03-15T12:05:56.854990Z
+30899
+sesse
 has-props
 

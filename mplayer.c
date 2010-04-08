@@ -148,7 +148,7 @@ static int cfg_include(m_option_t *conf, char *filename){
 	return m_config_parse_config_file(mconfig, filename);
 }
 
-#include "get_path.h"
+#include "path.h"
 
 //**************************************************************************//
 //**************************************************************************//
@@ -1211,7 +1211,7 @@ static void saddf(char *buf, unsigned *pos, int len, const char *format, ...)
  * \param time time value to convert/append
  */
 static void sadd_hhmmssf(char *buf, unsigned *pos, int len, float time) {
-  long tenths = 10 * time;
+  int64_t tenths = 10 * time;
   int f1 = tenths % 10;
   int ss = (tenths /  10) % 60;
   int mm = (tenths / 600) % 60;
@@ -2700,6 +2700,9 @@ int gui_no_filename=0;
 #ifdef CONFIG_PRIORITY
     set_priority();
 #endif
+
+  if (codec_path)
+    set_codec_path(codec_path);
 
 #ifndef CONFIG_GUI
     if(use_gui){
