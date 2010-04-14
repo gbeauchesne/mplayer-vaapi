@@ -131,10 +131,10 @@ static int                      g_is_paused;
 static uint32_t                 g_image_width;
 static uint32_t                 g_image_height;
 static uint32_t                 g_image_format;
+static uint32_t                 g_image_fields;
 static struct vo_rect           g_output_rect;
 static struct vaapi_surface    *g_output_surfaces[MAX_OUTPUT_SURFACES];
 static unsigned int             g_output_surface;
-static int                      g_top_field_first;
 static int                      g_deint;
 static int                      g_deint_type;
 static int                      g_colorspace;
@@ -1563,8 +1563,8 @@ static int query_format(uint32_t format)
 
 static inline int get_field_flags(int i)
 {
-    return (g_deint ? 
-            ((g_top_field_first ^ i) == 0 ?
+    return (g_deint && (g_image_fields & MP_IMGFIELD_INTERLACED) ? 
+            (((!!(g_image_fields & MP_IMGFIELD_TOP_FIRST)) ^ i) == 0 ?
              VA_BOTTOM_FIELD : VA_TOP_FIELD) : VA_FRAME_PICTURE);
 }
 
@@ -2060,6 +2060,8 @@ static uint32_t draw_image(mp_image_t *mpi)
 {
     struct vaapi_surface *surface = (struct vaapi_surface *)mpi->priv;
 
+    g_image_fields = mpi->fields;
+
     if (!IMGFMT_IS_VAAPI(mpi->imgfmt)) {
         /* XXX: no direct rendering in non-accelerated mode */
         surface = va_free_surfaces[g_output_surface];
@@ -2070,11 +2072,6 @@ static uint32_t draw_image(mp_image_t *mpi)
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] draw_image(): surface 0x%08x\n", surface->id);
 
     g_output_surfaces[g_output_surface] = surface;
-
-    if (mpi->fields & MP_IMGFIELD_ORDERED)
-        g_top_field_first = !!(mpi->fields & MP_IMGFIELD_TOP_FIRST);
-    else
-        g_top_field_first = 1;
 
     if (cpu_stats) {
         static uint64_t ticks;
