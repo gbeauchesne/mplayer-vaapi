@@ -1,14 +1,14 @@
 8
 
 dir
-31027
+31179
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/tech/mirrors
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-03-04T15:57:21.776130Z
-30838
+2010-04-12T10:56:17.152819Z
+31032
 diego
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2009-01-29T11:50:47.000000Z
-6a7ac56475e0fb72e6091202b84a7b4c
-2009-01-20T23:23:53.925705Z
-28347
+2010-05-18T12:45:19.000000Z
+32cf0fbaf0cbecf6a21642d65868ddc0
+2010-04-12T10:56:17.152819Z
+31032
 diego
 
 update_mplayer_rsync

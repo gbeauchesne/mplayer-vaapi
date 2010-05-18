@@ -1,15 +1,15 @@
 8
 
 dir
-31027
+31179
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/es
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-01-24T03:15:18.984995Z
-30414
-Gabrov
+2010-05-10T23:39:16.915751Z
+31152
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -38,6 +38,22 @@ file
 29305
 diego
 has-props
+
+encoding-guide.xml
+file
+
+
+
+
+2010-05-18T12:45:19.000000Z
+54acc434cc37ef0607a0e013b0e7a926
+2010-05-03T23:00:58.946442Z
+31133
+diego
+has-props
+
+
+svn:special
 
 usage.xml
 file
@@ -71,10 +87,10 @@ file
 
 
 
-2009-06-18T13:42:55.000000Z
-e381729c592f611f9a124559b16f7f3e
-2009-05-13T02:58:57.333510Z
-29305
+2010-05-18T12:45:19.000000Z
+add48921b4aeb519e86f5eebfd197d73
+2010-04-12T10:56:17.152819Z
+31032
 diego
 has-props
 
@@ -169,16 +185,19 @@ file
 tack
 has-props
 
-Makefile
+radio.xml
 file
 
 
 
 
-2010-01-15T13:47:05.000000Z
-20b02f3ffeb1f89c7db59eccc9854210
-2009-12-14T01:51:42.054570Z
-30018
+2010-05-18T12:45:19.000000Z
+18905a1553c271e4e7c3f4c76393b5bf
+2010-05-03T23:00:58.946442Z
+31133
 diego
 has-props
+
+
+svn:special
 

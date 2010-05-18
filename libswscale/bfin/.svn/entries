@@ -1,15 +1,15 @@
 8
 
 dir
-31027
+31179
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale/bfin
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-01-31T00:20:37.626474Z
-30472
-mru
+2010-05-12T20:47:32.413322Z
+31170
+ramiro
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,12 +32,11 @@ file
 
 
 
-2010-02-16T15:36:02.000000Z
+2010-04-14T19:51:49.000000Z
 1349f9175b76f6ea0c82e84045d0a531
-2010-01-31T00:20:37.626474Z
-30472
-mru
-has-props
+2010-05-12T20:47:32.413322Z
+31170
+ramiro
 
 swscale_bfin.c
 file
@@ -45,12 +44,11 @@ file
 
 
 
-2010-02-16T15:36:02.000000Z
+2010-05-18T12:45:20.000000Z
 a963b5e59398155d279021e394a8d833
-2010-01-31T00:20:37.626474Z
-30472
-mru
-has-props
+2010-05-12T20:47:32.413322Z
+31170
+ramiro
 
 internal_bfin.S
 file
@@ -58,10 +56,9 @@ file
 
 
 
-2010-02-16T15:36:02.000000Z
-c382822d7f554cb854c38f7fe119816c
-2010-01-31T00:20:37.626474Z
-30472
-mru
-has-props
+2010-05-18T12:45:20.000000Z
+9b187708f51cd6735eb09da62901c68a
+2010-05-12T20:47:32.413322Z
+31170
+ramiro
 

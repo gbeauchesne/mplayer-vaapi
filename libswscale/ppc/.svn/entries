@@ -1,15 +1,15 @@
 8
 
 dir
-31027
+31179
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale/ppc
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-01-22T03:26:30.165859Z
-30385
-mru
+2010-05-12T20:47:32.413322Z
+31170
+ramiro
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -45,10 +45,10 @@ file
 
 
 
-2010-02-16T15:36:02.000000Z
+2010-04-14T19:51:49.000000Z
 f6390043931a4b4fd785d1b45cab9d90
-2010-01-22T03:26:30.165859Z
-30385
-mru
+2010-05-12T20:47:32.413322Z
+31170
+ramiro
 has-props
 

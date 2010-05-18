@@ -771,7 +771,7 @@ static const char help_text[]=
 #define MSGTR_PREFERENCES_FPS "FPS фильма:"
 #define MSGTR_PREFERENCES_ShowVideoWindow "Показывать окно видео, когда неактивен"
 #define MSGTR_PREFERENCES_ArtsBroken "Новые версии aRts несовместимы с GTK 1.x "\
-	   "и приведут к фатальной ошибке GMPlayer!"
+           "и приведут к фатальной ошибке GMPlayer!"
 
 // --- aboutbox
 #define MSGTR_ABOUT_UHU "Разработка GUI спонсирована UHU Linux\n"
@@ -1273,10 +1273,7 @@ static const char help_text[]=
 #define MSGTR_AO_ALSA_UnableToDisableResampling "[AO_ALSA] Невозможно отключить ресэмплинг: %s\n"
 #define MSGTR_AO_ALSA_UnableToSetSamplerate2 "[AO_ALSA] Невозможно установить частоту дискретизации-2: %s\n"
 #define MSGTR_AO_ALSA_UnableToSetBufferTimeNear "[AO_ALSA] Невозможно установить примерное время буфера: %s\n"
-#define MSGTR_AO_ALSA_UnableToSetPeriodTime "[AO_ALSA] Невозможно установить время периода: %s\n"
-#define MSGTR_AO_ALSA_BufferTimePeriodTime "[AO_ALSA] время_буфера: %d, время_периода :%d\n"
 #define MSGTR_AO_ALSA_UnableToGetPeriodSize "[AO ALSA] Невозможно получить время периода: %s\n"
-#define MSGTR_AO_ALSA_UnableToSetPeriodSize "[AO ALSA] Невозможно установить размер периода(%ld): %s\n"
 #define MSGTR_AO_ALSA_UnableToSetPeriods "[AO_ALSA] Невозможно установить периоды: %s\n"
 #define MSGTR_AO_ALSA_UnableToSetHwParameters "[AO_ALSA] Невозможно установить hw-параметры: %s\n"
 #define MSGTR_AO_ALSA_UnableToGetBufferSize "[AO_ALSA] Невозможно получить размер буфера: %s\n"
@@ -1407,7 +1404,7 @@ static const char help_text[]=
 #define MSGTR_NotSystemStream "Не MPEG System Stream формат... (возможно, Transport Stream?)\n"
 #define MSGTR_InvalidMPEGES "Недопустимый MPEG-ES поток??? свяжитесь с автором, это может быть ошибкой :(\n"
 #define MSGTR_FormatNotRecognized "======= Извините, формат этого файла не распознан/не поддерживается ==========\n"\
-				  "===== Если это AVI, ASF или MPEG поток, пожалуйста свяжитесь с автором! ======\n"
+                                  "===== Если это AVI, ASF или MPEG поток, пожалуйста свяжитесь с автором! ======\n"
 #define MSGTR_SettingProcessPriority "Устанавливаю приоритет процесса: %s\n"
 #define MSGTR_FilefmtFourccSizeFpsFtime "[V] формат:%d  fourcc:0x%X  размер:%dx%d  fps:%5.3f  ftime:=%6.4f\n"
 #define MSGTR_CannotInitializeMuxer "Невозможно инициализировать мультиплексор."

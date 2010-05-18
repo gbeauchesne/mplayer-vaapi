@@ -37,7 +37,7 @@
 #include <assert.h>
 
 /**
- * @file libavformat/utils.c
+ * @file
  * various utility functions for use within FFmpeg
  */
 
@@ -310,7 +310,7 @@ int av_filename_number_test(const char *filename)
     return filename && (av_get_frame_filename(buf, sizeof(buf), filename, 1)>=0);
 }
 
-static AVInputFormat *av_probe_input_format2(AVProbeData *pd, int is_opened, int *score_max)
+AVInputFormat *av_probe_input_format2(AVProbeData *pd, int is_opened, int *score_max)
 {
     AVInputFormat *fmt1, *fmt;
     int score;
@@ -559,7 +559,7 @@ int av_open_input_file(AVFormatContext **ic_ptr, const char *filename,
         if (buf_size > 0) {
             url_setbufsize(pb, buf_size);
         }
-        if ((err = ff_probe_input_buffer(&pb, &fmt, filename, logctx, 0, logctx ? (*ic_ptr)->probesize : 0)) < 0) {
+        if (!fmt && (err = ff_probe_input_buffer(&pb, &fmt, filename, logctx, 0, logctx ? (*ic_ptr)->probesize : 0)) < 0) {
             goto fail;
         }
     }
@@ -675,7 +675,8 @@ int av_read_packet(AVFormatContext *s, AVPacket *pkt)
             memset(pd->buf+pd->buf_size, 0, AVPROBE_PADDING_SIZE);
 
             if(av_log2(pd->buf_size) != av_log2(pd->buf_size - pkt->size)){
-                set_codec_from_probe_data(s, st, pd, 1);
+                //FIXME we dont reduce score to 0 for the case of running out of buffer space in bytes
+                set_codec_from_probe_data(s, st, pd, st->probe_packets > 0 ? AVPROBE_SCORE_MAX/4 : 0);
                 if(st->codec->codec_id != CODEC_ID_PROBE){
                     pd->buf_size=0;
                     av_freep(&pd->buf);
@@ -738,6 +739,11 @@ static void compute_frame_duration(int *pnum, int *pden, AVStream *st,
             *pden = st->codec->time_base.den;
             if (pc && pc->repeat_pict) {
                 *pnum = (*pnum) * (1 + pc->repeat_pict);
+            }
+            //If this codec can be interlaced or progressive then we need a parser to compute duration of a packet
+            //Thus if we have no parser in such case leave duration undefined.
+            if(st->codec->ticks_per_frame>1 && !pc){
+                *pnum = *pden = 0;
             }
         }
         break;
@@ -2195,7 +2201,7 @@ int av_find_stream_info(AVFormatContext *ic)
         /* we did not get all the codec info, but we read too much data */
         if (read_size >= ic->probesize) {
             ret = count;
-            av_log(ic, AV_LOG_WARNING, "MAX_READ_SIZE:%d reached\n", ic->probesize);
+            av_log(ic, AV_LOG_DEBUG, "MAX_READ_SIZE:%d reached\n", ic->probesize);
             break;
         }
 
@@ -2538,7 +2544,7 @@ AVChapter *ff_new_chapter(AVFormatContext *s, int id, AVRational time_base, int6
 #if LIBAVFORMAT_VERSION_INT < (53<<16)
     av_free(chapter->title);
 #endif
-    av_metadata_set(&chapter->metadata, "title", title);
+    av_metadata_set2(&chapter->metadata, "title", title, 0);
     chapter->id    = id;
     chapter->time_base= time_base;
     chapter->start = start;

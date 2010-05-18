@@ -21,7 +21,7 @@
  */
 
 /**
- * @file libavcodec/utils.c
+ * @file
  * utils.
  */
 
@@ -224,7 +224,7 @@ int avcodec_check_dimensions(void *av_log_ctx, unsigned int w, unsigned int h){
         return 0;
 
     av_log(av_log_ctx, AV_LOG_ERROR, "picture size invalid (%ux%u)\n", w, h);
-    return -1;
+    return AVERROR(EINVAL);
 }
 
 int avcodec_default_get_buffer(AVCodecContext *s, AVFrame *pic){
@@ -709,6 +709,7 @@ av_cold int avcodec_close(AVCodecContext *avctx)
     if (avctx->codec && avctx->codec->close)
         avctx->codec->close(avctx);
     avcodec_default_free_buffers(avctx);
+    avctx->coded_frame = NULL;
     av_freep(&avctx->priv_data);
     if(avctx->codec && avctx->codec->encode)
         av_freep(&avctx->extradata);
@@ -781,20 +782,14 @@ static int get_bit_rate(AVCodecContext *ctx)
 
     switch(ctx->codec_type) {
     case AVMEDIA_TYPE_VIDEO:
+    case AVMEDIA_TYPE_DATA:
+    case AVMEDIA_TYPE_SUBTITLE:
+    case AVMEDIA_TYPE_ATTACHMENT:
         bit_rate = ctx->bit_rate;
         break;
     case AVMEDIA_TYPE_AUDIO:
         bits_per_sample = av_get_bits_per_sample(ctx->codec_id);
         bit_rate = bits_per_sample ? ctx->sample_rate * ctx->channels * bits_per_sample : ctx->bit_rate;
-        break;
-    case AVMEDIA_TYPE_DATA:
-        bit_rate = ctx->bit_rate;
-        break;
-    case AVMEDIA_TYPE_SUBTITLE:
-        bit_rate = ctx->bit_rate;
-        break;
-    case AVMEDIA_TYPE_ATTACHMENT:
-        bit_rate = ctx->bit_rate;
         break;
     default:
         bit_rate = 0;

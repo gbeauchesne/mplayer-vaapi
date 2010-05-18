@@ -1,15 +1,15 @@
 8
 
 dir
-31027
+31179
 svn://svn.mplayerhq.hu/mplayer/trunk/libmenu
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-04-04T16:11:20.506132Z
-30999
-diego
+2010-05-06T10:18:25.724575Z
+31139
+cehoyos
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -96,11 +96,11 @@ file
 
 
 
-2010-03-03T12:56:31.000000Z
-b2e980c5dd3c1be1eb37543099a4fac7
-2010-02-18T09:26:00.585725Z
-30632
-diego
+2010-05-18T12:45:20.000000Z
+50cd9e6f99c0b365c336c64e9cb57531
+2010-05-06T10:18:25.724575Z
+31139
+cehoyos
 has-props
 
 menu_list.h

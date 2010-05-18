@@ -1,15 +1,15 @@
 8
 
 dir
-31027
+31179
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-04-02T17:29:22.984584Z
-30986
-attila
+2010-05-14T13:49:05.575629Z
+31173
+siretart
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -41,11 +41,11 @@ file
 
 
 
-2009-01-29T11:50:48.000000Z
-2964d06b47cc3f87a59314843aee8e0f
-2002-08-13T11:20:12.000000Z
-6987
-jonas
+2010-05-18T12:45:19.000000Z
+3cd7bf326ec8dcfd2423ef32e545d61e
+2010-04-12T10:56:17.152819Z
+31032
+diego
 has-props
 
 README

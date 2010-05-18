@@ -108,16 +108,6 @@ SRCS_COMMON-$(HAVE_SYS_MMAN_H)       += libaf/af_export.c osdep/mmap_anon.c
 SRCS_COMMON-$(JPEG)                  += libmpcodecs/vd_ijpg.c
 SRCS_COMMON-$(LADSPA)                += libaf/af_ladspa.c
 SRCS_COMMON-$(LIBA52)                += libmpcodecs/ad_liba52.c
-SRCS_LIBA52_INTERNAL                 += liba52/crc.c \
-                                        liba52/resample.c \
-                                        liba52/bit_allocate.c \
-                                        liba52/bitstream.c \
-                                        liba52/downmix.c \
-                                        liba52/imdct.c \
-                                        liba52/parse.c \
-
-SRCS_COMMON-$(LIBA52_INTERNAL)       += $(SRCS_LIBA52_INTERNAL)
-
 SRCS_COMMON-$(LIBASS)                += libmpcodecs/vf_ass.c \
                                         libass/ass_mp.c \
 
@@ -473,7 +463,6 @@ SRCS_COMMON = asxparser.c \
               libmpcodecs/vf_vo.c \
               libmpcodecs/vf_yadif.c \
               libmpcodecs/vf_yuvcsp.c \
-              libmpcodecs/vf_yuy2.c \
               libmpcodecs/vf_yvu9.c \
               libmpdemux/aac_hdr.c \
               libmpdemux/asfheader.c \
@@ -558,6 +547,7 @@ SRCS_MPLAYER-$(GGI)          += libvo/vo_ggi.c
 SRCS_MPLAYER-$(GIF)          += libvo/vo_gif89a.c
 SRCS_MPLAYER-$(GL)           += libvo/gl_common.c libvo/vo_gl.c \
                                 libvo/vo_gl2.c libvo/csputils.c
+SRCS_MPLAYER-$(GL_SDL)       += libvo/sdl_common.c
 SRCS_MPLAYER-$(GL_WIN32)     += libvo/w32_common.c
 SRCS_MPLAYER-$(GL_X11)       += libvo/x11_common.c
 SRCS_MPLAYER-$(MATRIXVIEW)   += libvo/vo_matrixview.c libvo/matrixview.c
@@ -626,7 +616,7 @@ SRCS_MPLAYER-$(PNM)           += libvo/vo_pnm.c
 SRCS_MPLAYER-$(PULSE)         += libao2/ao_pulse.c
 SRCS_MPLAYER-$(QUARTZ)        += libvo/vo_quartz.c libvo/osx_common.c
 SRCS_MPLAYER-$(S3FB)          += libvo/vo_s3fb.c
-SRCS_MPLAYER-$(SDL)           += libao2/ao_sdl.c libvo/vo_sdl.c
+SRCS_MPLAYER-$(SDL)           += libao2/ao_sdl.c libvo/vo_sdl.c libvo/sdl_common.c
 SRCS_MPLAYER-$(SGIAUDIO)      += libao2/ao_sgi.c
 SRCS_MPLAYER-$(SUNAUDIO)      += libao2/ao_sun.c
 SRCS_MPLAYER-$(SVGA)          += libvo/vo_svga.c
@@ -757,7 +747,6 @@ DIRS =  . \
         gui/wm \
         gui/win32 \
         input \
-        liba52 \
         libaf \
         libao2 \
         libass \
@@ -1019,8 +1008,6 @@ codec-cfg-test$(EXESUF): codec-cfg.c codecs.conf.h help_mp.h $(TEST_OBJS)
 codecs2html$(EXESUF): codec-cfg.c help_mp.h $(TEST_OBJS)
 	$(CC) -I. -DCODECS2HTML -o $@ $^
 
-liba52/test$(EXESUF): cpudetect.o $(SRCS_LIBA52_INTERNAL:.c=.o) -lm
-
 libvo/aspecttest$(EXESUF): libvo/aspect.o libvo/geometry.o $(TEST_OBJS)
 
 LOADER_TEST_OBJS = $(SRCS_WIN32_EMULATION:.c=.o) $(SRCS_QTX_EMULATION:.S=.o) libavutil/libavutil.a osdep/mmap_anon.o cpudetect.o $(TEST_OBJS)
@@ -1030,8 +1017,7 @@ loader/qtx/list$(EXESUF) loader/qtx/qtxload$(EXESUF): $(LOADER_TEST_OBJS)
 
 mp3lib/test$(EXESUF) mp3lib/test2$(EXESUF): $(SRCS_MP3LIB:.c=.o) libvo/aclib.o cpudetect.o $(TEST_OBJS)
 
-TESTS = codecs2html codec-cfg-test liba52/test libvo/aspecttest \
-        mp3lib/test mp3lib/test2
+TESTS = codecs2html codec-cfg-test libvo/aspecttest mp3lib/test mp3lib/test2
 
 ifdef ARCH_X86
 TESTS += loader/qtx/list loader/qtx/qtxload

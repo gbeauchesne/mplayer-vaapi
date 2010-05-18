@@ -131,7 +131,7 @@ static void scale_image(struct vf_priv_s* priv, mp_image_t *mpi)
 
     dst_stride[0] = priv->stride;
     if (!priv->buffer)
-        priv->buffer = memalign(16, dst_stride[0]*priv->dh);
+        priv->buffer = av_malloc(dst_stride[0]*priv->dh);
 
     dst[0] = priv->buffer;
     sws_scale(priv->ctx, mpi->planes, mpi->stride, 0, priv->dh, dst, dst_stride);
@@ -144,7 +144,7 @@ static void start_slice(struct vf_instance *vf, mp_image_t *mpi)
     if (vf->priv->shot) {
         vf->priv->store_slices = 1;
         if (!vf->priv->buffer)
-            vf->priv->buffer = memalign(16, vf->priv->stride*vf->priv->dh);
+            vf->priv->buffer = av_malloc(vf->priv->stride*vf->priv->dh);
     }
 
 }
@@ -258,6 +258,7 @@ static int query_format(struct vf_instance *vf, unsigned int fmt)
     case IMGFMT_BGR24:
     case IMGFMT_BGR16:
     case IMGFMT_BGR15:
+    case IMGFMT_BGR12:
     case IMGFMT_RGB32:
     case IMGFMT_RGB24:
     case IMGFMT_Y800:
@@ -277,7 +278,7 @@ static void uninit(vf_instance_t *vf)
     avcodec_close(vf->priv->avctx);
     av_freep(&vf->priv->avctx);
     if(vf->priv->ctx) sws_freeContext(vf->priv->ctx);
-    if (vf->priv->buffer) free(vf->priv->buffer);
+    if (vf->priv->buffer) av_free(vf->priv->buffer);
     free(vf->priv->outbuffer);
     free(vf->priv);
 }

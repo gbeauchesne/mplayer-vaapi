@@ -588,7 +588,7 @@ static const char help_text[]=
 #define MSGTR_TooManyAudioInBuffer "\nAYRIŞTIRICI: Tamponda birçok (%d - %d baytta) ses paketi var!\n"
 #define MSGTR_TooManyVideoInBuffer "\nAYRIŞTIRICI: Tamponda birçok  (%d - %d baytta) video paketi var!\n"
 #define MSGTR_MaybeNI "Boşluksuz AVI yayını/dosyası oynatıyor olabilirsiniz veya kodek hatalı?\n" \
-		      "AVI dosyaları için -ni seçeneğiyle boşluksuz modu zorlamayı deneyiniz.\n"
+                      "AVI dosyaları için -ni seçeneğiyle boşluksuz modu zorlamayı deneyiniz.\n"
 #define MSGTR_WorkAroundBlockAlignHeaderBug "AVI: CBR-MP3 nBlockAlign başlık hatası etrafına çalışıyor!\n"
 #define MSGTR_SwitchToNi "\nHatalı boşluklandırılmış .AVI saptandı  -ni moduna geçiliyor...\n"
 #define MSGTR_InvalidAudioStreamNosound "AVI: geçersiz ses akışı ID: %d - gözardı ediliyor (ses yok)\n"
@@ -600,7 +600,7 @@ static const char help_text[]=
 #define MSGTR_NotSystemStream "MPEG Sistem Yayın biçimi değil...(İletim yayını olabilir?)\n"
 #define MSGTR_InvalidMPEGES "Geçersiz MPEG-ES biçimi??? Geliştiricilere bildiriniz, bu bir hata olabilir.:(\n"
 #define MSGTR_FormatNotRecognized "============ Üzgünüm, bu dosya biçimi desteklenmiyor  ===========\n"\
-				  "=== Dosya bir AVI,ASF veya MPEG yayın biçimi ise, lütfen geliştiricilere bildiriniz. ===\n"
+                                  "=== Dosya bir AVI,ASF veya MPEG yayın biçimi ise, lütfen geliştiricilere bildiriniz. ===\n"
 #define MSGTR_SettingProcessPriority "İşlem önceliği ayarlanıyor: %s\n"
 #define MSGTR_FilefmtFourccSizeFpsFtime "[V] filefmt:%d  fourcc:0x%X  boyut:%dx%d  fps:%5.3f  ftime:=%6.4f\n"
 #define MSGTR_CannotInitializeMuxer "Cannot initialize muxer."
@@ -1225,10 +1225,7 @@ static const char help_text[]=
 #define MSGTR_AO_ALSA_UnableToDisableResampling "[AO_ALSA] Tekrar örnekleme ayarlanamıyor: %s\n"
 #define MSGTR_AO_ALSA_UnableToSetSamplerate2 "[AO_ALSA] Örnekleme-oranı-2 ayarlanamıyor: %s\n"
 #define MSGTR_AO_ALSA_UnableToSetBufferTimeNear "[AO_ALSA] Buffer zamanı şu civarda ayarlanamıyor: %s\n"
-#define MSGTR_AO_ALSA_UnableToSetPeriodTime "[AO_ALSA] Şu zaman periyodu ayarlanamıyor: %s\n"
-#define MSGTR_AO_ALSA_BufferTimePeriodTime "[AO_ALSA] buffer_time: %d, period_time :%d\n"
 #define MSGTR_AO_ALSA_UnableToGetPeriodSize "[AO ALSA] Periyot boyutu alınamıyor: %s\n"
-#define MSGTR_AO_ALSA_UnableToSetPeriodSize "[AO ALSA] Periyot boyutu ayarlanamıyor(%ld): %s\n"
 #define MSGTR_AO_ALSA_UnableToSetPeriods "[AO_ALSA] Periyotlar ayarlanamıyor: %s\n"
 #define MSGTR_AO_ALSA_UnableToSetHwParameters "[AO_ALSA] hw-parameters ayarlanamıyor: %s\n"
 #define MSGTR_AO_ALSA_UnableToGetBufferSize "[AO_ALSA] buffersize alınamıyor: %s\n"

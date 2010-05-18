@@ -22,7 +22,7 @@
 #define AVFORMAT_AVFORMAT_H
 
 #define LIBAVFORMAT_VERSION_MAJOR 52
-#define LIBAVFORMAT_VERSION_MINOR 61
+#define LIBAVFORMAT_VERSION_MINOR 62
 #define LIBAVFORMAT_VERSION_MICRO  0
 
 #define LIBAVFORMAT_VERSION_INT AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR, \
@@ -145,8 +145,9 @@ av_metadata_get(AVMetadata *m, const char *key, const AVMetadataTag *prev, int f
  * @param key tag key to add to m (will be av_strduped)
  * @param value tag value to add to m (will be av_strduped)
  * @return >= 0 on success otherwise an error code <0
+ * @deprecated Use av_metadata_set2() instead.
  */
-int av_metadata_set(AVMetadata **pm, const char *key, const char *value);
+attribute_deprecated int av_metadata_set(AVMetadata **pm, const char *key, const char *value);
 #endif
 
 /**
@@ -867,8 +868,22 @@ void av_pkt_dump_log(void *avcl, int level, AVPacket *pkt, int dump_payload);
  */
 void av_register_all(void);
 
-/** codec tag <-> codec id */
+/**
+ * Gets the CodecID for the given codec tag tag.
+ * If no codec id is found returns CODEC_ID_NONE.
+ *
+ * @param tags list of supported codec_id-codec_tag pairs, as stored
+ * in AVInputFormat.codec_tag and AVOutputFormat.codec_tag
+ */
 enum CodecID av_codec_get_id(const struct AVCodecTag * const *tags, unsigned int tag);
+
+/**
+ * Gets the codec tag for the given codec id id.
+ * If no codec tag is found returns 0.
+ *
+ * @param tags list of supported codec_id-codec_tag pairs, as stored
+ * in AVInputFormat.codec_tag and AVOutputFormat.codec_tag
+ */
 unsigned int av_codec_get_tag(const struct AVCodecTag * const *tags, enum CodecID id);
 
 /* media file input */
@@ -885,6 +900,19 @@ AVInputFormat *av_find_input_format(const char *short_name);
  *                  demuxers with or without AVFMT_NOFILE are probed.
  */
 AVInputFormat *av_probe_input_format(AVProbeData *pd, int is_opened);
+
+/**
+ * Guesses the file format.
+ *
+ * @param is_opened Whether the file is already opened; determines whether
+ *                  demuxers with or without AVFMT_NOFILE are probed.
+ * @param score_max A probe score larger that this is required to accept a
+ *                  detection, the variable is set to the actual detection
+ *                  score afterwards.
+ *                  If the score is <= AVPROBE_SCORE_MAX / 4 it is recommended
+ *                  to retry with a larger probe buffer.
+ */
+AVInputFormat *av_probe_input_format2(AVProbeData *pd, int is_opened, int *score_max);
 
 /**
  * Allocates all the structures needed to read an input stream.
@@ -1336,31 +1364,5 @@ int avf_sdp_create(AVFormatContext *ac[], int n_files, char *buff, int size);
  * @param extensions a comma-separated list of filename extensions
  */
 int av_match_ext(const char *filename, const char *extensions);
-
-#ifdef HAVE_AV_CONFIG_H
-
-void ff_dynarray_add(intptr_t **tab_ptr, int *nb_ptr, intptr_t elem);
-
-#ifdef __GNUC__
-#define dynarray_add(tab, nb_ptr, elem)\
-do {\
-    __typeof__(tab) _tab = (tab);\
-    __typeof__(elem) _elem = (elem);\
-    (void)sizeof(**_tab == _elem); /* check that types are compatible */\
-    ff_dynarray_add((intptr_t **)_tab, nb_ptr, (intptr_t)_elem);\
-} while(0)
-#else
-#define dynarray_add(tab, nb_ptr, elem)\
-do {\
-    ff_dynarray_add((intptr_t **)(tab), nb_ptr, (intptr_t)(elem));\
-} while(0)
-#endif
-
-time_t mktimegm(struct tm *tm);
-struct tm *brktimegm(time_t secs, struct tm *tm);
-const char *small_strptime(const char *p, const char *fmt,
-                           struct tm *dt);
-
-#endif /* HAVE_AV_CONFIG_H */
 
 #endif /* AVFORMAT_AVFORMAT_H */

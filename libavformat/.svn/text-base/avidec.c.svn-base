@@ -560,7 +560,7 @@ static int avi_read_header(AVFormatContext *s, AVFormatParameters *ap)
                         av_log(s, AV_LOG_WARNING, "sample size (%d) != block align (%d)\n", ast->sample_size, st->codec->block_align);
                         ast->sample_size= st->codec->block_align;
                     }
-                    if (size%2) /* 2-aligned (fix for Stargate SG-1 - 3x18 - Shades of Grey.avi) */
+                    if (size&1) /* 2-aligned (fix for Stargate SG-1 - 3x18 - Shades of Grey.avi) */
                         url_fskip(pb, 1);
                     /* Force parsing as several audio frames can be in
                      * one packet and timestamps refer to packet start. */
@@ -887,7 +887,7 @@ resync:
             if(   (st->discard >= AVDISCARD_DEFAULT && size==0)
                /*|| (st->discard >= AVDISCARD_NONKEY && !(pkt->flags & AV_PKT_FLAG_KEY))*/ //FIXME needs a little reordering
                || st->discard >= AVDISCARD_ALL){
-                if(ast->sample_size) ast->frame_offset += pkt->size;
+                if(ast->sample_size) ast->frame_offset += size;
                 else                 ast->frame_offset++;
                 url_fskip(pb, size);
                 goto resync;

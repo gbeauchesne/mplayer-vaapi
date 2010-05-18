@@ -286,6 +286,8 @@ Take a screenshot.
 Start/stop taking screenshots.
 .IPs "I\ \ \ \ "
 Show filename on the OSD.
+.IPs "P\ \ \ \ "
+Show progression bar, elapsed time and total duration on the OSD.
 .IPs "! and @"
 Seek to the beginning of the previous/next chapter.
 .IPs "D (\-vo xvmc, \-vo vdpau, \-vf yadif, \-vf kerndeint only)"
@@ -4174,11 +4176,11 @@ Explicitly choose the Matrox device name to use (default: /dev/\:mga_vid).
 .PD 1
 .
 .TP
-.B s3fb (Linux only) (also see \-vf yuv2 and \-dr)
+.B s3fb (Linux only) (also see \-dr)
 S3 Virge specific video output driver.
 This driver supports the card's YUV conversion and scaling, double
 buffering and direct rendering features.
-Use \-vf yuy2 to get hardware-accelerated YUY2 rendering, which is
+Use \-vf format=yuy2 to get hardware-accelerated YUY2 rendering, which is
 much faster than YV12 on this card.
 .PD 0
 .RSs
@@ -6069,11 +6071,6 @@ Rounds up to make both width and height divisible by <r> (default: 1).
 .RE
 .
 .TP
-.B "yuy2\ \ \ "
-Forces software YV12/\:I420/\:422P to YUY2 conversion.
-Useful for video cards/\:drivers with slow YV12 but fast YUY2 support.
-.
-.TP
 .B "yvu9\ \ \ "
 Forces software YVU9 to YV12 colorspace conversion.
 Deprecated in favor of the software scaler.
@@ -7519,7 +7516,7 @@ Specify an initial value for the PTS.
 Uses the
 .IR n th
 incoming PTS as the initial PTS.
-All previous pts are kept, so setting a huge value or \-1 keeps the PTS
+All previous PTS are kept, so setting a huge value or \-1 keeps the PTS
 intact.
 .IPs autofps=<n>
 Uses the
@@ -10690,17 +10687,17 @@ slower and less effective at compression.
 .
 .TP
 .B slice_max_size=<0 or positive integer>
-Maximum slice size in bytes (default:0).
+Maximum slice size in bytes (default: 0).
 A value of zero disables the maximum.
 .
 .TP
 .B slice_max_mbs=<0 or positive integer>
-Maximum slice size in number of macroblocks (default:0).
+Maximum slice size in number of macroblocks (default: 0).
 A value of zero disables the maximum.
 .
 .TP
 .B slices=<0 or positive integer>
-Maximum number of slices per frame (default:0).
+Maximum number of slices per frame (default: 0).
 A value of zero disables the maximum.
 .
 .TP
