@@ -457,7 +457,7 @@ Codecs:
   --enable-muxer=MUXER      enable specified FFmpeg muxer
 
 Hardware acceleration:
-  --enable-vaapi            enable VA API acceleration [disable]
+  --enable-vaapi            enable VA-API acceleration [disable]
 
 Video output:
   --disable-vidix          disable VIDIX [for x86 *nix]
@@ -5958,7 +5958,7 @@ if test "$_vaapi" = yes; then
   if test "$_gl" = "yes" -a "$_glu" = yes; then
     cat > $TMPC <<EOF
 #include <va/va_glx.h>
-int main(void) { (void) vaGetDisplayGLX(0,0); return 0; }
+int main(void) { (void) vaGetDisplayGLX(0); return 0; }
 EOF
     cc_check -lva-glx && _vaapi_glx=yes
   fi
