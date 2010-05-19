@@ -144,6 +144,7 @@ static MPGLContext              gl_context;
 static int                      gl_enabled;
 static int                      gl_binding;
 static int                      gl_reflect;
+static int                      gl_finish;
 static GLuint                   gl_texture;
 static GLuint                   gl_font_base;
 #endif
@@ -894,6 +895,7 @@ static const opt_t subopts[] = {
 #endif
 #if CONFIG_GL
     { "gl",          OPT_ARG_BOOL, &gl_enabled,   NULL },
+    { "glfinish",    OPT_ARG_BOOL, &gl_finish,    NULL },
 #if USE_VAAPI_GLX_BIND
     { "bind",        OPT_ARG_BOOL, &gl_binding,   NULL },
 #endif
@@ -934,6 +936,8 @@ static int preinit(const char *arg)
 #if CONFIG_GL
                "  gl\n"
                "    Enable OpenGL rendering\n"
+               "  glfinish\n"
+               "    Call glFinish() before swapping buffers\n"
 #if USE_VAAPI_GLX_BIND
                "  bind\n"
                "    Use VA surface binding instead of copy\n"
@@ -1799,6 +1803,8 @@ static void flip_page_glx(void)
         gl_printf("MPlayer: %.1f%% of CPU @ %u MHz", cpu_usage, cpu_frequency);
     }
 
+    if (gl_finish)
+        mpglFinish();
     gl_context.swapGlBuffers(&gl_context);
 
     if (vo_fs) /* avoid flickering borders in fullscreen mode */
