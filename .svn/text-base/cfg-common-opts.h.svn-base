@@ -19,9 +19,8 @@
 #ifndef MPLAYER_CFG_COMMON_OPTS_H
 #define MPLAYER_CFG_COMMON_OPTS_H
 
-#include "config.h"
-#include "libmpcodecs/vd.h"
-#include "osdep/priority.h"
+// you may _not_ include any files here since this is included
+// in the middle of an array declaration
 
 // ------------------------- common options --------------------
     {"quiet", &quiet, CONF_TYPE_FLAG, CONF_GLOBAL, 0, 1, NULL},
@@ -79,6 +78,7 @@
     {"passwd", &network_password, CONF_TYPE_STRING, 0, 0, 0, NULL},
     {"bandwidth", &network_bandwidth, CONF_TYPE_INT, CONF_MIN, 0, 0, NULL},
     {"user-agent", &network_useragent, CONF_TYPE_STRING, 0, 0, 0, NULL},
+    {"referrer", &network_referrer, CONF_TYPE_STRING, 0, 0, 0, NULL},
     {"cookies", &network_cookies_enabled, CONF_TYPE_FLAG, 0, 0, 1, NULL},
     {"nocookies", &network_cookies_enabled, CONF_TYPE_FLAG, 0, 1, 0, NULL},
     {"cookies-file", &cookies_file, CONF_TYPE_STRING, 0, 0, 0, NULL},
@@ -218,9 +218,7 @@
     {"ignore-start", &ignore_start, CONF_TYPE_FLAG, 0, 0, 1, NULL},
     {"noignore-start", &ignore_start, CONF_TYPE_FLAG, 0, 1, 0, NULL},
 
-#ifdef CONFIG_LIBA52
-    {"a52drc", &a52_drc_level, CONF_TYPE_FLOAT, CONF_RANGE, 0, 1, NULL},
-#endif
+    {"a52drc", &drc_level, CONF_TYPE_FLOAT, CONF_RANGE, 0, 2, NULL},
 
 // ------------------------- codec/vfilter options --------------------
 
@@ -239,12 +237,8 @@
     {"vop", "-vop has been removed, use -vf instead.\n", CONF_TYPE_PRINT, CONF_NOCFG ,0,0, NULL},
     {"vf*", &vf_settings, CONF_TYPE_OBJ_SETTINGS_LIST, 0, 0, 0, &vf_obj_list},
     // select audio/video codec (by name) or codec family (by number):
-//      {"afm", &audio_family, CONF_TYPE_INT, CONF_MIN, 0, 22, NULL}, // keep ranges in sync
-//      {"vfm", &video_family, CONF_TYPE_INT, CONF_MIN, 0, 29, NULL}, // with codec-cfg.c
-//      {"afm", &audio_fm, CONF_TYPE_STRING, 0, 0, 0, NULL},
     {"afm", &audio_fm_list, CONF_TYPE_STRING_LIST, 0, 0, 0, NULL},
     {"vfm", &video_fm_list, CONF_TYPE_STRING_LIST, 0, 0, 0, NULL},
-//      {"ac", &audio_codec, CONF_TYPE_STRING, 0, 0, 0, NULL},
     {"ac", &audio_codec_list, CONF_TYPE_STRING_LIST, 0, 0, 0, NULL},
     {"vc", &video_codec_list, CONF_TYPE_STRING_LIST, 0, 0, 0, NULL},
 
@@ -270,7 +264,6 @@
     {"tsfastparse", "-tsfastparse is no longer a valid option.\n", CONF_TYPE_PRINT, CONF_NOCFG ,0,0, NULL
 },
     {"tsprog", &ts_prog, CONF_TYPE_INT, CONF_RANGE, 0, 65534, NULL},
-#define TS_MAX_PROBE_SIZE 2000000 /* don't forget to change this in libmpdemux/demux_ts.c too */
     {"tsprobe", &ts_probe, CONF_TYPE_POSITION, 0, 0, TS_MAX_PROBE_SIZE, NULL},
     {"psprobe", &ps_probe, CONF_TYPE_POSITION, 0, 0, TS_MAX_PROBE_SIZE, NULL},
     {"tskeepbroken", &ts_keep_broken, CONF_TYPE_FLAG, 0, 0, 1, NULL},

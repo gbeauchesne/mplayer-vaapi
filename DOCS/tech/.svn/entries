@@ -1,14 +1,14 @@
 8
 
 dir
-31179
+31303
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/tech
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-05-09T14:45:29.324410Z
-31147
+2010-05-25T23:09:20.331359Z
+31219
 diego
 has-props
 
@@ -32,10 +32,10 @@ file
 
 
 
-2010-04-08T06:58:16.000000Z
-6a922bb716ba17901e6c0b2726260c31
-2010-03-04T15:53:56.384699Z
-30834
+2010-06-02T13:07:04.000000Z
+da8165b9dc3643cd7a80dbbba9aa55ec
+2010-05-23T21:56:22.274703Z
+31200
 diego
 has-props
 
@@ -247,19 +247,6 @@ f33efaaeda1c532fbf59b5e28751ae56
 attila
 has-props
 
-new_policy_proposal.txt
-file
-
-
-
-
-2009-06-18T13:42:55.000000Z
-639532a95a0b866d7be4ef9e704e8407
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
-
 wishlist
 file
 
@@ -351,19 +338,6 @@ file
 diego
 has-props
 
-manpage.txt
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-28675276d54d90c9f610faf48ab101c4
-2007-10-30T22:35:42.789596Z
-24904
-cehoyos
-has-props
-
 libao2.txt
 file
 
@@ -377,17 +351,17 @@ fe9b1c7d519e2aaf60619a21d49d7a61
 diego
 has-props
 
-codec-devel.txt
+manpage.txt
 file
 
 
 
 
-2010-05-18T12:45:19.000000Z
-9a3b00efe0d952bc81a9bf0e058744a7
-2010-04-12T10:56:17.152819Z
-31032
-diego
+2009-01-29T11:50:47.000000Z
+28675276d54d90c9f610faf48ab101c4
+2007-10-30T22:35:42.789596Z
+24904
+cehoyos
 has-props
 
 slave.txt
@@ -401,6 +375,19 @@ d3fbcfa76475e515e20aeb4b0ae6a9b5
 2010-04-11T18:59:19.114602Z
 31030
 cehoyos
+has-props
+
+codec-devel.txt
+file
+
+
+
+
+2010-05-18T12:45:19.000000Z
+9a3b00efe0d952bc81a9bf0e058744a7
+2010-04-12T10:56:17.152819Z
+31032
+diego
 has-props
 
 win32-codec-howto.txt

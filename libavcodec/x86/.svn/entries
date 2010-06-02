@@ -1,15 +1,15 @@
 8
 
 dir
-23156
+23424
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/x86
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2010-05-11T00:22:50.075303Z
-23083
-michael
+2010-05-28T07:01:34.925377Z
+23358
+conrad
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -216,18 +216,6 @@ ce7fabfcb6734307b2d9afbf49744c98
 mru
 has-props
 
-vp6dsp_sse2.c
-file
-
-
-
-
-2010-05-18T12:45:24.000000Z
-c4aa641a1747975c3c97c70ed7616a9a
-2010-04-20T14:45:34.275634Z
-22921
-diego
-
 snowdsp_mmx.c
 file
 
@@ -241,6 +229,18 @@ ab8a122833096d78acd047702d983cb9
 mru
 has-props
 
+vp6dsp_sse2.c
+file
+
+
+
+
+2010-05-18T12:45:24.000000Z
+c4aa641a1747975c3c97c70ed7616a9a
+2010-04-20T14:45:34.275634Z
+22921
+diego
+
 fft.c
 file
 
@@ -252,18 +252,6 @@ a119e2be9da17bdc2e1719a3d51bb151
 2009-09-15T21:14:14.395913Z
 19864
 mru
-
-vp3dsp_sse2.h
-file
-
-
-
-
-2009-01-29T11:51:00.000000Z
-d6f841fd99b20209cd1128850a9e5db8
-2008-12-22T09:12:42.514770Z
-16270
-diego
 
 h264_idct_sse2.asm
 file
@@ -277,6 +265,18 @@ file
 19580
 darkshikari
 
+vp3dsp_sse2.h
+file
+
+
+
+
+2009-01-29T11:51:00.000000Z
+d6f841fd99b20209cd1128850a9e5db8
+2008-12-22T09:12:42.514770Z
+16270
+diego
+
 vc1dsp_mmx.c
 file
 
@@ -288,18 +288,6 @@ file
 2010-03-06T22:37:08.303100Z
 22266
 mru
-
-vp6dsp_sse2.h
-file
-
-
-
-
-2009-02-16T15:28:16.000000Z
-05495abb74a11dc58180c50b9dd5788e
-2009-02-13T00:02:33.268424Z
-17195
-aurel
 
 fft_3dn.c
 file
@@ -314,17 +302,17 @@ f9d46e16b88bc8673e3b3ad7a5030e91
 lorenm
 has-props
 
-cavsdsp_mmx.c
+vp6dsp_sse2.h
 file
 
 
 
 
-2010-04-08T06:58:19.000000Z
-da3b5f3391477df3c8e669a6306d7319
-2010-03-06T22:37:08.303100Z
-22266
-mru
+2009-02-16T15:28:16.000000Z
+05495abb74a11dc58180c50b9dd5788e
+2009-02-13T00:02:33.268424Z
+17195
+aurel
 
 fft.h
 file
@@ -336,6 +324,18 @@ file
 25ac1fbafc377e0385126c437ac3857e
 2010-03-06T14:34:46.474100Z
 22235
+mru
+
+cavsdsp_mmx.c
+file
+
+
+
+
+2010-04-08T06:58:19.000000Z
+da3b5f3391477df3c8e669a6306d7319
+2010-03-06T22:37:08.303100Z
+22266
 mru
 
 dnxhd_mmx.c
@@ -431,11 +431,11 @@ file
 
 
 
-2010-05-18T12:45:24.000000Z
-d8acc52a9eb6dc41994bec5eacaae0e7
-2010-04-20T14:45:34.275634Z
-22921
-diego
+2010-06-02T13:07:08.000000Z
+49f6fa4ed55ffe46b0a36ab0b58b7d3e
+2010-05-28T07:01:34.925377Z
+23358
+conrad
 has-props
 
 h264_i386.h

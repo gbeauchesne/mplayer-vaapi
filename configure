@@ -59,12 +59,14 @@ _configuration="$*"
 # Prefer these macros to full length text !
 # These macros only return an error code - NO display is done
 compile_check() {
+  source="$1"
+  shift
   echo >> "$TMPLOG"
-  cat "$1" >> "$TMPLOG"
+  cat "$source" >> "$TMPLOG"
   echo >> "$TMPLOG"
-  echo "$_cc $CFLAGS $extra_cflags $_ld_static $extra_ldflags $libs_mplayer $libs_mencoder -o $TMPEXE $@" >> "$TMPLOG"
+  echo "$_cc $source $CFLAGS $extra_cflags $_ld_static $extra_ldflags $libs_mplayer $libs_mencoder -o $TMPEXE $@" >> "$TMPLOG"
   rm -f "$TMPEXE"
-  $_cc $CFLAGS $extra_cflags $_ld_static $extra_ldflags $libs_mplayer $libs_mencoder -o "$TMPEXE" "$@" >> "$TMPLOG" 2>&1
+  $_cc $CFLAGS "$source" $extra_cflags $_ld_static $extra_ldflags $libs_mplayer $libs_mencoder -o "$TMPEXE" "$@" >> "$TMPLOG" 2>&1
   TMPRES="$?"
   echo >> "$TMPLOG"
   echo >> "$TMPLOG"
@@ -252,6 +254,7 @@ Optional features:
   --enable-smb           enable Samba (SMB) input [autodetect]
   --enable-live          enable LIVE555 Streaming Media [autodetect]
   --enable-nemesi        enable Nemesi Streaming Media [autodetect]
+  --enable-librtmp       enable RTMPDump Streaming Media [autodetect]
   --disable-vcd          disable VCD support [autodetect]
   --disable-dvdnav       disable libdvdnav [autodetect]
   --disable-dvdread      disable libdvdread [autodetect]
@@ -299,6 +302,7 @@ Codecs:
   --disable-libdirac-lavc   disable Dirac in libavcodec [autodetect]
   --disable-libschroedinger-lavc   disable Dirac in libavcodec (Schroedinger
                                    decoder) [autodetect]
+  --disable-libvpx-lavc     disable libvpx in libavcodec [autodetect]
   --disable-libnut          disable libnut [autodetect]
   --disable-libavutil_a     disable static libavutil [autodetect]
   --disable-libavcodec_a    disable static libavcodec [autodetect]
@@ -488,7 +492,6 @@ Use these options if autodetection fails:
   --with-xvmclib=NAME         adapter-specific library name (e.g. XvMCNVIDIA)
 
   --with-freetype-config=PATH path to freetype-config
-  --with-fribidi-config=PATH  path to fribidi-config
   --with-glib-config=PATH     path to glib*-config
   --with-gtk-config=PATH      path to gtk*-config
   --with-sdl-config=PATH      path to sdl*-config
@@ -651,6 +654,7 @@ _xanim=auto
 _real=auto
 _live=auto
 _nemesi=auto
+_librtmp=auto
 _native_rtsp=yes
 _xinerama=auto
 _mga=auto
@@ -694,6 +698,7 @@ _x264=auto
 _x264_lavc=auto
 _libdirac_lavc=auto
 _libschroedinger_lavc=auto
+_libvpx_lavc=auto
 _libnut=auto
 _lirc=auto
 _lircc=auto
@@ -740,7 +745,6 @@ _macosx_bundle=auto
 _sortsub=yes
 _freetypeconfig='freetype-config'
 _fribidi=auto
-_fribidiconfig='fribidi-config'
 _enca=auto
 _inet6=auto
 _gethostbyname2=auto
@@ -799,9 +803,6 @@ for ac_option do
     ;;
   --with-freetype-config=*)
     _freetypeconfig=$(echo $ac_option | cut -d '=' -f 2)
-    ;;
-  --with-fribidi-config=*)
-    _fribidiconfig=$(echo $ac_option | cut -d '=' -f 2)
     ;;
   --with-gtk-config=*)
     _gtkconfig=$(echo $ac_option | cut -d '=' -f 2)
@@ -1068,6 +1069,8 @@ for ac_option do
   --disable-live)       _live=no        ;;
   --enable-nemesi)      _nemesi=yes     ;;
   --disable-nemesi)     _nemesi=no      ;;
+  --enable-librtmp)     _librtmp=yes    ;;
+  --disable-librtmp)    _librtmp=no     ;;
   --enable-xinerama)    _xinerama=yes   ;;
   --disable-xinerama)   _xinerama=no    ;;
   --enable-mga)         _mga=yes        ;;
@@ -1142,6 +1145,8 @@ for ac_option do
   --disable-libdirac-lavc)  _libdirac_lavc=no   ;;
   --enable-libschroedinger-lavc)   _libschroedinger_lavc=yes  ;;
   --disable-libschroedinger-lavc)  _libschroedinger_lavc=no   ;;
+  --enable-libvpx-lavc)   _libvpx_lavc=yes  ;;
+  --disable-libvpx-lavc)  _libvpx_lavc=no   ;;
   --enable-libnut)      _libnut=yes     ;;
   --disable-libnut)     _libnut=no      ;;
   --enable-libavutil_a)         _libavutil_a=yes        ;;
@@ -1916,6 +1921,9 @@ EOF
   if test "$_runtime_cpudetection" = no ; then
     if test $cc_vendor != "intel" ; then
       cc_check -march=native && proc=native
+    fi
+    if test "$proc" = "amdfam10"; then
+      cc_check -march=$proc $cpuopt=$proc || proc=k8
     fi
     if test "$proc" = "k8"; then
       cc_check -march=$proc $cpuopt=$proc || proc=athlon-xp
@@ -3332,7 +3340,7 @@ if test "$_network" = yes ; then
   extra_ldflags="$extra_ldflags $_ld_sock"
   inputmodules="network $inputmodules"
 else
-  _noinputmodules="network $_noinputmodules"
+  noinputmodules="network $noinputmodules"
   def_network='#undef CONFIG_NETWORK'
   _ftp=no
   _libavprotocols=$(echo $_libavprotocols | sed -e s/GOPHER_PROTOCOL// -e s/HTTP_PROTOCOL// -e s/RTMP_PROTOCOL// -e s/RTP_PROTOCOL// -e s/TCP_PROTOCOL// -e s/UDP_PROTOCOL//)
@@ -4194,7 +4202,7 @@ if test "$_smb" = yes; then
     inputmodules="smb $inputmodules"
 else
     def_smb="#undef CONFIG_LIBSMBCLIENT"
-    _noinputmodules="smb $_noinputmodules"
+    noinputmodules="smb $noinputmodules"
 fi
 echores "$_smb"
 
@@ -4969,7 +4977,7 @@ if test "$_dvb" = yes ; then
   vomodules="mpegpes(dvb) $vomodules"
 else
   _dvbin=no
-  _noinputmodules="dvb $_noinputmodules"
+  noinputmodules="dvb $noinputmodules"
   def_dvb='#undef CONFIG_DVB'
   def_dvbin='#undef CONFIG_DVBIN '
   aomodules="mpegpes(file) $aomodules"
@@ -6138,7 +6146,7 @@ if test "$_vcd" = yes; then
   def_vcd='#define CONFIG_VCD 1'
 else
   def_vcd='#undef CONFIG_VCD'
-  _noinputmodules="vcd $_noinputmodules"
+  noinputmodules="vcd $noinputmodules"
   res_comment="not supported on this OS"
 fi
 echores "$_vcd"
@@ -6193,7 +6201,7 @@ elif test "$_dvdread" = yes; then
   res_comment="external"
 else
   def_dvdread='#undef CONFIG_DVDREAD'
-  _noinputmodules="dvdread $_noinputmodules"
+  noinputmodules="dvdread $noinputmodules"
 fi
 echores "$_dvdread"
 
@@ -6225,7 +6233,7 @@ if test "$_libdvdcss_internal" = yes ; then
   inputmodules="libdvdcss(internal) $inputmodules"
   _largefiles=yes
 else
-  _noinputmodules="libdvdcss(internal) $_noinputmodules"
+  noinputmodules="libdvdcss(internal) $noinputmodules"
 fi
 echores "$_libdvdcss_internal"
 
@@ -6297,7 +6305,7 @@ if test "$_cdda" = yes ; then
     inputmodules="cdda $inputmodules"
 else
     def_cdparanoia='#undef CONFIG_CDDA'
-    _noinputmodules="cdda $_noinputmodules"
+    noinputmodules="cdda $noinputmodules"
 fi
 
 if test "$_cddb" = yes ; then
@@ -6306,7 +6314,7 @@ if test "$_cddb" = yes ; then
 else
     _cddb=no
     def_cddb='#undef CONFIG_CDDB'
-    _noinputmodules="cddb $_noinputmodules"
+    noinputmodules="cddb $noinputmodules"
 fi
 
 echocheck "bitmap font support"
@@ -6422,8 +6430,23 @@ EOF
         ass_internal=no
         res_comment="FreeType >= 2.2.1 needed"
     elif test "$ass_internal" = no ; then
-        res_comment="external"
-        extra_ldflags="$extra_ldflags -lass"
+    cat > $TMPC << EOF
+#include <ass/ass.h>
+int main(void) {
+#if defined(LIBASS_VERSION) && LIBASS_VERSION >= 0x00907010
+  ass_process_force_style(0);
+#else
+  process_force_style(0);
+#endif
+  return 0;
+}
+EOF
+        if cc_check -lass ; then
+            res_comment="external"
+            extra_ldflags="$extra_ldflags -lass"
+        else
+            _ass=no
+        fi
     fi
 fi
 if test "$_ass" = yes ; then
@@ -6461,10 +6484,10 @@ EOF
     _inc_tmp=""
     _ld_tmp="-lfribidi"
     cc_check $_inc_tmp $_ld_tmp && _fribidi=yes
-    if $_fribidiconfig --version > /dev/null 2>&1 &&
+    if $_pkg_config --exists fribidi > /dev/null 2>&1 &&
        test "$_fribidi" = no ; then
-        _inc_tmp="$($_fribidiconfig --cflags)"
-        _ld_tmp="$($_fribidiconfig --libs)"
+        _inc_tmp="$($_pkg_config --cflags)"
+        _ld_tmp="$($_pkg_config --libs)"
         cc_check $_inc_tmp $_ld_tmp && _fribidi=yes
     fi
 fi
@@ -7140,7 +7163,7 @@ else
     _native_rtsp="$_network"
     _nemesi=no
     def_nemesi='#undef CONFIG_LIBNEMESI'
-    _noinputmodules="nemesi $_noinputmodules"
+    noinputmodules="nemesi $noinputmodules"
 fi
 echores "$_nemesi"
 
@@ -7191,10 +7214,36 @@ elif test "$_live_dist" = yes && test "$_network" = yes; then
 else
   _live=no
   def_live='#undef CONFIG_LIVE555'
-  _noinputmodules="live555 $_noinputmodules"
+  noinputmodules="live555 $noinputmodules"
 fi
 echores "$_live"
 
+echocheck "RTMPDump Streaming Media library"
+if test "$_librtmp" = auto  && test "$_network" = yes ; then
+  cat > $TMPC << EOF
+#include <librtmp/rtmp.h>
+int main(void) { RTMP r; RTMP_Init(&r); return 0; }
+EOF
+  cc_check -lrtmp && _librtmp=yes && extra_ldflags="$extra_ldflags -lrtmp"
+  if test "$_librtmp" != yes && $_pkg_config --exists librtmp ; then
+    _inc_tmp=$($_pkg_config --cflags librtmp)
+	_ld_tmp=$($_pkg_config --libs librtmp)
+	cc_check $_inc_tmp $_ld_tmp && _librtmp=yes && \
+	  extra_ldflags="$extra_ldflags $_ld_tmp" && \
+	  extra_cflags="$extra_cflags $_inc_tmp"
+  fi
+fi
+if test "$_librtmp" = yes && test "$_network" = yes; then
+  nolibrtmp=no
+  def_librtmp='#define CONFIG_LIBRTMP 1'
+  inputmodules="librtmp $inputmodules"
+else
+  nolibrtmp=yes
+  _librtmp=no
+  def_librtmp='#undef CONFIG_LIBRTMP'
+  noinputmodules="librtmp $noinputmodules"
+fi
+echores "$_librtmp"
 
 echocheck "FFmpeg libavutil"
 if test "$_libavutil_a" = auto ; then
@@ -7601,6 +7650,30 @@ else
 fi
 echores "$_libschroedinger_lavc"
 
+echocheck "libvpx"
+if test "$_libvpx_lavc" = auto; then
+  _libvpx_lavc=no
+  if test "$_libavcodec_a" != yes; then
+    res_comment="libavcodec (static) is required by libvpx, sorry"
+  else
+    cat > $TMPC << EOF
+#include <vpx/vpx_decoder.h>
+#include <vpx/vp8dx.h>
+int main(void) { vpx_codec_dec_init(NULL, &vpx_codec_vp8_dx_algo, NULL, 0); return 0; }
+EOF
+    cc_check -lvpx && _libvpx_lavc=yes && extra_ldflags="$extra_ldflags -lvpx"
+  fi
+fi
+if test "$_libvpx_lavc" = yes ; then
+  def_libvpx_lavc='#define CONFIG_LIBVPX 1'
+  _libavdecoders="$_libavdecoders LIBVPX_DECODER"
+  codecmodules="libvpx $codecmodules"
+else
+  def_libvpx_lavc='#define CONFIG_LIBVPX 0'
+  nocodecmodules="libvpx $nocodecmodules"
+fi
+echores "$_libvpx_lavc"
+
 echocheck "libnut"
 if test "$_libnut" = auto ; then
   cat > $TMPC << EOF
@@ -7727,7 +7800,7 @@ if test "$_tv" = yes ; then
   def_tv='#define CONFIG_TV 1'
   inputmodules="tv $inputmodules"
 else
-  _noinputmodules="tv $_noinputmodules"
+  noinputmodules="tv $noinputmodules"
   def_tv='#undef CONFIG_TV'
 fi
 echores "$_tv"
@@ -7812,7 +7885,7 @@ EOF
     inputmodules="tv-bsdbt848 $inputmodules"
   else
     def_tv_bsdbt848='#undef CONFIG_TV_BSDBT848'
-    _noinputmodules="tv-bsdbt848 $_noinputmodules"
+    noinputmodules="tv-bsdbt848 $noinputmodules"
   fi
   echores "$_tv_bsdbt848"
 fi #if freebsd || netbsd || openbsd || dragonfly || bsdos
@@ -7838,7 +7911,7 @@ if test "$_tv_dshow" = yes ; then
   def_tv_dshow='#define CONFIG_TV_DSHOW 1'
   extra_ldflags="$extra_ldflags -lole32 -luuid"
 else
-  _noinputmodules="tv-dshow $_noinputmodules"
+  noinputmodules="tv-dshow $noinputmodules"
   def_tv_dshow='#undef CONFIG_TV_DSHOW'
 fi
 echores "$_tv_dshow"
@@ -7863,7 +7936,7 @@ if test "$_tv_v4l1" = yes ; then
   def_tv_v4l1='#define CONFIG_TV_V4L1 1'
   inputmodules="tv-v4l $inputmodules"
 else
-  _noinputmodules="tv-v4l1 $_noinputmodules"
+  noinputmodules="tv-v4l1 $noinputmodules"
   def_tv_v4l='#undef CONFIG_TV_V4L'
 fi
 echores "$_tv_v4l1"
@@ -7889,7 +7962,7 @@ if test "$_tv_v4l2" = yes ; then
   def_tv_v4l2='#define CONFIG_TV_V4L2 1'
   inputmodules="tv-v4l2 $inputmodules"
 else
-  _noinputmodules="tv-v4l2 $_noinputmodules"
+  noinputmodules="tv-v4l2 $noinputmodules"
   def_tv_v4l2='#undef CONFIG_TV_V4L2'
 fi
 echores "$_tv_v4l2"
@@ -7909,7 +7982,7 @@ if test "$_radio" = yes ; then
     def_radio_capture="#undef CONFIG_RADIO_CAPTURE"
   fi
 else
-  _noinputmodules="radio $_noinputmodules"
+  noinputmodules="radio $noinputmodules"
   def_radio='#undef CONFIG_RADIO'
   def_radio_capture="#undef CONFIG_RADIO_CAPTURE"
   _radio_capture=no
@@ -8002,7 +8075,7 @@ if test "$_pvr" = yes ; then
   def_pvr='#define CONFIG_PVR 1'
   inputmodules="pvr $inputmodules"
 else
-  _noinputmodules="pvr $_noinputmodules"
+  noinputmodules="pvr $noinputmodules"
   def_pvr='#undef CONFIG_PVR'
 fi
 echores "$_pvr"
@@ -8013,7 +8086,7 @@ if ! beos && test "$_ftp" = yes ; then
   def_ftp='#define CONFIG_FTP 1'
   inputmodules="ftp $inputmodules"
 else
-  _noinputmodules="ftp $_noinputmodules"
+  noinputmodules="ftp $noinputmodules"
   def_ftp='#undef CONFIG_FTP'
 fi
 echores "$_ftp"
@@ -8033,7 +8106,7 @@ if test "$_vstream" = yes ; then
   inputmodules="vstream $inputmodules"
   extra_ldflags="$extra_ldflags -lvstream-client"
 else
-  _noinputmodules="vstream $_noinputmodules"
+  noinputmodules="vstream $noinputmodules"
   def_vstream='#undef CONFIG_VSTREAM'
 fi
 echores "$_vstream"
@@ -8421,7 +8494,7 @@ if test "$_dvdnav" = yes ; then
   fi
 else
   def_dvdnav='#undef CONFIG_DVDNAV'
-  _noinputmodules="dvdnav $_noinputmodules"
+  noinputmodules="dvdnav $noinputmodules"
 fi
 echores "$_dvdnav"
 
@@ -8721,7 +8794,8 @@ CONFIG_RDFT    = yes
 
 $mak_hardcoded_tables
 $mak_libavcodec_mpegaudio_hp
-!CONFIG_LIBRTMP = yes
+!CONFIG_LIBRTMP = $nolibrtmp
+CONFIG_LIBRTMP  = $_librtmp
 
 CONFIG_BZLIB    = $bzlib
 CONFIG_ENCODERS = yes
@@ -9207,7 +9281,6 @@ $def_yasm
 #define CONFIG_FFSERVER 0
 #define CONFIG_GPL 1
 #define CONFIG_GRAY 0
-#define CONFIG_LIBRTMP 0
 #define CONFIG_LIBVORBIS 0
 #define CONFIG_POWERPC_PERF 0
 #define CONFIG_SMALL 0
@@ -9219,8 +9292,6 @@ $def_yasm
 #define CONFIG_IPV6 0
 #endif
 
-#define HAVE_ATTRIBUTE_MAY_ALIAS 1
-#define av_alias __attribute__((may_alias))
 #define HAVE_ATTRIBUTE_PACKED 1
 #define HAVE_GETHRTIME 0
 #define HAVE_INLINE_ASM 1
@@ -9260,6 +9331,7 @@ $def_libdirac_lavc
 $def_libopencore_amrnb
 $def_libopencore_amrwb
 $def_libopenjpeg
+$def_librtmp
 $def_libschroedinger_lavc
 $def_mp3lame_lavc
 $def_x264_lavc
@@ -9319,7 +9391,7 @@ Config files successfully generated by ./configure $_configuration !
     Video output: $vomodules
 
   Disabled optional drivers:
-    Input: $_noinputmodules
+    Input: $noinputmodules
     Codecs: $nocodecmodules
     Audio output: $noaomodules
     Video output: $novomodules

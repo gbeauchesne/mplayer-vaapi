@@ -24,6 +24,10 @@
 #include "m_config.h"
 #include "m_option.h"
 
+#include "libmpcodecs/ad.h"
+#include "libmpcodecs/vd.h"
+#include "osdep/priority.h"
+
 extern char *mp_msg_charset;
 extern int mp_msg_color;
 extern int mp_msg_module;
@@ -43,6 +47,7 @@ extern char *network_username;
 extern char *network_password;
 extern int   network_bandwidth;
 extern char *network_useragent;
+extern char *network_referrer;
 extern int   network_cookies_enabled;
 extern char *cookies_file;
 
@@ -51,8 +56,6 @@ extern int network_ipv4_only_proxy;
 extern int reuse_socket;
 
 extern int dvd_speed; /* stream/stream_dvd.c */
-
-extern float a52_drc_level;
 
 /* defined in libmpdemux: */
 extern int hr_mp3_seek;
@@ -314,10 +317,10 @@ const m_option_t msgl_config[]={
     "   global     - common player errors/information\n"
     "   cplayer    - console player (mplayer.c)\n"
     "   gplayer    - gui player\n"
-    "   vo     - libvo\n"
-    "   ao     - libao\n"
+    "   vo         - libvo\n"
+    "   ao         - libao\n"
     "   demuxer    - demuxer.c (general stuff)\n"
-    "   ds     - demux stream (add/read packet etc)\n"
+    "   ds         - demux stream (add/read packet etc)\n"
     "   demux      - fileformat-specific stuff (demux_*.c)\n"
     "   header     - fileformat-specific header (*header.c)\n"
     "   avsync     - mplayer.c timer stuff\n"
@@ -328,14 +331,14 @@ const m_option_t msgl_config[]={
     "   seek       - seeking code\n"
     "   win32      - win32 dll stuff\n"
     "   open       - open.c (stream opening)\n"
-    "   dvd    - open.c (DVD init/read/seek)\n"
+    "   dvd        - open.c (DVD init/read/seek)\n"
     "   parsees    - parse_es.c (mpeg stream parser)\n"
     "   lirc       - lirc_mp.c and input lirc driver\n"
     "   stream     - stream.c\n"
     "   cache      - cache2.c\n"
     "   mencoder\n"
     "   xacodec    - XAnim codecs\n"
-    "   tv     - TV input subsystem\n"
+    "   tv         - TV input subsystem\n"
     "   osdep      - OS-dependent parts\n"
     "   spudec     - spudec.c\n"
     "   playtree   - Playtree handling (playtree.c, playtreeparser.c)\n"
@@ -353,7 +356,7 @@ const m_option_t msgl_config[]={
     "   netst      - Netstream\n"
     "   muxer      - muxer layer\n"
     "   identify   - identify output\n"
-    "   ass    - libass messages\n"
+    "   ass        - libass messages\n"
     "   statusline - playback/encoding status line\n"
     "\n", CONF_TYPE_PRINT, CONF_NOCFG, 0, 0, NULL},
     {NULL, NULL, 0, 0, 0, 0, NULL}

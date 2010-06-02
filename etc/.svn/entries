@@ -1,15 +1,15 @@
 8
 
 dir
-31179
+31303
 svn://svn.mplayerhq.hu/mplayer/trunk/etc
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-05-14T14:24:16.266002Z
-31175
-cehoyos
+2010-05-28T21:03:29.266458Z
+31257
+compn
 
 
 svn:special svn:externals svn:needs-lock
@@ -97,11 +97,11 @@ file
 
 
 
-2010-05-18T12:45:20.000000Z
-fc273290fb5cd5c0590c3a41bcd67877
-2010-05-14T14:24:16.266002Z
-31175
-cehoyos
+2010-06-02T13:07:04.000000Z
+5cfa900ad2e35d070f2318a48547d80d
+2010-05-28T21:03:29.266458Z
+31257
+compn
 has-props
 
 inttypes.h
