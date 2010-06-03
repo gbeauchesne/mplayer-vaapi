@@ -104,6 +104,8 @@ const LIBVO_EXTERN(vaapi)
 #define NUM_VIDEO_SURFACES_H264  21 /* 1 decode frame, up to 20 references */
 #define NUM_VIDEO_SURFACES_VC1    3 /* 1 decode frame, up to  2 references */
 
+static void ensure_osd(void);
+
 typedef void (*draw_alpha_func)(int x0, int y0, int w, int h,
                                 unsigned char *src, unsigned char *srca,
                                 int stride);
@@ -178,7 +180,6 @@ static unsigned int            *va_subpic_flags;
 static int                      va_num_subpic_formats;
 static VAImage                  va_osd_image;
 static uint8_t                 *va_osd_image_data;
-static struct vo_rect           va_osd_image_dirty_rect;
 static VASubpictureID           va_osd_subpicture;
 static int                      va_osd_associated;
 static draw_alpha_func          va_osd_draw_alpha;
@@ -426,6 +427,8 @@ static void resize(void)
     calc_src_dst_rects(g_image_width, g_image_height,
                        &src, &g_output_rect, NULL, NULL);
 
+    ensure_osd();
+
     vo_x11_clearwindow(mDisplay, vo_window);
 
 #if CONFIG_GL
@@ -526,28 +529,6 @@ static inline unsigned char *get_osd_image_data(int x0, int y0)
             x0 * ((va_osd_image.format.bits_per_pixel + 7) / 8));
 }
 
-static inline void set_osd_image_dirty_rect(int x, int y, int w, int h)
-{
-    struct vo_rect * const dirty_rect = &va_osd_image_dirty_rect;
-    dirty_rect->left   = x + w;
-    dirty_rect->top    = y + h;
-    dirty_rect->right  = x;
-    dirty_rect->bottom = y;
-    dirty_rect->width  = w;
-    dirty_rect->height = h;
-}
-
-static inline void update_osd_image_dirty_rect(int x, int y, int w, int h)
-{
-    struct vo_rect * const dirty_rect = &va_osd_image_dirty_rect;
-    dirty_rect->left   = FFMIN(dirty_rect->left,   x);
-    dirty_rect->top    = FFMIN(dirty_rect->top,    y);
-    dirty_rect->right  = FFMAX(dirty_rect->right,  x + w);
-    dirty_rect->bottom = FFMAX(dirty_rect->bottom, y + h);
-    dirty_rect->width  = dirty_rect->right - dirty_rect->left;
-    dirty_rect->height = dirty_rect->bottom - dirty_rect->top;
-}
-
 static void draw_alpha_rgb32(int x0, int y0, int w, int h,
                              unsigned char *src, unsigned char *srca,
                              int stride)
@@ -555,8 +536,6 @@ static void draw_alpha_rgb32(int x0, int y0, int w, int h,
     int x, y;
     const unsigned int dststride = va_osd_image.pitches[0];
     unsigned char *dst = get_osd_image_data(x0, y0);
-
-    update_osd_image_dirty_rect(x0, y0, w, h);
 
     for (y = 0; y < h; y++, dst += dststride, src += stride, srca += stride)
         for (x = 0; x < w; x++) {
@@ -577,8 +556,6 @@ static void draw_alpha_IA44(int x0, int y0, int w, int h,
     const unsigned int dststride = va_osd_image.pitches[0];
     unsigned char *dst = get_osd_image_data(x0, y0);
 
-    update_osd_image_dirty_rect(x0, y0, w, h);
-
     for (y = 0; y < h; y++, dst += dststride)
         for (x = 0; x < w; x++)
             dst[x] = (src[y*stride + x] & 0xf0) | (-srca[y*stride + x] >> 4);
@@ -591,8 +568,6 @@ static void draw_alpha_AI44(int x0, int y0, int w, int h,
     int x, y;
     const unsigned int dststride = va_osd_image.pitches[0];
     unsigned char *dst = get_osd_image_data(x0, y0);
-
-    update_osd_image_dirty_rect(x0, y0, w, h);
 
     for (y = 0; y < h; y++, dst += dststride)
         for (x = 0; x < w; x++)
@@ -608,8 +583,6 @@ static void draw_alpha_IA88(int x0, int y0, int w, int h,
     const unsigned int dststride = va_osd_image.pitches[0];
     unsigned char *dst = get_osd_image_data(x0, y0);
 
-    update_osd_image_dirty_rect(x0, y0, w, h);
-
     for (y = 0; y < h; y++, dst += dststride)
         for (x = 0; x < w; x++) {
             dst[2*x + 0] =  src [y*stride + x];
@@ -624,8 +597,6 @@ static void draw_alpha_AI88(int x0, int y0, int w, int h,
     int x, y;
     const unsigned int dststride = va_osd_image.pitches[0];
     unsigned char *dst = get_osd_image_data(x0, y0);
-
-    update_osd_image_dirty_rect(x0, y0, w, h);
 
     for (y = 0; y < h; y++, dst += dststride)
         for (x = 0; x < w; x++) {
@@ -724,8 +695,7 @@ static void disable_osd(void)
     va_osd_associated = 0;
 }
 
-static int enable_osd(const struct vo_rect *src_rect,
-                      const struct vo_rect *dst_rect)
+static int enable_osd(void)
 {
     VAStatus status;
 
@@ -734,20 +704,76 @@ static int enable_osd(const struct vo_rect *src_rect,
     status = vaAssociateSubpicture2(va_context->display,
                                     va_osd_subpicture,
                                     va_surface_ids, va_num_surfaces,
-                                    src_rect->left,
-                                    src_rect->top,
-                                    src_rect->right - src_rect->left,
-                                    src_rect->bottom - src_rect->top,
-                                    dst_rect->left,
-                                    dst_rect->top,
-                                    dst_rect->right - dst_rect->left,
-                                    dst_rect->bottom - dst_rect->top,
+                                    0, 0,
+                                    va_osd_image.width, va_osd_image.height,
+                                    0, 0,
+                                    g_image_width, g_image_height,
                                     0);
     if (!check_status(status, "vaAssociateSubpicture()"))
         return -1;
 
     va_osd_associated = 1;
     return 0;
+}
+
+static void destroy_osd(void)
+{
+    disable_osd();
+
+    if (va_osd_subpicture != VA_INVALID_ID) {
+        vaDestroySubpicture(va_context->display, va_osd_subpicture);
+        va_osd_subpicture = VA_INVALID_ID;
+    }
+
+    if (va_osd_image.image_id != VA_INVALID_ID) {
+        vaDestroyImage(va_context->display, va_osd_image.image_id);
+        va_osd_image.image_id = VA_INVALID_ID;
+        va_osd_image.width    = 0;
+        va_osd_image.height   = 0;
+    }
+}
+
+static void create_osd(void)
+{
+    VAStatus status;
+    int i, j;
+
+    for (i = 0; va_osd_info[i].format; i++) {
+        for (j = 0; j < va_num_subpic_formats; j++)
+            if (va_subpic_formats[j].fourcc == va_osd_info[i].format)
+                break;
+        if (j < va_num_subpic_formats &&
+            vaCreateImage(va_context->display, &va_subpic_formats[j],
+                          g_output_rect.width, g_output_rect.height,
+                          &va_osd_image) == VA_STATUS_SUCCESS) {
+            va_osd_palette = gen_osd_palette(&va_osd_image);
+            if (((!va_osd_image.num_palette_entries) ^ (!va_osd_palette)) == 0)
+                break;
+        }
+    }
+
+    if (va_osd_info[i].format &&
+        vaCreateSubpicture(va_context->display, va_osd_image.image_id,
+                           &va_osd_subpicture) == VA_STATUS_SUCCESS) {
+        va_osd_draw_alpha = va_osd_info[i].draw_alpha;
+        if (va_osd_palette) {
+            status = vaSetImagePalette(va_context->display,
+                                       va_osd_image.image_id, va_osd_palette);
+            check_status(status, "vaSetImagePalette()");
+        }
+        mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] Using %s surface for OSD\n",
+               string_of_VAImageFormat(&va_osd_image.format));
+    }
+}
+
+static void ensure_osd(void)
+{
+    if (g_output_rect.width  == va_osd_image.width &&
+        g_output_rect.height == va_osd_image.height)
+        return;
+
+    destroy_osd();
+    create_osd();
 }
 
 static inline unsigned char *get_eosd_image_data(int x0, int y0)
@@ -1122,15 +1148,7 @@ static void free_video_specific(void)
         va_eosd_image.image_id = VA_INVALID_ID;
     }
 
-    if (va_osd_subpicture != VA_INVALID_ID) {
-        vaDestroySubpicture(va_context->display, va_osd_subpicture);
-        va_osd_subpicture = VA_INVALID_ID;
-    }
-
-    if (va_osd_image.image_id != VA_INVALID_ID) {
-        vaDestroyImage(va_context->display, va_osd_image.image_id);
-        va_osd_image.image_id = VA_INVALID_ID;
-    }
+    destroy_osd();
 
     if (va_surface_ids) {
         vaDestroySurfaces(va_context->display, va_surface_ids, va_num_surfaces);
@@ -1375,30 +1393,7 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
     va_osd_image.image_id = VA_INVALID_ID;
     va_osd_image.buf      = VA_INVALID_ID;
     va_osd_subpicture     = VA_INVALID_ID;
-    for (i = 0; va_osd_info[i].format; i++) {
-        for (j = 0; j < va_num_subpic_formats; j++)
-            if (va_subpic_formats[j].fourcc == va_osd_info[i].format)
-                break;
-        if (j < va_num_subpic_formats &&
-            vaCreateImage(va_context->display, &va_subpic_formats[j],
-                          width, height, &va_osd_image) == VA_STATUS_SUCCESS) {
-            va_osd_palette = gen_osd_palette(&va_osd_image);
-            if (((!va_osd_image.num_palette_entries) ^ (!va_osd_palette)) == 0)
-                break;
-        }
-    }
-    if (va_osd_info[i].format &&
-        vaCreateSubpicture(va_context->display, va_osd_image.image_id,
-                           &va_osd_subpicture) == VA_STATUS_SUCCESS) {
-        va_osd_draw_alpha = va_osd_info[i].draw_alpha;
-        if (va_osd_palette) {
-            status = vaSetImagePalette(va_context->display,
-                                       va_osd_image.image_id, va_osd_palette);
-            check_status(status, "vaSetImagePalette()");
-        }
-        mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] Using %s surface for OSD\n",
-               string_of_VAImageFormat(&va_osd_image.format));
-    }
+    ensure_osd();
 
     /* Create EOSD data */
     va_eosd_draw_alpha     = NULL;
@@ -1893,14 +1888,20 @@ static int draw_frame(uint8_t * src[])
 static void draw_osd(void)
 {
     VAStatus status;
+    const int osd_width  = va_osd_image.width;
+    const int osd_height = va_osd_image.height;
+
+    ensure_osd();
+    if (va_osd_image.image_id == VA_INVALID_ID)
+        return;
 
     if (!va_osd_draw_alpha)
         return;
 
-    if (!vo_update_osd(g_image_width, g_image_height))
+    if (!vo_update_osd(osd_width, osd_height))
         return;
-
-    if (!vo_osd_check_range_update(0, 0, g_image_width, g_image_height)) {
+ 
+    if (!vo_osd_check_range_update(0, 0, osd_width, osd_height)) {
         disable_osd();
         return;
     }
@@ -1912,15 +1913,14 @@ static void draw_osd(void)
 
     memset(va_osd_image_data, 0, va_osd_image.data_size);
 
-    set_osd_image_dirty_rect(0, 0, g_image_width, g_image_height);
-    vo_draw_text(g_image_width, g_image_height, va_osd_draw_alpha);
+    vo_draw_text(osd_width, osd_height, va_osd_draw_alpha);
 
     status = vaUnmapBuffer(va_context->display, va_osd_image.buf);
     if (!check_status(status, "vaUnmapBuffer()"))
         return;
     va_osd_image_data = NULL;
 
-    enable_osd(&va_osd_image_dirty_rect, &va_osd_image_dirty_rect);
+    enable_osd();
 }
 
 static void draw_eosd(mp_eosd_images_t *imgs)
