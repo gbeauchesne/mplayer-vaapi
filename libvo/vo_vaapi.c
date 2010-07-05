@@ -50,6 +50,10 @@
 #include <va/va_glx.h>
 #endif
 
+#if CONFIG_XRENDER
+#include <X11/extensions/Xrender.h>
+#endif
+
 /* Compatibility glue with VA-API >= 0.30 */
 #ifndef VA_INVALID_ID
 #define VA_INVALID_ID           0xffffffff
@@ -105,6 +109,7 @@ const LIBVO_EXTERN(vaapi)
 #define NUM_VIDEO_SURFACES_VC1    3 /* 1 decode frame, up to  2 references */
 
 static void ensure_osd(void);
+static int reset_xrender_specific(void);
 
 typedef void (*draw_alpha_func)(int x0, int y0, int w, int h,
                                 unsigned char *src, unsigned char *srca,
@@ -141,9 +146,9 @@ static int                      g_deint;
 static int                      g_deint_type;
 static int                      g_colorspace;
 
+static int                      gl_enabled;
 #if CONFIG_GL
 static MPGLContext              gl_context;
-static int                      gl_enabled;
 static int                      gl_binding;
 static int                      gl_reflect;
 static int                      gl_finish;
@@ -161,6 +166,13 @@ static int                      gl_visual_attr[] = {
     GL_NONE
 };
 static void                    *gl_surface;
+#endif
+
+static int                      xr_enabled;
+#if CONFIG_XRENDER
+static Pixmap                   xr_video_pixmap;
+static Picture                  xr_video_picture;
+static Picture                  xr_window_picture;
 #endif
 
 static struct vaapi_context    *va_context;
@@ -454,6 +466,11 @@ static void resize(void)
     }
 #endif
 
+#if CONFIG_XRENDER
+    if (xr_enabled)
+        reset_xrender_specific();
+#endif
+
     if (g_is_visible)
         flip_page();
 }
@@ -518,6 +535,19 @@ static void gl_draw_rectangle(int x, int y, int w, int h, unsigned int rgba)
         glVertex2i(0, h);
     }
     glEnd();
+}
+#endif
+
+#if CONFIG_XRENDER
+static int init_xrender(void)
+{
+    int dummy;
+
+    return XRenderQueryExtension(mDisplay, &dummy, &dummy);
+}
+
+static void uninit_xrender(void)
+{
 }
 #endif
 
@@ -927,6 +957,9 @@ static const opt_t subopts[] = {
 #endif
     { "reflect",     OPT_ARG_BOOL, &gl_reflect,   NULL },
 #endif
+#if CONFIG_XRENDER
+    { "xrender",     OPT_ARG_BOOL, &xr_enabled,   NULL },
+#endif
     { NULL, }
 };
 
@@ -971,7 +1004,15 @@ static int preinit(const char *arg)
                "  reflect\n"
                "    Enable OpenGL reflection effects\n"
 #endif
+#if CONFIG_XRENDER
+               "  xrender\n"
+               "    Enable Xrender rendering, thus vaPutSurface() to a Pixmap\n"
+#endif
                "\n" );
+        return -1;
+    }
+    if (gl_enabled && xr_enabled) {
+        mp_msg(MSGT_VO, MSGL_ERR, "[vo_vaapi] User requested both Xrender and OpenGL rendering\n");
         return -1;
     }
     if (g_deint)
@@ -980,6 +1021,10 @@ static int preinit(const char *arg)
     if (gl_enabled)
         mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using OpenGL rendering%s\n",
                gl_reflect ? ", with reflection effects" : "");
+#endif
+#if CONFIG_XRENDER
+    if (xr_enabled)
+        mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using Xrender rendering\n");
 #endif
 
     stats_init();
@@ -991,6 +1036,10 @@ static int preinit(const char *arg)
 #endif
     if (!vo_init())
         return -1;
+#if CONFIG_XRENDER
+    if (xr_enabled && !init_xrender())
+        return -1;
+#endif
 
     va_context = calloc(1, sizeof(*va_context));
     if (!va_context)
@@ -1174,6 +1223,13 @@ static void free_video_specific(void)
     }
 #endif
 
+#if CONFIG_XRENDER
+    if (xr_window_picture) {
+        XRenderFreePicture(mDisplay, xr_window_picture);
+        xr_window_picture = None;
+    }
+#endif
+
     g_is_visible = 0;
 }
 
@@ -1216,6 +1272,10 @@ static void uninit(void)
 
 #ifdef CONFIG_XF86VM
     vo_vm_close();
+#endif
+#if CONFIG_XRENDER
+    if (xr_enabled)
+        uninit_xrender();
 #endif
 #if CONFIG_GL
     if (gl_enabled)
@@ -1334,6 +1394,118 @@ static int config_glx(unsigned int width, unsigned int height)
     if (gl_build_font() < 0)
         return -1;
     return 0;
+}
+#endif
+
+#if CONFIG_XRENDER
+static XRenderPictFormat *get_xrender_argb32_format(void)
+{
+    static XRenderPictFormat *pictformat = NULL;
+    if (pictformat)
+        return pictformat;
+
+    /* First, look for a 32-bit format which ignores the alpha component */
+    XRenderPictFormat templ;
+    templ.depth            = 32;
+    templ.type             = PictTypeDirect;
+    templ.direct.red       = 16;
+    templ.direct.green     = 8;
+    templ.direct.blue      = 0;
+    templ.direct.redMask   = 0xff;
+    templ.direct.greenMask = 0xff;
+    templ.direct.blueMask  = 0xff;
+    templ.direct.alphaMask = 0;
+
+    const unsigned long mask =
+        PictFormatType      |
+        PictFormatDepth     |
+        PictFormatRed       |
+        PictFormatRedMask   |
+        PictFormatGreen     |
+        PictFormatGreenMask |
+        PictFormatBlue      |
+        PictFormatBlueMask  |
+        PictFormatAlphaMask;
+
+    pictformat = XRenderFindFormat(mDisplay, mask, &templ, 0);
+
+    if (!pictformat) {
+        /* Not all X servers support xRGB32 formats. However, the
+         * XRENDER spec says that they must support an ARGB32 format,
+         * so we can always return that.
+         */
+        pictformat = XRenderFindStandardFormat(mDisplay, PictStandardARGB32);
+        if (!pictformat)
+            mp_msg(MSGT_VO, MSGL_ERR, "XRENDER ARGB32 format not supported\n");
+    }
+    return pictformat;
+}
+
+static int create_xrender_specific(void)
+{
+    XRenderPictFormat *pictformat;
+
+    if (g_output_rect.width == 0 && g_output_rect.height == 0)
+        return 0;
+
+    xr_video_pixmap = XCreatePixmap(mDisplay, vo_window, g_output_rect.width,
+                                    g_output_rect.height, 32);
+    if (!xr_video_pixmap) {
+        mp_msg(MSGT_VO, MSGL_ERR, "Could not create video pixmap\n");
+        return -1;
+    }
+
+    pictformat = get_xrender_argb32_format();
+    if (!pictformat)
+        return -1;
+    xr_video_picture = XRenderCreatePicture(mDisplay, xr_video_pixmap,
+                                            pictformat, 0, NULL);
+    if (!xr_video_picture) {
+        mp_msg(MSGT_VO, MSGL_ERR, "Could not create XRENDER backing picture for Pixmap\n");
+        return -1;
+    }
+    return 0;
+}
+
+static void free_xrender_specific(void)
+{
+    if (xr_video_picture) {
+        XRenderFreePicture(mDisplay, xr_video_picture);
+        xr_video_picture = None;
+    }
+
+    if (xr_video_pixmap) {
+        XFreePixmap(mDisplay, xr_video_pixmap);
+        xr_video_pixmap = None;
+    }
+}
+
+static int reset_xrender_specific(void)
+{
+    free_xrender_specific();
+    return create_xrender_specific();
+}
+
+/* XXX: create a Pixmap as large as the display rect */
+static int config_xrender(unsigned int width, unsigned int height)
+{
+    XWindowAttributes wattr;
+    XRenderPictFormat *pictformat;
+
+    XGetWindowAttributes(mDisplay, vo_window, &wattr);
+    pictformat = XRenderFindVisualFormat(mDisplay, wattr.visual);
+    if (!pictformat) {
+        mp_msg(MSGT_VO, MSGL_ERR, "XRENDER does not support Window visual\n");
+        return -1;
+    }
+
+    xr_window_picture = XRenderCreatePicture(mDisplay, vo_window, pictformat,
+                                             0, NULL);
+    if (!xr_window_picture) {
+        mp_msg(MSGT_VO, MSGL_ERR, "Could not create XRENDER backing picture for Window\n");
+        return -1;
+    }
+    return reset_xrender_specific();
 }
 #endif
 
@@ -1514,6 +1686,11 @@ static int config(uint32_t width, uint32_t height,
 
 #if CONFIG_VAAPI_GLX
     if (gl_enabled && config_glx(width, height) < 0)
+        return -1;
+#endif
+
+#if CONFIG_XRENDER
+    if (xr_enabled && config_xrender(width, height) < 0)
         return -1;
 #endif
 
@@ -1807,6 +1984,32 @@ static void flip_page_glx(void)
 }
 #endif
 
+#if CONFIG_XRENDER
+static void put_surface_xrender(struct vaapi_surface *surface)
+{
+    VAStatus status;
+    int i;
+
+    for (i = 0; i <= !!(g_deint > 1); i++) {
+        status = vaPutSurface(va_context->display,
+                              surface->id,
+                              xr_video_pixmap,
+                              0, 0, g_image_width, g_image_height,
+                              0, 0, g_output_rect.width, g_output_rect.height,
+                              NULL, 0,
+                              get_field_flags(i) | get_colorspace_flags());
+        if (!check_status(status, "vaPutSurface()"))
+            return;
+        XRenderComposite(mDisplay,
+                         PictOpSrc, xr_video_picture, 0, xr_window_picture,
+                         0, 0,
+                         0, 0,
+                         g_output_rect.left, g_output_rect.top,
+                         g_output_rect.width, g_output_rect.height);
+    }
+}
+#endif
+
 static void put_surface(struct vaapi_surface *surface)
 {
     if (!surface || surface->id == VA_INVALID_SURFACE)
@@ -1815,6 +2018,11 @@ static void put_surface(struct vaapi_surface *surface)
 #if CONFIG_VAAPI_GLX
     if (gl_enabled)
         put_surface_glx(surface);
+    else
+#endif
+#if CONFIG_XRENDER
+    if (xr_enabled)
+        put_surface_xrender(surface);
     else
 #endif
         put_surface_x11(surface);

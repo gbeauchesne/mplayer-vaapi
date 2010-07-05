@@ -488,6 +488,7 @@ Video output:
   --enable-dvb             enable DVB video output [autodetect]
   --enable-mga             enable mga_vid video output [autodetect]
   --enable-xmga            enable mga_vid X11 video output [autodetect]
+  --enable-xrender	   enable Xrender video output [autodetect]
   --enable-xv              enable Xv video output [autodetect]
   --enable-xvmc            enable XvMC acceleration [disable]
   --enable-vda             enable VDA acceleration [autodetect]
@@ -673,6 +674,7 @@ _xshape=auto
 _xss=auto
 _dga1=auto
 _dga2=auto
+_xrender=auto
 _xv=auto
 _xvmc=no  #auto when complete
 _vda=auto
@@ -1022,6 +1024,8 @@ for ac_option do
   --disable-xshape)     _xshape=no      ;;
   --enable-xss)         _xss=yes        ;;
   --disable-xss)        _xss=no         ;;
+  --enable-xrender)     _xrender=yes    ;;
+  --disable-xrender)    _xrender=no     ;;
   --enable-xv)          _xv=yes         ;;
   --disable-xv)         _xv=no          ;;
   --enable-xvmc)        _xvmc=yes       ;;
@@ -4506,6 +4510,30 @@ else
   def_xdpms='#undef CONFIG_XDPMS'
   echores "no"
 fi
+
+
+echocheck "Xrender"
+if test "$_xrender" = auto ; then
+  cat > $TMPC <<EOF
+#include <X11/Xlib.h>
+#include <X11/extensions/Xrender.h>
+int main(void) {
+  (void) XRenderCreatePicture(0, 0, 0, 0, 0);
+  return 0; }
+EOF
+  _xrender=no
+  cc_check -lXrender && _xrender=yes
+fi
+
+if test "$_xrender" = yes ; then
+  def_xrender='#define CONFIG_XRENDER 1'
+  libs_mplayer="$libs_mplayer -lXrender"
+  vomodules="xrender $vomodules"
+else
+  def_xrender='#undef CONFIG_XRENDER'
+  novomodules="xrender $novomodules"
+fi
+echores "$_xrender"
 
 
 echocheck "Xv"
@@ -8676,6 +8704,7 @@ CONFIG_VAAPI    = $_vaapi
 CONFIG_VF_LAVFI = $_vf_lavfi
 CONFIG_VDA      = $_vda
 CONFIG_VDPAU    = $_vdpau
+CONFIG_XRENDER	= $_xrender
 CONFIG_XVMC     = $_xvmc
 CONFIG_ZLIB     = $_zlib
 
@@ -9083,6 +9112,7 @@ $def_xf86keysym
 $def_xinerama
 $def_xmga
 $def_xss
+$def_xrender
 $def_xv
 $def_xvmc
 $def_xvr100
