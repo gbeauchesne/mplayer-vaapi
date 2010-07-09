@@ -314,4 +314,9 @@ extern void (GLAPIENTRY *mpglTexImage3D)(GLenum, GLint, GLenum, GLsizei, GLsizei
 extern void* (GLAPIENTRY *mpglAllocateMemoryMESA)(void *, int, size_t, float, float, float);
 extern void (GLAPIENTRY *mpglFreeMemoryMESA)(void *, int, void *);
 
+extern void (GLAPIENTRY *mpglXBindTexImage)(Display *, GLXDrawable, int, const int *);
+extern void (GLAPIENTRY *mpglXReleaseTexImage)(Display *, GLXDrawable, int);
+extern GLXPixmap (GLAPIENTRY *mpglXCreatePixmap)(Display *, GLXFBConfig, Pixmap, const int *);
+extern void (GLAPIENTRY *mpglXDestroyPixmap)(Display *, GLXPixmap);
+
 #endif /* MPLAYER_GL_COMMON_H */

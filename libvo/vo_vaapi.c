@@ -139,6 +139,7 @@ static uint32_t                 g_image_width;
 static uint32_t                 g_image_height;
 static uint32_t                 g_image_format;
 static uint32_t                 g_image_fields;
+static Pixmap                   g_image_pixmap;
 static struct vo_rect           g_output_rect;
 static struct vaapi_surface    *g_output_surfaces[MAX_OUTPUT_SURFACES];
 static unsigned int             g_output_surface;
@@ -147,6 +148,7 @@ static int                      g_deint_type;
 static int                      g_colorspace;
 
 static int                      gl_enabled;
+static int                      gl_use_tfp;
 #if CONFIG_GL
 static MPGLContext              gl_context;
 static int                      gl_binding;
@@ -154,9 +156,7 @@ static int                      gl_reflect;
 static int                      gl_finish;
 static GLuint                   gl_texture;
 static GLuint                   gl_font_base;
-#endif
-
-#if CONFIG_VAAPI_GLX
+static Pixmap                   gl_pixmap;
 static int                      gl_visual_attr[] = {
     GLX_RGBA,
     GLX_RED_SIZE, 1,
@@ -165,12 +165,15 @@ static int                      gl_visual_attr[] = {
     GLX_DOUBLEBUFFER,
     GL_NONE
 };
+#endif
+
+#if CONFIG_VAAPI_GLX
 static void                    *gl_surface;
 #endif
 
 static int                      xr_enabled;
 #if CONFIG_XRENDER
-static Pixmap                   xr_video_pixmap;
+static Pixmap                   g_image_pixmap;
 static Picture                  xr_video_picture;
 static Picture                  xr_window_picture;
 #endif
@@ -210,6 +213,28 @@ static int                      va_dm;
 static int                      cpu_stats;
 static unsigned int             cpu_frequency;
 static float                    cpu_usage;
+
+// X error trap
+static int x11_error_code = 0;
+static int (*old_error_handler)(Display *, XErrorEvent *);
+
+static int error_handler(Display *dpy, XErrorEvent *error)
+{
+    x11_error_code = error->error_code;
+    return 0;
+}
+
+static void x11_trap_errors(void)
+{
+    x11_error_code    = 0;
+    old_error_handler = XSetErrorHandler(error_handler);
+}
+
+static int x11_untrap_errors(void)
+{
+    XSetErrorHandler(old_error_handler);
+    return x11_error_code;
+}
 
 static int check_status(VAStatus status, const char *msg)
 {
@@ -956,6 +981,7 @@ static const opt_t subopts[] = {
     { "bind",        OPT_ARG_BOOL, &gl_binding,   NULL },
 #endif
     { "reflect",     OPT_ARG_BOOL, &gl_reflect,   NULL },
+    { "tfp",         OPT_ARG_BOOL, &gl_use_tfp,   NULL },
 #endif
 #if CONFIG_XRENDER
     { "xrender",     OPT_ARG_BOOL, &xr_enabled,   NULL },
@@ -997,6 +1023,8 @@ static int preinit(const char *arg)
                "    Enable OpenGL rendering\n"
                "  glfinish\n"
                "    Call glFinish() before swapping buffers\n"
+               "  tfp\n"
+               "    Use GLX texture-from-pixmap instead of VA/GLX extensions\n"
 #if USE_VAAPI_GLX_BIND
                "  bind\n"
                "    Use VA surface binding instead of copy\n"
@@ -1217,6 +1245,19 @@ static void free_video_specific(void)
     }
 
 #if CONFIG_GL
+    if (gl_pixmap) {
+        x11_trap_errors();
+        mpglXDestroyPixmap(mDisplay, gl_pixmap);
+        XSync(mDisplay, False);
+        x11_untrap_errors();
+        gl_pixmap = None;
+    }
+
+    if (g_image_pixmap) {
+        XFreePixmap(mDisplay, g_image_pixmap);
+        g_image_pixmap = None;
+    }
+
     if (gl_texture) {
         glDeleteTextures(1, &gl_texture);
         gl_texture = GL_NONE;
@@ -1315,7 +1356,7 @@ static int config_x11(uint32_t width, uint32_t height,
             depth = 24;
         XMatchVisualInfo(mDisplay, mScreen, depth, TrueColor, &visualInfo);
 
-#if CONFIG_VAAPI_GLX
+#if CONFIG_GL
         if (gl_enabled) {
             vi = glXChooseVisual(mDisplay, mScreen, gl_visual_attr);
             if (!vi)
@@ -1358,7 +1399,139 @@ static int config_x11(uint32_t width, uint32_t height,
     return 0;
 }
 
-#if CONFIG_VAAPI_GLX
+#if CONFIG_GL
+static GLXFBConfig *get_fbconfig_for_depth(unsigned int depth)
+{
+    GLXFBConfig *fbconfigs, *ret = NULL;
+    int          n_elements, i, found;
+    int          db, stencil, alpha, mipmap, rgba, value;
+
+    static GLXFBConfig *cached_config = NULL;
+    static int          have_cached_config = 0;
+    static int          cached_mipmap = 0;
+
+    if (have_cached_config)
+        return cached_config;
+
+    fbconfigs = glXGetFBConfigs(mDisplay, mScreen, &n_elements);
+
+    db      = SHRT_MAX;
+    stencil = SHRT_MAX;
+    mipmap  = 0;
+    rgba    = 0;
+
+    found = n_elements;
+
+    for (i = 0; i < n_elements; i++) {
+        XVisualInfo *vi;
+        int          visual_depth;
+
+        vi = glXGetVisualFromFBConfig(mDisplay, fbconfigs[i]);
+        if (!vi)
+            continue;
+
+        visual_depth = vi->depth;
+        XFree(vi);
+
+        if (visual_depth != depth)
+            continue;
+
+        glXGetFBConfigAttrib(mDisplay, fbconfigs[i], GLX_ALPHA_SIZE, &alpha);
+        glXGetFBConfigAttrib(mDisplay, fbconfigs[i], GLX_BUFFER_SIZE, &value);
+        if (value != depth && (value - alpha) != depth)
+            continue;
+
+        value = 0;
+        if (depth == 32) {
+            glXGetFBConfigAttrib(mDisplay, fbconfigs[i],
+                                 GLX_BIND_TO_TEXTURE_RGBA_EXT, &value);
+            if (value)
+                rgba = 1;
+        }
+
+        if (!value) {
+            if (rgba)
+                continue;
+
+            glXGetFBConfigAttrib(mDisplay, fbconfigs[i],
+                                 GLX_BIND_TO_TEXTURE_RGB_EXT, &value);
+            if (!value)
+                continue;
+        }
+
+        glXGetFBConfigAttrib(mDisplay, fbconfigs[i], GLX_DOUBLEBUFFER, &value);
+        if (value > db)
+            continue;
+        db = value;
+
+        glXGetFBConfigAttrib(mDisplay, fbconfigs[i], GLX_STENCIL_SIZE, &value);
+        if (value > stencil)
+            continue;
+        stencil = value;
+
+        found = i;
+    }
+
+    if (found != n_elements) {
+        ret = malloc(sizeof(*ret));
+        *ret = fbconfigs[found];
+    }
+
+    if (n_elements)
+        XFree(fbconfigs);
+
+    have_cached_config = 1;
+    cached_config = ret;
+    return ret;
+}
+
+static int config_tfp(unsigned int width, unsigned int height)
+{
+    GLXFBConfig *fbconfig;
+    int attribs[7], i = 0;
+    const int depth = 32;
+
+    if (!mpglXBindTexImage || !mpglXReleaseTexImage) {
+        mp_msg(MSGT_VO, MSGL_ERR, "[vo_vaapi] No GLX texture-from-pixmap extension available\n");
+        return -1;
+    }
+
+    if (depth != 24 && depth != 32)
+        return -1;
+
+    g_image_pixmap = XCreatePixmap(mDisplay, vo_window, width, height, depth);
+    if (!g_image_pixmap) {
+        mp_msg(MSGT_VO, MSGL_ERR, "[vo_vaapi] Could not create X11 pixmap\n");
+        return -1;
+    }
+
+    fbconfig = get_fbconfig_for_depth(depth);
+    if (!fbconfig) {
+        mp_msg(MSGT_VO, MSGL_ERR, "[vo_vaapi] Could not find an FBConfig for 32-bit pixmap\n");
+        return -1;
+    }
+
+    attribs[i++] = GLX_TEXTURE_TARGET_EXT;
+    attribs[i++] = GLX_TEXTURE_2D_EXT;
+    attribs[i++] = GLX_TEXTURE_FORMAT_EXT;
+    if (depth == 24)
+        attribs[i++] = GLX_TEXTURE_FORMAT_RGB_EXT;
+    else if (depth == 32)
+        attribs[i++] = GLX_TEXTURE_FORMAT_RGBA_EXT;
+    attribs[i++] = GLX_MIPMAP_TEXTURE_EXT;
+    attribs[i++] = GL_FALSE;
+    attribs[i++] = None;
+
+    x11_trap_errors();
+    gl_pixmap = mpglXCreatePixmap(mDisplay, *fbconfig, g_image_pixmap, attribs);
+    XSync(mDisplay, False);
+    if (x11_untrap_errors()) {
+        mp_msg(MSGT_VO, MSGL_ERR, "[vo_vaapi] Could not create GLX pixmap\n");
+        return -1;
+    }
+    return 0;
+}
+
 static int config_glx(unsigned int width, unsigned int height)
 {
     if (gl_context.setGlWindow(&gl_context) == SET_WINDOW_FAILED)
@@ -1373,6 +1546,12 @@ static int config_glx(unsigned int width, unsigned int height)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    /* Create TFP resources */
+    if (gl_use_tfp && config_tfp(width, height) == 0)
+        mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using GLX texture-from-pixmap extension\n");
+    else
+        gl_use_tfp = 0;
+
     /* Create OpenGL texture */
     /* XXX: assume GL_ARB_texture_non_power_of_two is available */
     glEnable(GL_TEXTURE_2D);
@@ -1380,11 +1559,13 @@ static int config_glx(unsigned int width, unsigned int height)
     mpglBindTexture(GL_TEXTURE_2D, gl_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-                 GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+    if (1||!gl_use_tfp) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                     GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+    }
     mpglBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
 
@@ -1448,9 +1629,9 @@ static int create_xrender_specific(void)
     if (g_output_rect.width == 0 && g_output_rect.height == 0)
         return 0;
 
-    xr_video_pixmap = XCreatePixmap(mDisplay, vo_window, g_output_rect.width,
-                                    g_output_rect.height, 32);
-    if (!xr_video_pixmap) {
+    g_image_pixmap = XCreatePixmap(mDisplay, vo_window, g_output_rect.width,
+                                   g_output_rect.height, 32);
+    if (!g_image_pixmap) {
         mp_msg(MSGT_VO, MSGL_ERR, "Could not create video pixmap\n");
         return -1;
     }
@@ -1458,7 +1639,7 @@ static int create_xrender_specific(void)
     pictformat = get_xrender_argb32_format();
     if (!pictformat)
         return -1;
-    xr_video_picture = XRenderCreatePicture(mDisplay, xr_video_pixmap,
+    xr_video_picture = XRenderCreatePicture(mDisplay, g_image_pixmap,
                                             pictformat, 0, NULL);
     if (!xr_video_picture) {
         mp_msg(MSGT_VO, MSGL_ERR, "Could not create XRENDER backing picture for Pixmap\n");
@@ -1474,9 +1655,9 @@ static void free_xrender_specific(void)
         xr_video_picture = None;
     }
 
-    if (xr_video_pixmap) {
-        XFreePixmap(mDisplay, xr_video_pixmap);
-        xr_video_pixmap = None;
+    if (g_image_pixmap) {
+        XFreePixmap(mDisplay, g_image_pixmap);
+        g_image_pixmap = None;
     }
 }
 
@@ -1551,7 +1732,7 @@ static int config_vaapi(uint32_t width, uint32_t height, uint32_t format)
 
 #if CONFIG_VAAPI_GLX
     /* Create GLX surfaces */
-    if (gl_enabled) {
+    if (gl_enabled && !gl_use_tfp) {
         status = vaCreateSurfaceGLX(va_context->display,
                                     GL_TEXTURE_2D, gl_texture,
                                     &gl_surface);
@@ -1684,7 +1865,7 @@ static int config(uint32_t width, uint32_t height,
     if (config_x11(width, height, display_width, display_height, flags, title) < 0)
         return -1;
 
-#if CONFIG_VAAPI_GLX
+#if CONFIG_GL
     if (gl_enabled && config_glx(width, height) < 0)
         return -1;
 #endif
@@ -1788,12 +1969,29 @@ static void put_surface_x11(struct vaapi_surface *surface)
     }
 }
 
-#if CONFIG_VAAPI_GLX
+#if CONFIG_GL
 static void put_surface_glx(struct vaapi_surface *surface)
 {
     VAStatus status;
     int i;
 
+    if (gl_use_tfp) {
+        for (i = 0; i <= !!(g_deint > 1); i++) {
+            status = vaPutSurface(va_context->display,
+                                  surface->id,
+                                  g_image_pixmap,
+                                  0, 0, g_image_width, g_image_height,
+                                  0, 0, g_image_width, g_image_height,
+                                  NULL, 0,
+                                  get_field_flags(i) | get_colorspace_flags());
+            if (!check_status(status, "vaPutSurface()"))
+                return;
+        }
+        g_output_surfaces[g_output_surface] = surface;
+        return;
+    }
+
+#if CONFIG_VAAPI_GLX
     if (gl_binding) {
 #if USE_VAAPI_GLX_BIND
         for (i = 0; i <= !!(g_deint > 1); i++) {
@@ -1828,6 +2026,7 @@ static void put_surface_glx(struct vaapi_surface *surface)
             }
         }
     }
+#endif
     g_output_surfaces[g_output_surface] = surface;
 }
 
@@ -1835,6 +2034,14 @@ static int glx_bind_texture(void)
 {
     glEnable(GL_TEXTURE_2D);
     mpglBindTexture(GL_TEXTURE_2D, gl_texture);
+
+    if (gl_use_tfp) {
+        x11_trap_errors();
+        mpglXBindTexImage(mDisplay, gl_pixmap, GLX_FRONT_LEFT_EXT, NULL);
+        XSync(mDisplay, False);
+        if (x11_untrap_errors())
+            mp_msg(MSGT_VO, MSGL_WARN, "[vo_vaapi] Update bind_tex_image failed\n");
+    }
 
 #if USE_VAAPI_GLX_BIND
     if (gl_binding) {
@@ -1849,6 +2056,13 @@ static int glx_bind_texture(void)
 
 static int glx_unbind_texture(void)
 {
+    if (gl_use_tfp) {
+        x11_trap_errors();
+        mpglXReleaseTexImage(mDisplay, gl_pixmap, GLX_FRONT_LEFT_EXT);
+        if (x11_untrap_errors())
+            mp_msg(MSGT_VO, MSGL_WARN, "[vo_vaapi] Failed to release?\n");
+    }
+
 #if USE_VAAPI_GLX_BIND
     if (gl_binding) {
         VAStatus status;
@@ -1993,7 +2207,7 @@ static void put_surface_xrender(struct vaapi_surface *surface)
     for (i = 0; i <= !!(g_deint > 1); i++) {
         status = vaPutSurface(va_context->display,
                               surface->id,
-                              xr_video_pixmap,
+                              g_image_pixmap,
                               0, 0, g_image_width, g_image_height,
                               0, 0, g_output_rect.width, g_output_rect.height,
                               NULL, 0,
@@ -2015,7 +2229,7 @@ static void put_surface(struct vaapi_surface *surface)
     if (!surface || surface->id == VA_INVALID_SURFACE)
         return;
 
-#if CONFIG_VAAPI_GLX
+#if CONFIG_GL
     if (gl_enabled)
         put_surface_glx(surface);
     else
@@ -2187,7 +2401,7 @@ static void flip_page(void)
     g_output_surface = (g_output_surface + 1) % MAX_OUTPUT_SURFACES;
     g_is_visible     = 1;
 
-#if CONFIG_VAAPI_GLX
+#if CONFIG_GL
     if (gl_enabled)
         flip_page_glx();
 #endif

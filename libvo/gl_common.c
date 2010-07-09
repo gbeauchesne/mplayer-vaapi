@@ -135,7 +135,6 @@ void* (GLAPIENTRY *mpglAllocateMemoryMESA)(void *, int, size_t, float, float, fl
 void (GLAPIENTRY *mpglFreeMemoryMESA)(void *, int, void *);
 /** \} */ // end of glextfunctions group
 
-
 void (GLAPIENTRY *mpglVertexPointer)(GLint, GLenum, GLsizei, const GLvoid *);
 void (GLAPIENTRY *mpglTexCoordPointer)(GLint, GLenum, GLsizei, const GLvoid *);
 void (GLAPIENTRY *mpglClientActiveTexture)(GLenum);
@@ -163,6 +162,11 @@ void (GLAPIENTRY *mpglUseProgram)(GLuint);
 GLint (GLAPIENTRY *mpglGetUniformLocation)(GLuint, const char *);
 void (GLAPIENTRY *mpglUniform1iv)(GLint, GLsizei, const GLint *);
 void (GLAPIENTRY *mpglUniformMatrix4fv)(GLint, GLsizei, GLboolean, const float *);
+
+void (GLAPIENTRY *mpglXBindTexImage)(Display *, GLXDrawable, int, const int *);
+void (GLAPIENTRY *mpglXReleaseTexImage)(Display *, GLXDrawable, int);
+GLXPixmap (GLAPIENTRY *mpglXCreatePixmap)(Display *, GLXFBConfig, Pixmap, const int *);
+void (GLAPIENTRY *mpglXDestroyPixmap)(Display *, GLXPixmap);
 
 //! \defgroup glgeneral OpenGL general helper functions
 
@@ -542,6 +546,12 @@ static const extfunc_desc_t extfuncs[] = {
   SIMPLE_FUNC_DESC(GetUniformLocation),
   SIMPLE_FUNC_DESC(Uniform1iv),
   SIMPLE_FUNC_DESC(UniformMatrix4fv),
+
+  {&mpglXBindTexImage, "GLX_EXT_texture_from_pixmap", {"glXBindTexImageEXT", NULL}},
+  {&mpglXReleaseTexImage, "GLX_EXT_texture_from_pixmap", {"glXReleaseTexImageEXT", NULL}},
+  {&mpglXCreatePixmap, "GLX_EXT_texture_from_pixmap", {"glXCreatePixmap", NULL}},
+  {&mpglXDestroyPixmap, "GLX_EXT_texture_from_pixmap", {"glXDestroyPixmap", NULL}},
+
   {NULL}
 };
 
