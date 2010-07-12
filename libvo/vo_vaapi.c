@@ -1402,7 +1402,7 @@ static int config_x11(uint32_t width, uint32_t height,
 }
 
 #if CONFIG_GL
-static GLXFBConfig *get_fbconfig_for_depth(unsigned int depth)
+static GLXFBConfig *get_fbconfig_for_depth(int depth)
 {
     GLXFBConfig *fbconfigs, *ret = NULL;
     int          n_elements, i, found;
@@ -1410,7 +1410,6 @@ static GLXFBConfig *get_fbconfig_for_depth(unsigned int depth)
 
     static GLXFBConfig *cached_config = NULL;
     static int          have_cached_config = 0;
-    static int          cached_mipmap = 0;
 
     if (have_cached_config)
         return cached_config;
@@ -1584,20 +1583,7 @@ static int config_glx(unsigned int width, unsigned int height)
 static XRenderPictFormat *get_xrender_argb32_format(void)
 {
     static XRenderPictFormat *pictformat = NULL;
-    if (pictformat)
-        return pictformat;
-
-    /* First, look for a 32-bit format which ignores the alpha component */
     XRenderPictFormat templ;
-    templ.depth            = 32;
-    templ.type             = PictTypeDirect;
-    templ.direct.red       = 16;
-    templ.direct.green     = 8;
-    templ.direct.blue      = 0;
-    templ.direct.redMask   = 0xff;
-    templ.direct.greenMask = 0xff;
-    templ.direct.blueMask  = 0xff;
-    templ.direct.alphaMask = 0;
 
     const unsigned long mask =
         PictFormatType      |
@@ -1609,6 +1595,20 @@ static XRenderPictFormat *get_xrender_argb32_format(void)
         PictFormatBlue      |
         PictFormatBlueMask  |
         PictFormatAlphaMask;
+
+    if (pictformat)
+        return pictformat;
+
+    /* First, look for a 32-bit format which ignores the alpha component */
+    templ.depth            = 32;
+    templ.type             = PictTypeDirect;
+    templ.direct.red       = 16;
+    templ.direct.green     = 8;
+    templ.direct.blue      = 0;
+    templ.direct.redMask   = 0xff;
+    templ.direct.greenMask = 0xff;
+    templ.direct.blueMask  = 0xff;
+    templ.direct.alphaMask = 0;
 
     pictformat = XRenderFindFormat(mDisplay, mask, &templ, 0);
 
