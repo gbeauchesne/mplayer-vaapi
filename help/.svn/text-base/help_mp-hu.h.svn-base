@@ -8,7 +8,6 @@
 
 // ========================= MPlayer help ===========================
 
-#ifdef HELP_MP_DEFINE_STATIC
 static const char help_text[]=
 "Indítás:   mplayer [opciók] [url|útvonal/]fájlnév\n"
 "\n"
@@ -48,7 +47,6 @@ static const char help_text[]=
 "\n"
 " * * * A MANPAGE TOVÁBBI RÉSZLETEKET, OPCIÓKAT, BILLENTYŰKET TARTALMAZ! * * *\n"
 "\n";
-#endif
 
 // ========================= MPlayer messages ===========================
 
@@ -836,8 +834,6 @@ static const char help_text[]=
 #define MSGTR_VO_CantCreateDirectory "Nem tudtam létrehozni a célkönyvtárat."
 #define MSGTR_VO_CantCreateFile "A kimeneti fájl nem hozható létre."
 #define MSGTR_VO_DirectoryCreateSuccess "A célkönyvtárat sikeresen létrehoztam."
-#define MSGTR_VO_ParsingSuboptions "Alopciók értelmezése."
-#define MSGTR_VO_SuboptionsParsedOK "Alopciók értelmezése rendben."
 #define MSGTR_VO_ValueOutOfRange "érték határon kívül"
 #define MSGTR_VO_NoValueSpecified "Nincs érték megadva."
 #define MSGTR_VO_UnknownSuboptions "ismeretlen alopció(k)"
@@ -947,7 +943,7 @@ static const char help_text[]=
 #define MSGTR_LIBVO_MGA_AspectResized "[VO_MGA] aspect(): átméretezve erre: %dx%d.\n"
 #define MSGTR_LIBVO_MGA_Uninit "[VO] uninit!\n"
 
-// mga_common.c
+// mga_template.c
 #define MSGTR_LIBVO_MGA_ErrorInConfigIoctl "[MGA] hiba az mga_vid_config ioctl-ben (hibás verziójú mga_vid.o?)"
 #define MSGTR_LIBVO_MGA_CouldNotGetLumaValuesFromTheKernelModule "[MGA] Nem kérdezhetőek le a luma értékek a kernel modulból!\n"
 #define MSGTR_LIBVO_MGA_CouldNotSetLumaValuesFromTheKernelModule "[MGA] Nem állíthatóak be a luma értékek a kernel modulból!\n"
@@ -1904,7 +1900,7 @@ static const char help_text[]=
 // stream_cdda.c
 #define MSGTR_MPDEMUX_CDDA_CantOpenCDDADevice "Nem nyitható meg a CDDA eszköz.\n"
 #define MSGTR_MPDEMUX_CDDA_CantOpenDisc "Nem nyitható meg a lemez.\n"
-#define MSGTR_MPDEMUX_CDDA_AudioCDFoundWithNTracks "Audió CD-t találtam %ld sávval.\n"
+#define MSGTR_MPDEMUX_CDDA_AudioCDFoundWithNTracks "Audió CD-t találtam %d sávval.\n"
 
 // stream_cddb.c
 #define MSGTR_MPDEMUX_CDDB_FailedToReadTOC "Hiba a TOC olvasása közben.\n"

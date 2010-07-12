@@ -189,8 +189,6 @@ static void mp_msp_av_log_callback(void *ptr, int level, const char *fmt,
     default          :  mp_level= MSGL_ERR ; break;
     }
 
-    if (!mp_msg_test(type, mp_level)) return;
-
     if(ptr){
         if(!strcmp(avc->class_name, "AVCodecContext")){
             AVCodecContext *s= ptr;
@@ -214,6 +212,8 @@ static void mp_msp_av_log_callback(void *ptr, int level, const char *fmt,
 #endif
         }
     }
+
+    if (!mp_msg_test(type, mp_level)) return;
 
     if(print_prefix && avc) {
         mp_msg(type, mp_level, "[%s @ %p]", avc->item_name(ptr), avc);
@@ -274,7 +274,7 @@ static int init(sh_video_t *sh){
     if(vd_use_slices && (lavc_codec->capabilities&CODEC_CAP_DRAW_HORIZ_BAND) && !do_vis_debug)
         ctx->do_slices=1;
 
-    if(lavc_codec->capabilities&CODEC_CAP_DR1 && !do_vis_debug && lavc_codec->id != CODEC_ID_H264 && lavc_codec->id != CODEC_ID_INTERPLAY_VIDEO && lavc_codec->id != CODEC_ID_ROQ)
+    if(lavc_codec->capabilities&CODEC_CAP_DR1 && !do_vis_debug && lavc_codec->id != CODEC_ID_H264 && lavc_codec->id != CODEC_ID_INTERPLAY_VIDEO && lavc_codec->id != CODEC_ID_ROQ && lavc_codec->id != CODEC_ID_VP8)
         ctx->do_dr1=1;
     ctx->b_age= ctx->ip_age[0]= ctx->ip_age[1]= 256*256*256*64;
     ctx->ip_count= ctx->b_count= 0;
@@ -515,7 +515,8 @@ static void draw_slice(struct AVCodecContext *s,
         }
     }
     if (y < sh->disp_h) {
-        mpcodecs_draw_slice (sh, source, strides, sh->disp_w, (y+height)<=sh->disp_h?height:sh->disp_h-y, 0, y);
+        height = FFMIN(height, sh->disp_h-y);
+        mpcodecs_draw_slice (sh, source, strides, sh->disp_w, height, 0, y);
     }
 }
 
@@ -779,7 +780,7 @@ typedef struct dp_hdr_s {
     uint32_t chunktab;        // offset to chunk offset array
 } dp_hdr_t;
 
-static void swap_palette(void *pal)
+static av_unused void swap_palette(void *pal)
 {
     int i;
     uint32_t *p = pal;

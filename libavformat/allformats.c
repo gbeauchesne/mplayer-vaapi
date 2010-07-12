@@ -34,7 +34,7 @@
 
 #define REGISTER_PROTOCOL(X,x) { \
     extern URLProtocol x##_protocol; \
-    if(CONFIG_##X##_PROTOCOL) av_register_protocol(&x##_protocol); }
+    if(CONFIG_##X##_PROTOCOL) av_register_protocol2(&x##_protocol, sizeof(x##_protocol)); }
 
 void av_register_all(void)
 {
@@ -206,6 +206,7 @@ void av_register_all(void)
     REGISTER_DEMUXER  (W64, w64);
     REGISTER_MUXDEMUX (WAV, wav);
     REGISTER_DEMUXER  (WC3, wc3);
+    REGISTER_MUXER    (WEBM, webm);
     REGISTER_DEMUXER  (WSAUD, wsaud);
     REGISTER_DEMUXER  (WSVQA, wsvqa);
     REGISTER_DEMUXER  (WV, wv);

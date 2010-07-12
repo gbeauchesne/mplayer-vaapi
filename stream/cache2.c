@@ -64,7 +64,6 @@ static void *ThreadProc(void *s);
 
 #include "stream.h"
 #include "cache2.h"
-extern int use_gui;
 
 typedef struct {
   // constats:
@@ -181,9 +180,11 @@ static int cache_fill(cache_vars_t *s)
   if(read<s->min_filepos || read>s->max_filepos){
       // seek...
       mp_msg(MSGT_CACHE,MSGL_DBG2,"Out of boundaries... seeking to 0x%"PRIX64"  \n",(int64_t)read);
-      // streaming: drop cache contents only if seeking backward or too much fwd:
-      if(s->stream->type!=STREAMTYPE_STREAM ||
-          read<s->min_filepos || read>=s->max_filepos+s->seek_limit)
+      // drop cache contents only if seeking backward or too much fwd.
+      // This is also done for on-disk files, since it loses the backseek cache.
+      // That in turn can cause major bandwidth increase and performance
+      // issues with e.g. mov or badly interleaved files
+      if(read<s->min_filepos || read>=s->max_filepos+s->seek_limit)
       {
         s->offset= // FIXME!?
         s->min_filepos=s->max_filepos=read; // drop cache content :(
@@ -471,9 +472,6 @@ err_out:
   }
 
 #if FORKED_CACHE
-#ifdef CONFIG_GUI
-  use_gui = 0; // mp_msg may not use gui stuff in forked code
-#endif
   signal(SIGTERM,exit_sighandler); // kill
   cache_mainloop(s);
   // make sure forked code never leaves this function

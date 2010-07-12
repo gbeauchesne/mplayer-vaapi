@@ -70,12 +70,14 @@ typedef enum
 	VIDEO_MPEG4 	= 0x10000004,
 	VIDEO_H264 	= 0x10000005,
 	VIDEO_AVC	= mmioFOURCC('a', 'v', 'c', '1'),
+	VIDEO_DIRAC	= mmioFOURCC('d', 'r', 'a', 'c'),
 	VIDEO_VC1	= mmioFOURCC('W', 'V', 'C', '1'),
 	AUDIO_MP2   	= 0x50,
 	AUDIO_A52   	= 0x2000,
 	AUDIO_DTS	= 0x2001,
 	AUDIO_LPCM_BE  	= 0x10001,
 	AUDIO_AAC	= mmioFOURCC('M', 'P', '4', 'A'),
+	AUDIO_AAC_LATM	= mmioFOURCC('M', 'P', '4', 'L'),
 	AUDIO_TRUEHD	= mmioFOURCC('T', 'R', 'H', 'D'),
 	SPU_DVD		= 0x3000000,
 	SPU_DVB		= 0x3000001,
@@ -245,9 +247,46 @@ typedef struct {
 } TS_pids_t;
 
 
-#define IS_AUDIO(x) (((x) == AUDIO_MP2) || ((x) == AUDIO_A52) || ((x) == AUDIO_LPCM_BE) || ((x) == AUDIO_AAC) || ((x) == AUDIO_DTS) || ((x) == AUDIO_TRUEHD))
-#define IS_VIDEO(x) (((x) == VIDEO_MPEG1) || ((x) == VIDEO_MPEG2) || ((x) == VIDEO_MPEG4) || ((x) == VIDEO_H264) || ((x) == VIDEO_AVC)  || ((x) == VIDEO_VC1))
-#define IS_SUB(x) (((x) == SPU_DVD) || ((x) == SPU_DVB) || ((x) == SPU_TELETEXT))
+static int IS_AUDIO(es_stream_type_t type)
+{
+	switch (type) {
+	case AUDIO_MP2:
+	case AUDIO_A52:
+	case AUDIO_LPCM_BE:
+	case AUDIO_AAC:
+	case AUDIO_AAC_LATM:
+	case AUDIO_DTS:
+	case AUDIO_TRUEHD:
+		return 1;
+	}
+	return 0;
+}
+
+static int IS_VIDEO(es_stream_type_t type)
+{
+	switch (type) {
+	case VIDEO_MPEG1:
+	case VIDEO_MPEG2:
+	case VIDEO_MPEG4:
+	case VIDEO_H264:
+	case VIDEO_AVC:
+	case VIDEO_DIRAC:
+	case VIDEO_VC1:
+		return 1;
+	}
+	return 0;
+}
+
+static int IS_SUB(es_stream_type_t type)
+{
+	switch (type) {
+	case SPU_DVD:
+	case SPU_DVB:
+	case SPU_TELETEXT:
+		return 1;
+	}
+	return 0;
+}
 
 static int ts_parse(demuxer_t *demuxer, ES_stream_t *es, unsigned char *packet, int probe);
 
@@ -300,10 +339,9 @@ static void ts_add_stream(demuxer_t * demuxer, ES_stream_t *es)
 
 	if((IS_AUDIO(es->type) || IS_AUDIO(es->subtype)) && priv->last_aid+1 < MAX_A_STREAMS)
 	{
-		sh_audio_t *sh = new_sh_audio_aid(demuxer, priv->last_aid, es->pid);
+		sh_audio_t *sh = new_sh_audio_aid(demuxer, priv->last_aid, es->pid, pid_lang_from_pmt(priv, es->pid));
 		if(sh)
 		{
-			const char *lang = pid_lang_from_pmt(priv, es->pid);
 			sh->needs_parsing = 1;
 			sh->format = IS_AUDIO(es->type) ? es->type : es->subtype;
 			sh->ds = demuxer->audio;
@@ -312,8 +350,6 @@ static void ts_add_stream(demuxer_t * demuxer, ES_stream_t *es)
 			priv->ts.streams[es->pid].sh = sh;
 			priv->ts.streams[es->pid].type = TYPE_AUDIO;
 			mp_msg(MSGT_DEMUX, MSGL_V, "\r\nADDED AUDIO PID %d, type: %x stream n. %d\r\n", es->pid, sh->format, priv->last_aid);
-			if (lang && lang[0])
-				mp_msg(MSGT_IDENTIFY, MSGL_V, "ID_AID_%d_LANG=%s\n", es->pid, lang);
 			priv->last_aid++;
 		}
 
@@ -874,6 +910,8 @@ static off_t ts_detect_streams(demuxer_t *demuxer, tsdemux_init_t *param)
 		mp_msg(MSGT_DEMUXER, MSGL_INFO, "AUDIO LPCM(pid=%d)", param->apid);
 	else if(param->atype == AUDIO_AAC)
 		mp_msg(MSGT_DEMUXER, MSGL_INFO, "AUDIO AAC(pid=%d)", param->apid);
+	else if(param->atype == AUDIO_AAC_LATM)
+		mp_msg(MSGT_DEMUXER, MSGL_INFO, "AUDIO AAC LATM(pid=%d)", param->apid);
 	else if(param->atype == AUDIO_TRUEHD)
 		mp_msg(MSGT_DEMUXER, MSGL_INFO, "AUDIO TRUEHD(pid=%d)", param->apid);
 	else
@@ -1443,7 +1481,7 @@ static int pes_parse2(unsigned char *buf, uint16_t packet_len, ES_stream_t *es, 
 
 		if(
 			(type_from_pmt == AUDIO_A52) ||		 /* A52 - raw */
-			(p[0] == 0x0B && p[1] == 0x77)		/* A52 - syncword */
+			(packet_len >= 2 && p[0] == 0x0B && p[1] == 0x77)		/* A52 - syncword */
 		)
 		{
 			mp_msg(MSGT_DEMUX, MSGL_DBG2, "A52 RAW OR SYNCWORD\n");
@@ -1456,7 +1494,7 @@ static int pes_parse2(unsigned char *buf, uint16_t packet_len, ES_stream_t *es, 
 		}
 		/* SPU SUBS */
 		else if(type_from_pmt == SPU_DVB ||
-		((p[0] == 0x20) && pes_is_aligned)) // && p[1] == 0x00))
+		(packet_len >= 1 && (p[0] == 0x20) && pes_is_aligned)) // && p[1] == 0x00))
 		{
 			es->start = p;
 			es->size  = packet_len;
@@ -1465,7 +1503,7 @@ static int pes_parse2(unsigned char *buf, uint16_t packet_len, ES_stream_t *es, 
 
 			return 1;
 		}
-		else if (pes_is_aligned && ((p[0] & 0xE0) == 0x20))	//SPU_DVD
+		else if (pes_is_aligned && packet_len >= 1 && ((p[0] & 0xE0) == 0x20))	//SPU_DVD
 		{
 			//DVD SUBS
 			es->start   = p+1;
@@ -1475,7 +1513,7 @@ static int pes_parse2(unsigned char *buf, uint16_t packet_len, ES_stream_t *es, 
 
 			return 1;
 		}
-		else if (pes_is_aligned && (p[0] & 0xF8) == 0x80)
+		else if (pes_is_aligned && packet_len >= 4 && (p[0] & 0xF8) == 0x80)
 		{
 			mp_msg(MSGT_DEMUX, MSGL_DBG2, "A52 WITH HEADER\n");
 			es->start   = p+4;
@@ -1485,7 +1523,7 @@ static int pes_parse2(unsigned char *buf, uint16_t packet_len, ES_stream_t *es, 
 
 			return 1;
 		}
-		else if (pes_is_aligned && ((p[0]&0xf0) == 0xa0))
+		else if (pes_is_aligned && packet_len >= 1 && ((p[0]&0xf0) == 0xa0))
 		{
 			int pcm_offset;
 
@@ -2327,6 +2365,10 @@ static int parse_descriptors(struct pmt_es_t *es, uint8_t *ptr)
 				{
 					es->type = VIDEO_VC1;
 				}
+				else if(d[0] == 'd' && d[1] == 'r' && d[2] == 'a' && d[3] == 'c')
+				{
+					es->type = VIDEO_DIRAC;
+				}
 				else
 					es->type = UNKNOWN;
 				mp_msg(MSGT_DEMUX, MSGL_DBG2, "FORMAT %s\n", es->format_descriptor);
@@ -2503,8 +2545,10 @@ static int parse_pmt(ts_priv_t * priv, uint16_t progid, uint16_t pid, int is_sta
 				pmt->es[idx].type = VIDEO_MPEG4;
 				break;
 			case 0x0f:
-			case 0x11:
 				pmt->es[idx].type = AUDIO_AAC;
+				break;
+			case 0x11:
+				pmt->es[idx].type = AUDIO_AAC_LATM;
 				break;
 			case 0x1b:
 				pmt->es[idx].type = VIDEO_H264;
@@ -2523,6 +2567,9 @@ static int parse_pmt(ts_priv_t * priv, uint16_t progid, uint16_t pid, int is_sta
 			case 0x85:
 			case 0x86:
 				pmt->es[idx].type = AUDIO_DTS;
+				break;
+			case 0xD1:
+				pmt->es[idx].type = VIDEO_DIRAC;
 				break;
 			case 0xEA:
 				pmt->es[idx].type = VIDEO_VC1;
@@ -3102,6 +3149,10 @@ static int ts_parse(demuxer_t *demuxer , ES_stream_t *es, unsigned char *packet,
 
 				demuxer->filepos = stream_tell(demuxer->stream) - es->size;
 
+				if(es->size < 0 || es->size > buf_size) {
+					mp_msg(MSGT_DEMUX, MSGL_ERR, "Broken ES packet size\n");
+					es->size = 0;
+				}
 				memmove(p, es->start, es->size);
 				*dp_offset += es->size;
 				(*dp)->flags = 0;

@@ -73,7 +73,7 @@ typedef struct sh_audio {
   int a_out_buffer_size;
 //  void* audio_out;        // the audio_out handle, used for this audio stream
   struct af_stream *afilter;          // the audio filter stream
-  struct ad_functions *ad_driver;
+  const struct ad_functions *ad_driver;
 #ifdef CONFIG_DYNAMIC_PLUGINS
   void *dec_handle;
 #endif
@@ -131,12 +131,12 @@ typedef struct sh_sub {
 } sh_sub_t;
 
 // demuxer.c:
-#define new_sh_audio(d, i) new_sh_audio_aid(d, i, i)
-sh_audio_t* new_sh_audio_aid(demuxer_t *demuxer,int id,int aid);
+#define new_sh_audio(d, i, l) new_sh_audio_aid(d, i, i, l)
+sh_audio_t* new_sh_audio_aid(demuxer_t *demuxer,int id,int aid, const char *lang);
 #define new_sh_video(d, i) new_sh_video_vid(d, i, i)
 sh_video_t* new_sh_video_vid(demuxer_t *demuxer,int id,int vid);
-#define new_sh_sub(d, i) new_sh_sub_sid(d, i, i)
-sh_sub_t *new_sh_sub_sid(demuxer_t *demuxer, int id, int sid);
+#define new_sh_sub(d, i, l) new_sh_sub_sid(d, i, i, l)
+sh_sub_t *new_sh_sub_sid(demuxer_t *demuxer, int id, int sid, const char *lang);
 void free_sh_audio(demuxer_t *demuxer, int id);
 void free_sh_video(sh_video_t *sh);
 

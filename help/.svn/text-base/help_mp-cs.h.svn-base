@@ -6,7 +6,6 @@
 
 // ========================= MPlayer help ===========================
 
-#ifdef HELP_MP_DEFINE_STATIC
 static const char help_text[]=
 "Použití:          mplayer [volby] [url|cesta/]jméno_souboru\n"
 "\n"
@@ -47,7 +46,6 @@ static const char help_text[]=
 "\n"
 " * * * V MAN STRÁNCE NAJDETE PODROBNOSTI, DALŠÍ VOLBY A KLÁVESY * * *\n"
 "\n";
-#endif
 
 // ========================= MPlayer messages ===========================
 
@@ -830,8 +828,6 @@ static const char help_text[]=
 #define MSGTR_VO_CantCreateDirectory "Nelze vytvořit výstupní adresář."
 #define MSGTR_VO_CantCreateFile "Nelze vytvořit výstupní soubor."
 #define MSGTR_VO_DirectoryCreateSuccess "Úspěšně vytvořen výstupní adresář."
-#define MSGTR_VO_ParsingSuboptions "Interpretuji podvolby."
-#define MSGTR_VO_SuboptionsParsedOK "Podvolby interpretovány OK."
 #define MSGTR_VO_ValueOutOfRange "hodnota mimo rozsah"
 #define MSGTR_VO_NoValueSpecified "Nebyla zadána hodnota."
 #define MSGTR_VO_UnknownSuboptions "neznámá(é) podvolba(y)"
@@ -940,7 +936,7 @@ static const char help_text[]=
 #define MSGTR_LIBVO_MGA_AspectResized "[VO_MGA] aspect(): škálováno na %dx%d.\n"
 #define MSGTR_LIBVO_MGA_Uninit "[VO] odinicializace!\n"
 
-// mga_common.c
+// mga_template.c
 #define MSGTR_LIBVO_MGA_ErrorInConfigIoctl "[MGA] chyba v mga_vid_config ioctl (špatná verze mga_vid.o?)"
 #define MSGTR_LIBVO_MGA_CouldNotGetLumaValuesFromTheKernelModule "[MGA] Nelze získat jasové hodnoty z jaderného modulu!\n"
 #define MSGTR_LIBVO_MGA_CouldNotSetLumaValuesFromTheKernelModule "[MGA] Nelze nastavit jasové hodnoty z jaderného modulu!\n"
@@ -1897,7 +1893,7 @@ static const char help_text[]=
 // stream_cdda.c
 #define MSGTR_MPDEMUX_CDDA_CantOpenCDDADevice "Nelze otevřít CDDA zařízení.\n"
 #define MSGTR_MPDEMUX_CDDA_CantOpenDisc "Nelze otevřít disk.\n"
-#define MSGTR_MPDEMUX_CDDA_AudioCDFoundWithNTracks "Nalezeno audio CD s %ld stopami\n"
+#define MSGTR_MPDEMUX_CDDA_AudioCDFoundWithNTracks "Nalezeno audio CD s %d stopami\n"
 
 // stream_cddb.c
 #define MSGTR_MPDEMUX_CDDB_FailedToReadTOC "Selhalo čtení TOC.\n"

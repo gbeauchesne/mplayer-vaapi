@@ -1,15 +1,15 @@
 8
 
 dir
-31303
+31722
 svn://svn.mplayerhq.hu/mplayer/trunk/libmenu
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-05-06T10:18:25.724575Z
-31139
-cehoyos
+2010-06-17T09:12:38.614666Z
+31446
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -187,10 +187,10 @@ file
 
 
 
-2010-03-03T12:56:31.000000Z
-3710c8365fcb178e7814b8327f4095d4
-2010-02-21T15:48:03.376110Z
-30684
+2010-07-12T15:11:55.000000Z
+f6093dcdcbec2bb92324c487a3647f31
+2010-06-17T09:12:38.614666Z
+31446
 diego
 has-props
 

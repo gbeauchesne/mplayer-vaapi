@@ -52,19 +52,6 @@ file
 nicodvb
 has-props
 
-dvd_input.h
-file
-
-
-
-
-2010-06-02T13:07:10.000000Z
-27e93885a956c5ec051c4fcf6fee5ced
-2010-06-01T17:07:13.646126Z
-1199
-jb
-has-props
-
 bitreader.c
 file
 
@@ -76,6 +63,19 @@ file
 2009-04-28T13:26:33.798743Z
 1172
 nicodvb
+has-props
+
+dvd_input.h
+file
+
+
+
+
+2010-06-02T13:07:10.000000Z
+27e93885a956c5ec051c4fcf6fee5ced
+2010-06-01T17:07:13.646126Z
+1199
+jb
 has-props
 
 ifo_read.c
@@ -156,6 +156,9 @@ file
 nicodvb
 has-props
 
+dvdread
+dir
+
 Makefile.am
 file
 
@@ -168,9 +171,6 @@ ab4a7f88a4237b8c3e36aac76e51a6bb
 1162
 reimar
 has-props
-
-dvdread
-dir
 
 ifo_print.c
 file

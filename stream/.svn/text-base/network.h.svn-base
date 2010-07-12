@@ -39,6 +39,12 @@
 #include "url.h"
 #include "http.h"
 
+#ifdef MSG_NOSIGNAL
+#define DEFAULT_SEND_FLAGS MSG_NOSIGNAL
+#else
+#define DEFAULT_SEND_FLAGS 0
+#endif
+
 #if !HAVE_CLOSESOCKET
 #define closesocket close
 #endif
@@ -52,6 +58,16 @@ typedef struct {
 	const char *mime_type;
 	int demuxer_type;
 } mime_struct_t;
+
+extern char *cookies_file;
+extern char *network_password;
+extern char *network_referrer;
+extern char *network_useragent;
+extern char *network_username;
+
+extern int   network_bandwidth;
+extern int   network_cookies_enabled;
+extern int   network_ipv4_only_proxy;
 
 streaming_ctrl_t *streaming_ctrl_new(void);
 int streaming_bufferize( streaming_ctrl_t *streaming_ctrl, char *buffer, int size);

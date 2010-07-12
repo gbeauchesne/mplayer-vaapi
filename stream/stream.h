@@ -20,6 +20,7 @@
 #define MPLAYER_STREAM_H
 
 #include "config.h"
+#include "m_option.h"
 #include "mp_msg.h"
 #include "url.h"
 #include <string.h>
@@ -50,6 +51,7 @@
 #define STREAMTYPE_TV 17
 #define STREAMTYPE_MF 18
 #define STREAMTYPE_RADIO 19
+#define STREAMTYPE_BLURAY 20
 
 #define STREAM_BUFFER_SIZE 2048
 
@@ -284,8 +286,6 @@ inline static int stream_seek(stream_t *s,off_t pos){
 
   mp_dbg(MSGT_DEMUX, MSGL_DBG3, "seek to 0x%qX\n",(long long)pos);
 
-  if(s->eof)
-    return 0;
   if(pos<s->pos){
     off_t x=pos-(s->pos-s->buf_len);
     if(x>=0){
@@ -299,7 +299,7 @@ inline static int stream_seek(stream_t *s,off_t pos){
 }
 
 inline static int stream_skip(stream_t *s,off_t len){
-  if( (len<0 && (s->flags & MP_STREAM_SEEK_BW)) || (len>2*STREAM_BUFFER_SIZE && (s->flags & MP_STREAM_SEEK_FW)) ) {
+  if( len<0 || (len>2*STREAM_BUFFER_SIZE && (s->flags & MP_STREAM_SEEK_FW)) ) {
     // negative or big skip!
     return stream_seek(s,stream_tell(s)+len);
   }
@@ -331,12 +331,23 @@ void stream_set_interrupt_callback(int (*cb)(int));
 /// wait for time milliseconds
 int stream_check_interrupt(int time);
 
+extern int bluray_angle;
+extern int bluray_chapter;
+extern int dvd_speed;
 extern int dvd_title;
 extern int dvd_chapter;
 extern int dvd_last_chapter;
 extern int dvd_angle;
+extern int vcd_track;
 
+extern char *bluray_device;
 extern char * audio_stream;
+extern char *cdrom_device;
+extern char *dvd_device;
+
+extern const m_option_t dvbin_opts_conf[];
+
+extern char *rtsp_destination;
 
 typedef struct {
  int id; // 0 - 31 mpeg; 128 - 159 ac3; 160 - 191 pcm

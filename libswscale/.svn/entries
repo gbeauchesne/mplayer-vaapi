@@ -1,15 +1,15 @@
 8
 
 dir
-31303
+31722
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-06-01T19:35:16.515270Z
-31301
-siretart
+2010-07-12T08:35:20.304610Z
+31722
+benoit
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -26,18 +26,6 @@ svn:special svn:externals svn:needs-lock
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
 
-yuv2rgb.c
-file
-
-
-
-
-2010-06-02T13:07:04.000000Z
-da2be3f565d7e5e4719f79c8b65d7044
-2010-06-01T11:30:07.006075Z
-31300
-stefano
-
 utils.c
 file
 
@@ -51,20 +39,35 @@ file
 stefano
 has-props
 
+yuv2rgb.c
+file
+
+
+
+
+2010-07-12T15:11:55.000000Z
+f4b2c4855c3cc0b4c56f744d62db43e6
+2010-07-12T08:35:20.304610Z
+31722
+benoit
+
+ppc
+dir
+
 swscale.c
 file
 
 
 
 
-2010-06-02T13:07:04.000000Z
-46aa93632b1054bedfece0f63a93669f
-2010-06-01T19:35:16.515270Z
-31301
-siretart
+2010-07-12T15:11:55.000000Z
+cde31eaecebffe458e5922be4590bc21
+2010-07-10T22:12:38.215066Z
+31679
+mru
 has-props
 
-ppc
+mlib
 dir
 
 swscale_internal.h
@@ -79,9 +82,6 @@ file
 31170
 ramiro
 has-props
-
-mlib
-dir
 
 x86
 dir
@@ -150,21 +150,21 @@ f1711360f48cf628bebbf3fb57228bc7
 reimar
 has-props
 
+sparc
+dir
+
 rgb2rgb.c
 file
 
 
 
 
-2010-06-02T13:07:04.000000Z
-098b180a6733cf0ef9937711f9207699
-2010-06-01T19:35:16.515270Z
-31301
-siretart
+2010-07-12T15:11:55.000000Z
+4d30da25f471bb8714157257e452eacd
+2010-07-10T22:12:38.215066Z
+31679
+mru
 has-props
-
-sparc
-dir
 
 options.c
 file

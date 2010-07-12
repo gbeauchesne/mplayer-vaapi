@@ -7,7 +7,6 @@
 
 // ========================= MPlayer help ===========================
 
-#ifdef HELP_MP_DEFINE_STATIC
 static const char help_text[]=
 "Uso:   mplayer [opzioni] [url|percorso/]nome_file\n"
 "\n"
@@ -47,7 +46,6 @@ static const char help_text[]=
 "\n"
 " * * * VEDI PAGINA MAN PER DETTAGLI, ULTERIORI OPZIONI AVANZATE E TASTI! * * *\n"
 "\n";
-#endif
 
 // ========================= MPlayer messages ===========================
 
@@ -831,8 +829,6 @@ static const char help_text[]=
 #define MSGTR_VO_CantCreateDirectory "Non posso creare la directory di output."
 #define MSGTR_VO_CantCreateFile "Non posso creare il file di output."
 #define MSGTR_VO_DirectoryCreateSuccess "Directory di output creata con successo."
-#define MSGTR_VO_ParsingSuboptions "Leggo sottoopzioni."
-#define MSGTR_VO_SuboptionsParsedOK "Lettura sottoopzioni OK."
 #define MSGTR_VO_ValueOutOfRange "Valore fuori gamma"
 #define MSGTR_VO_NoValueSpecified "Nessun valore specificato."
 #define MSGTR_VO_UnknownSuboptions "Sottoopzione/i sconosciuta/e"
@@ -944,7 +940,7 @@ static const char help_text[]=
 // vo_mga.c
 #define MSGTR_LIBVO_MGA_AspectResized "[VO_MGA] aspect(): ridimensionato a %dx%d.\n"
 
-// mga_common.c
+// mga_template.c
 #define MSGTR_LIBVO_MGA_ErrorInConfigIoctl "[MGA] errore in ioctl di mga_vid_config (versione sbagliata di mga_vid.o?)"
 #define MSGTR_LIBVO_MGA_CouldNotGetLumaValuesFromTheKernelModule "[MGA] Impossibile ottenere i valori di luminanza dal modulo del kernel!\n"
 #define MSGTR_LIBVO_MGA_CouldNotSetLumaValuesFromTheKernelModule "[MGA] Impossibile impostare i valori di luminanza dal modulo del kernel!\n"
@@ -1898,7 +1894,7 @@ static const char help_text[]=
 // stream_cdda.c
 #define MSGTR_MPDEMUX_CDDA_CantOpenCDDADevice "Impossibile aprire il dispositivo CDDA.\n"
 #define MSGTR_MPDEMUX_CDDA_CantOpenDisc "Impossibile aprire il disco.\n"
-#define MSGTR_MPDEMUX_CDDA_AudioCDFoundWithNTracks "Trovato CD audio con %ld tracce.\n"
+#define MSGTR_MPDEMUX_CDDA_AudioCDFoundWithNTracks "Trovato CD audio con %d tracce.\n"
 
 // stream_cddb.c
 #define MSGTR_MPDEMUX_CDDB_FailedToReadTOC "Imposibile leggere la TOC.\n"

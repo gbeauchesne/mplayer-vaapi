@@ -14,6 +14,11 @@
  * You should have received a copy of the GNU General Public License along
  * with MPlayer; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * You can alternatively redistribute this file and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  */
 
 #ifndef MPLAYER_GL_COMMON_H
@@ -358,6 +363,14 @@ void glSetupYUVConversion(gl_conversion_params_t *params);
 void glEnableYUVConversion(GLenum target, int type);
 void glDisableYUVConversion(GLenum target, int type);
 
+#define GL_3D_RED_CYAN        1
+#define GL_3D_GREEN_MAGENTA   2
+#define GL_3D_QUADBUFFER      3
+
+void glEnable3DLeft(int type);
+void glEnable3DRight(int type);
+void glDisable3D(int type);
+
 /** \addtogroup glcontext
   * \{ */
 //! could not set new window, will continue drawing into the old one.
@@ -455,6 +468,7 @@ extern void (GLAPIENTRY *mpglLightfv)(GLenum, GLenum, const GLfloat *);
 extern void (GLAPIENTRY *mpglColorMaterial)(GLenum, GLenum);
 extern void (GLAPIENTRY *mpglShadeModel)(GLenum);
 extern void (GLAPIENTRY *mpglGetIntegerv)(GLenum, GLint *);
+extern void (GLAPIENTRY *mpglColorMask)(GLboolean, GLboolean, GLboolean, GLboolean);
 
 extern void (GLAPIENTRY *mpglGenBuffers)(GLsizei, GLuint *);
 extern void (GLAPIENTRY *mpglDeleteBuffers)(GLsizei, const GLuint *);

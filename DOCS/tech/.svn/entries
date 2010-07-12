@@ -1,15 +1,15 @@
 8
 
 dir
-31303
+31722
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/tech
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-05-25T23:09:20.331359Z
-31219
-diego
+2010-07-05T17:04:46.005768Z
+31631
+ben
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -162,11 +162,11 @@ file
 
 
 
-2009-01-29T11:50:47.000000Z
-139fba3c43eedf2c99031ccde35d26b1
-2008-06-10T16:11:33.119253Z
-27047
-nicodvb
+2010-07-12T15:11:54.000000Z
+3dcc82fb7a1f07b1b09582ba646dac4a
+2010-06-14T15:17:48.225980Z
+31415
+diego
 has-props
 
 encoding-guide.txt
@@ -214,11 +214,11 @@ file
 
 
 
-2010-03-03T12:56:31.000000Z
-fe242ce16a0b8669a068e33dcfaf28ee
-2010-02-21T15:48:03.376110Z
-30684
-diego
+2010-07-12T15:11:54.000000Z
+700f7e156679fe55ee0330d522da31ff
+2010-06-09T07:26:54.245814Z
+31350
+siretart
 has-props
 
 snow.txt
@@ -338,19 +338,6 @@ file
 diego
 has-props
 
-libao2.txt
-file
-
-
-
-
-2009-06-18T13:42:55.000000Z
-fe9b1c7d519e2aaf60619a21d49d7a61
-2009-05-13T02:58:57.333510Z
-29305
-diego
-has-props
-
 manpage.txt
 file
 
@@ -364,17 +351,17 @@ file
 cehoyos
 has-props
 
-slave.txt
+libao2.txt
 file
 
 
 
 
-2010-05-18T12:45:19.000000Z
-d3fbcfa76475e515e20aeb4b0ae6a9b5
-2010-04-11T18:59:19.114602Z
-31030
-cehoyos
+2009-06-18T13:42:55.000000Z
+fe9b1c7d519e2aaf60619a21d49d7a61
+2009-05-13T02:58:57.333510Z
+29305
+diego
 has-props
 
 codec-devel.txt
@@ -388,6 +375,19 @@ file
 2010-04-12T10:56:17.152819Z
 31032
 diego
+has-props
+
+slave.txt
+file
+
+
+
+
+2010-07-12T15:11:54.000000Z
+7e59d962da849b3ffdecce5d43d77571
+2010-07-01T16:48:03.045265Z
+31595
+reimar
 has-props
 
 win32-codec-howto.txt
@@ -504,10 +504,10 @@ file
 
 
 
-2010-05-18T12:45:19.000000Z
-4b5cfe99259043a2161f14de0dbe5404
-2010-05-09T14:45:29.324410Z
-31147
-diego
+2010-07-12T15:11:54.000000Z
+9f4b9fba8c0ca8c02f9cf4ed70b6d700
+2010-07-05T17:04:46.005768Z
+31631
+ben
 has-props
 

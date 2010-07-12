@@ -1,15 +1,15 @@
 8
 
 dir
-31303
+31722
 svn://svn.mplayerhq.hu/mplayer/trunk/stream/librtsp
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-01-04T09:48:14.035690Z
-30194
-diego
+2010-06-27T15:04:13.952288Z
+31566
+reimar
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -57,11 +57,11 @@ file
 
 
 
-2009-06-18T13:42:56.000000Z
-0aac3840fe20e16fc767476dc37f7476
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2010-07-12T15:11:53.000000Z
+0576707ea78a50baa9b3f32fc0b82ab3
+2010-06-27T15:04:13.952288Z
+31566
+reimar
 has-props
 
 rtsp_session.c
@@ -96,9 +96,9 @@ file
 
 
 
-2009-06-18T13:42:56.000000Z
-80feac1db75422f1ec93a42f6de32fee
-2009-05-13T02:58:57.333510Z
-29305
-diego
+2010-07-12T15:11:53.000000Z
+136e2987735daa0069af99d29e8d4b08
+2010-06-27T15:04:13.952288Z
+31566
+reimar
 

@@ -1,8 +1,8 @@
 K 10
 svn:ignore
-V 53
+V 39
 html-chunk.xsl
 html-single.xsl
-xsltproc.sh
-xmllint.sh
+xml.mak
+
 END

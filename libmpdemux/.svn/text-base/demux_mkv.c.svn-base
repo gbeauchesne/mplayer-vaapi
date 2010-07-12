@@ -195,11 +195,6 @@ typedef struct mkv_demuxer {
 #define RAPROPERTIES4_SIZE 56
 #define RAPROPERTIES5_SIZE 70
 
-/* for e.g. "-slang ger" */
-extern char *dvdsub_lang;
-extern char *audio_lang;
-extern int dvdsub_id;
-
 /**
  * \brief ensures there is space for at least one additional element
  * \param arrayp array to grow
@@ -1419,8 +1414,6 @@ static void display_create_tracks(demuxer_t *demuxer)
             if (mkv_d->tracks[i]->name)
                 mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_AID_%d_NAME=%s\n", aid,
                        mkv_d->tracks[i]->name);
-            mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_AID_%d_LANG=%s\n", aid,
-                   mkv_d->tracks[i]->language);
             sprintf(str, "-aid %u, -alang %.5s", aid++,
                     mkv_d->tracks[i]->language);
             break;
@@ -1461,6 +1454,7 @@ static const videocodec_info_t vinfo[] = {
     {MKV_V_MPEG4_AP,  mmioFOURCC('m', 'p', '4', 'v'), 1},
     {MKV_V_MPEG4_AVC, mmioFOURCC('a', 'v', 'c', '1'), 1},
     {MKV_V_THEORA,    mmioFOURCC('t', 'h', 'e', 'o'), 1},
+    {MKV_V_VP8,       mmioFOURCC('V', 'P', '8', '0'), 0},
     {NULL, 0, 0}
 };
 
@@ -1614,14 +1608,13 @@ static int demux_mkv_open_audio(demuxer_t *demuxer, mkv_track_t *track,
                                 int aid)
 {
     mkv_demuxer_t *mkv_d = (mkv_demuxer_t *) demuxer->priv;
-    sh_audio_t *sh_a = new_sh_audio_aid(demuxer, track->tnum, aid);
+    sh_audio_t *sh_a = new_sh_audio_aid(demuxer, track->tnum, aid,
+                                        track->language);
     demux_packet_t *dp;
     if (!sh_a)
         return 1;
     mkv_d->audio_tracks[mkv_d->last_aid] = track->tnum;
 
-    if (track->language && (strcmp(track->language, "und") != 0))
-        sh_a->lang = strdup(track->language);
     sh_a->default_track = track->default_track;
     sh_a->ds = demuxer->audio;
     sh_a->wf = malloc(sizeof(WAVEFORMATEX));
@@ -1902,7 +1895,7 @@ static int demux_mkv_open_sub(demuxer_t *demuxer, mkv_track_t *track,
     if (track->subtitle_type != MATROSKA_SUBTYPE_UNKNOWN) {
         int size, m;
         uint8_t *buffer;
-        sh_sub_t *sh = new_sh_sub_sid(demuxer, track->tnum, sid);
+        sh_sub_t *sh = new_sh_sub_sid(demuxer, track->tnum, sid, track->language);
         track->sh_sub = sh;
         sh->type = 't';
         if (track->subtitle_type == MATROSKA_SUBTYPE_VOBSUB)
@@ -1919,8 +1912,6 @@ static int demux_mkv_open_sub(demuxer_t *demuxer, mkv_track_t *track,
         sh->extradata = malloc(track->private_size);
         memcpy(sh->extradata, track->private_data, track->private_size);
         sh->extradata_len = track->private_size;
-        if (track->language && (strcmp(track->language, "und") != 0))
-            sh->lang = strdup(track->language);
         sh->default_track = track->default_track;
     } else {
         mp_msg(MSGT_DEMUX, MSGL_ERR,
@@ -1941,7 +1932,7 @@ static int demux_mkv_open(demuxer_t *demuxer)
 
     stream_seek(s, s->start_pos);
     str = ebml_read_header(s, &version);
-    if (str == NULL || strcmp(str, "matroska") || version > 2) {
+    if (str == NULL || (strcmp(str, "matroska") && strcmp(str, "webm")) || version > 2) {
         mp_msg(MSGT_DEMUX, MSGL_DBG2, "[mkv] no head found\n");
         return 0;
     }

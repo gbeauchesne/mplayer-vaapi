@@ -1,15 +1,15 @@
 8
 
 dir
-31303
+31722
 svn://svn.mplayerhq.hu/mplayer/trunk/osdep
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-05-29T10:10:30.804529Z
-31261
-diego
+2010-07-04T07:13:18.744592Z
+31630
+reimar
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -38,6 +38,19 @@ file
 26196
 diego
 
+timer-darwin.c
+file
+
+
+
+
+2010-07-12T15:11:55.000000Z
+048d247dca7e4f2debdf2255882571a8
+2010-06-23T10:50:55.789666Z
+31530
+diego
+has-props
+
 macosx_finder_args.h
 file
 
@@ -49,19 +62,6 @@ a7369f5d60b5f33daaa19922673941bd
 2010-02-23T07:54:10.284867Z
 30717
 diego
-
-timer-darwin.c
-file
-
-
-
-
-2010-03-03T12:56:31.000000Z
-6a59e61d21f408b133d4c5af98624c11
-2010-02-22T21:53:06.465723Z
-30715
-diego
-has-props
 
 vsscanf.c
 file
@@ -165,19 +165,6 @@ file
 diego
 has-props
 
-timer-linux.c
-file
-
-
-
-
-2010-03-03T12:56:31.000000Z
-7bbdc22da7e9a80bde7da994b19e5b88
-2010-02-16T15:03:03.835831Z
-30596
-diego
-has-props
-
 getch2-os2.c
 file
 
@@ -190,18 +177,30 @@ c3faf0442bd5312ca2f7d1a1ab606de3
 31261
 diego
 
-shmem.h
+timer-linux.c
 file
 
 
 
 
-2009-03-11T14:53:55.000000Z
-f28ac96016d154ce3b44d1493f505e87
-2009-03-01T13:13:25.730797Z
-28779
+2010-07-12T15:11:55.000000Z
+3de4257ea77431e744b3b2e580bdaadf
+2010-06-23T10:50:55.789666Z
+31530
 diego
 has-props
+
+mplayer.exe.manifest
+file
+
+
+
+
+2010-07-12T15:11:55.000000Z
+0620fb0bab55845281f8d03672ae8601
+2010-07-04T07:13:18.744592Z
+31630
+reimar
 
 glob-win.c
 file
@@ -213,6 +212,19 @@ file
 f00730e15576aadff77d67e137db88ca
 2009-05-13T02:58:57.333510Z
 29305
+diego
+has-props
+
+shmem.h
+file
+
+
+
+
+2009-03-11T14:53:55.000000Z
+f28ac96016d154ce3b44d1493f505e87
+2009-03-01T13:13:25.730797Z
+28779
 diego
 has-props
 
@@ -285,10 +297,10 @@ file
 
 
 
-2010-06-02T13:07:04.000000Z
-2513874effcb6f368dfe2e93befba396
-2010-05-28T08:39:02.085721Z
-31248
+2010-07-12T15:11:55.000000Z
+3000446e4ed06466b2296afc8bec7a93
+2010-06-23T10:50:55.789666Z
+31530
 diego
 has-props
 
@@ -335,11 +347,11 @@ file
 
 
 
-2010-03-03T12:56:31.000000Z
-be60222ab41d9e8b44cd59f6c2e44ce1
-2010-02-20T21:02:49.035536Z
-30675
-diego
+2010-07-12T15:11:55.000000Z
+ed9e70a27751afd7aa01188f81f2cd46
+2010-07-04T07:13:18.744592Z
+31630
+reimar
 has-props
 
 mmap-os2.c
@@ -386,10 +398,10 @@ file
 
 
 
-2009-06-18T13:42:56.000000Z
-fa2c9204492ef6a7e02fa6ec622c064b
-2009-05-13T02:58:57.333510Z
-29305
+2010-07-12T15:11:55.000000Z
+342cf9c3e24ea2e752a5c7be8bb66936
+2010-06-23T10:50:55.789666Z
+31530
 diego
 has-props
 

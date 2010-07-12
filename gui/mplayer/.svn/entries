@@ -1,14 +1,14 @@
 8
 
 dir
-31303
+31722
 svn://svn.mplayerhq.hu/mplayer/trunk/gui/mplayer
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-04-20T08:44:26.336008Z
-31046
+2010-06-24T17:19:49.634978Z
+31555
 diego
 has-props
 
@@ -90,10 +90,10 @@ file
 
 
 
-2010-03-03T12:56:31.000000Z
-d2312085edb9927805015690df00e8b2
-2010-02-22T09:51:44.394528Z
-30695
+2010-07-12T15:11:53.000000Z
+b13ffcba5bb47e8aa72f17931cea83cc
+2010-06-21T08:58:49.725990Z
+31501
 diego
 has-props
 

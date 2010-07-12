@@ -1,15 +1,15 @@
 8
 
 dir
-23424
+24213
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/bfin
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2010-03-16T21:23:03.416124Z
-22570
-mru
+2010-07-02T10:37:13.234766Z
+23969
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -68,11 +68,11 @@ file
 
 
 
-2010-04-08T06:58:18.000000Z
-70987b8ab3a0fae0f0a0da9865b67381
-2010-03-08T02:36:11.890614Z
-22310
-mru
+2010-07-12T15:12:01.000000Z
+10f06e3619bd778a052c609be0f04dd1
+2010-07-02T10:37:13.234766Z
+23969
+diego
 
 pixels_bfin.S
 file
@@ -92,10 +92,10 @@ file
 
 
 
-2010-04-08T06:58:18.000000Z
-20174604c262056de880ea4845da5d77
-2010-03-08T02:36:11.890614Z
-22310
+2010-07-12T15:12:01.000000Z
+351f7049b31cd6690ac63c394471f0e9
+2010-06-22T23:12:48.683396Z
+23728
 mru
 
 dsputil_bfin.h
