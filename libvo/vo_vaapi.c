@@ -804,6 +804,8 @@ static void create_osd(void)
             va_osd_palette = gen_osd_palette(&va_osd_image);
             if (((!va_osd_image.num_palette_entries) ^ (!va_osd_palette)) == 0)
                 break;
+            vaDestroyImage(va_context->display, va_osd_image.image_id);
+            va_osd_image.image_id = VA_INVALID_ID;
         }
     }
 
