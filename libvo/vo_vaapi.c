@@ -1490,7 +1490,7 @@ static int config_tfp(unsigned int width, unsigned int height)
 {
     GLXFBConfig *fbconfig;
     int attribs[7], i = 0;
-    const int depth = 32;
+    const int depth = 24;
 
     if (!mpglXBindTexImage || !mpglXReleaseTexImage) {
         mp_msg(MSGT_VO, MSGL_ERR, "[vo_vaapi] No GLX texture-from-pixmap extension available\n");
@@ -1560,7 +1560,7 @@ static int config_glx(unsigned int width, unsigned int height)
     mpglBindTexture(GL_TEXTURE_2D, gl_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    if (1||!gl_use_tfp) {
+    if (!gl_use_tfp) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
