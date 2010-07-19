@@ -71,10 +71,6 @@
 #define USE_VAAPI_COLORSPACE 0
 #endif
 
-/* Defined to 1 if IA44/AI44 subpicture formats are allowed */
-/* XXX: they are not visually attractive... */
-#define USE_VAAPI_IA44_FORMATS 0
-
 /* Defined to 1 if VA/GLX 'bind' API is available */
 #define USE_VAAPI_GLX_BIND                                \
     (VA_MAJOR_VERSION == 0 &&                             \
@@ -602,7 +598,6 @@ static void draw_alpha_rgb32(int x0, int y0, int w, int h,
         }
 }
 
-#if USE_VAAPI_IA44_FORMATS
 static void draw_alpha_IA44(int x0, int y0, int w, int h,
                             unsigned char *src, unsigned char *srca,
                             int stride)
@@ -628,7 +623,6 @@ static void draw_alpha_AI44(int x0, int y0, int w, int h,
         for (x = 0; x < w; x++)
             dst[x] = (src[y*stride + x] >> 4) | (-srca[y*stride + x] & 0xf0);
 }
-#endif
 
 static void draw_alpha_IA88(int x0, int y0, int w, int h,
                             unsigned char *src, unsigned char *srca,
@@ -666,10 +660,8 @@ static const struct {
     draw_alpha_func draw_alpha;
 }
 va_osd_info[] = {
-#if USE_VAAPI_IA44_FORMATS
     { VA_FOURCC('I','A','4','4'), draw_alpha_IA44  },
     { VA_FOURCC('A','I','4','4'), draw_alpha_AI44  },
-#endif
     { VA_FOURCC('I','A','8','8'), draw_alpha_IA88  },
     { VA_FOURCC('A','I','8','8'), draw_alpha_AI88  },
     { VA_FOURCC('B','G','R','A'), draw_alpha_rgb32 },
