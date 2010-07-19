@@ -1128,6 +1128,8 @@ for ac_option do
   --disable-twolame)    _twolame=no     ;;
   --enable-libcdio)     _libcdio=yes    ;;
   --disable-libcdio)    _libcdio=no     ;;
+  --enable-libgtop)     _libgtop=yes    ;;
+  --disable-libgtop)    _libgtop=no     ;;
   --enable-liblzo)      _liblzo=yes     ;;
   --disable-liblzo)     _liblzo=no      ;;
   --enable-libvorbis)   _libvorbis=yes  ;;
