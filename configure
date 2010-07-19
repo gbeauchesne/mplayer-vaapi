@@ -602,6 +602,7 @@ Use these options if autodetection fails:
   --extra-libs-mencoder=FLAGS extra linker flags for MEncoder
   --with-xvmclib=NAME         adapter-specific library name (e.g. XvMCNVIDIA)
 
+  --with-vaapi-prefix=PATH    prefix to VA-API include and lib directories
   --with-freetype-config=PATH path to freetype-config
   --with-glib-config=PATH     path to glib*-config
   --with-gtk-config=PATH      path to gtk*-config
@@ -909,6 +910,9 @@ for ac_option do
     _xvmclib=$(option_value $ac_option)
     ;;
 
+  --with-vaapi-prefix=*)
+    _vaapiprefix=$(echo $ac_option | cut -d '=' -f 2)
+    ;;
   --with-sdl-config=*)
     _sdlconfig=$(option_value $ac_option)
     ;;
@@ -5961,19 +5965,24 @@ fi #if os2
 #########################
 
 echocheck "VA-API"
+if test -n "$_vaapiprefix"; then
+  _vaapiinc="-I$_vaapiprefix/include"
+  _vaapilib="-L$_vaapiprefix/lib"
+fi
 if test "$_vaapi" = yes -o "$_vaapi" = auto; then
   _vaapi=no
   cat > $TMPC <<EOF
 #include <va/va_x11.h>
 int main(void) { (void) vaGetDisplay(0); return 0; }
 EOF
-  cc_check -lva-x11 && _vaapi=yes
+  cc_check $_vaapiinc $_vaapilib -lva-x11 && _vaapi=yes
 fi
 
 if test "$_vaapi" = yes ; then
   def_vaapi='#define CONFIG_VAAPI 1'
-  libs_mencoder="$libs_mencoder -lva"
-  libs_mplayer="$libs_mplayer -lva-x11"
+  extra_cflags="$extra_cflags $_vaapiinc"
+  libs_mencoder="$libs_mencoder $_vaapilib -lva"
+  libs_mplayer="$libs_mplayer $_vaapilib -lva-x11"
   vomodules="vaapi $vomodules"
 else
   def_vaapi='#define CONFIG_VAAPI 0'
@@ -5990,7 +5999,7 @@ if test "$_vaapi" = yes; then
 #include <va/va_glx.h>
 int main(void) { (void) vaGetDisplayGLX(0); return 0; }
 EOF
-    cc_check -lva-glx && _vaapi_glx=yes
+    cc_check $_vaapiinc $_vaapilib -lva-glx && _vaapi_glx=yes
   fi
 fi
 if test "$_vaapi_glx" = yes; then
