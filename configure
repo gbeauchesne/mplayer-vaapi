@@ -5982,7 +5982,7 @@ if test "$_vaapi" = yes ; then
   def_vaapi='#define CONFIG_VAAPI 1'
   extra_cflags="$extra_cflags $_vaapiinc"
   libs_mencoder="$libs_mencoder $_vaapilib -lva"
-  libs_mplayer="$libs_mplayer $_vaapilib -lva-x11"
+  libs_mplayer="$libs_mplayer $_vaapilib -lva -lva-x11"
   vomodules="vaapi $vomodules"
 else
   def_vaapi='#define CONFIG_VAAPI 0'
