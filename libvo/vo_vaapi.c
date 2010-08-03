@@ -2339,10 +2339,10 @@ static void draw_osd(void)
     enable_osd();
 }
 
-static void draw_eosd(mp_eosd_images_t *imgs)
+static void draw_eosd(EOSD_ImageList *imgs)
 {
-    ass_image_t *img = imgs->imgs;
-    ass_image_t *i;
+    ASS_Image *img = imgs->imgs;
+    ASS_Image *i;
     VAStatus status;
 
     if (!va_eosd_draw_alpha)
