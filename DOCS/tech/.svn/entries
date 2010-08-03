@@ -1,15 +1,15 @@
 8
 
 dir
-31722
+31910
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/tech
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-07-05T17:04:46.005768Z
-31631
-ben
+2010-07-25T09:06:37.064781Z
+31794
+reimar
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -338,19 +338,6 @@ file
 diego
 has-props
 
-manpage.txt
-file
-
-
-
-
-2009-01-29T11:50:47.000000Z
-28675276d54d90c9f610faf48ab101c4
-2007-10-30T22:35:42.789596Z
-24904
-cehoyos
-has-props
-
 libao2.txt
 file
 
@@ -364,6 +351,32 @@ fe9b1c7d519e2aaf60619a21d49d7a61
 diego
 has-props
 
+manpage.txt
+file
+
+
+
+
+2009-01-29T11:50:47.000000Z
+28675276d54d90c9f610faf48ab101c4
+2007-10-30T22:35:42.789596Z
+24904
+cehoyos
+has-props
+
+slave.txt
+file
+
+
+
+
+2010-08-03T10:15:06.000000Z
+b193c09cc94e6faa1b71784babb55077
+2010-07-25T09:06:37.064781Z
+31794
+reimar
+has-props
+
 codec-devel.txt
 file
 
@@ -375,19 +388,6 @@ file
 2010-04-12T10:56:17.152819Z
 31032
 diego
-has-props
-
-slave.txt
-file
-
-
-
-
-2010-07-12T15:11:54.000000Z
-7e59d962da849b3ffdecce5d43d77571
-2010-07-01T16:48:03.045265Z
-31595
-reimar
 has-props
 
 win32-codec-howto.txt

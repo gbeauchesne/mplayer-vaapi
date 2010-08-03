@@ -27,7 +27,8 @@
  * @author Romain Degez
  */
 
-#include "rtpdec_mpeg4.h"
+#include "rtpdec_formats.h"
+#include "internal.h"
 #include "libavutil/avstring.h"
 #include "libavcodec/get_bits.h"
 #include <strings.h>

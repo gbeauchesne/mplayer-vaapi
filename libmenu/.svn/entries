@@ -1,14 +1,14 @@
 8
 
 dir
-31722
+31910
 svn://svn.mplayerhq.hu/mplayer/trunk/libmenu
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-06-17T09:12:38.614666Z
-31446
+2010-07-12T21:38:39.024959Z
+31727
 diego
 has-props
 
@@ -96,11 +96,11 @@ file
 
 
 
-2010-05-18T12:45:20.000000Z
-50cd9e6f99c0b365c336c64e9cb57531
-2010-05-06T10:18:25.724575Z
-31139
-cehoyos
+2010-08-03T10:15:07.000000Z
+fe2a1fedf33d3a817e3165941a904800
+2010-07-12T21:38:39.024959Z
+31727
+diego
 has-props
 
 menu_list.h

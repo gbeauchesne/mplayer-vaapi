@@ -39,7 +39,7 @@ struct vf_priv_s {
     double pts;
     const vo_functions_t *vo;
 #ifdef CONFIG_ASS
-    ass_renderer_t* ass_priv;
+    ASS_Renderer* ass_priv;
     int prev_visibility;
 #endif
 };
@@ -130,7 +130,7 @@ static int control(struct vf_instance *vf, int request, void* data)
 #ifdef CONFIG_ASS
     case VFCTRL_INIT_EOSD:
     {
-        vf->priv->ass_priv = ass_renderer_init((ass_library_t*)data);
+        vf->priv->ass_priv = ass_renderer_init((ASS_Library*)data);
         if (!vf->priv->ass_priv) return CONTROL_FALSE;
         ass_configure_fonts(vf->priv->ass_priv);
         vf->priv->prev_visibility = 0;
@@ -138,7 +138,7 @@ static int control(struct vf_instance *vf, int request, void* data)
     }
     case VFCTRL_DRAW_EOSD:
     {
-        mp_eosd_images_t images = {NULL, 2};
+        EOSD_ImageList images = {NULL, 2};
         double pts = vf->priv->pts;
         if (!vo_config_count || !vf->priv->ass_priv) return CONTROL_FALSE;
         if (sub_visibility && vf->priv->ass_priv && ass_track && (pts != MP_NOPTS_VALUE)) {
@@ -148,11 +148,7 @@ static int control(struct vf_instance *vf, int request, void* data)
                 double dar = (double) (res.w - res.ml - res.mr) / (res.h - res.mt - res.mb);
                 ass_set_frame_size(vf->priv->ass_priv, res.w, res.h);
                 ass_set_margins(vf->priv->ass_priv, res.mt, res.mb, res.ml, res.mr);
-#if defined(LIBASS_VERSION) && LIBASS_VERSION >= 0x00907010
                 ass_set_aspect_ratio(vf->priv->ass_priv, dar, (double)res.srcw/res.srch);
-#else
-                ass_set_aspect_ratio(vf->priv->ass_priv, (double)res.w / res.h);
-#endif
             }
 
             images.imgs = ass_mp_render_frame(vf->priv->ass_priv, ass_track, (pts+sub_delay) * 1000 + .5, &images.changed);

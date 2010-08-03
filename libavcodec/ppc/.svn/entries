@@ -1,15 +1,15 @@
 8
 
 dir
-24213
+24684
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/ppc
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2010-07-04T18:33:47.170622Z
-24044
-mru
+2010-07-18T20:06:42.387721Z
+24308
+lorenm
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -26,6 +26,18 @@ svn:special svn:externals svn:needs-lock
 
 9553f0bf-9b14-0410-a0b8-cfaf0461ba5b
 
+asm.S
+file
+
+
+
+
+2010-07-12T15:12:03.000000Z
+487b23bb244388bf3d5e8a2c5963306d
+2010-07-04T18:33:40.588988Z
+24042
+mru
+
 dsputil_altivec.h
 file
 
@@ -38,18 +50,6 @@ file
 22267
 mru
 has-props
-
-asm.S
-file
-
-
-
-
-2010-07-12T15:12:03.000000Z
-487b23bb244388bf3d5e8a2c5963306d
-2010-07-04T18:33:40.588988Z
-24042
-mru
 
 int_altivec.c
 file
@@ -112,18 +112,6 @@ file
 mru
 has-props
 
-mathops.h
-file
-
-
-
-
-2009-09-14T08:26:32.000000Z
-1e97d9036ca959ad244acd9a9a6352d0
-2009-08-24T10:59:14.676171Z
-19692
-diego
-
 types_altivec.h
 file
 
@@ -135,6 +123,18 @@ file
 2010-07-01T23:21:39.052155Z
 23956
 mru
+
+mathops.h
+file
+
+
+
+
+2009-09-14T08:26:32.000000Z
+1e97d9036ca959ad244acd9a9a6352d0
+2009-08-24T10:59:14.676171Z
+19692
+diego
 
 check_altivec.c
 file
@@ -162,28 +162,16 @@ c5a8bc3c6c205c08eb8a4eb00d4b9768
 mru
 has-props
 
-vp3dsp_altivec.c
-file
-
-
-
-
-2010-04-08T06:58:19.000000Z
-6b218056fd57aa0284fbd42d905a5604
-2010-03-06T22:37:14.090636Z
-22267
-mru
-
-fft_altivec.c
+mpegvideo_altivec.c
 file
 
 
 
 
 2010-07-12T15:12:03.000000Z
-bc552e4820f9ccbc87df7ad039be1f05
-2010-07-04T18:33:47.170622Z
-24044
+d63ebd4b373734075e544fe670d0a926
+2010-06-26T22:23:35.157506Z
+23808
 mru
 has-props
 
@@ -200,18 +188,30 @@ file
 mru
 has-props
 
-mpegvideo_altivec.c
+fft_altivec.c
 file
 
 
 
 
 2010-07-12T15:12:03.000000Z
-d63ebd4b373734075e544fe670d0a926
-2010-06-26T22:23:35.157506Z
-23808
+bc552e4820f9ccbc87df7ad039be1f05
+2010-07-04T18:33:47.170622Z
+24044
 mru
 has-props
+
+vp3dsp_altivec.c
+file
+
+
+
+
+2010-04-08T06:58:19.000000Z
+6b218056fd57aa0284fbd42d905a5604
+2010-03-06T22:37:14.090636Z
+22267
+mru
 
 fdct_altivec.c
 file
@@ -232,11 +232,11 @@ file
 
 
 
-2010-07-12T15:12:03.000000Z
-471c1689aeeffd34ee08b5580464b613
-2010-07-04T18:33:47.170622Z
-24044
-mru
+2010-08-03T10:15:11.000000Z
+abdafb8af472536b1315244a9ae07cc8
+2010-07-18T20:06:42.387721Z
+24308
+lorenm
 
 util_altivec.h
 file

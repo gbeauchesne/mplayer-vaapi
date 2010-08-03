@@ -1,15 +1,15 @@
 8
 
 dir
-31722
+31910
 svn://svn.mplayerhq.hu/mplayer/trunk/libass
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-06-03T08:17:10.645771Z
-31308
-cehoyos
+2010-07-30T18:14:35.715893Z
+31869
+greg
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -38,18 +38,6 @@ eddea787d3911ab8c0f4c5e0e7c067eb
 30242
 greg
 
-ass_fontconfig.c
-file
-
-
-
-
-2010-01-15T13:47:05.000000Z
-de83a25384b8152cd0c6a2a49c203ea6
-2010-01-08T18:35:44.485820Z
-30242
-greg
-
 mputils.h
 file
 
@@ -62,14 +50,14 @@ file
 26770
 diego
 
-ass_utils.c
+ass_fontconfig.c
 file
 
 
 
 
 2010-01-15T13:47:05.000000Z
-689ce96519d3280aaa6c1d8fef685410
+de83a25384b8152cd0c6a2a49c203ea6
 2010-01-08T18:35:44.485820Z
 30242
 greg
@@ -86,6 +74,18 @@ af38dc1c1ac659007b6f434460e627fb
 30242
 greg
 
+ass_utils.c
+file
+
+
+
+
+2010-01-15T13:47:05.000000Z
+689ce96519d3280aaa6c1d8fef685410
+2010-01-08T18:35:44.485820Z
+30242
+greg
+
 ass_fontconfig.h
 file
 
@@ -98,18 +98,6 @@ file
 30242
 greg
 
-ass_cache.c
-file
-
-
-
-
-2010-01-15T13:47:05.000000Z
-3a6d43efc4827142aa19c0e34ca8abdc
-2010-01-08T18:35:44.485820Z
-30242
-greg
-
 ass_cache_template.h
 file
 
@@ -118,6 +106,18 @@ file
 
 2010-01-15T13:47:05.000000Z
 3fcc9d72247d042d1e3dfff3a4cb185a
+2010-01-08T18:35:44.485820Z
+30242
+greg
+
+ass_cache.c
+file
+
+
+
+
+2010-01-15T13:47:05.000000Z
+3a6d43efc4827142aa19c0e34ca8abdc
 2010-01-08T18:35:44.485820Z
 30242
 greg
@@ -170,18 +170,6 @@ file
 30242
 greg
 
-ass_types.h
-file
-
-
-
-
-2010-01-15T13:47:05.000000Z
-6ffc64f3ba200a1993b81442c5caab40
-2010-01-08T18:35:44.485820Z
-30242
-greg
-
 ass_library.h
 file
 
@@ -190,6 +178,18 @@ file
 
 2010-01-15T13:47:05.000000Z
 2207d759eabe7d2622e2fd3f7de7cc28
+2010-01-08T18:35:44.485820Z
+30242
+greg
+
+ass_types.h
+file
+
+
+
+
+2010-01-15T13:47:05.000000Z
+6ffc64f3ba200a1993b81442c5caab40
 2010-01-08T18:35:44.485820Z
 30242
 greg
@@ -224,11 +224,11 @@ file
 
 
 
-2010-04-08T06:58:17.000000Z
-204739a7165c18491ff8ddcf7689666d
-2010-03-20T23:38:27.174160Z
-30943
-diego
+2010-08-03T10:15:07.000000Z
+fd15eae39da1d5173485ff736374a2de
+2010-07-30T18:14:35.715893Z
+31869
+greg
 
 ass_bitmap.c
 file
@@ -296,11 +296,11 @@ file
 
 
 
-2010-03-03T12:56:31.000000Z
-82f04cbcb1ba22bfb83ffe3bfa5ce3e1
-2010-02-25T22:51:23.906183Z
-30740
-reimar
+2010-08-03T10:15:07.000000Z
+1aa411ed5497758b7ca032a39cb25ddc
+2010-07-30T18:14:35.715893Z
+31869
+greg
 
 ass_bitmap.h
 file

@@ -345,6 +345,11 @@ static unsigned int initialized_flags=0;
 /// step size of mixer changes
 int volstep = 3;
 
+#ifdef CONFIG_CRASH_DEBUG
+static char *prog_path;
+static int crash_debug = 0;
+#endif
+
 /* This header requires all the global variable declarations. */
 #include "cfg-mplayer.h"
 
@@ -792,11 +797,6 @@ static void child_sighandler(int x){
 }
 #endif
 
-#ifdef CONFIG_CRASH_DEBUG
-static char *prog_path;
-static int crash_debug = 0;
-#endif
-
 static void exit_sighandler(int x){
   static int sig_count=0;
 #ifdef CONFIG_CRASH_DEBUG
@@ -1091,7 +1091,7 @@ void add_subtitles(char *filename, float fps, int noerr)
 {
     sub_data *subd;
 #ifdef CONFIG_ASS
-    ass_track_t *asst = 0;
+    ASS_Track *asst = 0;
 #endif
 
     if (filename == NULL || mpctx->set_of_sub_size >= MAX_SUBTITLE_FILES) {
@@ -1652,48 +1652,53 @@ static void update_osd_msg(void) {
 void reinit_audio_chain(void) {
     if (!mpctx->sh_audio)
         return;
-    current_module="init_audio_codec";
-    mp_msg(MSGT_CPLAYER,MSGL_INFO,"==========================================================================\n");
-    if(!init_best_audio_codec(mpctx->sh_audio,audio_codec_list,audio_fm_list)){
-        goto init_error;
+    if (!(initialized_flags & INITIALIZED_ACODEC)) {
+        current_module="init_audio_codec";
+        mp_msg(MSGT_CPLAYER,MSGL_INFO,"==========================================================================\n");
+        if(!init_best_audio_codec(mpctx->sh_audio,audio_codec_list,audio_fm_list)){
+            goto init_error;
+        }
+        initialized_flags|=INITIALIZED_ACODEC;
+        mp_msg(MSGT_CPLAYER,MSGL_INFO,"==========================================================================\n");
     }
-    initialized_flags|=INITIALIZED_ACODEC;
-    mp_msg(MSGT_CPLAYER,MSGL_INFO,"==========================================================================\n");
 
 
-    current_module="af_preinit";
-    ao_data.samplerate=force_srate;
-    ao_data.channels=0;
-    ao_data.format=audio_output_format;
-    // first init to detect best values
-    if(!init_audio_filters(mpctx->sh_audio,   // preliminary init
-                           // input:
-                           mpctx->sh_audio->samplerate,
-                           // output:
-                           &ao_data.samplerate, &ao_data.channels, &ao_data.format)){
-        mp_msg(MSGT_CPLAYER,MSGL_ERR,MSGTR_AudioFilterChainPreinitError);
-        exit_player(EXIT_ERROR);
+    if (!(initialized_flags & INITIALIZED_AO)) {
+        current_module="af_preinit";
+        ao_data.samplerate=force_srate;
+        ao_data.channels=0;
+        ao_data.format=audio_output_format;
+        // first init to detect best values
+        if(!init_audio_filters(mpctx->sh_audio,   // preliminary init
+                               // input:
+                               mpctx->sh_audio->samplerate,
+                               // output:
+                               &ao_data.samplerate, &ao_data.channels, &ao_data.format)){
+            mp_msg(MSGT_CPLAYER,MSGL_ERR,MSGTR_AudioFilterChainPreinitError);
+            exit_player(EXIT_ERROR);
+        }
+        current_module="ao2_init";
+        mpctx->audio_out = init_best_audio_out(audio_driver_list,
+                                               0, // plugin flag
+                                               ao_data.samplerate,
+                                               ao_data.channels,
+                                               ao_data.format, 0);
+        if(!mpctx->audio_out){
+            mp_msg(MSGT_CPLAYER,MSGL_ERR,MSGTR_CannotInitAO);
+            goto init_error;
+        }
+        initialized_flags|=INITIALIZED_AO;
+        mp_msg(MSGT_CPLAYER,MSGL_INFO,"AO: [%s] %dHz %dch %s (%d bytes per sample)\n",
+               mpctx->audio_out->info->short_name,
+               ao_data.samplerate, ao_data.channels,
+               af_fmt2str_short(ao_data.format),
+               af_fmt2bits(ao_data.format)/8 );
+        mp_msg(MSGT_CPLAYER,MSGL_V,"AO: Description: %s\nAO: Author: %s\n",
+               mpctx->audio_out->info->name, mpctx->audio_out->info->author);
+        if(strlen(mpctx->audio_out->info->comment) > 0)
+            mp_msg(MSGT_CPLAYER,MSGL_V,"AO: Comment: %s\n", mpctx->audio_out->info->comment);
     }
-    current_module="ao2_init";
-    mpctx->audio_out = init_best_audio_out(audio_driver_list,
-                                           0, // plugin flag
-                                           ao_data.samplerate,
-                                           ao_data.channels,
-                                           ao_data.format, 0);
-    if(!mpctx->audio_out){
-        mp_msg(MSGT_CPLAYER,MSGL_ERR,MSGTR_CannotInitAO);
-        goto init_error;
-    }
-    initialized_flags|=INITIALIZED_AO;
-    mp_msg(MSGT_CPLAYER,MSGL_INFO,"AO: [%s] %dHz %dch %s (%d bytes per sample)\n",
-           mpctx->audio_out->info->short_name,
-           ao_data.samplerate, ao_data.channels,
-           af_fmt2str_short(ao_data.format),
-           af_fmt2bits(ao_data.format)/8 );
-    mp_msg(MSGT_CPLAYER,MSGL_V,"AO: Description: %s\nAO: Author: %s\n",
-           mpctx->audio_out->info->name, mpctx->audio_out->info->author);
-    if(strlen(mpctx->audio_out->info->comment) > 0)
-        mp_msg(MSGT_CPLAYER,MSGL_V,"AO: Comment: %s\n", mpctx->audio_out->info->comment);
+
     // init audio filters:
     current_module="af_init";
     if(!build_afilter_chain(mpctx->sh_audio, &ao_data)) {
@@ -2120,6 +2125,7 @@ static int fill_audio_out_buffers(void)
     int playflags=0;
     int audio_eof=0;
     int bytes_to_write;
+    int format_change = 0;
     sh_audio_t * const sh_audio = mpctx->sh_audio;
 
     current_module="play_audio";
@@ -2143,6 +2149,7 @@ static int fill_audio_out_buffers(void)
     }
 
     while (bytes_to_write) {
+	int res;
 	playsize = bytes_to_write;
 	if (playsize > MAX_OUTBURST)
 	    playsize = MAX_OUTBURST;
@@ -2151,7 +2158,11 @@ static int fill_audio_out_buffers(void)
 	// Fill buffer if needed:
 	current_module="decode_audio";
 	t = GetTimer();
-	if (decode_audio(sh_audio, playsize) < 0) // EOF or error
+	if (!format_change) {
+	    res = decode_audio(sh_audio, playsize);
+	    format_change = res == -2;
+	}
+	if (!format_change && res < 0) // EOF or error
 	    if (mpctx->d_audio->eof) {
 		audio_eof = 1;
 		if (sh_audio->a_out_buffer_len == 0)
@@ -2161,7 +2172,7 @@ static int fill_audio_out_buffers(void)
 	tt = t*0.000001f; audio_time_usage+=tt;
 	if (playsize > sh_audio->a_out_buffer_len) {
 	    playsize = sh_audio->a_out_buffer_len;
-	    if (audio_eof)
+	    if (audio_eof || format_change)
 		playflags |= AOPLAY_FINAL_CHUNK;
 	}
 	if (!playsize)
@@ -2182,12 +2193,16 @@ static int fill_audio_out_buffers(void)
 		    sh_audio->a_out_buffer_len);
 	    mpctx->delay += playback_speed*playsize/(double)ao_data.bps;
 	}
-	else if (audio_eof && mpctx->audio_out->get_delay() < .04) {
+	else if ((format_change || audio_eof) && mpctx->audio_out->get_delay() < .04) {
 	    // Sanity check to avoid hanging in case current ao doesn't output
 	    // partial chunks and doesn't check for AOPLAY_FINAL_CHUNK
 	    mp_msg(MSGT_CPLAYER, MSGL_WARN, "Audio output truncated at end.\n");
 	    sh_audio->a_out_buffer_len = 0;
 	}
+    }
+    if (format_change) {
+	uninit_player(INITIALIZED_AO);
+	reinit_audio_chain();
     }
     return 1;
 }
@@ -2634,7 +2649,7 @@ static int seek(MPContext *mpctx, double amount, int style)
 	vobsub_seek(vo_vobsub, mpctx->sh_video->pts);
     }
 
-#if defined(CONFIG_ASS) && defined(LIBASS_VERSION) && LIBASS_VERSION >= 0x00910000
+#ifdef CONFIG_ASS
     if (ass_enabled && mpctx->d_sub->sh && ((sh_sub_t *)mpctx->d_sub->sh)->ass_track)
         ass_flush_events(((sh_sub_t *)mpctx->d_sub->sh)->ass_track);
 #endif
@@ -3147,6 +3162,7 @@ while (player_idle_mode && !filename) {
         case MP_CMD_QUIT:
             exit_player_with_rc(EXIT_QUIT, (cmd->nargs > 0)? cmd->args[0].v.i : 0);
             break;
+        case MP_CMD_VO_FULLSCREEN:
         case MP_CMD_GET_PROPERTY:
         case MP_CMD_SET_PROPERTY:
         case MP_CMD_STEP_PROPERTY:
@@ -3904,8 +3920,14 @@ if(auto_quality>0){
  if (mpctx->stream->type == STREAMTYPE_DVDNAV) {
    nav_highlight_t hl;
    mp_dvdnav_get_highlight (mpctx->stream, &hl);
+   if (!vo_spudec || !spudec_apply_palette_crop(vo_spudec, hl.palette, hl.sx, hl.sy, hl.ex, hl.ey)) {
    osd_set_nav_box (hl.sx, hl.sy, hl.ex, hl.ey);
    vo_osd_changed (OSDTYPE_DVDNAV);
+   } else {
+     osd_set_nav_box(0, 0, 0, 0);
+     vo_osd_changed(OSDTYPE_DVDNAV);
+     vo_osd_changed(OSDTYPE_SPU);
+   }
 
    if (mp_dvdnav_stream_has_changed(mpctx->stream)) {
      double ar = -1.0;

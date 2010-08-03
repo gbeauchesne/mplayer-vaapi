@@ -1,15 +1,15 @@
 8
 
 dir
-24213
+24684
 svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec/arm
 svn://svn.ffmpeg.org/ffmpeg
 
 
 
-2010-07-10T14:26:37.804065Z
-24160
-aurel
+2010-07-18T20:06:42.387721Z
+24308
+lorenm
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -185,6 +185,31 @@ file
 mru
 has-props
 
+dsputil_iwmmxt.c
+file
+
+
+
+
+2009-10-09T13:57:36.000000Z
+3a8c723f788a19278e483a2576077fb6
+2009-10-04T13:13:12.902703Z
+20167
+mru
+has-props
+
+vp56dsp_init_arm.c
+file
+
+
+
+
+2010-05-18T12:45:25.000000Z
+84a649fe35652afeebc70c36f26a2c51
+2010-04-30T21:30:27.038219Z
+22993
+mru
+
 int_neon.S
 file
 
@@ -209,31 +234,6 @@ d17d75e740531b035249a37e84115210
 21247
 mru
 
-vp56dsp_init_arm.c
-file
-
-
-
-
-2010-05-18T12:45:25.000000Z
-84a649fe35652afeebc70c36f26a2c51
-2010-04-30T21:30:27.038219Z
-22993
-mru
-
-dsputil_iwmmxt.c
-file
-
-
-
-
-2009-10-09T13:57:36.000000Z
-3a8c723f788a19278e483a2576077fb6
-2009-10-04T13:13:12.902703Z
-20167
-mru
-has-props
-
 simple_idct_neon.S
 file
 
@@ -244,6 +244,18 @@ file
 aa04930014bcbafeae28341e56725ab1
 2010-07-07T20:09:45.170873Z
 24096
+mru
+
+asm-offsets.h
+file
+
+
+
+
+2010-07-12T15:12:03.000000Z
+5fabbdd38fc7f544119afdea4573db25
+2010-06-26T18:34:56.260173Z
+23804
 mru
 
 Makefile
@@ -257,18 +269,6 @@ file
 2010-07-10T14:26:37.804065Z
 24160
 aurel
-
-asm-offsets.h
-file
-
-
-
-
-2010-07-12T15:12:03.000000Z
-5fabbdd38fc7f544119afdea4573db25
-2010-06-26T18:34:56.260173Z
-23804
-mru
 
 h264pred_neon.S
 file
@@ -331,6 +331,18 @@ cffda5aaa1ce4af9dc1acf74a583c1ba
 mru
 has-props
 
+vp56dsp_neon.S
+file
+
+
+
+
+2010-05-18T12:45:25.000000Z
+43c5f15de22fa1e8096780cf5a8b84d7
+2010-04-30T21:30:27.038219Z
+22993
+mru
+
 dsputil_init_arm.c
 file
 
@@ -343,18 +355,6 @@ file
 20186
 mru
 has-props
-
-vp56dsp_neon.S
-file
-
-
-
-
-2010-05-18T12:45:25.000000Z
-43c5f15de22fa1e8096780cf5a8b84d7
-2010-04-30T21:30:27.038219Z
-22993
-mru
 
 synth_filter_neon.S
 file
@@ -411,11 +411,11 @@ file
 
 
 
-2010-07-12T15:12:03.000000Z
-c9002eb58999c05fd3021fa5cf556b36
-2010-07-07T20:09:37.500727Z
-24094
-mru
+2010-08-03T10:15:11.000000Z
+86a2c21eeb8f92c175742d3eef9ddf89
+2010-07-18T20:06:42.387721Z
+24308
+lorenm
 
 dsputil_vfp.S
 file
@@ -545,10 +545,10 @@ file
 
 
 
-2010-04-08T06:58:19.000000Z
-b3d3879471f09fca833ea1912377e30e
-2010-03-09T16:17:56.047833Z
-22404
+2010-08-03T10:15:11.000000Z
+68af0d516aa2077462b7aec666bc076e
+2010-07-15T21:59:27.367470Z
+24249
 mru
 
 dcadsp_neon.S

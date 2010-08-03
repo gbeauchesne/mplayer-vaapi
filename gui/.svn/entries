@@ -1,14 +1,14 @@
 8
 
 dir
-31722
+31910
 svn://svn.mplayerhq.hu/mplayer/trunk/gui
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-07-01T17:47:25.735945Z
-31599
+2010-07-25T09:22:37.544816Z
+31796
 reimar
 has-props
 
@@ -135,10 +135,10 @@ file
 
 
 
-2010-02-16T15:36:02.000000Z
-b5936fa99b9cf74dd39367c676a6273e
-2010-01-24T21:15:43.244978Z
-30430
+2010-08-03T10:15:05.000000Z
+c36c816035f76b12c2fb18bbb526d92a
+2010-07-25T09:22:37.544816Z
+31796
 reimar
 has-props
 

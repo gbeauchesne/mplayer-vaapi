@@ -1,8 +1,9 @@
 K 13
 svn:externals
-V 349
+V 403
 libavutil	svn://svn.ffmpeg.org/ffmpeg/trunk/libavutil
 libavcodec	svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec
+libavcore	svn://svn.ffmpeg.org/ffmpeg/trunk/libavcore
 libavformat	svn://svn.ffmpeg.org/ffmpeg/trunk/libavformat
 libpostproc	svn://svn.ffmpeg.org/ffmpeg/trunk/libpostproc
 libdvdread4	svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdread/src

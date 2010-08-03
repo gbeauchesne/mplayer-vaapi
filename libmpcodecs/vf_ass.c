@@ -62,7 +62,7 @@ static const struct vf_priv_s {
 	// 0 = insert always
 	int auto_insert;
 
-	ass_renderer_t* ass_priv;
+	ASS_Renderer* ass_priv;
 
 	unsigned char* planes[3];
 	unsigned char* dirty_rows;
@@ -89,11 +89,7 @@ static int config(struct vf_instance *vf,
 
 	if (vf->priv->ass_priv) {
 		ass_configure(vf->priv->ass_priv, vf->priv->outw, vf->priv->outh, 0);
-#if defined(LIBASS_VERSION) && LIBASS_VERSION >= 0x00907010
 		ass_set_aspect_ratio(vf->priv->ass_priv, 1, 1);
-#else
-		ass_set_aspect_ratio(vf->priv->ass_priv, 1);
-#endif
 	}
 
 	return vf_next_config(vf, vf->priv->outw, vf->priv->outh, d_width, d_height, flags, outfmt);
@@ -311,7 +307,7 @@ static void my_draw_bitmap(struct vf_instance *vf, unsigned char* bitmap, int bi
 	}
 }
 
-static int render_frame(struct vf_instance *vf, mp_image_t *mpi, const ass_image_t* img)
+static int render_frame(struct vf_instance *vf, mp_image_t *mpi, const ASS_Image* img)
 {
 	if (img) {
 		memset(vf->priv->dirty_rows, 0, vf->priv->outh); // reset dirty rows
@@ -328,7 +324,7 @@ static int render_frame(struct vf_instance *vf, mp_image_t *mpi, const ass_image
 
 static int put_image(struct vf_instance *vf, mp_image_t *mpi, double pts)
 {
-	ass_image_t* images = 0;
+	ASS_Image* images = 0;
 	if (sub_visibility && vf->priv->ass_priv && ass_track && (pts != MP_NOPTS_VALUE))
 		images = ass_mp_render_frame(vf->priv->ass_priv, ass_track, (pts+sub_delay) * 1000 + .5, NULL);
 
@@ -353,7 +349,7 @@ static int control(vf_instance_t *vf, int request, void *data)
 {
 	switch (request) {
 	case VFCTRL_INIT_EOSD:
-		vf->priv->ass_priv = ass_renderer_init((ass_library_t*)data);
+		vf->priv->ass_priv = ass_renderer_init((ASS_Library*)data);
 		if (!vf->priv->ass_priv) return CONTROL_FALSE;
 		ass_configure_fonts(vf->priv->ass_priv);
 		return CONTROL_TRUE;

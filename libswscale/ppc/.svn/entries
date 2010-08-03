@@ -1,15 +1,15 @@
 8
 
 dir
-31722
+31910
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale/ppc
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-05-12T20:47:32.413322Z
-31170
-ramiro
+2010-07-24T14:43:55.166176Z
+31782
+reimar
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2010-02-16T15:36:02.000000Z
-ed9d9651b937cc970f156a28d96b2863
-2010-01-22T03:26:30.165859Z
-30385
-mru
+2010-08-03T10:15:07.000000Z
+2e5c43bfb3a2700bdd12990d86c6360f
+2010-07-24T11:37:58.656580Z
+31781
+reimar
 has-props
 
 yuv2rgb_altivec.c
@@ -45,10 +45,10 @@ file
 
 
 
-2010-04-14T19:51:49.000000Z
-f6390043931a4b4fd785d1b45cab9d90
-2010-05-12T20:47:32.413322Z
-31170
-ramiro
+2010-08-03T10:15:07.000000Z
+ee034c2b7b68bee6c38b0def844ebafd
+2010-07-24T14:43:55.166176Z
+31782
+reimar
 has-props
 

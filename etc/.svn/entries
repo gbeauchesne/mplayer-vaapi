@@ -1,15 +1,15 @@
 8
 
 dir
-31722
+31910
 svn://svn.mplayerhq.hu/mplayer/trunk/etc
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-07-10T08:04:48.446256Z
-31657
-reimar
+2010-07-31T13:47:47.134696Z
+31872
+compn
 
 
 svn:special svn:externals svn:needs-lock
@@ -97,11 +97,11 @@ file
 
 
 
-2010-07-12T15:11:55.000000Z
-9a0c3f1c497065862bf149a3740126c8
-2010-07-10T08:04:48.446256Z
-31657
-reimar
+2010-08-03T10:15:09.000000Z
+f2a727115d7cf6c1a744b7b08c3032bd
+2010-07-31T13:47:47.134696Z
+31872
+compn
 has-props
 
 inttypes.h
