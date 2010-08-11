@@ -1,7 +1,7 @@
 8
 
 dir
-31910
+31956
 svn://svn.mplayerhq.hu/mplayer/trunk/osdep
 svn://svn.mplayerhq.hu/mplayer
 
@@ -38,18 +38,6 @@ file
 26196
 diego
 
-macosx_finder_args.h
-file
-
-
-
-
-2010-03-03T12:56:31.000000Z
-a7369f5d60b5f33daaa19922673941bd
-2010-02-23T07:54:10.284867Z
-30717
-diego
-
 timer-darwin.c
 file
 
@@ -62,6 +50,18 @@ file
 31530
 diego
 has-props
+
+macosx_finder_args.h
+file
+
+
+
+
+2010-03-03T12:56:31.000000Z
+a7369f5d60b5f33daaa19922673941bd
+2010-02-23T07:54:10.284867Z
+30717
+diego
 
 vsscanf.c
 file
@@ -165,17 +165,17 @@ file
 diego
 has-props
 
-mplayer.exe.manifest
+getch2-os2.c
 file
 
 
 
 
-2010-07-12T15:11:55.000000Z
-0620fb0bab55845281f8d03672ae8601
-2010-07-04T07:13:18.744592Z
-31630
-reimar
+2010-06-02T13:07:04.000000Z
+c3faf0442bd5312ca2f7d1a1ab606de3
+2010-05-29T10:10:30.804529Z
+31261
+diego
 
 timer-linux.c
 file
@@ -190,17 +190,17 @@ file
 diego
 has-props
 
-getch2-os2.c
+mplayer.exe.manifest
 file
 
 
 
 
-2010-06-02T13:07:04.000000Z
-c3faf0442bd5312ca2f7d1a1ab606de3
-2010-05-29T10:10:30.804529Z
-31261
-diego
+2010-07-12T15:11:55.000000Z
+0620fb0bab55845281f8d03672ae8601
+2010-07-04T07:13:18.744592Z
+31630
+reimar
 
 glob-win.c
 file

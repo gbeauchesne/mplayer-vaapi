@@ -1,10 +1,7 @@
 K 10
 svn:ignore
-V 107
-files
-mplayer
-mplayer.postinst.debhelper
-mplayer.postrm.debhelper
-mplayer.prerm.debhelper
-mplayer.substvars
+V 42
+# debian/changelog is generated
+changelog
+
 END

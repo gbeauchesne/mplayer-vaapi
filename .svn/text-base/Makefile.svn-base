@@ -119,6 +119,7 @@ SRCS_COMMON-$(LIBASS_INTERNAL)       += libass/ass.c \
                                         libass/ass_library.c \
                                         libass/ass_parse.c \
                                         libass/ass_render.c \
+                                        libass/ass_render_api.c \
                                         libass/ass_strtod.c \
                                         libass/ass_utils.c \
 
@@ -514,6 +515,7 @@ SRCS_COMMON = asxparser.c \
               osdep/$(TIMER) \
               stream/open.c \
               stream/stream.c \
+              stream/stream_bd.c \
               stream/stream_cue.c \
               stream/stream_file.c \
               stream/stream_mf.c \

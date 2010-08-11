@@ -1,15 +1,15 @@
 8
 
 dir
-31910
+31956
 svn://svn.mplayerhq.hu/mplayer/trunk
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-08-03T11:46:55.955923Z
-31910
-diego
+2010-08-11T01:14:37.804677Z
+31956
+greg
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -39,9 +39,6 @@ f0ca8497302404bc2e08e5a0080c3f3a
 reimar
 has-props
 
-debian
-dir
-
 path.h
 file
 
@@ -54,21 +51,11 @@ b003cd5e66752dc8d10ce9497ac2c2f3
 30949
 diego
 
-libmpcodecs
+debian
 dir
 
-edl.c
-file
-
-
-
-
-2010-02-16T15:36:02.000000Z
-0ceba3b1011406081ddeec2e0c67eb21
-2010-01-30T23:24:23.784247Z
-30471
-diego
-has-props
+libmpcodecs
+dir
 
 AUTHORS
 file
@@ -81,6 +68,19 @@ f20dd3f4d20e8a32f8610efdbd20577e
 2010-05-29T22:04:35.135970Z
 31274
 siretart
+has-props
+
+edl.c
+file
+
+
+
+
+2010-02-16T15:36:02.000000Z
+0ceba3b1011406081ddeec2e0c67eb21
+2010-01-30T23:24:23.784247Z
+30471
+diego
 has-props
 
 vobsub.h
@@ -96,18 +96,6 @@ b081452b303c6d82496f19a557c0ab3b
 diego
 has-props
 
-fmt-conversion.c
-file
-
-
-
-
-2010-05-18T12:45:20.000000Z
-ed7300eb7b17478df32838054badb29b
-2010-05-06T10:18:25.724575Z
-31139
-cehoyos
-
 edl.h
 file
 
@@ -120,6 +108,21 @@ file
 31134
 diego
 has-props
+
+fmt-conversion.c
+file
+
+
+
+
+2010-05-18T12:45:20.000000Z
+ed7300eb7b17478df32838054badb29b
+2010-05-06T10:18:25.724575Z
+31139
+cehoyos
+
+stream
+dir
 
 codec-cfg.c
 file
@@ -134,9 +137,6 @@ file
 reimar
 has-props
 
-stream
-dir
-
 version.sh
 file
 
@@ -150,17 +150,8 @@ fda8ff463aa60a504d2284cee1b10143
 Gabrov
 has-props
 
-fmt-conversion.h
-file
-
-
-
-
-2010-04-08T06:57:55.000000Z
-f5bda39840def6e356710e29a76f89ab
-2010-01-30T23:24:23.784247Z
-30471
-diego
+input
+dir
 
 mpbswap.h
 file
@@ -174,8 +165,17 @@ file
 31700
 cehoyos
 
-input
-dir
+fmt-conversion.h
+file
+
+
+
+
+2010-04-08T06:57:55.000000Z
+f5bda39840def6e356710e29a76f89ab
+2010-01-30T23:24:23.784247Z
+30471
+diego
 
 codec-cfg.h
 file
@@ -199,11 +199,11 @@ file
 
 
 
-2010-07-12T15:11:55.000000Z
-71dde193b1775450c59d7c07c58853c2
-2010-06-25T16:56:40.964758Z
-31559
-reimar
+2010-08-11T10:42:46.000000Z
+0433c691773f3e6343a64794bd43563d
+2010-08-03T15:55:17.814600Z
+31913
+siretart
 has-props
 
 Copyright
@@ -212,11 +212,11 @@ file
 
 
 
-2010-07-12T15:11:55.000000Z
-6b58aee978620c8a0b9d515eb939d392
-2010-07-10T13:43:04.474549Z
-31664
-reimar
+2010-08-11T10:42:46.000000Z
+e266058ae0669f0daca4b3cfd387d22f
+2010-08-06T22:37:55.296110Z
+31934
+greg
 has-props
 
 tremor
@@ -244,11 +244,11 @@ file
 
 
 
-2010-08-03T10:15:09.000000Z
-25a9029a54841de2b1515d7fb3ca555a
-2010-07-29T17:02:13.394864Z
-31861
-siretart
+2010-08-11T10:42:46.000000Z
+be1c42f9559f1543cdf51156445b571a
+2010-08-06T21:13:41.364965Z
+31932
+greg
 has-props
 
 cfg-mencoder.h
@@ -338,6 +338,9 @@ file
 diego
 has-props
 
+libmpeg2
+dir
+
 cpudetect.c
 file
 
@@ -348,22 +351,6 @@ file
 37b3058269bdc72d8c8dff4aebaa5e8c
 2010-08-02T17:39:20.734543Z
 31905
-reimar
-has-props
-
-libmpeg2
-dir
-
-spudec.c
-file
-
-
-
-
-2010-08-03T10:15:09.000000Z
-6fcebc1085444d140e26413fac8b5be5
-2010-07-26T19:41:04.056242Z
-31828
 reimar
 has-props
 
@@ -380,17 +367,17 @@ file
 diego
 has-props
 
-mixer.c
+spudec.c
 file
 
 
 
 
-2010-03-03T12:56:31.000000Z
-ae7074de5053c8394e6c0ddb5a011a92
-2010-02-20T21:02:49.035536Z
-30675
-diego
+2010-08-03T10:15:09.000000Z
+6fcebc1085444d140e26413fac8b5be5
+2010-07-26T19:41:04.056242Z
+31828
+reimar
 has-props
 
 mp_fifo.h
@@ -405,17 +392,18 @@ ec6f06d1c9aa0baf2035593f72b34bb3
 31447
 diego
 
-metadata.h
+mixer.c
 file
 
 
 
 
 2010-03-03T12:56:31.000000Z
-4069a7ca9a77c48e7220c9ad3feeb5dd
+ae7074de5053c8394e6c0ddb5a011a92
 2010-02-20T21:02:49.035536Z
 30675
 diego
+has-props
 
 cpudetect.h
 file
@@ -430,6 +418,18 @@ b33b287fb1de086ddc5dbd4a644b6544
 reimar
 has-props
 
+metadata.h
+file
+
+
+
+
+2010-03-03T12:56:31.000000Z
+4069a7ca9a77c48e7220c9ad3feeb5dd
+2010-02-20T21:02:49.035536Z
+30675
+diego
+
 mp_osd.h
 file
 
@@ -441,19 +441,6 @@ db68e6256b3d89875443e3933aed2f2b
 2010-01-30T23:24:23.784247Z
 30471
 diego
-
-spudec.h
-file
-
-
-
-
-2010-08-03T10:15:09.000000Z
-3f3e92a6a6d5e1e68da86a88157a92f0
-2010-07-26T19:41:04.056242Z
-31828
-reimar
-has-props
 
 xvid_vbr.h
 file
@@ -468,16 +455,29 @@ file
 diego
 has-props
 
-mixer.h
+spudec.h
 file
 
 
 
 
-2010-02-16T15:36:02.000000Z
-0ce8b043b0b6e69ef398032b2cbd6ed9
-2010-01-30T23:24:23.784247Z
-30471
+2010-08-03T10:15:09.000000Z
+3f3e92a6a6d5e1e68da86a88157a92f0
+2010-07-26T19:41:04.056242Z
+31828
+reimar
+has-props
+
+subopt-helper.c
+file
+
+
+
+
+2010-03-03T12:56:31.000000Z
+f134bc0077325b2920392510fe91fa0c
+2010-02-20T21:02:49.035536Z
+30675
 diego
 has-props
 
@@ -494,18 +494,21 @@ file
 diego
 has-props
 
-subopt-helper.c
+mixer.h
 file
 
 
 
 
-2010-03-03T12:56:31.000000Z
-f134bc0077325b2920392510fe91fa0c
-2010-02-20T21:02:49.035536Z
-30675
+2010-02-16T15:36:02.000000Z
+0ce8b043b0b6e69ef398032b2cbd6ed9
+2010-01-30T23:24:23.784247Z
+30471
 diego
 has-props
+
+libvo
+dir
 
 parser-mpcmd.c
 file
@@ -520,24 +523,20 @@ f6ed2d13778530db86802b4f71756d1e
 diego
 has-props
 
-libvo
-dir
-
 libdvdcss
 dir
 
-subopt-helper.h
+parser-cfg.h
 file
 
 
 
 
 2010-02-16T15:36:02.000000Z
-5fad11800fc19c335235c63de91a870b
+014bdebe28c6e97ea133a2d944849a70
 2010-01-30T23:24:23.784247Z
 30471
 diego
-has-props
 
 sub_cc.c
 file
@@ -552,17 +551,18 @@ b29f211d733fe036fbc2ea0cc8b8e9e8
 reimar
 has-props
 
-parser-cfg.h
+subopt-helper.h
 file
 
 
 
 
 2010-02-16T15:36:02.000000Z
-014bdebe28c6e97ea133a2d944849a70
+5fad11800fc19c335235c63de91a870b
 2010-01-30T23:24:23.784247Z
 30471
 diego
+has-props
 
 parser-mpcmd.h
 file
@@ -576,19 +576,6 @@ file
 30471
 diego
 
-configure
-file
-
-
-
-
-2010-08-03T10:15:09.000000Z
-e2c833a62f66c21b8d946f89f32c669d
-2010-08-03T11:46:55.955923Z
-31910
-diego
-has-props
-
 m_property.c
 file
 
@@ -600,6 +587,19 @@ file
 2010-01-30T23:24:23.784247Z
 30471
 diego
+has-props
+
+configure
+file
+
+
+
+
+2010-08-11T10:42:46.000000Z
+2b0d8dcc30cded5e2a312ca840c998dd
+2010-08-08T19:01:18.544935Z
+31950
+cehoyos
 has-props
 
 sub_cc.h
@@ -650,10 +650,10 @@ file
 
 
 
-2010-08-03T10:15:09.000000Z
-d81bbfb3e02e595f85d6c6690730eb29
-2010-07-31T16:55:57.072796Z
-31878
+2010-08-11T10:42:46.000000Z
+fce3544f2f99fc1c3a68939fad55dd76
+2010-08-03T21:06:15.264551Z
+31918
 reimar
 has-props
 
@@ -957,11 +957,11 @@ file
 
 
 
-2010-07-12T15:11:55.000000Z
-127e58e6a5e7ad622443a56402d1b50b
-2010-06-14T15:17:48.225980Z
-31415
-diego
+2010-08-11T10:42:46.000000Z
+6b565ffa4b0577f08b0c6c242b0c65a4
+2010-08-07T18:23:31.786346Z
+31944
+siretart
 has-props
 
 subreader.c
@@ -970,10 +970,10 @@ file
 
 
 
-2010-08-03T10:15:09.000000Z
-9ae2c3ce1242f424957ed076b2a530c4
-2010-07-21T19:02:36.736213Z
-31765
+2010-08-11T10:42:46.000000Z
+2f052338e056d164352fa8531719b7f4
+2010-08-10T13:23:04.945849Z
+31952
 reimar
 has-props
 
@@ -996,11 +996,11 @@ file
 
 
 
-2010-07-12T15:11:55.000000Z
-8d830d9b0a72350fb521ca226801ec54
-2010-06-06T15:41:37.865842Z
-31339
-reimar
+2010-08-11T10:42:46.000000Z
+5169ad4dbeb6e388047096ef12483943
+2010-08-10T00:36:53.385811Z
+31951
+diego
 has-props
 
 TOOLS
@@ -1105,11 +1105,11 @@ file
 
 
 
-2010-08-03T10:15:09.000000Z
-6cbe2cda3bf2f28a9a63adcbe0357789
-2010-07-31T15:17:17.506273Z
-31873
-diego
+2010-08-11T10:42:46.000000Z
+0e8af60b971e6a993e97d11b98a5e7b9
+2010-08-03T17:09:16.514547Z
+31917
+reimar
 has-props
 
 playtree.c
@@ -1188,11 +1188,11 @@ file
 
 
 
-2010-08-03T10:15:09.000000Z
-f07f1b0f9e1ef75a947576959b87c4a3
-2010-07-30T18:14:35.715893Z
-31869
-greg
+2010-08-11T10:42:46.000000Z
+4fef846395d22e8bfb70e0eeb26a3235
+2010-08-10T13:23:04.945849Z
+31952
+reimar
 has-props
 
 path.c

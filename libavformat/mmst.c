@@ -124,7 +124,6 @@ typedef struct {
     /*@}*/
 
     int stream_num;                      ///< stream numbers.
-    int is_playing;
 } MMSContext;
 
 /** Create MMST command packet header */
@@ -545,56 +544,6 @@ static int read_data(MMSContext *mms, uint8_t *buf, const int buf_size)
     return read_size;
 }
 
-/** Read at most one media packet (or a whole header). */
-static int read_mms_packet(MMSContext *mms, uint8_t *buf, int buf_size)
-{
-    int result = 0;
-    int size_to_copy;
-
-    do {
-        if(mms->asf_header_read_size < mms->asf_header_size && !mms->is_playing) {
-            /* Read from ASF header buffer */
-            size_to_copy= FFMIN(buf_size,
-                                mms->asf_header_size - mms->asf_header_read_size);
-            memcpy(buf, mms->asf_header + mms->asf_header_read_size, size_to_copy);
-            mms->asf_header_read_size += size_to_copy;
-            result += size_to_copy;
-            dprintf(NULL, "Copied %d bytes from stored header. left: %d\n",
-                   size_to_copy, mms->asf_header_size - mms->asf_header_read_size);
-            if (mms->asf_header_size == mms->asf_header_read_size) {
-                av_freep(&mms->asf_header);
-                mms->is_playing = 1;
-            }
-        } else if(mms->remaining_in_len) {
-            /* Read remaining packet data to buffer.
-             * the result can not be zero because remaining_in_len is positive.*/
-            result = read_data(mms, buf, buf_size);
-        } else {
-            /* Read from network */
-            int err = mms_safe_send_recv(mms, NULL, SC_PKT_ASF_MEDIA);
-            if (err == 0) {
-                if(mms->remaining_in_len>mms->asf_packet_len) {
-                    av_log(NULL, AV_LOG_ERROR,
-                           "Incoming pktlen %d is larger than ASF pktsize %d\n",
-                           mms->remaining_in_len, mms->asf_packet_len);
-                    result= AVERROR_IO;
-                } else {
-                    // copy the data to the packet buffer.
-                    result = read_data(mms, buf, buf_size);
-                    if (result == 0) {
-                        dprintf(NULL, "read asf media paket size is zero!\n");
-                        break;
-                    }
-                }
-            } else {
-                dprintf(NULL, "read packet error!\n");
-                break;
-            }
-        }
-    } while(!result); // only return one packet.
-    return result;
-}
-
 static int send_close_packet(MMSContext *mms)
 {
     start_command_packet(mms, CS_PKT_STREAM_CLOSE);
@@ -618,6 +567,30 @@ static int mms_close(URLContext *h)
     av_freep(&h->priv_data);
 
     return 0;
+}
+
+static int send_media_packet_request(MMSContext *mms)
+{
+    start_command_packet(mms, CS_PKT_START_FROM_PKT_ID);
+    insert_command_prefixes(mms, 1, 0x0001FFFF);
+    bytestream_put_le64(&mms->write_out_ptr, 0);          // seek timestamp
+    bytestream_put_le32(&mms->write_out_ptr, 0xffffffff); // unknown
+    bytestream_put_le32(&mms->write_out_ptr, 0xffffffff); // packet offset
+    bytestream_put_byte(&mms->write_out_ptr, 0xff);       // max stream time limit
+    bytestream_put_byte(&mms->write_out_ptr, 0xff);       // max stream time limit
+    bytestream_put_byte(&mms->write_out_ptr, 0xff);       // max stream time limit
+    bytestream_put_byte(&mms->write_out_ptr, 0x00);       // stream time limit flag
+
+    mms->packet_id++;                                     // new packet_id
+    bytestream_put_le32(&mms->write_out_ptr, mms->packet_id);
+    return send_command_packet(mms);
+}
+
+
+static void clear_stream_buffers(MMSContext *mms)
+{
+    mms->remaining_in_len = 0;
+    mms->read_in_ptr      = mms->in_buffer;
 }
 
 static int mms_open(URLContext *h, const char *uri, int flags)
@@ -677,6 +650,15 @@ static int mms_open(URLContext *h, const char *uri, int flags)
     if (!mms->asf_packet_len || !mms->stream_num)
         goto fail;
 
+    clear_stream_buffers(mms);
+    err = mms_safe_send_recv(mms, send_stream_selection_request, SC_PKT_STREAM_ID_ACCEPTED);
+    if (err)
+        goto fail;
+    // send media packet request
+    err = mms_safe_send_recv(mms, send_media_packet_request, SC_PKT_MEDIA_PKT_FOLLOWS);
+    if (err) {
+        goto fail;
+    }
     dprintf(NULL, "Leaving open (success)\n");
     return 0;
 fail:
@@ -685,53 +667,55 @@ fail:
     return err;
 }
 
-static int send_media_packet_request(MMSContext *mms)
-{
-    start_command_packet(mms, CS_PKT_START_FROM_PKT_ID);
-    insert_command_prefixes(mms, 1, 0x0001FFFF);
-    bytestream_put_le64(&mms->write_out_ptr, 0);          // seek timestamp
-    bytestream_put_le32(&mms->write_out_ptr, 0xffffffff); // unknown
-    bytestream_put_le32(&mms->write_out_ptr, 0xffffffff); // packet offset
-    bytestream_put_byte(&mms->write_out_ptr, 0xff);       // max stream time limit
-    bytestream_put_byte(&mms->write_out_ptr, 0xff);       // max stream time limit
-    bytestream_put_byte(&mms->write_out_ptr, 0xff);       // max stream time limit
-    bytestream_put_byte(&mms->write_out_ptr, 0x00);       // stream time limit flag
-
-    mms->packet_id++;                                     // new packet_id
-    bytestream_put_le32(&mms->write_out_ptr, mms->packet_id);
-    return send_command_packet(mms);
-}
-
-
-static void clear_stream_buffers(MMSContext *mms)
-{
-    mms->remaining_in_len = 0;
-    mms->read_in_ptr      = mms->in_buffer;
-}
-
 /** Read ASF data through the protocol. */
 static int mms_read(URLContext *h, uint8_t *buf, int size)
 {
     /* TODO: see tcp.c:tcp_read() about a possible timeout scheme */
     MMSContext *mms = h->priv_data;
     int result = 0;
+    int size_to_copy;
 
-    /* Since we read the header at open(), this shouldn't be possible */
-    assert(mms->header_parsed);
-
-    if (!mms->is_playing) {
-        dprintf(NULL, "mms_read() before play().\n");
-        clear_stream_buffers(mms);
-        result = mms_safe_send_recv(mms, send_stream_selection_request, SC_PKT_STREAM_ID_ACCEPTED);
-        if (result)
-            return result;
-        // send media packet request
-        result = mms_safe_send_recv(mms, send_media_packet_request, SC_PKT_MEDIA_PKT_FOLLOWS);
-        if (result) {
-            return result;
+    do {
+        if(mms->asf_header_read_size < mms->asf_header_size) {
+            /* Read from ASF header buffer */
+            size_to_copy= FFMIN(size,
+                                mms->asf_header_size - mms->asf_header_read_size);
+            memcpy(buf, mms->asf_header + mms->asf_header_read_size, size_to_copy);
+            mms->asf_header_read_size += size_to_copy;
+            result += size_to_copy;
+            dprintf(NULL, "Copied %d bytes from stored header. left: %d\n",
+                   size_to_copy, mms->asf_header_size - mms->asf_header_read_size);
+            if (mms->asf_header_size == mms->asf_header_read_size) {
+                av_freep(&mms->asf_header);
+            }
+        } else if(mms->remaining_in_len) {
+            /* Read remaining packet data to buffer.
+             * the result can not be zero because remaining_in_len is positive.*/
+            result = read_data(mms, buf, size);
+        } else {
+            /* Read from network */
+            int err = mms_safe_send_recv(mms, NULL, SC_PKT_ASF_MEDIA);
+            if (err == 0) {
+                if(mms->remaining_in_len>mms->asf_packet_len) {
+                    av_log(NULL, AV_LOG_ERROR,
+                           "Incoming pktlen %d is larger than ASF pktsize %d\n",
+                           mms->remaining_in_len, mms->asf_packet_len);
+                    result= AVERROR_IO;
+                } else {
+                    // copy the data to the packet buffer.
+                    result = read_data(mms, buf, size);
+                    if (result == 0) {
+                        dprintf(NULL, "read asf media paket size is zero!\n");
+                        break;
+                    }
+                }
+            } else {
+                dprintf(NULL, "read packet error!\n");
+                break;
+            }
         }
-    }
-    return read_mms_packet(mms, buf, size);
+    } while(!result); // only return one packet.
+    return result;
 }
 
 URLProtocol mmst_protocol = {

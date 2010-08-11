@@ -1,15 +1,15 @@
 8
 
 dir
-1215
+1217
 svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdread/src/dvdread
 svn://svn.mplayerhq.hu/dvdnav
 
 
 
-2009-12-07T03:50:20.870742Z
-1188
-erik
+2010-08-08T22:49:28.848294Z
+1217
+siretart
 
 
 svn:special svn:externals svn:needs-lock
@@ -136,10 +136,10 @@ file
 
 
 
-2009-01-29T11:51:04.000000Z
-d6af572b04dfe2480f58bd31dbba50f2
-2008-12-31T08:43:03.809552Z
-1162
-reimar
+2010-08-11T10:42:59.000000Z
+c2ff3c0d939d290ff4889d266ea851bd
+2010-08-08T22:49:28.848294Z
+1217
+siretart
 has-props
 

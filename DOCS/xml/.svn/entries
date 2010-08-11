@@ -1,14 +1,14 @@
 8
 
 dir
-31910
+31956
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-07-28T10:00:56.516077Z
-31846
+2010-08-07T21:21:38.524898Z
+31947
 diego
 has-props
 
@@ -96,10 +96,13 @@ dir
 xsl
 dir
 
+fr
+dir
+
 es
 dir
 
-fr
+pl
 dir
 
 default.css
@@ -114,9 +117,6 @@ file
 31032
 diego
 has-props
-
-pl
-dir
 
 hu
 dir

@@ -1,15 +1,15 @@
 8
 
 dir
-31910
+31956
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/hu
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-07-27T21:23:19.977062Z
-31834
-Gabrov
+2010-08-06T23:19:34.954544Z
+31936
+diego
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -149,11 +149,11 @@ file
 
 
 
-2010-08-03T10:15:06.000000Z
-b9420be8df4bb3ff0ee3d225968b1139
-2010-07-27T21:23:19.977062Z
-31834
-Gabrov
+2010-08-11T10:42:43.000000Z
+911c12def39871cb9b7232889fe1f815
+2010-08-06T23:19:34.954544Z
+31936
+diego
 has-props
 
 bugreports.xml
