@@ -1,15 +1,15 @@
 8
 
 dir
-31956
+32628
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man/ru
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-03-18T23:37:57.505476Z
-30936
-diego
+2010-10-20T08:12:40.794565Z
+32519
+attila
 
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2010-04-08T06:58:16.000000Z
-b856543ff51fcb596a1dbd9dc065cd71
-2010-03-18T23:37:57.505476Z
-30936
-diego
+2010-11-15T03:42:40.000000Z
+83ffcfcabfc57462be6e9c1ab7147c92
+2010-10-20T08:12:40.794565Z
+32519
+attila
 has-props
 

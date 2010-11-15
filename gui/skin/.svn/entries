@@ -1,15 +1,15 @@
 8
 
 dir
-31956
+32628
 svn://svn.mplayerhq.hu/mplayer/trunk/gui/skin
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-02-20T21:02:49.035536Z
-30675
-diego
+2010-11-14T09:12:34.694315Z
+32624
+cboesch
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -58,11 +58,11 @@ file
 
 
 
-2010-02-16T15:36:02.000000Z
-267a6354a6a0c7a52fc72639f027df9d
-2010-01-27T19:45:16.004746Z
-30447
-reimar
+2010-11-15T03:42:26.000000Z
+24540de12452e224788833ab94603fe4
+2010-11-14T09:12:34.694315Z
+32624
+cboesch
 has-props
 
 skin.h

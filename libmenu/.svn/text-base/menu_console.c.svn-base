@@ -39,7 +39,7 @@
 #include "m_option.h"
 #include "menu.h"
 
-#include "libvo/font_load.h"
+#include "sub/font_load.h"
 #include "osdep/keycodes.h"
 #include "input/input.h"
 #include "osdep/timer.h"
@@ -142,7 +142,7 @@ static void add_line(struct menu_priv_s* priv, char* l) {
     return;
   }
 
-  if(priv->num_lines >= priv->buf_lines && priv->lines[priv->last_line])
+  if(priv->num_lines >= priv->buf_lines)
     free(priv->lines[priv->last_line]);
   else
     priv->num_lines++;

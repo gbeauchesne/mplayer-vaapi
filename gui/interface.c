@@ -33,24 +33,25 @@
 #include "mplayer/play.h"
 
 #include "access_mpcontext.h"
+#include "sub/ass_mp.h"
 #include "app.h"
 #include "cfg.h"
 #include "help_mp.h"
 #include "path.h"
 #include "mp_core.h"
+#include "mpcommon.h"
 #include "mplayer.h"
 #include "libmpcodecs/vd.h"
 #include "libmpcodecs/vf.h"
 #include "libvo/x11_common.h"
 #include "libvo/video_out.h"
-#include "libvo/font_load.h"
-#include "libvo/sub.h"
+#include "sub/font_load.h"
+#include "sub/sub.h"
 #include "input/input.h"
 #include "libao2/audio_out.h"
 #include "mixer.h"
 #include "libaf/af.h"
 #include "libaf/equalizer.h"
-#include "libass/ass_mp.h"
 
 #ifdef CONFIG_ICONV
 #include <iconv.h>
@@ -103,7 +104,6 @@ char * gstrchr( char * str,int c )
 
 void gfree( void ** p )
 {
- if ( *p == NULL ) return;
  free( *p ); *p=NULL;
 }
 
@@ -354,8 +354,6 @@ void guiDone( void )
  wsXDone();
 }
 
-extern int              stream_dump_type;
-
 void guiLoadFont( void )
 {
 #ifdef CONFIG_FREETYPE
@@ -364,19 +362,19 @@ void guiLoadFont( void )
  if ( vo_font )
   {
    int i;
-   if ( vo_font->name ) free( vo_font->name );
-   if ( vo_font->fpath ) free( vo_font->fpath );
+   free( vo_font->name );
+   free( vo_font->fpath );
    for ( i=0;i<16;i++ )
     if ( vo_font->pic_a[i] )
      {
-      if ( vo_font->pic_a[i]->bmp ) free( vo_font->pic_a[i]->bmp );
-      if ( vo_font->pic_a[i]->pal ) free( vo_font->pic_a[i]->pal );
+      free( vo_font->pic_a[i]->bmp );
+      free( vo_font->pic_a[i]->pal );
      }
    for ( i=0;i<16;i++ )
     if ( vo_font->pic_b[i] )
      {
-      if ( vo_font->pic_b[i]->bmp ) free( vo_font->pic_b[i]->bmp );
-      if ( vo_font->pic_b[i]->pal ) free( vo_font->pic_b[i]->pal );
+      free( vo_font->pic_b[i]->bmp );
+      free( vo_font->pic_b[i]->pal );
      }
    free( vo_font ); vo_font=NULL;
   }
@@ -397,8 +395,6 @@ void guiLoadFont( void )
    }
 #endif
 }
-
-extern char **sub_name;
 
 void guiLoadSubtitle( char * name )
 {
@@ -662,11 +658,7 @@ int guiGetEvent( int type,void * arg )
 	 }
 // -- subtitle
 #ifdef CONFIG_DXR3
-	if ( video_driver_list && !gstrcmp( video_driver_list[0],"dxr3" ) && guiIntfStruct.FileFormat != DEMUXER_TYPE_MPEG_PS
-#ifdef CONFIG_LIBAVCODEC
-	 && !gtkVfLAVC
-#endif
-	 )
+	if ( video_driver_list && !gstrcmp( video_driver_list[0],"dxr3" ) && guiIntfStruct.FileFormat != DEMUXER_TYPE_MPEG_PS && !gtkVfLAVC )
 	 {
 	  gtkMessageBox( GTK_MB_FATAL,MSGTR_NEEDLAVC );
 	  guiIntfStruct.Playing=0;
@@ -751,16 +743,12 @@ int guiGetEvent( int type,void * arg )
 	}
 
 #ifdef CONFIG_DXR3
-#ifdef CONFIG_LIBAVCODEC
 	remove_vf( "lavc" );
-#endif
 	if ( video_driver_list && !gstrcmp( video_driver_list[0],"dxr3" ) )
 	 {
 	  if ( ( guiIntfStruct.StreamType != STREAMTYPE_DVD)&&( guiIntfStruct.StreamType != STREAMTYPE_VCD ) )
 	   {
-#ifdef CONFIG_LIBAVCODEC
 	    if ( gtkVfLAVC ) add_vf( "lavc" );
-#endif
 	   }
 	 }
 #endif
@@ -979,8 +967,8 @@ void * gtkSet( int cmd,float fparam, void * vparam )
 	   plList=curr->next;
 	 plCurrent=curr->next;
 	 // Free it
-	 if ( curr->path ) free( curr->path );
-	 if ( curr->name ) free( curr->name );
+	 free( curr->path );
+	 free( curr->name );
 	 free( curr );
         }
 	mplCurr(); // Instead of using mplNext && mplPrev
@@ -993,8 +981,8 @@ void * gtkSet( int cmd,float fparam, void * vparam )
 	 if ( !plList ) return NULL;
 	 if ( !curr->next )
 	  {
-	   if ( curr->path ) free( curr->path );
-	   if ( curr->name ) free( curr->name );
+	   free( curr->path );
+	   free( curr->name );
 	   free( curr );
 	  }
 	  else
@@ -1002,8 +990,8 @@ void * gtkSet( int cmd,float fparam, void * vparam )
 	    while ( curr->next )
 	     {
 	      next=curr->next;
-	      if ( curr->path ) free( curr->path );
-	      if ( curr->name ) free( curr->name );
+	      free( curr->path );
+	      free( curr->name );
 	      free( curr );
 	      curr=next;
 	     }

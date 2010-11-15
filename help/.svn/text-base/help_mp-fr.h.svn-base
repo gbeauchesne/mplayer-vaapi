@@ -1137,7 +1137,7 @@ static const char help_text[]=
 #define MSGTR_AO_SGI_CantSetParms_Samplerate "[AO SGI] Init : échec setparams: %s\nImpossible régler échantillonnage désiré.\n"
 #define MSGTR_AO_SGI_CantSetAlRate "[AO SGI] Init : AL_RATE non acceptée sur la ressource donnée.\n"
 #define MSGTR_AO_SGI_CantGetParms "[AO SGI] Init : échec getparams : %s\n"
-#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] Init : échantillonnage maintenant %lf (taux désiré : %lf)\n"
+#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] Init : échantillonnage maintenant %f (taux désiré : %f)\n"
 #define MSGTR_AO_SGI_InitConfigError "[AO SGI] Init : %s\n"
 #define MSGTR_AO_SGI_InitOpenAudioFailed "[AO SGI] Init : Impossible d'ouvrir canal audio : %s\n"
 #define MSGTR_AO_SGI_Uninit "[AO SGI] Desinit : ...\n"
@@ -1302,7 +1302,6 @@ static const char help_text[]=
 #define MSGTR_INPUT_INPUT_ErrBuffer2SmallForCmd "Tampon trop petit pour commande %s\n"
 #define MSGTR_INPUT_INPUT_ErrWhyHere "Que faisons-nous ici ?\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitJoystick "Impossible d'initier manette entrée\n"
-#define MSGTR_INPUT_INPUT_ErrCantStatFile "Impossible lire %s : %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantOpenFile "Impossible ouvrir %s : %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitAppleRemote "Impossible d'initier télécommande Apple Remote.\n"
 
@@ -1758,7 +1757,7 @@ static const char help_text[]=
 #define MSGTR_LIBVO_DXR3_XCorrection "[VO_DXR3] Correction X : %d.\n"
 #define MSGTR_LIBVO_DXR3_FailedSetSignalMix "[VO_DXR3] Echec réglage du mix signal !\n"
 
-// libvo/font_load_ft.c
+// font_load_ft.c
 
 #define MSGTR_LIBVO_FONT_LOAD_FT_NewFaceFailed "New_Face a échoué.  Le chemin vers les fonts est peut-être faux.\nSpécifiez un fichier de police, svp. (~/.mplayer/subfont.ttf).\n"
 #define MSGTR_LIBVO_FONT_LOAD_FT_NewMemoryFaceFailed "New_Memory_Face a échoué.\n"

@@ -1,5 +1,5 @@
 /*
- * Bluray stream playback
+ * Blu-ray stream playback
  * by cRTrn13 <crtrn13-at-gmail.com> 2009
  *
  * This file is part of MPlayer.
@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <limits.h>
+#include <ctype.h>
 #include "libavutil/common.h"
 #include "libavutil/aes.h"
 #include "libavutil/sha.h"
@@ -29,10 +30,12 @@
 #include "m_struct.h"
 #include "m_option.h"
 #include "stream.h"
+#include "stream_bd.h"
 
 static const int   BD_UNIT_SIZE = 6144;
 static const char BD_UKF_PATH[]  = "%s/AACS/Unit_Key_RO.inf";
 static const char BD_M2TS_PATH[] = "%s/BDMV/STREAM/%05d.m2ts";
+static const char BD_CLIPINF_PATH[] = "%s/BDMV/CLIPINF/%05d.clpi";
 
 static const char DEFAULT_BD_DEVICE[] = "/mnt/bd";
 
@@ -79,6 +82,15 @@ struct uks {
     key *keys;
 };
 
+// This is just a guess
+#define LANG_NAME_LEN 20
+
+struct lang_map {
+    int id;
+    int type;
+    char lang_name[LANG_NAME_LEN + 1];
+};
+
 struct bd_priv {
     key           vuk;
     key           iv;
@@ -89,6 +101,8 @@ struct bd_priv {
     struct AVAES *aeseed;
     off_t         pos;
     struct uks    uks;
+    int           nr_lang_maps;
+    struct lang_map *lang_maps;
 };
 
 static void bd_stream_close(stream_t *s)
@@ -118,19 +132,80 @@ static int bd_stream_seek(stream_t *s, off_t pos)
     return 1;
 }
 
+#define ID_STR_LEN 41
+static void id2str(const uint8_t *id, int idlen, char dst[ID_STR_LEN])
+{
+    int i;
+    idlen = FFMIN(idlen, 20);
+    for (i = 0; i < idlen; i++)
+        snprintf(dst + 2*i, 3, "%02"PRIX8, id[i]);
+}
+
+static int find_vuk(struct bd_priv *bd, const uint8_t discid[20])
+{
+    char line[1024];
+    char filename[PATH_MAX];
+    const char *home;
+    int vukfound = 0;
+    stream_t *file;
+    char idstr[ID_STR_LEN];
+
+    // look up discid in KEYDB.cfg to get VUK
+    home = getenv("HOME");
+    snprintf(filename, sizeof(filename), "%s/.dvdcss/KEYDB.cfg", home);
+    file = open_stream(filename, NULL, NULL);
+    if (!file) {
+        mp_msg(MSGT_OPEN,MSGL_ERR,
+               "Cannot open VUK database file %s\n", filename);
+        return 0;
+    }
+    id2str(discid, 20, idstr);
+    while (stream_read_line(file, line, sizeof(line), 0)) {
+        char *vst;
+
+        // file is built up this way:
+        // DISCID = title | V | VUK
+        // or
+        // DISCID = title | key-pair
+        // key-pair = V | VUK
+        // or         D | Date
+        // or         M | M-key???
+        // or         I | I-Key
+        // can be followed by ; and comment
+
+        if (strncasecmp(line, idstr, 40))
+            continue;
+        mp_msg(MSGT_OPEN, MSGL_V, "KeyDB found Entry for DiscID:\n%s\n", line);
+
+        vst = strstr(line, "| V |");
+        if (!vst)
+            break;
+        vst += 6;
+        while (isspace(*vst)) vst++;
+        if (sscanf(vst,      "%16"SCNx64, &bd->vuk.u64[0]) != 1)
+            continue;
+        if (sscanf(vst + 16, "%16"SCNx64, &bd->vuk.u64[1]) != 1)
+            continue;
+        bd->vuk.u64[0] = av_be2ne64(bd->vuk.u64[0]);
+        bd->vuk.u64[1] = av_be2ne64(bd->vuk.u64[1]);
+        vukfound = 1;
+    }
+    free_stream(file);
+    return vukfound;
+}
+
 static int bd_get_uks(struct bd_priv *bd)
 {
     unsigned char *buf;
     size_t file_size;
     int pos;
-    int i, j;
+    int i;
     struct AVAES *a;
     struct AVSHA *asha;
     stream_t *file;
     char filename[PATH_MAX];
     uint8_t discid[20];
-    char *home;
-    int vukfound = 0;
+    char idstr[ID_STR_LEN];
 
     snprintf(filename, sizeof(filename), BD_UKF_PATH, bd->device);
     file = open_stream(filename, NULL, NULL);
@@ -156,62 +231,11 @@ static int bd_get_uks(struct bd_priv *bd)
     av_sha_final(asha, discid);
     av_free(asha);
 
-    // look up discid in KEYDB.cfg to get VUK
-    home = getenv("HOME");
-    snprintf(filename, sizeof(filename), "%s/.dvdcss/KEYDB.cfg", home);
-    file = open_stream(filename, NULL, NULL);
-    if (!file) {
-        mp_msg(MSGT_OPEN,MSGL_ERR,
-               "Cannot open VUK database file %s\n", filename);
-        av_free(buf);
-        return 0;
-    }
-    while (!stream_eof(file)) {
-        char line[1024];
-        uint8_t id[20];
-        char d[200];
-        char *vst;
-        unsigned int byte;
-
-        stream_read_line(file, line, sizeof(line), 0);
-        // file is built up this way:
-        // DISCID = title | V | VUK
-        // or
-        // DISCID = title | key-pair
-        // key-pair = V | VUK
-        // or         D | Date
-        // or         M | M-key???
-        // or         I | I-Key
-        // can be followed by ; and comment
-
-        //This means: first string up to whitespace is discid
-        sscanf(line, "%40s", d);
-        for (i = 0; i < 20; ++i) {
-            if (sscanf(&d[i*2], "%2x", &byte) != 1)
-                break;
-            id[i] = byte;
-        }
-        if (memcmp(id, discid, 20) != 0)
-            continue;
-        mp_msg(MSGT_OPEN, MSGL_V, "KeyDB found Entry for DiscID:\n%s\n", line);
-
-        vst = strstr(line, "| V |");
-        if (vst == 0)
-            break;
-        sscanf(&vst[6], "%32s", d);
-        for (i = 0; i < 16; i++) {
-            if (sscanf(&d[i*2], "%2x", &byte) != 1)
-                break;
-            bd->vuk.u8[i] = byte;
-        }
-        vukfound = 1;
-    }
-    free_stream(file);
-    if (!vukfound) {
+    if (!find_vuk(bd, discid)) {
+        id2str(discid, 20, idstr);
         mp_msg(MSGT_OPEN, MSGL_ERR,
-               "No Volume Unique Key (VUK) found for this Disc: ");
-        for (j = 0; j < 20; j++) mp_msg(MSGT_OPEN, MSGL_ERR, "%02x", discid[j]);
-        mp_msg(MSGT_OPEN, MSGL_ERR, "\n");
+               "No Volume Unique Key (VUK) found for this Disc: %s\n", idstr);
+        av_free(buf);
         return 0;
     }
 
@@ -229,16 +253,12 @@ static int bd_get_uks(struct bd_priv *bd)
         bd->uks.keys  = calloc(bd->uks.count, sizeof(key));
 
         a = av_malloc(av_aes_size);
-        j = av_aes_init(a, bd->vuk.u8, 128, 1);
+        av_aes_init(a, bd->vuk.u8, 128, 1);
 
-        mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_BD_DISCID=");
-        for (j = 0; j < 20; j++)
-            mp_msg(MSGT_IDENTIFY, MSGL_INFO, "%02x", discid[j]);
-        mp_msg(MSGT_IDENTIFY, MSGL_INFO, "\n");
-        mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_BD_VUK=");
-        for (j = 0; j < 20; j++)
-            mp_msg(MSGT_IDENTIFY, MSGL_INFO, "%02x", discid[j]);
-        mp_msg(MSGT_IDENTIFY, MSGL_INFO, "\n");
+        id2str(discid, 20, idstr);
+        mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_BD_DISCID=%s\n", idstr);
+        id2str(bd->vuk.u8, 16, idstr);
+        mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_BD_VUK=%s\n", idstr);
 
         for (i = 0; i < bd->uks.count; i++) {
             av_aes_crypt(a, bd->uks.keys[i].u8, &buf[key_pos], 1, NULL, 1); // decrypt unit key
@@ -256,6 +276,7 @@ static int bd_get_uks(struct bd_priv *bd)
 static off_t bd_read(struct bd_priv *bd, uint8_t *buf, int len)
 {
     int read_len;
+    int unit_offset = bd->pos % BD_UNIT_SIZE;
     len &= ~15;
     if (!len)
         return 0;
@@ -264,10 +285,14 @@ static off_t bd_read(struct bd_priv *bd, uint8_t *buf, int len)
     if (read_len != len)
         return -1;
 
-    if (bd->pos % BD_UNIT_SIZE) {
-        // decrypt in place
-        av_aes_crypt(bd->aescbc, buf, buf, len / 16, bd->iv.u8, 1);
-    } else {
+    if (unit_offset) {
+        int decrypt_len = FFMIN(len, BD_UNIT_SIZE - unit_offset);
+        av_aes_crypt(bd->aescbc, buf, buf, decrypt_len / 16, bd->iv.u8, 1);
+        buf += decrypt_len;
+        len -= decrypt_len;
+    }
+    while (len) {
+        int decrypt_len = FFMIN(len, BD_UNIT_SIZE);
         // reset aes context as at start of unit
         key enc_seed;
         bd->iv = BD_CBC_IV;
@@ -284,7 +309,9 @@ static off_t bd_read(struct bd_priv *bd, uint8_t *buf, int len)
 
         // decrypt
         av_aes_crypt(bd->aescbc, &buf[16], &buf[16],
-                     (len - 16) / 16, bd->iv.u8, 1);
+                     (decrypt_len - 16) / 16, bd->iv.u8, 1);
+        buf += decrypt_len;
+        len -= decrypt_len;
     }
 
     bd->pos += read_len;
@@ -304,6 +331,125 @@ static int bd_stream_fill_buffer(stream_t *s, char *buf, int len)
     return read_len;
 }
 
+static int is_video_type(int type)
+{
+    switch (type) {
+    case 1:
+    case 2:
+    case 0x10:
+    case 0x1b:
+    case 0xD1:
+    case 0xEA:
+        return 1;
+    }
+    return 0;
+}
+
+static int is_audio_type(int type)
+{
+    switch (type) {
+    case 3:
+    case 4:
+    case 0x0f:
+    case 0x11:
+    case 0x81:
+    case 0x8A:
+    case 0x82:
+    case 0x85:
+    case 0x86:
+        return 1;
+    }
+    return 0;
+}
+
+static int is_sub_type(int type)
+{
+    switch (type) {
+    case 0x90:
+        return 1;
+    }
+    return 0;
+}
+
+const char *bd_lang_from_id(stream_t *s, int id)
+{
+    struct bd_priv *bd = s->priv;
+    int i;
+    for (i = 0; i < bd->nr_lang_maps; i++) {
+        if (bd->lang_maps[i].id == id)
+            return bd->lang_maps[i].lang_name;
+    }
+    return NULL;
+}
+
+int bd_aid_from_lang(stream_t *s, const char *lang)
+{
+    struct bd_priv *bd = s->priv;
+    int i;
+    for (i = 0; i < bd->nr_lang_maps; i++) {
+        if (is_audio_type(bd->lang_maps[i].type) &&
+            strstr(bd->lang_maps[i].lang_name, lang))
+            return bd->lang_maps[i].id;
+    }
+    return -1;
+}
+
+int bd_sid_from_lang(stream_t *s, const char *lang)
+{
+    struct bd_priv *bd = s->priv;
+    int i;
+    for (i = 0; i < bd->nr_lang_maps; i++) {
+        if (is_sub_type(bd->lang_maps[i].type) &&
+            strstr(bd->lang_maps[i].lang_name, lang))
+            return bd->lang_maps[i].id;
+    }
+    return -1;
+}
+
+static void get_clipinf(struct bd_priv *bd)
+{
+    int i;
+    int langmap_offset, index_offset, end_offset;
+    char filename[PATH_MAX];
+    stream_t *file;
+
+    snprintf(filename, sizeof(filename), BD_CLIPINF_PATH, bd->device, bd->title);
+    file = open_stream(filename, NULL, NULL);
+    if (!file) {
+        mp_msg(MSGT_OPEN, MSGL_ERR, "Cannot open clipinf %s\n", filename);
+        return;
+    }
+    if (stream_read_qword(file) != AV_RB64("HDMV0200")) {
+        mp_msg(MSGT_OPEN, MSGL_ERR, "Unknown clipinf format\n");
+        return;
+    }
+    stream_read_dword(file); // unknown offset
+    langmap_offset = stream_read_dword(file);
+    index_offset = stream_read_dword(file);
+    end_offset = stream_read_dword(file);
+
+    // read language <-> stream id mappings
+    stream_seek(file, langmap_offset);
+    stream_read_dword(file); // size
+    stream_skip(file, 8); // unknown
+    bd->nr_lang_maps = stream_read_char(file); // number of entries
+    stream_read_char(file); // unknown
+
+    bd->lang_maps = calloc(bd->nr_lang_maps, sizeof(*bd->lang_maps));
+    for (i = 0; i < bd->nr_lang_maps; i++) {
+        int type;
+        bd->lang_maps[i].id = stream_read_word(file);
+        stream_read_char(file); // unknown
+        type = stream_read_char(file);
+        if (!is_video_type(type) && !is_audio_type(type) && !is_sub_type(type))
+            mp_msg(MSGT_OPEN, MSGL_WARN, "Unknown type %x in clipinf\n", type);
+        bd->lang_maps[i].type = type;
+        stream_read(file, bd->lang_maps[i].lang_name, LANG_NAME_LEN);
+    }
+
+    free_stream(file);
+}
+
 static int bd_stream_open(stream_t *s, int mode, void* opts, int* file_format)
 {
     char filename[PATH_MAX];
@@ -313,12 +459,13 @@ static int bd_stream_open(stream_t *s, int mode, void* opts, int* file_format)
 
     if (p->device)
         bd->device = p->device;
-    else if (dvd_device)
-        bd->device = dvd_device;
+    else if (bluray_device)
+        bd->device = bluray_device;
     else
         bd->device = DEFAULT_BD_DEVICE;
 
     s->sector_size = BD_UNIT_SIZE;
+    s->read_chunk  = 32 * BD_UNIT_SIZE;
     s->flags       = STREAM_READ | MP_STREAM_SEEK;
     s->fill_buffer = bd_stream_fill_buffer;
     s->seek        = bd_stream_seek;
@@ -348,11 +495,13 @@ static int bd_stream_open(stream_t *s, int mode, void* opts, int* file_format)
         return STREAM_ERROR;
     s->end_pos = bd->title_file->end_pos;
 
+    get_clipinf(bd);
+
     return STREAM_OK;
 }
 
 const stream_info_t stream_info_bd = {
-    "Bluray",
+    "Blu-ray",
     "bd",
     "cRTrn13",
     "",

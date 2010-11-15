@@ -26,6 +26,7 @@
 
 #include "config.h"
 #include "ad_internal.h"
+#include "dec_audio.h"
 #include "libaf/reorder_ch.h"
 
 static const ad_info_t info =
@@ -95,7 +96,7 @@ static int init(sh_audio_t *sh)
     memcpy(sh->codecdata, sh->wf+1, sh->codecdata_len);
     mp_msg(MSGT_DECAUDIO,MSGL_DBG2,"FAAD: codecdata extracted from WAVEFORMATEX\n");
   }
-  if(!sh->codecdata_len) {
+  if(!sh->codecdata_len || sh->format == mmioFOURCC('M', 'P', '4', 'L')) {
     faacDecConfigurationPtr faac_conf;
     /* Set the default object type and samplerate */
     /* This is useful for RAW AAC files */

@@ -40,7 +40,7 @@
 #include "mp_msg.h"
 #include "m_option.h"
 #include "mp_fifo.h"
-#include "libvo/sub.h"
+#include "sub/sub.h"
 #include "subopt-helper.h"
 
 #include "input/input.h"
@@ -345,7 +345,7 @@ static void uninit(void)
         [finalPool release];
     }
 
-    if (buffer_name) free(buffer_name);
+    free(buffer_name);
     buffer_name = NULL;
 }
 

@@ -23,14 +23,12 @@
 //#include "parse_es.h"
 //#include "stheader.h"
 //#include "mp3_hdr.h"
-//#include "subreader.h"
-#include "sub_cc.h"
-#include "libvo/sub.h"
+//#include "sub/subreader.h"
+#include "sub/sub_cc.h"
+#include "sub/sub.h"
 #include "demux_ty_osd.h"
 
 //#include "dvdauth.h"
-
-extern int sub_justify;
 
 #define TY_TEXT_MODE        ( 1 << 0 )
 #define TY_OSD_MODE         ( 1 << 1 )

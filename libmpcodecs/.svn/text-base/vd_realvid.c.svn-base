@@ -263,11 +263,11 @@ static int init(sh_video_t *sh){
 	int result;
 	// we export codec id and sub-id from demuxer in bitmapinfohdr:
 	unsigned char* extrahdr=(unsigned char*)(sh->bih+1);
-	unsigned int extrahdr_size = sh->bih->biSize - sizeof(BITMAPINFOHEADER);
+	unsigned int extrahdr_size = sh->bih->biSize - sizeof(*sh->bih);
 	struct rv_init_t init_data;
 
 	if(extrahdr_size < 8) {
-	    mp_msg(MSGT_DECVIDEO,MSGL_ERR,"realvideo: extradata too small (%u)\n", sh->bih->biSize - sizeof(BITMAPINFOHEADER));
+	    mp_msg(MSGT_DECVIDEO,MSGL_ERR,"realvideo: extradata too small (%u)\n", extrahdr_size);
 	    return 0;
 	}
 	init_data = (struct rv_init_t){11, sh->disp_w, sh->disp_h, 0, 0, AV_RB32(extrahdr), 1, AV_RB32(extrahdr + 4)}; // rv30
@@ -356,8 +356,7 @@ static void uninit(sh_video_t *sh){
 #endif
 	rv_handle=NULL;
 	initialized = 0;
-	if (buffer)
-	    free(buffer);
+	free(buffer);
 	buffer = NULL;
 	bufsz = 0;
 }
@@ -387,7 +386,7 @@ static mp_image_t* decode(sh_video_t *sh,void* data,int len,int flags){
 	if(len<=0 || flags&2) return NULL; // skipped frame || hardframedrop
 
 	if (bufsz < sh->disp_w*sh->disp_h*3/2) {
-	    if (buffer) free(buffer);
+	    free(buffer);
 	    bufsz = sh->disp_w*sh->disp_h*3/2;
 	    buffer=malloc(bufsz);
 	    if (!buffer) return 0;

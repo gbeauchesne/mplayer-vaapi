@@ -1,15 +1,15 @@
 8
 
 dir
-31956
+32628
 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale/mlib
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-05-12T20:47:32.413322Z
-31170
-ramiro
+2010-09-05T09:41:24.596335Z
+32050
+reimar
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2009-09-14T08:42:39.000000Z
-17f03d7da15382c9fed16c81f8458a10
-2010-05-12T20:47:32.413322Z
-31170
-ramiro
+2010-11-15T03:42:42.000000Z
+bbd9ff0f64feb00b8567c32a99cad29e
+2010-09-05T09:41:24.596335Z
+32050
+reimar
 has-props
 

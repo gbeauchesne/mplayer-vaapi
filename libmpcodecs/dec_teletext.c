@@ -62,7 +62,7 @@
  * 4. libmpcodecs/dec_teletext.c: prepare_visible_page(...)
  *      processing page. adding number of just received by background process
  *      teletext page, adding current time,etc.
- * 5. libvo/sub.c: vo_update_text_teletext(...)
+ * 5. sub/sub.c: vo_update_text_teletext(...)
  *      rendering displayable osd with text and graphics
  *
  * TODO:
@@ -1101,8 +1101,7 @@ static int decode_pkt0(priv_vbi_t* priv,unsigned char* data,int magAddr)
         if(d[i]&0x80){
             pll_add(priv,2,4);
 
-            if(priv->mag[magAddr].pt)
-                  free(priv->mag[magAddr].pt);
+            free(priv->mag[magAddr].pt);
             priv->mag[magAddr].pt=NULL;
             priv->mag[magAddr].order=0;
             return 0;
@@ -1754,10 +1753,8 @@ int teletext_control(void* p, int cmd, void *arg)
     }
     case TV_VBI_CONTROL_STOP:
     {
-        if(priv->mag)
-            free(priv->mag);
-        if(priv->ptsp)
-            free(priv->ptsp);
+        free(priv->mag);
+        free(priv->ptsp);
         destroy_cache(priv);
         priv->page_changed=1;
         pthread_mutex_destroy(&priv->buffer_mutex);

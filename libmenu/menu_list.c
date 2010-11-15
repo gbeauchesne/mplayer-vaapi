@@ -29,15 +29,12 @@
 #include "m_struct.h"
 #include "menu.h"
 
-#include "libvo/font_load.h"
+#include "sub/font_load.h"
 #include "osdep/keycodes.h"
 
 #define IMPL 1
 #include "menu_list.h"
 
-extern double menu_mouse_x;
-extern double menu_mouse_y;
-extern int menu_mouse_pos_updated;
 static int mouse_x;
 static int mouse_y;
 static int selection_x;

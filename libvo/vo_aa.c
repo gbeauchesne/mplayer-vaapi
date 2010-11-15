@@ -39,8 +39,8 @@
 #include "aspect.h"
 #include "libswscale/swscale.h"
 #include "libmpcodecs/vf_scale.h"
-#include "font_load.h"
-#include "sub.h"
+#include "sub/font_load.h"
+#include "sub/sub.h"
 
 #include "osdep/keycodes.h"
 #include <aalib.h>
@@ -648,17 +648,16 @@ static int parse_suboptions(const char *arg) {
         if (subcolor) aaopt_subcolor = getcolor(subcolor);
     }
 
-    if (subopts) free(subopts);
-    if (booleans) free(booleans);
+    free(subopts);
+    free(booleans);
     if (strings) {
         for (i=0; i<nstrings; i++)
-            if (strings[i])
-                free(strings[i]);
+            free(strings[i]);
         free(strings);
     }
-    if (osdcolor) free(osdcolor);
-    if (subcolor) free(subcolor);
-    if (helpmsg) free(helpmsg);
+    free(osdcolor);
+    free(subcolor);
+    free(helpmsg);
     return retval;
 }
 

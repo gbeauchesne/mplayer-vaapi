@@ -31,8 +31,11 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "libvo/video_out.h"
-#include "vobsub.h"
-#include "spudec.h"
+#include "sub/vobsub.h"
+#include "sub/spudec.h"
+
+/* linking hacks */
+char *mplayer_version;
 
 /* XXX Kludge ahead, this MUST be the same as the definitions found in ../spudec.c */
 typedef struct packet_t packet_t;

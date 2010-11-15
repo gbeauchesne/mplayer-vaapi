@@ -45,7 +45,7 @@
 #include "libavcodec/avcodec.h"
 #include "libavcodec/xvmc.h"
 
-#include "sub.h"
+#include "sub/sub.h"
 #include "aspect.h"
 
 #include "subopt-helper.h"
@@ -58,8 +58,6 @@
 #undef NDEBUG
 #include <assert.h>
 
-
-#define UNUSED(x) ((void)(x))
 
 #if LIBAVCODEC_BUILD < ((51<<16)+(40<<8)+2)
 #error You need at least libavcodec v51.40.2
@@ -672,7 +670,6 @@ skip_surface_allocation:
 }
 
 static int draw_frame(uint8_t *srcp[]){
-    UNUSED(srcp);
     assert(0);
 }
 

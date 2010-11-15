@@ -35,13 +35,15 @@
 #include <stdio.h>
 
 #include "config.h"
+#include "sub/ass_mp.h"
 #include "mp_msg.h"
 #include "video_out.h"
 #include "video_out_internal.h"
 #include "x11_common.h"
 #include "aspect.h"
-#include "font_load.h"
-#include "sub.h"
+#include "sub/font_load.h"
+#include "sub/sub.h"
+#include "sub/eosd.h"
 #include "subopt-helper.h"
 
 #include "libavcodec/vdpau.h"
@@ -49,7 +51,6 @@
 #include "libavutil/common.h"
 #include "libavutil/mathematics.h"
 
-#include "libass/ass_mp.h"
 
 static vo_info_t info = {
     "VDPAU with X11",
@@ -521,16 +522,12 @@ static int create_vdp_mixer(VdpChromaType vdp_chroma_type)
     return 0;
 }
 
-// Free everything specific to a certain video file
-static void free_video_specific(void)
+static void mark_invalid(void)
 {
     int i;
-    VdpStatus vdp_st;
 
-    if (decoder != VDP_INVALID_HANDLE)
-        vdp_decoder_destroy(decoder);
     decoder = VDP_INVALID_HANDLE;
-    decoder_max_refs = -1;
+    video_mixer = VDP_INVALID_HANDLE;
 
     for (i = 0; i < 3; i++)
         deint_surfaces[i] = VDP_INVALID_HANDLE;
@@ -540,6 +537,17 @@ static void free_video_specific(void)
             deint_mpi[i]->usage_count--;
             deint_mpi[i] = NULL;
         }
+}
+
+// Free everything specific to a certain video file
+static void free_video_specific(void)
+{
+    int i;
+    VdpStatus vdp_st;
+
+    if (decoder != VDP_INVALID_HANDLE)
+        vdp_decoder_destroy(decoder);
+    decoder_max_refs = -1;
 
     for (i = 0; i < MAX_VIDEO_SURFACES; i++) {
         if (surface_render[i].surface != VDP_INVALID_HANDLE) {
@@ -553,7 +561,7 @@ static void free_video_specific(void)
         vdp_st = vdp_video_mixer_destroy(video_mixer);
         CHECK_ST_WARNING("Error when calling vdp_video_mixer_destroy")
     }
-    video_mixer = VDP_INVALID_HANDLE;
+    mark_invalid();
 }
 
 static int create_vdp_decoder(uint32_t format, uint32_t width, uint32_t height,
@@ -603,16 +611,8 @@ static void mark_vdpau_objects_uninitialized(void)
 {
     int i;
 
-    decoder = VDP_INVALID_HANDLE;
     for (i = 0; i < MAX_VIDEO_SURFACES; i++)
         surface_render[i].surface = VDP_INVALID_HANDLE;
-    for (i = 0; i < 3; i++) {
-        deint_surfaces[i] = VDP_INVALID_HANDLE;
-        if (i < 2 && deint_mpi[i])
-            deint_mpi[i]->usage_count--;
-        deint_mpi[i] = NULL;
-    }
-    video_mixer     = VDP_INVALID_HANDLE;
     vdp_flip_queue  = VDP_INVALID_HANDLE;
     vdp_flip_target = VDP_INVALID_HANDLE;
     for (i = 0; i <= NUM_OUTPUT_SURFACES; i++)
@@ -623,6 +623,7 @@ static void mark_vdpau_objects_uninitialized(void)
     output_surface_width = output_surface_height = -1;
     eosd_render_count = 0;
     visible_buf = 0;
+    mark_invalid();
 }
 
 static int handle_preemption(void)
@@ -854,13 +855,13 @@ static void draw_eosd(void)
     }
 }
 
-static void generate_eosd(EOSD_ImageList *imgs)
+static void generate_eosd(struct mp_eosd_image_list *imgs)
 {
     VdpStatus vdp_st;
     VdpRect destRect;
     int j, found;
-    ASS_Image *img = imgs->imgs;
-    ASS_Image *i;
+    struct mp_eosd_image *img = eosd_image_first(imgs);
+    struct mp_eosd_image *i;
 
     // Nothing changed, no need to redraw
     if (imgs->changed == 0)
@@ -876,7 +877,7 @@ static void generate_eosd(EOSD_ImageList *imgs)
     for (j = 0; j < eosd_surface_count; j++)
         eosd_surfaces[j].in_use = 0;
 
-    for (i = img; i; i = i->next) {
+    for (i = img; i; i = eosd_image_next(imgs)) {
         // Try to reuse a suitable surface
         found = -1;
         for (j = 0; j < eosd_surface_count; j++) {
@@ -927,7 +928,7 @@ static void generate_eosd(EOSD_ImageList *imgs)
 
 eosd_skip_upload:
     eosd_render_count = 0;
-    for (i = img; i; i = i->next) {
+    for (i = eosd_image_first(imgs); i; i = eosd_image_next(imgs)) {
         // Render dest, color, etc.
         eosd_targets[eosd_render_count].color.alpha = 1.0 - ((i->color >>  0) & 0xff) / 255.0;
         eosd_targets[eosd_render_count].color.blue  =       ((i->color >>  8) & 0xff) / 255.0;
@@ -1400,7 +1401,7 @@ static int control(uint32_t request, void *data, ...)
         draw_eosd();
         return VO_TRUE;
     case VOCTRL_GET_EOSD_RES: {
-        mp_eosd_res_t *r = data;
+        struct mp_eosd_settings *r = data;
         r->mt = r->mb = r->ml = r->mr = 0;
         r->srcw = vid_width; r->srch = vid_height;
         if (vo_fs) {

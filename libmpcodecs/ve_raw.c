@@ -64,6 +64,12 @@ static int set_format(struct vf_instance *vf, unsigned int fmt) {
 	return 1;
     }
     switch (fmt) {
+    case IMGFMT_NV12:
+    case IMGFMT_NV21:
+    case IMGFMT_HM12:
+	mux_v->bih->biPlanes = 2;
+	mux_v->bih->biBitCount = 12;
+	break;
     case IMGFMT_I420:
     case IMGFMT_IYUV:
     case IMGFMT_YV12:
@@ -159,15 +165,15 @@ static int vf_open(vf_instance_t *vf, char* args){
     memset(vf->priv, 0, sizeof(struct vf_priv_s));
     vf->priv->mux = (muxer_stream_t*)args;
 
-    mux_v->bih = calloc(1, sizeof(BITMAPINFOHEADER));
-    mux_v->bih->biSize = sizeof(BITMAPINFOHEADER);
+    mux_v->bih = calloc(1, sizeof(*mux_v->bih));
+    mux_v->bih->biSize = sizeof(*mux_v->bih);
     mux_v->bih->biWidth = 0;
     mux_v->bih->biHeight = 0;
 
     return 1;
 }
 
-vf_info_t ve_info_raw = {
+const vf_info_t ve_info_raw = {
     "raw encoder",
     "raw",
     "jwe21@cam.ac.uk",

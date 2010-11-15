@@ -66,7 +66,7 @@ typedef struct af_info_s
 // Linked list of audio filters
 typedef struct af_instance_s
 {
-  af_info_t* info;
+  const af_info_t* info;
   int (*control)(struct af_instance_s* af, int cmd, void* arg);
   void (*uninit)(struct af_instance_s* af);
   af_data_t* (*play)(struct af_instance_s* af, af_data_t* data);
@@ -161,6 +161,13 @@ int af_init(af_stream_t* s);
  * \brief Uninit and remove all filters from audio filter chain
  */
 void af_uninit(af_stream_t* s);
+
+/**
+ * \brief  Reinit the filter list from the given filter on downwards
+ * \param  Filter instance to begin the reinit from
+ * \return AF_OK on success or AF_ERROR on failure
+ */
+int af_reinit(af_stream_t* s, af_instance_t* af);
 
 /**
  * \brief This function adds the filter "name" to the stream s.

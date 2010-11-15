@@ -1,15 +1,15 @@
 8
 
 dir
-31956
+32628
 svn://svn.mplayerhq.hu/mplayer/trunk/gui/mplayer/gtk
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-06-24T17:19:49.634978Z
-31555
-diego
+2010-11-14T09:12:34.694315Z
+32624
+cboesch
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -71,11 +71,11 @@ file
 
 
 
-2010-02-16T15:36:02.000000Z
-5d635c80f5aecaabd6ca63d72ccee221
-2010-02-14T14:02:09.095792Z
-30577
-diego
+2010-11-15T03:42:27.000000Z
+442609aa89ca1cd64f0b1f6e77931b62
+2010-11-14T09:12:34.694315Z
+32624
+cboesch
 has-props
 
 eq.c
@@ -117,19 +117,6 @@ file
 diego
 has-props
 
-gtk_menu.c
-file
-
-
-
-
-2010-02-16T15:36:02.000000Z
-63e0d373c25ee06f836ab9173af0da67
-2010-02-14T14:02:09.095792Z
-30577
-diego
-has-props
-
 sb.h
 file
 
@@ -140,6 +127,32 @@ file
 35ed095ccd3c680adcad97334f84ea9b
 2008-12-03T23:01:03.919423Z
 28085
+diego
+has-props
+
+gtk_menu.c
+file
+
+
+
+
+2010-11-15T03:42:27.000000Z
+9aee3c9ee9b3c9c977c0fa05f72e4142
+2010-10-17T08:47:08.574706Z
+32495
+reimar
+has-props
+
+about.c
+file
+
+
+
+
+2010-02-16T15:36:02.000000Z
+d5bbd5164b059fa7370abcadea37567e
+2010-02-14T14:02:09.095792Z
+30577
 diego
 has-props
 
@@ -156,30 +169,17 @@ file
 diego
 has-props
 
-about.c
-file
-
-
-
-
-2010-02-16T15:36:02.000000Z
-d5bbd5164b059fa7370abcadea37567e
-2010-02-14T14:02:09.095792Z
-30577
-diego
-has-props
-
 pl.c
 file
 
 
 
 
-2010-03-03T12:56:31.000000Z
-4524e064ccbd50459df577963d98af01
-2010-02-20T21:02:49.035536Z
-30675
-diego
+2010-11-15T03:42:27.000000Z
+987ea6acabc290d4d6316d48c317808a
+2010-11-14T09:12:34.694315Z
+32624
+cboesch
 has-props
 
 gtk_url.h
@@ -253,11 +253,11 @@ file
 
 
 
-2010-07-12T15:11:53.000000Z
-89c0dc883bc376adff6964bb2fe85606
-2010-06-24T17:19:49.634978Z
-31555
-diego
+2010-11-15T03:42:27.000000Z
+68d726fdeca4b752fe32c331fe9df206
+2010-10-27T17:47:13.425545Z
+32554
+cigaes
 has-props
 
 opts.h

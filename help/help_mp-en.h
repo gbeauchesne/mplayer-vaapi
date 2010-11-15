@@ -1,4 +1,4 @@
-// $Revision: 31938 $
+// $Revision: 32526 $
 // MASTER FILE. Use this file as base for translations.
 // Translated files should be sent to the mplayer-DOCS mailing list or
 // to the help messages maintainer, see DOCS/tech/MAINTAINERS.
@@ -180,9 +180,12 @@ static const char help_text[]=
 #define MSGTR_DvdnavNavSpuClutChange "DVDNAV Event: Nav SPU CLUT Change\n"
 #define MSGTR_DvdnavNavSeekDone "DVDNAV Event: Nav Seek Done\n"
 #define MSGTR_MenuCall "Menu call\n"
+#define MSGTR_MasterQuit "Option -udp-slave: exiting because master exited\n"
+#define MSGTR_InvalidIP "Option -udp-ip: invalid IP address\n"
 
 // --- edit decision lists
 #define MSGTR_EdlOutOfMem "Can't allocate enough memory to hold EDL data.\n"
+#define MSGTR_EdlOutOfMemFile "Can't allocate enough memory to hold EDL file name [%s].\n"
 #define MSGTR_EdlRecordsNo "Read %d EDL actions.\n"
 #define MSGTR_EdlQueueEmpty "There are no EDL actions to take care of.\n"
 #define MSGTR_EdlCantOpenForWrite "Can't open EDL file [%s] for writing.\n"
@@ -210,6 +213,8 @@ static const char help_text[]=
 #define MSGTR_OSDChapter "Chapter: (%d) %s"
 #define MSGTR_OSDAngle "Angle: %d/%d"
 #define MSGTR_OSDDeinterlace "Deinterlace: %s"
+#define MSGTR_OSDCapturing "Capturing: %s"
+#define MSGTR_OSDCapturingFailure "Capturing failed"
 
 // property values
 #define MSGTR_Enabled "enabled"
@@ -1204,7 +1209,7 @@ static const char help_text[]=
 #define MSGTR_AO_SGI_CantSetParms_Samplerate "[AO SGI] init: setparams failed: %s\nCould not set desired samplerate.\n"
 #define MSGTR_AO_SGI_CantSetAlRate "[AO SGI] init: AL_RATE was not accepted on the given resource.\n"
 #define MSGTR_AO_SGI_CantGetParms "[AO SGI] init: getparams failed: %s\n"
-#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] init: samplerate is now %lf (desired rate is %lf)\n"
+#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] init: samplerate is now %f (desired rate is %f)\n"
 #define MSGTR_AO_SGI_InitConfigError "[AO SGI] init: %s\n"
 #define MSGTR_AO_SGI_InitOpenAudioFailed "[AO SGI] init: Unable to open audio channel: %s\n"
 #define MSGTR_AO_SGI_Uninit "[AO SGI] uninit: ...\n"
@@ -1364,7 +1369,6 @@ static const char help_text[]=
 #define MSGTR_INPUT_INPUT_ErrBuffer2SmallForCmd "Buffer is too small for command %s\n"
 #define MSGTR_INPUT_INPUT_ErrWhyHere "What are we doing here?\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitJoystick "Can't init input joystick\n"
-#define MSGTR_INPUT_INPUT_ErrCantStatFile "Can't stat %s: %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantOpenFile "Can't open %s: %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitAppleRemote "Can't init Apple Remote.\n"
 

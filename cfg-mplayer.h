@@ -23,6 +23,7 @@
  * config for cfgparser
  */
 
+#include <stddef.h>
 #include "cfg-common.h"
 #include "gui/interface.h"
 #include "input/lirc.h"
@@ -34,7 +35,7 @@
 #include "libvo/vo_fbdev.h"
 #include "libvo/vo_zr.h"
 #include "mp_fifo.h"
-#include "unrar_exec.h"
+#include "sub/unrar_exec.h"
 
 
 const m_option_t vd_conf[]={
@@ -103,6 +104,8 @@ const m_option_t mplayer_opts[]={
      CONF_TYPE_PRINT, 0, 0, 0, NULL},
     {"edlout", &edl_output_filename,  CONF_TYPE_STRING, 0, 0, 0, NULL},
     {"edl-backward-delay", &edl_backward_delay,  CONF_TYPE_INT, CONF_MIN, 0, 0, NULL},
+    {"edl-start-pts", &edl_start_pts,  CONF_TYPE_FLAG, 0, 0, 1, NULL},
+    {"noedl-start-pts", &edl_start_pts,  CONF_TYPE_FLAG, 0, 1, 0, NULL},
 
 #ifdef CONFIG_X11
     {"display", &mDisplayName, CONF_TYPE_STRING, 0, 0, 0, NULL},
@@ -135,11 +138,6 @@ const m_option_t mplayer_opts[]={
 #ifdef CONFIG_FBDEV
     {"fbmode", &fb_mode_name, CONF_TYPE_STRING, 0, 0, 0, NULL},
     {"fbmodeconfig", &fb_mode_cfgfile, CONF_TYPE_STRING, 0, 0, 0, NULL},
-#endif
-#ifdef CONFIG_DIRECTFB
-#if DIRECTFBVERSION > 912
-    {"dfbopts", "-dfbopts has been removed. Use -vf directfb:dfbopts=... instead.\n", CONF_TYPE_PRINT, 0, 0, 0, NULL},
-#endif
 #endif
 
     // force window width/height or resolution (with -vm)
@@ -273,6 +271,14 @@ const m_option_t mplayer_opts[]={
 
     {"benchmark", &benchmark, CONF_TYPE_FLAG, 0, 0, 1, NULL},
 
+#ifdef CONFIG_NETWORKING
+    {"udp-slave", &udp_slave, CONF_TYPE_FLAG, 0, 0, 1, NULL},
+    {"udp-master", &udp_master, CONF_TYPE_FLAG, 0, 0, 1, NULL},
+    {"udp-ip", &udp_ip, CONF_TYPE_STRING, 0, 0, 1, NULL},
+    {"udp-port", &udp_port, CONF_TYPE_INT, 0, 1, 65535, NULL},
+    {"udp-seek-threshold", &udp_seek_threshold, CONF_TYPE_FLOAT, CONF_RANGE, 0.1, 100, NULL},
+#endif /* CONFIG_NETWORKING */
+
     // dump some stream out instead of playing the file
     // this really should be in MEncoder instead of MPlayer... -> TODO
     {"dumpfile", &stream_dump_name, CONF_TYPE_STRING, 0, 0, 0, NULL},
@@ -285,6 +291,8 @@ const m_option_t mplayer_opts[]={
     {"dumpmicrodvdsub", &stream_dump_type, CONF_TYPE_FLAG, 0, 0, 7, NULL},
     {"dumpjacosub", &stream_dump_type, CONF_TYPE_FLAG, 0, 0, 8, NULL},
     {"dumpsami", &stream_dump_type, CONF_TYPE_FLAG, 0, 0, 9, NULL},
+
+    {"capture", &capture_dump, CONF_TYPE_FLAG, 0, 0, 1, NULL},
 
 #ifdef CONFIG_LIRC
     {"lircconf", &lirc_configfile, CONF_TYPE_STRING, CONF_GLOBAL, 0, 0, NULL},

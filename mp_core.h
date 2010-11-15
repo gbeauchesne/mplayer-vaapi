@@ -19,6 +19,7 @@
 #ifndef MPLAYER_MP_CORE_H
 #define MPLAYER_MP_CORE_H
 
+#include "config.h"
 #include "mp_osd.h"
 #include "libao2/audio_out.h"
 #include "playtree.h"
@@ -27,7 +28,7 @@
 #include "libmpdemux/stheader.h"
 #include "mixer.h"
 #include "libvo/video_out.h"
-#include "subreader.h"
+#include "sub/subreader.h"
 
 // definitions used internally by the core player code
 
@@ -93,6 +94,8 @@ typedef struct MPContext {
     int startup_decode_retry;
     // how long until we need to display the "current" frame
     float time_frame;
+    // flag to indicate that we've found a correctly timed video frame PTS
+    int framestep_found;
 
     // AV sync: the next frame should be shown when the audio out has this
     // much (in seconds) buffered data left. Increased when more data is

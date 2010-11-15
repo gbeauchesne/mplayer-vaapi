@@ -39,7 +39,7 @@
 #include "stream/stream.h"
 #include "stream/url.h"
 #include "mixer.h"
-#include "libvo/sub.h"
+#include "sub/sub.h"
 #include "access_mpcontext.h"
 
 #include "libmpcodecs/vd.h"
@@ -49,6 +49,7 @@
 #include "m_option.h"
 #include "m_property.h"
 #include "mp_core.h"
+#include "mpcommon.h"
 
 #define GUI_REDRAW_WAIT 375
 
@@ -369,7 +370,6 @@ set_volume:
    case evRedraw:
         {
           unsigned now = GetTimerMS();
-          extern int mplPBFade;
           if ((now > last_redraw_time) &&
               (now < last_redraw_time + GUI_REDRAW_WAIT) &&
               !mplPBFade)

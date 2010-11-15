@@ -1,22 +1,16 @@
 K 13
 svn:externals
-V 403
-libavutil	svn://svn.ffmpeg.org/ffmpeg/trunk/libavutil
-libavcodec	svn://svn.ffmpeg.org/ffmpeg/trunk/libavcodec
-libavcore	svn://svn.ffmpeg.org/ffmpeg/trunk/libavcore
-libavformat	svn://svn.ffmpeg.org/ffmpeg/trunk/libavformat
-libpostproc	svn://svn.ffmpeg.org/ffmpeg/trunk/libpostproc
+V 165
+ffmpeg		svn://svn.ffmpeg.org/ffmpeg/trunk
 libdvdread4	svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdread/src
 libdvdnav	svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdnav/src
 
 K 10
 svn:ignore
-V 161
+V 139
 *.d
 *.ho
-config.h
-config.log
-config.mak
+config.*
 gmplayer
 help_mp.h
 mencoder

@@ -26,7 +26,7 @@
 
 #include "stream/stream.h"
 #ifdef CONFIG_ASS
-#include "libass/ass_mp.h"
+#include "sub/ass_mp.h"
 #endif
 #include "m_option.h"
 
@@ -182,6 +182,10 @@ extern int sub_demuxer_type;
 extern int audio_stream_cache;
 extern int correct_pts;
 extern int user_correct_pts;
+
+extern char *demuxer_name;
+extern char *audio_demuxer_name;
+extern char *sub_demuxer_name;
 extern char *sub_stream;
 
 extern int rtsp_port;
@@ -303,7 +307,7 @@ static inline void resize_demux_packet(demux_packet_t* dp, int len)
   }
   else
   {
-     if(dp->buffer) free(dp->buffer);
+     free(dp->buffer);
      dp->buffer=NULL;
   }
   dp->len=len;
@@ -328,7 +332,7 @@ static inline void free_demux_packet(demux_packet_t* dp){
   if (dp->master==NULL){  //dp is a master packet
     dp->refcount--;
     if (dp->refcount==0){
-      if (dp->buffer) free(dp->buffer);
+      free(dp->buffer);
       free(dp);
     }
     return;

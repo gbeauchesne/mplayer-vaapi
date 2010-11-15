@@ -2,7 +2,7 @@
 // Updated by: Roberto Togni <see AUTHORS for email address>
 // Updated by: PaulTT <see AUTHORS for email address>
 
-// Updated to help_mp-en.h r30515
+// Updated to help_mp-en.h r32397
 
 
 // ========================= MPlayer help ===========================
@@ -178,9 +178,12 @@ static const char help_text[]=
 #define MSGTR_DvdnavNavSpuClutChange "DVDNAV Evento: Nav Cambio CLUT SPU\n"
 #define MSGTR_DvdnavNavSeekDone "DVDNAV Evento: Nev Ricerca eseguita\n"
 #define MSGTR_MenuCall "Chiamata a Menu\n"
+#define MSGTR_MasterQuit "Opzione -udp-slave: in chiusura causata dalla chiusura del master\n"
+#define MSGTR_InvalidIP "Opzione -udp-ip: indirizzo IP non valido\n"
 
 // --- edit decision lists
 #define MSGTR_EdlOutOfMem "Non posso allocare abbastanza memoria per i dati EDL.\n"
+#define MSGTR_EdlOutOfMemFile "Non posso allocare abbastanza memoria per il nome file EDL [%s].\n"
 #define MSGTR_EdlRecordsNo "Lette azioni EDL %d.\n"
 #define MSGTR_EdlQueueEmpty "Non ci sono azioni EDL di cui curarsi.\n"
 #define MSGTR_EdlCantOpenForWrite "Non posso aprire il file EDL [%s] per la scrittura.\n"
@@ -208,6 +211,8 @@ static const char help_text[]=
 #define MSGTR_OSDChapter "Capitolo: (%d) %s"
 #define MSGTR_OSDAngle "Angolazione: %d/%d"
 #define MSGTR_OSDDeinterlace "Deinterlacciamento: %s"
+#define MSGTR_OSDCapturing "Registrazione: %s"
+#define MSGTR_OSDCapturingFailure "Registrazione fallita"
 
 // property values
 #define MSGTR_Enabled "abilitat"
@@ -1096,12 +1101,10 @@ static const char help_text[]=
 // vo_yuv4mpeg.c
 #define MSGTR_VO_YUV4MPEG_InterlacedHeightDivisibleBy4 "La modalità interlacciata richiede l'altezza immagine divisibile per 4."
 #define MSGTR_VO_YUV4MPEG_InterlacedLineBufAllocFail "Impossibile allocare il buffer di linea per la modalità interlacciata."
-#define MSGTR_VO_YUV4MPEG_InterlacedInputNotRGB "L'input non è RGB, non posso separare la crominanza per campi!"
 #define MSGTR_VO_YUV4MPEG_WidthDivisibleBy2 "La larghezza immagine dev'essere divisibile per 2."
-#define MSGTR_VO_YUV4MPEG_NoMemRGBFrameBuf "Non c'è abbastanza memoria per allocare il framebuffer RGB."
 #define MSGTR_VO_YUV4MPEG_OutFileOpenError "Non posso allocare memoria o spazio per scrivere \"%s\"!"
 #define MSGTR_VO_YUV4MPEG_OutFileWriteError "Errore di scrittura dell'immagine in uscita!"
-#define MSGTR_VO_YUV4MPEG_UnknownSubDev "Subdispositivo sconosciuto: %s"
+#define MSGTR_VO_YUV4MPEG_UnknownSubDev "Sotto-dispositivo sconosciuto: %s"
 // 'top-field first'/'bottom-field first' should be left as they are written,
 // since there's a reference to these in the man page
 #define MSGTR_VO_YUV4MPEG_InterlacedTFFMode "Uso modalità di uscita interlacciata, top-field first."
@@ -1199,7 +1202,7 @@ static const char help_text[]=
 #define MSGTR_AO_SGI_CantSetParms_Samplerate "[AO SGI] init: setparams fallito: %s\nNon posso impostare il samplerate voluto.\n"
 #define MSGTR_AO_SGI_CantSetAlRate "[AO SGI] init: AL_RATE non è stato accettato dalla risorsa.\n"
 #define MSGTR_AO_SGI_CantGetParms "[AO SGI] init: getparams fallito: %s\n"
-#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] init: il samplerate ora è %lf (la frequenza voluta è %lf)\n"
+#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] init: il samplerate ora è %f (la frequenza voluta è %f)\n"
 #define MSGTR_AO_SGI_InitConfigError "[AO SGI] init: %s\n"
 #define MSGTR_AO_SGI_InitOpenAudioFailed "[AO SGI] init: Non posso apire il canale audio: %s\n"
 #define MSGTR_AO_SGI_Uninit "[AO SGI] uninit: ...\n"
@@ -1360,7 +1363,6 @@ static const char help_text[]=
 #define MSGTR_INPUT_INPUT_ErrBuffer2SmallForCmd "Il buffer è troppo piccolo per il comando %s\n"
 #define MSGTR_INPUT_INPUT_ErrWhyHere "Cosa ci stiamo facendo qui?\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitJoystick "Impossibile inizializzare i controlli del joystick\n"
-#define MSGTR_INPUT_INPUT_ErrCantStatFile "Impossibile fare stat di %s: %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantOpenFile "Impossibile aprire %s: %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitAppleRemote "Impossibile inizializzare l'Apple Remote.\n"
 
@@ -1889,6 +1891,7 @@ static const char help_text[]=
 #define MSGTR_SMBFileNotFound "Impossibile aprire dalla rete: '%s'\n"
 #define MSGTR_SMBNotCompiled "MPlayer non è stato compilato con supporto di lettura da SMB.\n"
 
+#define MSGTR_CantOpenBluray "Impossibile aprire il dispositivo Blu-ray: %s\n"
 #define MSGTR_CantOpenDVD "Impossibile aprire il dispositivo DVD: %s (%s)\n"
 
 // stream_cdda.c
@@ -1959,6 +1962,11 @@ static const char help_text[]=
 #define MSGTR_DVDsubtitleChannel "Scelto canale sottotitoli DVD: %d lingua: %c%c\n"
 #define MSGTR_DVDsubtitleLanguage "sottotitoli ( sid ): %d lingua: %s\n"
 #define MSGTR_DVDnumSubtitles "numero di sottotitoli sul disco: %d\n"
+
+// stream_bluray.c
+#define MSGTR_BlurayNoDevice "Non è stato specificato alcun dispositivo/posizione Blu-ray...\n"
+#define MSGTR_BlurayNoTitles "Non è stato trovato alcun titolo compatibile Blu-ray.\n"
+#define MSGTR_BlurayOK "Blu-ray aperto con successo.\n"
 
 // stream_radio.c
 #define MSGTR_RADIO_ChannelNamesDetected "[radio] Rilevati i nomi dei canali radio.\n"
@@ -2103,3 +2111,7 @@ static const char help_text[]=
 
 // url.c
 #define MSGTR_MPDEMUX_URL_StringAlreadyEscaped "La stringa sembra essere già filtrata in url_escape %c%c1%c2\n"
+
+// subtitles
+#define MSGTR_SUBTITLES_SubRip_UnknownFontColor "SubRip: colore sconosciuto del font nel sottotitolo: %s\n"
+

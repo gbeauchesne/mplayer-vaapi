@@ -33,7 +33,7 @@
 #include "libmpdemux/demuxer.h"
 #include "libmpdemux/mf.h"
 #include "libpostproc/postprocess.h"
-#include "libvo/sub.h"
+#include "sub/sub.h"
 #include "osdep/priority.h"
 #include "stream/cdd.h"
 #include "stream/network.h"
@@ -335,12 +335,11 @@ const m_option_t common_opts[] = {
     {"dvd-speed", "MPlayer was compiled without libdvdread support.\n", CONF_TYPE_PRINT, 0, 0, 0, NULL},
     {"dvd", "MPlayer was compiled without libdvdread support.\n", CONF_TYPE_PRINT, CONF_NOCFG, 0, 0, NULL},
 #endif /* CONFIG_DVDREAD */
-#ifdef CONFIG_LIBBLURAY
     {"bluray-device",  &bluray_device,  CONF_TYPE_STRING, 0,          0,  0, NULL},
+#ifdef CONFIG_LIBBLURAY
     {"bluray-angle",   &bluray_angle,   CONF_TYPE_INT,    CONF_RANGE, 0, 999, NULL},
     {"bluray-chapter", &bluray_chapter, CONF_TYPE_INT,    CONF_RANGE, 0, 999, NULL},
 #else
-    {"bluray-device",  "MPlayer was compiled without libbluray support.\n", CONF_TYPE_PRINT, 0, 0, 0, NULL},
     {"bluray-angle",   "MPlayer was compiled without libbluray support.\n", CONF_TYPE_PRINT, 0, 0, 0, NULL},
     {"bluray-chapter", "MPlayer was compiled without libbluray support.\n", CONF_TYPE_PRINT, CONF_NOCFG, 0, 0, NULL},
 #endif /* CONFIG_LIBBLURAY */
@@ -524,10 +523,8 @@ const m_option_t common_opts[] = {
     {"vc", &video_codec_list, CONF_TYPE_STRING_LIST, 0, 0, 0, NULL},
 
     // postprocessing:
-#ifdef CONFIG_LIBAVCODEC
+#ifdef CONFIG_FFMPEG
     {"pp", &divx_quality, CONF_TYPE_INT, 0, 0, 0, NULL},
-#endif
-#ifdef CONFIG_LIBPOSTPROC
     {"pphelp", &pp_help, CONF_TYPE_PRINT_INDIRECT, CONF_NOCFG, 0, 0, NULL},
 #endif
 
@@ -554,10 +551,8 @@ const m_option_t common_opts[] = {
     {"noslices", &vd_use_slices, CONF_TYPE_FLAG, 0, 1, 0, NULL},
     {"field-dominance", &field_dominance, CONF_TYPE_INT, CONF_RANGE, -1, 1, NULL},
 
-#ifdef CONFIG_LIBAVCODEC
+#ifdef CONFIG_FFMPEG
     {"lavdopts", lavc_decode_opts_conf, CONF_TYPE_SUBCONFIG, 0, 0, 0, NULL},
-#endif
-#ifdef CONFIG_LIBAVFORMAT
     {"lavfdopts",  lavfdopts_conf, CONF_TYPE_SUBCONFIG, CONF_GLOBAL, 0, 0, NULL},
 #endif
 #ifdef CONFIG_XVID4
@@ -595,7 +590,7 @@ const m_option_t common_opts[] = {
     // specify IFO file for VOBSUB subtitle
     {"ifo", &spudec_ifo, CONF_TYPE_STRING, 0, 0, 0, NULL},
     // enable Closed Captioning display
-    {"subcc", &subcc_enabled, CONF_TYPE_FLAG, 0, 0, 1, NULL},
+    {"subcc", &subcc_enabled, CONF_TYPE_INT, CONF_RANGE, 0, 4, NULL},
     {"nosubcc", &subcc_enabled, CONF_TYPE_FLAG, 0, 1, 0, NULL},
     {"overlapsub", &suboverlap_enabled, CONF_TYPE_FLAG, 0, 0, 2, NULL},
     {"nooverlapsub", &suboverlap_enabled, CONF_TYPE_FLAG, 0, 0, 0, NULL},

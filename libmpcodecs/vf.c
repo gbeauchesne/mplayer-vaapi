@@ -118,6 +118,7 @@ extern const vf_info_t vf_info_blackframe;
 extern const vf_info_t vf_info_geq;
 extern const vf_info_t vf_info_ow;
 extern const vf_info_t vf_info_fixpts;
+extern const vf_info_t vf_info_stereo3d;
 
 // list of available filters:
 static const vf_info_t* const filter_list[]={
@@ -127,9 +128,6 @@ static const vf_info_t* const filter_list[]={
 #endif
     &vf_info_crop,
     &vf_info_expand,
-#ifdef CONFIG_LIBPOSTPROC
-    &vf_info_pp,
-#endif
     &vf_info_scale,
 //    &vf_info_osd,
     &vf_info_vo,
@@ -140,7 +138,8 @@ static const vf_info_t* const filter_list[]={
     &vf_info_mirror,
     &vf_info_palette,
     &vf_info_pp7,
-#ifdef CONFIG_LIBAVCODEC
+#ifdef CONFIG_FFMPEG
+    &vf_info_pp,
     &vf_info_lavc,
     &vf_info_lavcdeint,
     &vf_info_screenshot,
@@ -188,7 +187,7 @@ static const vf_info_t* const filter_list[]={
     &vf_info_delogo,
     &vf_info_remove_logo,
     &vf_info_hue,
-#ifdef CONFIG_LIBAVCODEC_A
+#ifdef CONFIG_FFMPEG_A
     &vf_info_spp,
     &vf_info_uspp,
     &vf_info_fspp,
@@ -210,6 +209,7 @@ static const vf_info_t* const filter_list[]={
     &vf_info_blackframe,
     &vf_info_ow,
     &vf_info_fixpts,
+    &vf_info_stereo3d,
     NULL
 };
 

@@ -1122,7 +1122,7 @@ static const char help_text[]=
 #define MSGTR_AO_SGI_CantSetParms_Samplerate "[AO SGI] 初始: 設定參數失敗: %s\n不能設定需要的采様率。\n"
 #define MSGTR_AO_SGI_CantSetAlRate "[AO SGI] 初始: AL_RATE 在給定的源上不能用。\n"
 #define MSGTR_AO_SGI_CantGetParms "[AO SGI] 初始: 獲取參數失敗: %s\n"
-#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] 初始: 當前的采様率為 %lf (需要的速率是 %lf)\n"
+#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] 初始: 當前的采様率為 %f (需要的速率是 %f)\n"
 #define MSGTR_AO_SGI_InitConfigError "[AO SGI] 初始: %s\n"
 #define MSGTR_AO_SGI_InitOpenAudioFailed "[AO SGI] 初始: 無法打開音頻通道: %s\n"
 #define MSGTR_AO_SGI_Uninit "[AO SGI] 反初始: ...\n"
@@ -1279,7 +1279,6 @@ static const char help_text[]=
 #define MSGTR_INPUT_INPUT_ErrBuffer2SmallForCmd "此命令的緩存太小: %s\n"
 #define MSGTR_INPUT_INPUT_ErrWhyHere "怎麼會運行到這裏了?\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitJoystick "不能初始華輸入法操縱杆\n"
-#define MSGTR_INPUT_INPUT_ErrCantStatFile "不能統計(stat) %s: %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantOpenFile "打不開 %s: %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitAppleRemote "不能初始化 Apple Remote 遙控器。\n"
 

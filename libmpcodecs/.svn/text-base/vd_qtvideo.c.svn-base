@@ -98,7 +98,7 @@ static int control(sh_video_t *sh,int cmd,void* arg,...){
 // init driver
 static int init(sh_video_t *sh){
     OSErr result = 1;
-    int extradata_size = sh->bih ? sh->bih->biSize - sizeof(BITMAPINFOHEADER) : 0;
+    int extradata_size = sh->bih ? sh->bih->biSize - sizeof(*sh->bih) : 0;
     void *extradata = sh->bih + 1;
 
     if (!sh->ImageDesc)
@@ -274,7 +274,7 @@ static mp_image_t* decode(sh_video_t *sh,void* data,int len,int flags){
 
     if(len<=0) return NULL; // skipped frame
 
-#ifdef WIN32_LOADER
+#if defined(WIN32_LOADER) && !defined(CONFIG_QUICKTIME)
     Setup_FS_Segment();
 #endif
 

@@ -1,14 +1,14 @@
 8
 
 dir
-31956
+32628
 svn://svn.mplayerhq.hu/mplayer/trunk/debian
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-08-07T18:23:31.786346Z
-31944
+2010-10-27T07:17:22.156340Z
+32537
 siretart
 has-props
 
@@ -26,6 +26,9 @@ svn:special svn:externals svn:needs-lock
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
 
+prefs
+dir
+
 mplayer-doc.doc-base.de
 file
 
@@ -38,19 +41,16 @@ file
 31912
 siretart
 
-prefs
-dir
-
 control
 file
 
 
 
 
-2010-08-11T10:42:40.000000Z
-0a87a455c007c8f9f18bb086c4b73a85
-2010-08-05T12:49:58.665896Z
-31930
+2010-11-15T03:42:19.000000Z
+b88da0bbf5d548633f1ebfe4da6df46c
+2010-10-27T07:17:22.156340Z
+32537
 siretart
 
 mplayer-gui.mime
@@ -65,18 +65,6 @@ file
 31912
 siretart
 
-mplayer-dbg.links
-file
-
-
-
-
-2010-08-11T10:42:40.000000Z
-b7677bd0d91e014986121cad0e4e300d
-2010-08-03T13:02:07.405307Z
-31912
-siretart
-
 clean
 file
 
@@ -85,6 +73,18 @@ file
 
 2010-08-11T10:42:40.000000Z
 628051b78ff0edc585d3c1160e9b1f01
+2010-08-03T13:02:07.405307Z
+31912
+siretart
+
+mplayer-dbg.links
+file
+
+
+
+
+2010-08-11T10:42:40.000000Z
+b7677bd0d91e014986121cad0e4e300d
 2010-08-03T13:02:07.405307Z
 31912
 siretart
@@ -131,24 +131,12 @@ file
 
 
 
-2010-08-11T10:42:40.000000Z
-56ba4e662b992bf975a8cfc594e0a012
-2010-08-07T18:23:31.786346Z
-31944
+2010-11-15T03:42:19.000000Z
+ce3475ca6f20c461c0b98cabed90ff9a
+2010-10-19T15:48:51.191423Z
+32518
 siretart
 has-props
-
-mplayer-doc.doc-base.cs
-file
-
-
-
-
-2010-08-11T10:42:40.000000Z
-1a29dcf1eaaae83e01eed1245de90c4c
-2010-08-03T13:02:07.405307Z
-31912
-siretart
 
 mplayer.preinst
 file
@@ -158,6 +146,18 @@ file
 
 2010-08-11T10:42:40.000000Z
 3ed11620e69cae621d51eaa8b54f407e
+2010-08-03T13:02:07.405307Z
+31912
+siretart
+
+mplayer-doc.doc-base.cs
+file
+
+
+
+
+2010-08-11T10:42:40.000000Z
+1a29dcf1eaaae83e01eed1245de90c4c
 2010-08-03T13:02:07.405307Z
 31912
 siretart
@@ -174,18 +174,6 @@ file
 31912
 siretart
 
-mplayer-gui.menu
-file
-
-
-
-
-2010-08-11T10:42:40.000000Z
-76f38eddbd2c605aebcd4520f1cd518b
-2010-08-03T13:02:07.405307Z
-31912
-siretart
-
 mplayer-doc.doc-base.es
 file
 
@@ -194,6 +182,18 @@ file
 
 2010-08-11T10:42:40.000000Z
 02d68a1fa9d4ca35fdb76fe673f79f92
+2010-08-03T13:02:07.405307Z
+31912
+siretart
+
+mplayer-gui.menu
+file
+
+
+
+
+2010-08-11T10:42:40.000000Z
+76f38eddbd2c605aebcd4520f1cd518b
 2010-08-03T13:02:07.405307Z
 31912
 siretart
@@ -267,10 +267,10 @@ file
 
 
 
-2010-08-11T10:42:40.000000Z
-d5ab1e333e5e9db60ceb2939219d7be7
-2010-08-07T18:10:15.285862Z
-31943
+2010-11-15T03:42:19.000000Z
+c664eb48e1cf80f23e99f1078c3b8455
+2010-10-19T15:48:51.191423Z
+32518
 siretart
 has-props
 

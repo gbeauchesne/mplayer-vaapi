@@ -29,10 +29,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "mplayer.h"
 #include "input.h"
 #include "ar.h"
-
-extern int slave_mode;
 
 extern const double NSAppKitVersionNumber;
 
@@ -277,8 +276,7 @@ int mp_input_ar_init(void)
         (*queue)->addElement(queue, cookies[i], 0);
 
     // not used anymore
-    if (cookies != NULL)
-        free(cookies);
+    free(cookies);
 
     // Start data delivery to the queue.
     (*queue)->start(queue);
@@ -290,8 +288,7 @@ int mp_input_ar_init(void)
     return 0;
 
 mp_input_ar_init_error:
-    if (cookies != NULL)
-        free(cookies);
+    free(cookies);
     if (hidDeviceInterface != NULL) {
         if (*hidDeviceInterface != NULL) {
             (*hidDeviceInterface)->close(hidDeviceInterface);
@@ -303,7 +300,7 @@ mp_input_ar_init_error:
     return -1;
 }
 
-int is_mplayer_front(void)
+static int is_mplayer_front(void)
 {
     ProcessSerialNumber myProc, frProc;
     Boolean sameProc;

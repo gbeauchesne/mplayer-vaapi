@@ -837,7 +837,7 @@ static const char help_text[]=
 #define MSGTR_LIBVO_ASPECT_NoSuitableNewResFound "[ASPECT] Предупреждение: Не найдено подходящего разрешения!\n"
 #define MSGTR_LIBVO_ASPECT_NoNewSizeFoundThatFitsIntoRes "[ASPECT] Ошибка: Не найден размер, умещающийся в это разрешение!\n"
 
-// libvo/font_load_ft.c
+// font_load_ft.c
 #define MSGTR_LIBVO_FONT_LOAD_FT_NewFaceFailed "Сбой New_Face. Возможно неверен путь к шрифту.\nУкажите, пожалуйста, файл шрифта для текста (~/.mplayer/subfont.ttf).\n"
 #define MSGTR_LIBVO_FONT_LOAD_FT_NewMemoryFaceFailed "Сбой New_Memory_Face.\n"
 #define MSGTR_LIBVO_FONT_LOAD_FT_SubFaceFailed "шрифт субтитров: сбой load_sub_face.\n"
@@ -1199,7 +1199,7 @@ static const char help_text[]=
 #define MSGTR_AO_SGI_CantSetParms_Samplerate "[AO SGI] инициализация: ошибка установки параметров: %s\nНе могу установить требуемую частоту дискретизации.\n"
 #define MSGTR_AO_SGI_CantSetAlRate "[AO SGI] инициализация: AL_RATE не доступен на заданном ресурсе.\n"
 #define MSGTR_AO_SGI_CantGetParms "[AO SGI] инициализация: ошибка получения параметров: %s\n"
-#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] инициализация: частота дискретизации теперь %lf (требуемая частота %lf)\n"
+#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] инициализация: частота дискретизации теперь %f (требуемая частота %f)\n"
 #define MSGTR_AO_SGI_InitConfigError "[AO SGI] инициализация: %s\n"
 #define MSGTR_AO_SGI_InitOpenAudioFailed "[AO SGI] инициализация: Не могу открыть канал аудио: %s\n"
 #define MSGTR_AO_SGI_Uninit "[AO SGI] деинициализация: ...\n"
@@ -1359,7 +1359,6 @@ static const char help_text[]=
 #define MSGTR_INPUT_INPUT_ErrBuffer2SmallForCmd "Буфер слишком мал для команды %s\n"
 #define MSGTR_INPUT_INPUT_ErrWhyHere "Что мы здесь делаем?\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitJoystick "Не могу инициализировать джойстик ввода\n"
-#define MSGTR_INPUT_INPUT_ErrCantStatFile "Не могу выполнить stat %s: %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantOpenFile "Не могу выполнить open %s: %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitAppleRemote "Не могу инициализировать Пульт ДУ Apple Remote.\n"
 

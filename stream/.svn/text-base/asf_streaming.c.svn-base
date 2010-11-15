@@ -26,6 +26,7 @@
 #include "config.h"
 #include "mp_msg.h"
 #include "help_mp.h"
+#include "mpcommon.h"
 
 #if HAVE_WINSOCK2_H
 #include <winsock2.h>
@@ -159,9 +160,6 @@ printf("0x%02X\n", stream_chunck->type );
 	}
 	return stream_chunck->size+4;
 }
-
-extern int audio_id;
-extern int video_id;
 
 static void close_s(stream_t *stream) {
 	closesocket(stream->fd);
@@ -402,9 +400,9 @@ static int asf_streaming_parse_header(int fd, streaming_ctrl_t* streaming_ctrl) 
 
 len_err_out:
   mp_msg(MSGT_NETWORK, MSGL_FATAL, MSGTR_MPDEMUX_ASF_InvalidLenInHeader);
-  if (buffer) free(buffer);
-  if (v_rates) free(v_rates);
-  if (a_rates) free(a_rates);
+  free(buffer);
+  free(v_rates);
+  free(a_rates);
   return -1;
 }
 

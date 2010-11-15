@@ -28,8 +28,10 @@
 
 #include "config.h"
 #include "mp_msg.h"
+#include "mpcommon.h"
 #include "help_mp.h"
 
+#include "libmpcodecs/dec_audio.h"
 #include "stream/stream.h"
 #include "demuxer.h"
 #include "parse_es.h"
@@ -55,12 +57,12 @@
 
 #define TYPE_AUDIO 1
 #define TYPE_VIDEO 2
+#define TYPE_SUB   3
 
 int ts_prog;
 int ts_keep_broken=0;
 off_t ts_probe = 0;
 int audio_substream_id = -1;
-extern char *audio_lang;	//for -alang
 
 typedef enum
 {
@@ -358,7 +360,7 @@ static void ts_add_stream(demuxer_t * demuxer, ES_stream_t *es)
 
 		if(es->extradata && es->extradata_len)
 		{
-			sh->wf = malloc(sizeof (WAVEFORMATEX) + es->extradata_len);
+			sh->wf = malloc(sizeof(*sh->wf) + es->extradata_len);
 			sh->wf->cbSize = es->extradata_len;
 			memcpy(sh->wf + 1, es->extradata, es->extradata_len);
 		}
@@ -382,8 +384,8 @@ static void ts_add_stream(demuxer_t * demuxer, ES_stream_t *es)
 			if(sh->format == VIDEO_AVC && es->extradata && es->extradata_len)
 			{
 				int w = 0, h = 0;
-				sh->bih = calloc(1, sizeof(BITMAPINFOHEADER) + es->extradata_len);
-				sh->bih->biSize= sizeof(BITMAPINFOHEADER) + es->extradata_len;
+				sh->bih = calloc(1, sizeof(*sh->bih) + es->extradata_len);
+				sh->bih->biSize= sizeof(*sh->bih) + es->extradata_len;
 				sh->bih->biCompression = sh->format;
 				memcpy(sh->bih + 1, es->extradata, es->extradata_len);
 				mp_msg(MSGT_DEMUXER,MSGL_DBG2, "EXTRADATA(%d BYTES): \n", es->extradata_len);
@@ -409,9 +411,9 @@ static void ts_add_stream(demuxer_t * demuxer, ES_stream_t *es)
 			case SPU_PGS:
 				sh->type = 'p'; break;
         		}
-			priv->ts.streams[es->pid].id = priv->last_aid;
+			priv->ts.streams[es->pid].id = priv->last_sid;
 			priv->ts.streams[es->pid].sh = sh;
-			priv->ts.streams[es->pid].type = TYPE_AUDIO;
+			priv->ts.streams[es->pid].type = TYPE_SUB;
 			priv->last_sid++;
 		}
 	}
@@ -1098,19 +1100,15 @@ static void demux_close_ts(demuxer_t * demuxer)
 
 	if(priv)
 	{
-		if(priv->pat.section.buffer)
-			free(priv->pat.section.buffer);
-		if(priv->pat.progs)
-			free(priv->pat.progs);
+		free(priv->pat.section.buffer);
+		free(priv->pat.progs);
 
 		if(priv->pmt)
 		{
 			for(i = 0; i < priv->pmt_cnt; i++)
 			{
-				if(priv->pmt[i].section.buffer)
-					free(priv->pmt[i].section.buffer);
-				if(priv->pmt[i].es)
-					free(priv->pmt[i].es);
+				free(priv->pmt[i].section.buffer);
+				free(priv->pmt[i].es);
 			}
 			free(priv->pmt);
 		}
@@ -2961,6 +2959,11 @@ static int ts_parse(demuxer_t *demuxer , ES_stream_t *es, unsigned char *packet,
 			//IS IT TIME TO QUEUE DATA to the dp_packet?
 			if(is_start && (dp != NULL))
 			{
+				// subtitle packets _have_ to be submitted before video, otherwise
+				// they might get stuck "forever" and subtitles will be completely
+				// out of sync.
+				if (is_video)
+					fill_packet(demuxer, demuxer->sub, &priv->fifo[2].pack, &priv->fifo[2].offset, NULL);
 				retv = fill_packet(demuxer, ds, dp, dp_offset, si);
 			}
 
@@ -3166,8 +3169,6 @@ static int ts_parse(demuxer_t *demuxer , ES_stream_t *es, unsigned char *packet,
 	return 0;
 }
 
-
-void skip_audio_frame(sh_audio_t *sh_audio);
 
 static void reset_fifos(demuxer_t *demuxer, int a, int v, int s)
 {

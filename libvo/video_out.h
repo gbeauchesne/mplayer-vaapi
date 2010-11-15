@@ -26,7 +26,7 @@
 #include <inttypes.h>
 #include <stdarg.h>
 
-//#include "font_load.h"
+//#include "sub/font_load.h"
 #include "libmpcodecs/img_format.h"
 //#include "vidix/vidix.h"
 
@@ -34,6 +34,7 @@
 #define VO_EVENT_RESIZE 2
 #define VO_EVENT_KEYPRESS 4
 #define VO_EVENT_REINIT 8
+#define VO_EVENT_MOVE 16
 
 /* Obsolete: VOCTRL_QUERY_VAA 1 */
 /* does the device support the required format */
@@ -73,11 +74,6 @@
 #define VOCTRL_BORDER 27
 #define VOCTRL_DRAW_EOSD 28
 #define VOCTRL_GET_EOSD_RES 29
-typedef struct {
-  int w, h; // screen dimensions, including black borders
-  int srcw, srch; // unscaled source dimensions
-  int mt, mb, ml, mr; // borders (top, bottom, left, right)
-} mp_eosd_res_t;
 
 #define VOCTRL_SET_DEINTERLACE 30
 #define VOCTRL_GET_DEINTERLACE 31
@@ -110,6 +106,7 @@ typedef struct {
 #define VOFLAG_SWSCALE		0x04
 #define VOFLAG_FLIPPING		0x08
 #define VOFLAG_HIDDEN		0x10  //< Use to create a hidden window
+#define VOFLAG_STEREO		0x20  //< Use to create a stereo-capable window
 #define VOFLAG_XOVERLAY_SUB_VO  0x10000
 
 typedef struct vo_info_s

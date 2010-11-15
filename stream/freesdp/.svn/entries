@@ -1,15 +1,15 @@
 8
 
 dir
-31956
+32628
 svn://svn.mplayerhq.hu/mplayer/trunk/stream/freesdp
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-02-27T23:14:44.214704Z
-30781
-cehoyos
+2010-11-14T09:12:34.694315Z
+32624
+cboesch
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -92,11 +92,11 @@ file
 
 
 
-2010-03-03T12:56:31.000000Z
-0489f548633820cc24585c086870c4ae
-2010-02-27T23:14:44.214704Z
-30781
-cehoyos
+2010-11-15T03:42:23.000000Z
+f057b3b0afa1c5e1723ca42f00531a2a
+2010-11-14T09:12:34.694315Z
+32624
+cboesch
 
 common.h
 file

@@ -1178,7 +1178,7 @@ static const char help_text[]=
 "         Konnte gewünschte Samplerate nicht setzen.\n"
 #define MSGTR_AO_SGI_CantSetAlRate "[AO SGI] init: AL_RATE wurde von der angegebenen Ressource nicht akzeptiert.\n"
 #define MSGTR_AO_SGI_CantGetParms "[AO SGI] init: getparams fehlgeschlagen: %s\n"
-#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] init: Samplerate ist jetzt %lf (gewünschte Rate ist %lf).\n"
+#define MSGTR_AO_SGI_SampleRateInfo "[AO SGI] init: Samplerate ist jetzt %f (gewünschte Rate ist %f).\n"
 #define MSGTR_AO_SGI_InitConfigError "[AO SGI] init: %s\n"
 #define MSGTR_AO_SGI_InitOpenAudioFailed "[AO SGI] init: Konnte Audiokanal nicht öffnen: %s\n"
 #define MSGTR_AO_SGI_Uninit "[AO SGI] uninit: ...\n"
@@ -1341,7 +1341,6 @@ static const char help_text[]=
 #define MSGTR_INPUT_INPUT_ErrBuffer2SmallForCmd "Der Puffer ist zu klein für Kommando '%s'.\n"
 #define MSGTR_INPUT_INPUT_ErrWhyHere "Interner Fehler: Was machen wir hier?\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitJoystick "Konnte Joystick nicht initialisieren.\n"
-#define MSGTR_INPUT_INPUT_ErrCantStatFile "Stat auf Datei '%s' fehlgeschlagen: %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantOpenFile "Konnte Datei '%s' nicht öffnen: %s\n"
 #define MSGTR_INPUT_INPUT_ErrCantInitAppleRemote "Konnte Apple Remote Fernbedienung nicht initialisieren.\n"
 
@@ -1793,7 +1792,7 @@ static const char help_text[]=
 #define MSGTR_LIBVO_DXR3_XCorrection "[VO_DXR3] X-Koorektur: %d.\n"
 #define MSGTR_LIBVO_DXR3_FailedSetSignalMix "[VO_DXR3] Konnte Signal-Mix nicht setzen!\n"
 
-// libvo/font_load_ft.c
+// font_load_ft.c
 #define MSGTR_LIBVO_FONT_LOAD_FT_NewFaceFailed "New_Face fehlgeschlagen. Vielleicht ist der Pfad zu den Schriften falsch?\nBitte stelle eine Text-Schriftdatei zur Verfügung (~/.mplayer/subfont.ttf).\n"
 #define MSGTR_LIBVO_FONT_LOAD_FT_NewMemoryFaceFailed "New_Memory_Face fehlgeschlagen..\n"
 #define MSGTR_LIBVO_FONT_LOAD_FT_SubFaceFailed "subtitle font: load_sub_face fehlgeschlagen.\n"

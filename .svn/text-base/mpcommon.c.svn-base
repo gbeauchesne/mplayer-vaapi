@@ -16,20 +16,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#if defined(__MINGW32__) || defined(__CYGWIN__)
+#include <windows.h>
+#endif
 #include <stdlib.h>
 #include "stream/stream.h"
 #include "libmpdemux/demuxer.h"
 #include "libmpdemux/stheader.h"
+#include "codec-cfg.h"
+#include "osdep/timer.h"
+#include "osdep/priority.h"
+#include "path.h"
 #include "mplayer.h"
-#include "libvo/sub.h"
+#include "sub/font_load.h"
+#include "sub/sub.h"
 #include "libvo/video_out.h"
 #include "cpudetect.h"
 #include "help_mp.h"
 #include "mp_msg.h"
-#include "spudec.h"
+#include "sub/spudec.h"
 #include "version.h"
-#include "vobsub.h"
-#include "av_sub.h"
+#include "sub/vobsub.h"
+#include "sub/av_sub.h"
 #include "libmpcodecs/dec_teletext.h"
 #include "libavutil/intreadwrite.h"
 #include "m_option.h"
@@ -38,7 +46,7 @@
 double sub_last_pts = -303;
 
 #ifdef CONFIG_ASS
-#include "libass/ass_mp.h"
+#include "sub/ass_mp.h"
 ASS_Track* ass_track = 0; // current track to render
 #endif
 
@@ -111,7 +119,7 @@ void update_subtitles(sh_video_t *sh_video, double refpts, demux_stream_t *d_dvd
             spudec_reset(vo_spudec);
             vo_osd_changed(OSDTYPE_SPU);
         }
-#ifdef CONFIG_LIBAVCODEC
+#ifdef CONFIG_FFMPEG
         if (is_av_sub(type))
             reset_avsub(d_dvdsub->sh);
 #endif
@@ -192,7 +200,7 @@ void update_subtitles(sh_video_t *sh_video, double refpts, demux_stream_t *d_dvd
             if (len < 0)
                 break;
             if (is_av_sub(type)) {
-#ifdef CONFIG_LIBAVCODEC
+#ifdef CONFIG_FFMPEG
                 type = decode_avsub(d_dvdsub->sh, &packet, &len, &subpts, &endpts);
                 if (type <= 0)
 #endif
@@ -228,9 +236,9 @@ void update_subtitles(sh_video_t *sh_video, double refpts, demux_stream_t *d_dvd
                     if (len > 10 && memcmp(packet, "Dialogue: ", 10) == 0)
                         ass_process_data(ass_track, packet, len);
                     else
-                    ass_process_chunk(ass_track, packet, len,
-                                      (long long)(subpts*1000 + 0.5),
-                                      (long long)((endpts-subpts)*1000 + 0.5));
+                        ass_process_chunk(ass_track, packet, len,
+                                          (long long)(subpts*1000 + 0.5),
+                                          (long long)((endpts-subpts)*1000 + 0.5));
                 } else { // plaintext subs with libass
                     if (subpts != MP_NOPTS_VALUE) {
                         subtitle tmp_subs = {0};
@@ -349,3 +357,106 @@ const m_option_t noconfig_opts[] = {
     {NULL, NULL, 0, 0, 0, 0, NULL}
 };
 
+/**
+ * Initialization code to be run at the very start, most not depend
+ * on option values.
+ */
+void common_preinit(void)
+{
+    InitTimer();
+    srand(GetTimerMS());
+
+    mp_msg_init();
+}
+
+/**
+ * Code to fix any kind of insane defaults some OS might have.
+ * Currently mostly fixes for insecure-by-default Windows.
+ */
+static void sanitize_os(void)
+{
+#if defined(__MINGW32__) || defined(__CYGWIN__)
+    HMODULE kernel32 = GetModuleHandle("Kernel32.dll");
+    BOOL WINAPI (*setDEP)(DWORD) = NULL;
+    BOOL WINAPI (*setDllDir)(LPCTSTR) = NULL;
+    if (kernel32) {
+        setDEP = GetProcAddress(kernel32, "SetProcessDEPPolicy");
+        setDllDir = GetProcAddress(kernel32, "SetDllDirectoryA");
+    }
+    if (setDEP) setDEP(3);
+    if (setDllDir) setDllDir("");
+    // stop Windows from showing all kinds of annoying error dialogs
+    SetErrorMode(0x8003);
+    // request 1ms timer resolution
+    timeBeginPeriod(1);
+#endif
+}
+
+/**
+ * Initialization code to be run after command-line parsing.
+ */
+int common_init(void)
+{
+#if (defined(__MINGW32__) || defined(__CYGWIN__)) && defined(CONFIG_WIN32DLL)
+    set_path_env();
+#endif
+    sanitize_os();
+
+#ifdef CONFIG_PRIORITY
+    set_priority();
+#endif
+
+    if (codec_path)
+        set_codec_path(codec_path);
+
+    /* Check codecs.conf. */
+    if (!codecs_file || !parse_codec_cfg(codecs_file)) {
+        char *conf_path = get_path("codecs.conf");
+        if (!parse_codec_cfg(conf_path)) {
+            if (!parse_codec_cfg(MPLAYER_CONFDIR "/codecs.conf")) {
+                if (!parse_codec_cfg(NULL)) {
+                    free(conf_path);
+                    return 0;
+                }
+                mp_msg(MSGT_CPLAYER,MSGL_V,MSGTR_BuiltinCodecsConf);
+            }
+        }
+        free(conf_path);
+    }
+
+    // check font
+#ifdef CONFIG_FREETYPE
+    init_freetype();
+#endif
+#ifdef CONFIG_FONTCONFIG
+    if (font_fontconfig <= 0)
+#endif
+    {
+#ifdef CONFIG_BITMAP_FONT
+        if (font_name) {
+            vo_font = read_font_desc(font_name, font_factor, verbose>1);
+            if (!vo_font)
+                mp_msg(MSGT_CPLAYER,MSGL_ERR,MSGTR_CantLoadFont,
+                       filename_recode(font_name));
+        } else {
+            // try default:
+            char *desc_path = get_path("font/font.desc");
+            vo_font = read_font_desc(desc_path, font_factor, verbose>1);
+            free(desc_path);
+            if (!vo_font)
+                vo_font = read_font_desc(MPLAYER_DATADIR "/font/font.desc", font_factor, verbose>1);
+        }
+        if (sub_font_name)
+            sub_font = read_font_desc(sub_font_name, font_factor, verbose>1);
+        else
+            sub_font = vo_font;
+#endif
+    }
+
+    vo_init_osd();
+
+#ifdef CONFIG_ASS
+    ass_library = ass_init();
+#endif
+    return 1;
+}

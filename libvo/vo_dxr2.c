@@ -35,7 +35,7 @@
 #include "video_out_internal.h"
 #include "mp_msg.h"
 #include "m_option.h"
-#include "sub.h"
+#include "sub/sub.h"
 #include "path.h"
 #include "libmpcodecs/vd.h"
 #include "libmpdemux/mpeg_packetizer.h"
@@ -789,10 +789,8 @@ static void uninit(void)
     close(dxr2_fd);
     dxr2_fd = -1;
   }
-  if(sub_img) {
-    free(sub_img);
-    sub_img = NULL;
-  }
+  free(sub_img);
+  sub_img = NULL;
   if(sub_vo) {
     int cc = vo_config_count;
     vo_config_count = sub_config_count;

@@ -1,15 +1,15 @@
 8
 
 dir
-31956
+32628
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/hu
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-08-06T23:19:34.954544Z
-31936
-diego
+2010-09-26T18:12:42.386308Z
+32362
+Gabrov
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -25,19 +25,6 @@ svn:special svn:externals svn:needs-lock
 
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
-
-cd-dvd.xml
-file
-
-
-
-
-2010-08-03T10:15:06.000000Z
-b9dcbab46de41fe421b06944b03dcd18
-2010-07-27T21:23:19.977062Z
-31834
-Gabrov
-has-props
 
 encoding-guide.xml
 file
@@ -71,10 +58,10 @@ file
 
 
 
-2010-05-18T12:45:19.000000Z
-69431c1faadac9cc3466802be0dd8998
-2010-04-25T20:05:22.135391Z
-31097
+2010-11-15T03:42:38.000000Z
+f52c1e65040b70decab75715c26fd352
+2010-09-26T18:12:42.386308Z
+32362
 Gabrov
 has-props
 
@@ -84,10 +71,10 @@ file
 
 
 
-2010-08-03T10:15:06.000000Z
-c6413942d512c4ec8fa6c3a7013483cb
-2010-07-27T21:23:19.977062Z
-31834
+2010-11-15T03:42:38.000000Z
+ce95480eaa080f7886935e07f889971a
+2010-09-26T18:12:42.386308Z
+32362
 Gabrov
 has-props
 
@@ -97,10 +84,10 @@ file
 
 
 
-2010-08-03T10:15:06.000000Z
-b70613e735df7eeaeca01d40608c9e7f
-2010-07-27T21:23:19.977062Z
-31834
+2010-11-15T03:42:38.000000Z
+7ca4c7eacb483af2982c188b9dd6c8cb
+2010-09-26T18:12:42.386308Z
+32362
 Gabrov
 has-props
 
@@ -136,24 +123,11 @@ file
 
 
 
-2010-02-16T15:36:02.000000Z
-cda6bad60ba57f67e9e73be95a56b31b
-2010-01-24T03:15:18.984995Z
-30414
+2010-11-15T03:42:38.000000Z
+2d102cb1bddab03f096adfb1cd2120bb
+2010-09-26T18:12:42.386308Z
+32362
 Gabrov
-has-props
-
-tvinput.xml
-file
-
-
-
-
-2010-08-11T10:42:43.000000Z
-911c12def39871cb9b7232889fe1f815
-2010-08-06T23:19:34.954544Z
-31936
-diego
 has-props
 
 bugreports.xml
@@ -179,19 +153,6 @@ file
 da39e7f3518681f6588e5636c1cad564
 2010-05-30T22:11:32.534913Z
 31290
-Gabrov
-has-props
-
-radio.xml
-file
-
-
-
-
-2010-08-03T10:15:06.000000Z
-a737e9fb79ba6826fc5f5e486c7e2238
-2010-07-27T21:23:19.977062Z
-31834
 Gabrov
 has-props
 

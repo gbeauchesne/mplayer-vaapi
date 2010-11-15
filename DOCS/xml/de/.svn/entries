@@ -1,14 +1,14 @@
 8
 
 dir
-31956
+32628
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/de
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-08-06T23:19:34.954544Z
-31936
+2010-08-18T23:10:10.038954Z
+31980
 diego
 has-props
 
@@ -38,29 +38,16 @@ file
 31032
 diego
 
-cd-dvd.xml
-file
-
-
-
-
-2010-05-18T12:45:19.000000Z
-c4115f1998136c8dd8a51c618458fbfd
-2010-04-12T10:56:17.152819Z
-31032
-diego
-has-props
-
 usage.xml
 file
 
 
 
 
-2010-05-18T12:45:19.000000Z
-f8dfa366c63d2322db93206780b0874f
-2010-04-12T10:56:17.152819Z
-31032
+2010-11-15T03:42:35.000000Z
+a4f8def38b3be6c93db41979c8de41a3
+2010-08-18T23:10:10.038954Z
+31980
 diego
 has-props
 
@@ -126,30 +113,17 @@ file
 diego
 has-props
 
-tvinput.xml
-file
-
-
-
-
-2010-08-11T10:42:42.000000Z
-206796c4ab414210f2a3fdca4cedff62
-2010-08-06T23:19:34.954544Z
-31936
-diego
-has-props
-
 documentation.xml
 file
 
 
 
 
-2010-02-16T15:36:02.000000Z
-26091bc410ae4fb498531c0842200e79
-2010-01-24T03:15:18.984995Z
-30414
-Gabrov
+2010-11-15T03:42:35.000000Z
+1f48b02e1f727c1fe13ea26e43d69dd4
+2010-08-18T23:10:10.038954Z
+31980
+diego
 has-props
 
 mencoder.xml
@@ -175,18 +149,5 @@ file
 2010-06-14T15:17:48.225980Z
 31415
 diego
-has-props
-
-radio.xml
-file
-
-
-
-
-2009-01-29T11:50:44.000000Z
-333731f86f3cd91f7707b4e689b87b06
-2007-09-28T02:10:17.278558Z
-24643
-kraymer
 has-props
 
