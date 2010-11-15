@@ -524,6 +524,7 @@ const m_option_t common_opts[] = {
     {"vfm", &video_fm_list, CONF_TYPE_STRING_LIST, 0, 0, 0, NULL},
     {"ac", &audio_codec_list, CONF_TYPE_STRING_LIST, 0, 0, 0, NULL},
     {"vc", &video_codec_list, CONF_TYPE_STRING_LIST, 0, 0, 0, NULL},
+    {"va", &video_hwaccel_name, CONF_TYPE_STRING, 0, 0, 0, NULL},
 
     // postprocessing:
 #ifdef CONFIG_POSTPROC
