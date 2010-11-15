@@ -71,6 +71,11 @@
 #else
 #define USE_VAAPI_COLORSPACE 0
 #endif
+#if defined VA_FILTER_SCALING_MASK
+# define USE_VAAPI_SCALING 1
+#else
+# define USE_VAAPI_SCALING 0
+#endif
 
 /* Defined to 1 if VA/GLX 'bind' API is available */
 #define USE_VAAPI_GLX_BIND                                \
@@ -143,6 +148,7 @@ static unsigned int             g_output_surface;
 static int                      g_deint;
 static int                      g_deint_type;
 static int                      g_colorspace;
+static unsigned int             g_scaling;
 
 static int                      gl_enabled;
 static int                      gl_use_tfp;
@@ -962,12 +968,40 @@ static int int_012(int *n)
     return *n >= 0 && *n <= 2;
 }
 
+#if USE_VAAPI_SCALING
+static strarg_t g_scaling_arg = { 0, NULL };
+
+static int test_scaling_arg(void *arg)
+{
+    strarg_t * const strarg = arg;
+
+    return (strargcmp(strarg, "default") == 0 ||
+            strargcmp(strarg, "fast") == 0 ||
+            strargcmp(strarg, "hq") == 0);
+}
+
+static void setup_scaling(const char *scaling)
+{
+    if (strcmp(scaling, "default") == 0)
+        g_scaling = VA_FILTER_SCALING_DEFAULT;
+    else if (strcmp(scaling, "fast") == 0)
+        g_scaling = VA_FILTER_SCALING_FAST;
+    else if (strcmp(scaling, "hq") == 0)
+        g_scaling = VA_FILTER_SCALING_HQ;
+    else if (strcmp(scaling, "nla") == 0)
+        g_scaling = VA_FILTER_SCALING_NL_ANAMORPHIC;
+}
+#endif
+
 static const opt_t subopts[] = {
     { "dm",          OPT_ARG_INT,  &va_dm,        (opt_test_f)int_012 },
     { "stats",       OPT_ARG_BOOL, &cpu_stats,    NULL },
     { "deint",       OPT_ARG_INT,  &g_deint,      (opt_test_f)int_012 },
 #if USE_VAAPI_COLORSPACE
     { "colorspace",  OPT_ARG_INT,  &g_colorspace, (opt_test_f)int_012 },
+#endif
+#if USE_VAAPI_SCALING
+    { "scaling",     OPT_ARG_STR,  &g_scaling_arg, test_scaling_arg },
 #endif
 #if CONFIG_GL
     { "gl",          OPT_ARG_BOOL, &gl_enabled,   NULL },
@@ -996,6 +1030,7 @@ static int preinit(const char *arg)
     g_deint = 0;
     g_deint_type = 2;
     g_colorspace = 1;
+    g_scaling = 0;
     if (subopt_parse(arg, subopts) != 0) {
         mp_msg(MSGT_VO, MSGL_FATAL,
                "\n-vo vaapi command line help:\n"
@@ -1014,6 +1049,13 @@ static int preinit(const char *arg)
                "    1: ITU-R BT.601 (default)\n"
                "    2: ITU-R BT.709\n"
                "    3: SMPTE-240M\n"
+#if USE_VAAPI_SCALING
+               "  scaling\n"
+               "    default: use implementation default (default)\n"
+               "    fast:    use fast scaling, but possibly with less quality\n"
+               "    hq:      use high-quality scaling, but possibly slower\n"
+               "    nla:     use non-linear anamorphic scaling\n"
+#endif
 #if CONFIG_GL
                "  gl\n"
                "    Enable OpenGL rendering\n"
@@ -1050,6 +1092,10 @@ static int preinit(const char *arg)
     if (xr_enabled)
         mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using Xrender rendering\n");
 #endif
+    if (g_scaling_arg.str) {
+        mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using '%s' scaling\n", g_scaling_arg.str);
+        setup_scaling(g_scaling_arg.str);
+    }
 
     stats_init();
 
@@ -1953,6 +1999,9 @@ static void put_surface_x11(struct vaapi_surface *surface)
     int i;
 
     for (i = 0; i <= !!(g_deint > 1); i++) {
+        const unsigned int flags = (get_field_flags(i) |
+                                    get_colorspace_flags() |
+                                    g_scaling);
         status = vaPutSurface(va_context->display,
                               surface->id,
                               vo_window,
@@ -1962,7 +2011,7 @@ static void put_surface_x11(struct vaapi_surface *surface)
                               g_output_rect.width,
                               g_output_rect.height,
                               NULL, 0,
-                              get_field_flags(i) | get_colorspace_flags());
+                              flags);
         if (!check_status(status, "vaPutSurface()"))
             return;
     }
@@ -1976,13 +2025,16 @@ static void put_surface_glx(struct vaapi_surface *surface)
 
     if (gl_use_tfp) {
         for (i = 0; i <= !!(g_deint > 1); i++) {
+            const unsigned int flags = (get_field_flags(i) |
+                                        get_colorspace_flags() |
+                                        g_scaling);
             status = vaPutSurface(va_context->display,
                                   surface->id,
                                   g_image_pixmap,
                                   0, 0, g_image_width, g_image_height,
                                   0, 0, g_image_width, g_image_height,
                                   NULL, 0,
-                                  get_field_flags(i) | get_colorspace_flags());
+                                  flags);
             if (!check_status(status, "vaPutSurface()"))
                 return;
         }
@@ -1994,10 +2046,13 @@ static void put_surface_glx(struct vaapi_surface *surface)
     if (gl_binding) {
 #if USE_VAAPI_GLX_BIND
         for (i = 0; i <= !!(g_deint > 1); i++) {
+            const unsigned int flags = (get_field_flags(i) |
+                                        get_colorspace_flags() |
+                                        g_scaling);
             status = vaAssociateSurfaceGLX(va_context->display,
                                            gl_surface,
                                            surface->id,
-                                           get_field_flags(i) | get_colorspace_flags());
+                                           flags);
             if (!check_status(status, "vaAssociateSurfaceGLX()"))
                 return;
         }
@@ -2009,10 +2064,13 @@ static void put_surface_glx(struct vaapi_surface *surface)
 
     if (!gl_binding) {
         for (i = 0; i <= !!(g_deint > 1); i++) {
+            const unsigned int flags = (get_field_flags(i) |
+                                        get_colorspace_flags() |
+                                        g_scaling);
             status = vaCopySurfaceGLX(va_context->display,
                                       gl_surface,
                                       surface->id,
-                                      get_field_flags(i) | get_colorspace_flags());
+                                      flags);
 
             if (status == VA_STATUS_ERROR_UNIMPLEMENTED) {
                 mp_msg(MSGT_VO, MSGL_WARN,
@@ -2204,13 +2262,16 @@ static void put_surface_xrender(struct vaapi_surface *surface)
     int i;
 
     for (i = 0; i <= !!(g_deint > 1); i++) {
+        const unsigned int flags = (get_field_flags(i) |
+                                    get_colorspace_flags() |
+                                    g_scaling);
         status = vaPutSurface(va_context->display,
                               surface->id,
                               g_image_pixmap,
                               0, 0, g_image_width, g_image_height,
                               0, 0, g_output_rect.width, g_output_rect.height,
                               NULL, 0,
-                              get_field_flags(i) | get_colorspace_flags());
+                              flags);
         if (!check_status(status, "vaPutSurface()"))
             return;
         XRenderComposite(mDisplay,
