@@ -1049,11 +1049,13 @@ static int preinit(const char *arg)
                "    0: no deinterlacing (default)\n"
                "    1: only show first field\n"
                "    2: bob deinterlacing\n"
+#if USE_VAAPI_COLORSPACE
                "  colorspace\n"
                "    0: guess based on video resolution\n"
                "    1: ITU-R BT.601 (default)\n"
                "    2: ITU-R BT.709\n"
                "    3: SMPTE-240M\n"
+#endif
 #if USE_VAAPI_SCALING
                "  scaling\n"
                "    default: use implementation default (default)\n"
