@@ -55,6 +55,11 @@
 #include <X11/extensions/Xrender.h>
 #endif
 
+/* Compatibility glue with upstream libva */
+#ifndef VA_SDS_VERSION
+#define VA_SDS_VERSION          0
+#endif
+
 /* Compatibility glue with VA-API >= 0.30 */
 #ifndef VA_INVALID_ID
 #define VA_INVALID_ID           0xffffffff
@@ -78,7 +83,7 @@
      ((VA_MINOR_VERSION == 30 &&                          \
        VA_MICRO_VERSION == 4 && VA_SDS_VERSION >= 5) ||   \
       (VA_MINOR_VERSION == 31 &&                          \
-       VA_MICRO_VERSION == 0 && VA_SDS_VERSION < 5)))
+       VA_MICRO_VERSION == 0 && VA_SDS_VERSION >= 1 && VA_SDS_VERSION < 5)))
 
 /* Compatibility glue with VA-API >= 0.31 */
 #if defined VA_CHECK_VERSION
@@ -1098,10 +1103,12 @@ static int preinit(const char *arg)
     if (xr_enabled)
         mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using Xrender rendering\n");
 #endif
+#if USE_VAAPI_SCALING
     if (g_scaling_arg.str) {
         mp_msg(MSGT_VO, MSGL_INFO, "[vo_vaapi] Using '%s' scaling\n", g_scaling_arg.str);
         setup_scaling(g_scaling_arg.str);
     }
+#endif
 
     stats_init();
 
