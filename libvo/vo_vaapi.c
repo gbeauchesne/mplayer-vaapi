@@ -1013,6 +1013,7 @@ static int preinit(const char *arg)
                "    0: guess based on video resolution\n"
                "    1: ITU-R BT.601 (default)\n"
                "    2: ITU-R BT.709\n"
+               "    3: SMPTE-240M\n"
 #if CONFIG_GL
                "  gl\n"
                "    Enable OpenGL rendering\n"
@@ -1934,6 +1935,9 @@ static inline int get_colorspace_flags(void)
         break;
     case 2:
         csp = VA_SRC_BT709;
+        break;
+    case 3:
+        csp = VA_SRC_SMPTE_240;
         break;
     default:
         assert(0);
