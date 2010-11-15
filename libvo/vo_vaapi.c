@@ -27,13 +27,14 @@
 #include "video_out.h"
 #include "video_out_internal.h"
 #include "fastmemcpy.h"
-#include "sub.h"
+#include "sub/sub.h"
+#include "sub/eosd.h"
+#include "sub/ass_mp.h"
 #include "x11_common.h"
 #include "libavutil/common.h"
 #include "libavcodec/vaapi.h"
 #include "gui/interface.h"
 #include "stats.h"
-#include "libass/ass_mp.h"
 #include <stdarg.h>
 
 #if CONFIG_GL
@@ -2646,7 +2647,7 @@ static int control(uint32_t request, void *data, ...)
         draw_eosd(data);
         return VO_TRUE;
     case VOCTRL_GET_EOSD_RES: {
-        mp_eosd_res_t *r = data;
+        struct mp_eosd_settings *r = data;
         r->mt = r->mb = r->ml = r->mr = 0;
         r->srcw = g_image_width;
         r->srch = g_image_height;
