@@ -181,7 +181,6 @@ static void                    *gl_surface;
 
 static int                      xr_enabled;
 #if CONFIG_XRENDER
-static Pixmap                   g_image_pixmap;
 static Picture                  xr_video_picture;
 static Picture                  xr_window_picture;
 #endif
