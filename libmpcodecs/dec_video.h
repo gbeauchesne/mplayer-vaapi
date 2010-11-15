@@ -21,6 +21,13 @@
 
 #include "libmpdemux/stheader.h"
 
+enum {
+  HWACCEL_NONE,
+  HWACCEL_XVMC,
+  HWACCEL_VAAPI,
+  HWACCEL_VDPAU
+};
+
 extern int field_dominance;
 
 // dec_video.c:
@@ -41,6 +48,9 @@ int set_rectangle(sh_video_t *sh_video, int param, int value);
 void resync_video_stream(sh_video_t *sh_video);
 int get_current_video_decoder_lag(sh_video_t *sh_video);
 
+int get_video_hwaccel(void);
+
 extern int divx_quality;
+extern char *video_hwaccel_name;
 
 #endif /* MPLAYER_DEC_VIDEO_H */

@@ -18,6 +18,7 @@
 
 #include "mp_msg.h"
 #include "libavutil/avutil.h"
+#include "libavcodec/avcodec.h"
 #include "libmpcodecs/img_format.h"
 #include "libavutil/samplefmt.h"
 #include "libaf/af_format.h"
@@ -26,6 +27,7 @@
 static const struct {
     int fmt;
     enum PixelFormat pix_fmt;
+    enum CodecID codec_id;
 } conversion_map[] = {
     {IMGFMT_ARGB, PIX_FMT_ARGB},
     {IMGFMT_BGRA, PIX_FMT_BGRA},
@@ -113,12 +115,14 @@ enum PixelFormat imgfmt2pixfmt(int fmt)
     return pix_fmt;
 }
 
-int pixfmt2imgfmt(enum PixelFormat pix_fmt)
+int pixfmt2imgfmt(enum PixelFormat pix_fmt, int codec_id)
 {
     int i;
     int fmt;
     for (i = 0; conversion_map[i].pix_fmt != PIX_FMT_NONE; i++)
-        if (conversion_map[i].pix_fmt == pix_fmt)
+        if (conversion_map[i].pix_fmt == pix_fmt &&
+            (conversion_map[i].codec_id == 0 ||
+             conversion_map[i].codec_id == codec_id))
             break;
     fmt = conversion_map[i].fmt;
     if (!fmt)
