@@ -67,14 +67,9 @@
      ((uint32_t)(uint8_t)(ch3) << 24 ))
 #endif
 #if defined VA_SRC_BT601 && defined VA_SRC_BT709
-#define USE_VAAPI_COLORSPACE 1
+# define USE_VAAPI_COLORSPACE 1
 #else
-#define USE_VAAPI_COLORSPACE 0
-#endif
-#if defined VA_FILTER_SCALING_MASK
-# define USE_VAAPI_SCALING 1
-#else
-# define USE_VAAPI_SCALING 0
+# define USE_VAAPI_COLORSPACE 0
 #endif
 
 /* Defined to 1 if VA/GLX 'bind' API is available */
@@ -91,6 +86,16 @@
 #define vaPutImage2             vaPutImage
 #define vaAssociateSubpicture2  vaAssociateSubpicture
 #endif
+#endif
+
+/* Compatibility glue with VA-API >= 0.31.1 */
+#ifndef VA_SRC_SMPTE_240
+#define VA_SRC_SMPTE_240        0x00000040
+#endif
+#if defined VA_FILTER_SCALING_MASK
+# define USE_VAAPI_SCALING 1
+#else
+# define USE_VAAPI_SCALING 0
 #endif
 
 static vo_info_t info = {
