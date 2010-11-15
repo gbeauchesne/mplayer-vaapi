@@ -35,6 +35,7 @@
 #include "fmt-conversion.h"
 
 #include "vd_internal.h"
+#include "dec_video.h"
 
 static const vd_info_t info = {
     "FFmpeg's libavcodec codec family",
@@ -207,7 +208,7 @@ static void set_format_params(struct AVCodecContext *avctx,
     int imgfmt;
     if (fmt == PIX_FMT_NONE)
         return;
-    imgfmt = pixfmt2imgfmt(fmt);
+    imgfmt = pixfmt2imgfmt(fmt, avctx->codec_id);
     if (IMGFMT_IS_HWACCEL(imgfmt)) {
         sh_video_t *sh     = avctx->opaque;
         vd_ffmpeg_ctx *ctx = sh->context;
@@ -471,7 +472,7 @@ static void draw_slice(struct AVCodecContext *s,
                         const AVFrame *src, int offset[4],
                         int y, int type, int height){
     sh_video_t *sh = s->opaque;
-    uint8_t *source[MP_MAX_PLANES]= {src->data[0] + offset[0], src->data[1] + offset[1], src->data[2] + offset[2]};
+    uint8_t *source[MP_MAX_PLANES]= {src->data[0] + offset[0], src->data[1] + offset[1], src->data[2] + offset[2], src->data[3] + offset[3]};
     int strides[MP_MAX_PLANES] = {src->linesize[0], src->linesize[1], src->linesize[2]};
     if (!src->data[0]) {
         mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "BUG in FFmpeg, draw_slice called with NULL pointer!\n");
@@ -519,7 +520,7 @@ static void update_configuration(sh_video_t *sh, enum AVPixelFormat pix_fmt) {
             sh->aspect = aspect;
         ctx->last_sample_aspect_ratio = avctx->sample_aspect_ratio;
         ctx->pix_fmt = pix_fmt;
-        ctx->best_csp = pixfmt2imgfmt(pix_fmt);
+        ctx->best_csp = pixfmt2imgfmt(pix_fmt, avctx->codec_id);
     }
 }
 
@@ -994,21 +995,59 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags){
     return mpi;
 }
 
+static inline int is_hwaccel_format(int imgfmt)
+{
+    switch (get_video_hwaccel()) {
+    case HWACCEL_VDPAU: return IMGFMT_IS_VDPAU(imgfmt) != 0;
+    case HWACCEL_XVMC:  return IMGFMT_IS_XVMC(imgfmt)  != 0;
+    }
+    return 0;
+}
+
+static int query_format(sh_video_t *sh, int fmt)
+{
+    vd_ffmpeg_ctx * const ctx = sh->context;
+    AVCodecContext * const avctx = ctx->avctx;
+    int r, width, height;
+    /* XXX: some codecs have not initialized width and height yet at
+       this point, so we are faking the dimensions so that init_vo()
+       doesn't fail because of 0x0 size */
+    if ((width = avctx->width) == 0)
+        avctx->width = 64;
+    if ((height = avctx->height) == 0)
+        avctx->height = 64;
+    r = init_vo(sh, fmt);
+    avctx->width = width;
+    avctx->height = height;
+    return r;
+}
+
 static enum AVPixelFormat get_format(struct AVCodecContext *avctx,
                                      const enum AVPixelFormat *fmt)
 {
-    enum AVPixelFormat selected_format;
+    enum AVPixelFormat selected_format = PIX_FMT_NONE;
     int imgfmt;
     sh_video_t *sh = avctx->opaque;
-    int i;
+    int i, try_hwaccel;
 
-    for(i=0;fmt[i]!=PIX_FMT_NONE;i++){
-        imgfmt = pixfmt2imgfmt(fmt[i]);
-        if(!IMGFMT_IS_HWACCEL(imgfmt)) continue;
-        mp_msg(MSGT_DECVIDEO, MSGL_INFO, MSGTR_MPCODECS_TryingPixfmt, i);
-        if(init_vo(sh, fmt[i]) >= 0) {
-            break;
+    for (try_hwaccel = 1; try_hwaccel >= 0; --try_hwaccel) {
+        for (i = 0; fmt[i] != PIX_FMT_NONE; i++) {
+            imgfmt = pixfmt2imgfmt(fmt[i], avctx->codec_id);
+            if ((try_hwaccel ^ is_hwaccel_format(imgfmt)) != 0)
+                continue;
+            mp_msg(MSGT_DECVIDEO, MSGL_INFO, MSGTR_MPCODECS_TryingPixfmt, i);
+            if (query_format(sh, fmt[i]) >= 0) {
+                if (try_hwaccel) {
+                    /* don't allow format conversion for HW acceleration */
+                    if (sh->codec->outfmt[sh->outfmtidx] != imgfmt)
+                        continue;
+                }
+                selected_format = fmt[i];
+                break;
+            }
         }
+        if (selected_format != PIX_FMT_NONE)
+            break;
     }
     selected_format = fmt[i];
     if (selected_format == PIX_FMT_NONE) {

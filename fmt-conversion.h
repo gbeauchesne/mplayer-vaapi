@@ -24,7 +24,7 @@
 #include "libavutil/samplefmt.h"
 
 enum AVPixelFormat imgfmt2pixfmt(int fmt);
-int pixfmt2imgfmt(enum AVPixelFormat pix_fmt);
+int pixfmt2imgfmt(enum AVPixelFormat pix_fmt, int codec_id);
 enum AVSampleFormat affmt2samplefmt(int fmt);
 int samplefmt2affmt(enum AVSampleFormat sample_fmt);
 
