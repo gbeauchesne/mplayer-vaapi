@@ -29,7 +29,6 @@
 #include "fastmemcpy.h"
 #include "sub/sub.h"
 #include "sub/eosd.h"
-#include "sub/ass_mp.h"
 #include "x11_common.h"
 #include "libavutil/common.h"
 #include "libavcodec/vaapi.h"
@@ -2418,10 +2417,10 @@ static void draw_osd(void)
     enable_osd();
 }
 
-static void draw_eosd(EOSD_ImageList *imgs)
+static void draw_eosd(struct mp_eosd_image_list *imgs)
 {
-    ASS_Image *img = imgs->imgs;
-    ASS_Image *i;
+    struct mp_eosd_image *img = eosd_image_first(imgs);
+    struct mp_eosd_image *i;
     VAStatus status;
 
     if (!va_eosd_draw_alpha)
