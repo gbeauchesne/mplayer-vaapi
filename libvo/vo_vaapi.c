@@ -623,7 +623,7 @@ static void draw_alpha_IA44(int x0, int y0, int w, int h,
 
     for (y = 0; y < h; y++, dst += dststride)
         for (x = 0; x < w; x++)
-            dst[x] = (src[y*stride + x] & 0xf0) | (-srca[y*stride + x] >> 4);
+            dst[x] = (src[y*stride + x] >> 4) | (-srca[y*stride + x] & 0xf0);
 }
 
 static void draw_alpha_AI44(int x0, int y0, int w, int h,
@@ -636,7 +636,7 @@ static void draw_alpha_AI44(int x0, int y0, int w, int h,
 
     for (y = 0; y < h; y++, dst += dststride)
         for (x = 0; x < w; x++)
-            dst[x] = (src[y*stride + x] >> 4) | (-srca[y*stride + x] & 0xf0);
+            dst[x] = (src[y*stride + x] & 0xf0) | (-srca[y*stride + x] >> 4);
 }
 
 static void draw_alpha_IA88(int x0, int y0, int w, int h,
