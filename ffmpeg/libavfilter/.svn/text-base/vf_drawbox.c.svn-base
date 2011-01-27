@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Affine Systems, Inc (Michael Sullivan, Bobby Impollonia)
+ * Copyright (c) 2008 Affine Systems, Inc (Michael Sullivan, Bobby Impollonia)
  *
  * This file is part of FFmpeg.
  *
@@ -26,8 +26,8 @@
 
 #include "libavutil/colorspace.h"
 #include "libavutil/pixdesc.h"
+#include "libavcore/parseutils.h"
 #include "avfilter.h"
-#include "parseutils.h"
 
 enum { Y, U, V, A };
 

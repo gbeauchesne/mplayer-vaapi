@@ -30,6 +30,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <assert.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -147,9 +148,6 @@ int enable_mouse_movements=0;
 float start_volume = -1;
 double start_pts = MP_NOPTS_VALUE;
 char *heartbeat_cmd;
-
-#define ROUND(x) ((int)((x)<0 ? (x)-0.5 : (x)+0.5))
-
 
 m_config_t* mconfig;
 
@@ -349,8 +347,6 @@ static int crash_debug = 0;
 #include "cfg-mplayer.h"
 
 
-#define mp_basename2(s) (strrchr(s,'/')==NULL?(char*)s:(strrchr(s,'/')+1))
-
 const void *mpctx_get_video_out(MPContext *mpctx)
 {
     return mpctx->video_out;
@@ -393,21 +389,17 @@ static int is_valid_metadata_type (metadata_t type) {
   case META_VIDEO_CODEC:
   case META_VIDEO_BITRATE:
   case META_VIDEO_RESOLUTION:
-  {
     if (!mpctx->sh_video)
       return 0;
     break;
-  }
 
   /* check for valid audio stream */
   case META_AUDIO_CODEC:
   case META_AUDIO_BITRATE:
   case META_AUDIO_SAMPLES:
-  {
     if (!mpctx->sh_audio)
       return 0;
     break;
-  }
 
   /* check for valid demuxer */
   case META_INFO_TITLE:
@@ -417,11 +409,9 @@ static int is_valid_metadata_type (metadata_t type) {
   case META_INFO_COMMENT:
   case META_INFO_TRACK:
   case META_INFO_GENRE:
-  {
     if (!mpctx->demuxer)
       return 0;
     break;
-  }
 
   default:
     break;
@@ -445,7 +435,7 @@ static char *get_demuxer_info (char *tag) {
 }
 
 char *get_metadata (metadata_t type) {
-  char *meta = NULL;
+  char meta[128];
   sh_audio_t * const sh_audio = mpctx->sh_audio;
   sh_video_t * const sh_video = mpctx->sh_video;
 
@@ -455,67 +445,43 @@ char *get_metadata (metadata_t type) {
   switch (type)
   {
   case META_NAME:
-  {
-    return strdup (mp_basename2 (filename));
-  }
+    return strdup(mp_basename(filename));
 
   case META_VIDEO_CODEC:
-  {
     if (sh_video->format == 0x10000001)
-      meta = strdup ("mpeg1");
+      return strdup("mpeg1");
     else if (sh_video->format == 0x10000002)
-      meta = strdup ("mpeg2");
+      return strdup("mpeg2");
     else if (sh_video->format == 0x10000004)
-      meta = strdup ("mpeg4");
+      return strdup("mpeg4");
     else if (sh_video->format == 0x10000005)
-      meta = strdup ("h264");
+      return strdup("h264");
     else if (sh_video->format >= 0x20202020)
-    {
-      meta = malloc (8);
-      sprintf (meta, "%.4s", (char *) &sh_video->format);
-    }
+      snprintf(meta, sizeof(meta), "%.4s", (char *) &sh_video->format);
     else
-    {
-      meta = malloc (8);
-      sprintf (meta, "0x%08X", sh_video->format);
-    }
-    return meta;
-  }
+      snprintf(meta, sizeof(meta), "0x%08X", sh_video->format);
+    return strdup(meta);
 
   case META_VIDEO_BITRATE:
-  {
-    meta = malloc (16);
-    sprintf (meta, "%d kbps", (int) (sh_video->i_bps * 8 / 1024));
-    return meta;
-  }
+    snprintf(meta, sizeof(meta), "%d kbps", (int) (sh_video->i_bps * 8 / 1024));
+    return strdup(meta);
 
   case META_VIDEO_RESOLUTION:
-  {
-    meta = malloc (16);
-    sprintf (meta, "%d x %d", sh_video->disp_w, sh_video->disp_h);
-    return meta;
-  }
+    snprintf(meta, sizeof(meta), "%d x %d", sh_video->disp_w, sh_video->disp_h);
+    return strdup(meta);
 
   case META_AUDIO_CODEC:
-  {
     if (sh_audio->codec && sh_audio->codec->name)
-      meta = strdup (sh_audio->codec->name);
-    return meta;
-  }
+      return strdup(sh_audio->codec->name);
+    break;
 
   case META_AUDIO_BITRATE:
-  {
-    meta = malloc (16);
-    sprintf (meta, "%d kbps", (int) (sh_audio->i_bps * 8/1000));
-    return meta;
-  }
+    snprintf(meta, sizeof(meta), "%d kbps", (int)(sh_audio->i_bps * 8 / 1000));
+    return strdup(meta);
 
   case META_AUDIO_SAMPLES:
-  {
-    meta = malloc (16);
-    sprintf (meta, "%d Hz, %d ch.", sh_audio->samplerate, sh_audio->channels);
-    return meta;
-  }
+    snprintf(meta, sizeof(meta), "%d Hz, %d ch.", sh_audio->samplerate, sh_audio->channels);
+    return strdup(meta);
 
   /* check for valid demuxer */
   case META_INFO_TITLE:
@@ -543,7 +509,7 @@ char *get_metadata (metadata_t type) {
     break;
   }
 
-  return meta;
+  return NULL;
 }
 
 static void print_file_properties(const MPContext *mpctx, const char *filename)
@@ -980,7 +946,7 @@ static void load_per_file_config (m_config_t* conf, const char *const file)
 {
     char *confpath;
     char cfg[PATH_MAX];
-    char *name;
+    const char *name;
 
     if (strlen(file) > PATH_MAX - 14) {
         mp_msg(MSGT_CPLAYER, MSGL_WARN, "Filename is too long, can not load file or directory specific config files\n");
@@ -988,20 +954,7 @@ static void load_per_file_config (m_config_t* conf, const char *const file)
     }
     sprintf (cfg, "%s.conf", file);
 
-    name = strrchr(cfg, '/');
-    if (HAVE_DOS_PATHS) {
-        char *tmp = strrchr(cfg, '\\');
-        if (!name || tmp > name)
-            name = tmp;
-        tmp = strrchr(cfg, ':');
-        if (!name || tmp > name)
-            name = tmp;
-    }
-    if (!name)
-	name = cfg;
-    else
-	name++;
-
+    name = mp_basename(cfg);
     if (use_filedir_conf) {
         char dircfg[PATH_MAX];
         strcpy(dircfg, cfg);
@@ -1030,23 +983,21 @@ static int libmpdemux_was_interrupted(int eof) {
        switch(cmd->id) {
        case MP_CMD_QUIT:
 	 exit_player_with_rc(EXIT_QUIT, (cmd->nargs > 0)? cmd->args[0].v.i : 0);
-       case MP_CMD_PLAY_TREE_STEP: {
+       case MP_CMD_PLAY_TREE_STEP:
 	 eof = (cmd->args[0].v.i > 0) ? PT_NEXT_ENTRY : PT_PREV_ENTRY;
 	 mpctx->play_tree_step = (cmd->args[0].v.i == 0) ? 1 : cmd->args[0].v.i;
-       } break;
-       case MP_CMD_PLAY_TREE_UP_STEP: {
+         break;
+       case MP_CMD_PLAY_TREE_UP_STEP:
 	 eof = (cmd->args[0].v.i > 0) ? PT_UP_NEXT : PT_UP_PREV;
-       } break;
-       case MP_CMD_PLAY_ALT_SRC_STEP: {
+         break;
+       case MP_CMD_PLAY_ALT_SRC_STEP:
 	 eof = (cmd->args[0].v.i > 0) ?  PT_NEXT_SRC : PT_PREV_SRC;
-       } break;
+         break;
        }
        mp_cmd_free(cmd);
   }
   return eof;
 }
-
-#define mp_basename(s) (strrchr(s,'\\')==NULL?(mp_basename2(s)):(strrchr(s,'\\')+1))
 
 static int playtree_add_playlist(play_tree_t* entry)
 {
@@ -1127,6 +1078,22 @@ void add_subtitles(char *filename, float fps, int noerr)
     ++mpctx->set_of_sub_size;
     mp_msg(MSGT_CPLAYER, MSGL_INFO, MSGTR_AddedSubtitleFile, mpctx->set_of_sub_size,
 	    filename_recode(filename));
+}
+
+static int add_vob_subtitle(const char *vobname, const char * const ifo, int force, void *spu)
+{
+    if (!vobname)
+        return 0;
+
+    assert(!vo_vobsub);
+
+    vo_vobsub = vobsub_open(vobname, ifo, force, spu);
+
+    if (!vo_vobsub && force)
+        mp_msg(MSGT_CPLAYER, MSGL_ERR, MSGTR_CantLoadSub,
+               filename_recode(vobname));
+
+    return !!vo_vobsub;
 }
 
 // FIXME: if/when the GUI calls this, global sub numbering gets (potentially) broken.
@@ -1313,7 +1280,7 @@ static void print_status(float a_pos, float a_v, float corr)
 #ifdef CONFIG_STREAM_CACHE
   // cache stats
   if (stream_cache_size > 0)
-    saddf(line, &pos, width, "%d%% ", cache_fill_status);
+    saddf(line, &pos, width, "%d%% ", cache_fill_status(mpctx->stream));
 #endif
 
   // other
@@ -1338,7 +1305,7 @@ static void print_status(float a_pos, float a_v, float corr)
  * \param sh_audio describes the requested input format of the chain.
  * \param ao_data describes the requested output format of the chain.
  */
-int build_afilter_chain(sh_audio_t *sh_audio, ao_data_t *ao_data)
+static int build_afilter_chain(sh_audio_t *sh_audio, ao_data_t *ao_data)
 {
   int new_srate;
   int result;
@@ -2508,18 +2475,15 @@ static double update_video(int *blit_frame)
 static void pause_loop(void)
 {
     mp_cmd_t* cmd;
+#ifdef CONFIG_STREAM_CACHE
+    int old_cache_fill = stream_cache_size > 0 ? cache_fill_status(mpctx->stream) : 0;
+#endif
     if (!quiet) {
-        // Small hack to display the pause message on the OSD line.
-        // The pause string is: "\n == PAUSE == \r" so we need to
-        // take the first and the last char out
         if (term_osd && !mpctx->sh_video) {
-            char msg[128] = MSGTR_Paused;
-            int mlen = strlen(msg);
-            msg[mlen-1] = '\0';
-            set_osd_msg(OSD_MSG_PAUSE, 1, 0, "%s", msg+1);
+            set_osd_msg(OSD_MSG_PAUSE, 1, 0, MSGTR_Paused);
             update_osd_msg();
         } else
-            mp_msg(MSGT_CPLAYER,MSGL_STATUS,MSGTR_Paused);
+            mp_msg(MSGT_CPLAYER,MSGL_STATUS,"\n"MSGTR_Paused"\r");
         mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_PAUSED\n");
     }
 #ifdef CONFIG_GUI
@@ -2552,6 +2516,22 @@ static void pause_loop(void)
 #ifdef CONFIG_MENU
         if (vf_menu)
             vf_menu_pause_update(vf_menu);
+#endif
+#ifdef CONFIG_STREAM_CACHE
+        if (!quiet && stream_cache_size > 0)
+        {
+            int new_cache_fill = cache_fill_status(mpctx->stream);
+            if (new_cache_fill != old_cache_fill) {
+                if (term_osd && !mpctx->sh_video) {
+                    set_osd_msg(OSD_MSG_PAUSE, 1, 0, MSGTR_Paused" %d%%",
+                                new_cache_fill);
+                    update_osd_msg();
+                } else
+                    mp_msg(MSGT_CPLAYER, MSGL_STATUS, MSGTR_Paused" %d%%\r",
+                           new_cache_fill);
+                old_cache_fill = new_cache_fill;
+            }
+        }
 #endif
         usec_sleep(20000);
     }
@@ -2759,14 +2739,7 @@ int gui_no_filename=0;
       (!strcmp(argv[1], "-gui") || !strcmp(argv[1], "-nogui"))) {
     use_gui = !strcmp(argv[1], "-gui");
   } else
-  if ( argv[0] )
-  {
-    char *base = strrchr(argv[0], '/');
-    if (!base)
-      base = strrchr(argv[0], '\\');
-    if (!base)
-      base = argv[0];
-    if(strstr(base, "gmplayer"))
+  if (argv[0] && strstr(mp_basename(argv[0]), "gmplayer")) {
           use_gui=1;
   }
 
@@ -3174,7 +3147,7 @@ while (player_idle_mode && !filename) {
 	mp_msg(MSGT_CPLAYER,MSGL_INFO,MSGTR_Playing,
 		filename_recode(filename));
         if(use_filename_title && vo_wintitle == NULL)
-            vo_wintitle = strdup ( mp_basename2 (filename));
+            vo_wintitle = strdup(mp_basename(filename));
     }
 
     edl_loadfile();
@@ -3191,40 +3164,7 @@ while (player_idle_mode && !filename) {
 //==================== Open VOB-Sub ============================
 
     current_module="vobsub";
-    if (vobsub_name){
-      vo_vobsub=vobsub_open(vobsub_name,spudec_ifo,1,&vo_spudec);
-      if(vo_vobsub==NULL)
-        mp_msg(MSGT_CPLAYER,MSGL_ERR,MSGTR_CantLoadSub,
-		filename_recode(vobsub_name));
-    } else if (sub_auto && filename){
-      /* try to autodetect vobsub from movie filename ::atmos */
-      char *buf = strdup(filename), *psub;
-      char *pdot = strrchr(buf, '.');
-      char *pslash = strrchr(buf, '/');
-#if defined(__MINGW32__) || defined(__CYGWIN__)
-      if (!pslash) pslash = strrchr(buf, '\\');
-#endif
-      if (pdot && (!pslash || pdot > pslash))
-        *pdot = '\0';
-      vo_vobsub=vobsub_open(buf,spudec_ifo,0,&vo_spudec);
-      /* try from ~/.mplayer/sub */
-      if(!vo_vobsub && (psub = get_path( "sub/" ))) {
-          char *bname;
-          int l;
-          bname = strrchr(buf,'/');
-#if defined(__MINGW32__) || defined(__CYGWIN__)
-          if(!bname) bname = strrchr(buf,'\\');
-#endif
-          if(bname) bname++;
-          else bname = buf;
-          l = strlen(psub) + strlen(bname) + 1;
-          psub = realloc(psub,l);
-          strcat(psub,bname);
-          vo_vobsub=vobsub_open(psub,spudec_ifo,0,&vo_spudec);
-          free(psub);
-      }
-      free(buf);
-    }
+    load_vob_subtitle(filename, spudec_ifo, &vo_spudec, add_vob_subtitle);
     if(vo_vobsub){
       initialized_flags|=INITIALIZED_VOBSUB;
       vobsub_set_from_lang(vo_vobsub, dvdsub_lang);
@@ -3368,7 +3308,8 @@ if (mpctx->demuxer && mpctx->demuxer->type==DEMUXER_TYPE_PLAYLIST)
   current_module="handle_demux_playlist";
   while (ds_get_packet(mpctx->demuxer->video,&playlist_entry)>0)
   {
-    char *temp, *bname;
+    char *temp;
+    const char *bname;
 
     mp_msg(MSGT_CPLAYER,MSGL_V,"Adding file %s to element entry.\n",
 	    filename_recode(playlist_entry));
@@ -3561,21 +3502,7 @@ if(1 || mpctx->sh_video) {
 // check .sub
   double fps = mpctx->sh_video ? mpctx->sh_video->fps : 25;
   current_module="read_subtitles_file";
-  if(sub_name){
-    for (i = 0; sub_name[i] != NULL; ++i)
-        add_subtitles (sub_name[i], fps, 0);
-  }
-  if(sub_auto) { // auto load sub file ...
-    char *psub = get_path( "sub/" );
-    char **tmp = sub_filenames((psub ? psub : ""), filename);
-    int i = 0;
-    free(psub); // release the buffer created by get_path() above
-    while (tmp[i]) {
-        add_subtitles (tmp[i], fps, 1);
-        free(tmp[i++]);
-    }
-    free(tmp);
-  }
+  load_subtitles(filename, fps, add_subtitles);
   if (mpctx->set_of_sub_size > 0)
       mpctx->sub_counts[SUB_SOURCE_SUBS] = mpctx->set_of_sub_size;
 }
@@ -3604,24 +3531,20 @@ if (select_subtitle(mpctx)) {
       }
   }
 
-if(!mpctx->sh_video) goto main; // audio-only
+  if (mpctx->sh_video)
+      reinit_video_chain();
 
-if(!reinit_video_chain()) {
-  if(!mpctx->sh_video){
-    if(!mpctx->sh_audio) goto goto_next_file;
-    goto main; // exit_player(MSGTR_Exit_error);
-  }
-}
-
-   if(vo_flags & 0x08 && vo_spudec)
-      spudec_set_hw_spu(vo_spudec,mpctx->video_out);
+      if (mpctx->sh_video) {
+          if (vo_flags & 0x08 && vo_spudec)
+              spudec_set_hw_spu(vo_spudec, mpctx->video_out);
 
 #ifdef CONFIG_FREETYPE
-   force_load_font = 1;
+          force_load_font = 1;
 #endif
+      } else if (!mpctx->sh_audio)
+          goto goto_next_file;
 
 //================== MAIN: ==========================
-main:
 current_module="main";
 
     if(playing_msg) {
@@ -3730,11 +3653,6 @@ if (seek_to_sec) {
     end_at.pos += seek_to_sec;
 }
 
-if (end_at.type == END_AT_SIZE) {
-    mp_msg(MSGT_CPLAYER, MSGL_WARN, MSGTR_MPEndposNoSizeBased);
-    end_at.type = END_AT_NONE;
-}
-
 #ifdef CONFIG_DVDNAV
 mp_dvdnav_context_free(mpctx);
 if (mpctx->stream->type == STREAMTYPE_DVDNAV) {
@@ -3778,7 +3696,8 @@ if(!mpctx->sh_video) {
   if(!quiet)
     print_status(a_pos, 0, 0);
 
-  if(end_at.type == END_AT_TIME && end_at.pos < a_pos)
+  if(end_at.type == END_AT_TIME && end_at.pos < a_pos ||
+     end_at.type == END_AT_SIZE && end_at.pos < stream_tell(mpctx->stream))
     mpctx->eof = PT_NEXT_ENTRY;
   update_subtitles(NULL, a_pos, mpctx->d_sub, 0);
   update_osd_msg();
@@ -3886,10 +3805,9 @@ if(auto_quality>0){
      if (play_n_frames <= 0) mpctx->eof = PT_NEXT_ENTRY;
  }
 
-
-// FIXME: add size based support for -endpos
- if (end_at.type == END_AT_TIME &&
-         !frame_time_remaining && end_at.pos <= mpctx->sh_video->pts)
+ if (!frame_time_remaining &&
+     ((end_at.type == END_AT_TIME &&       mpctx->sh_video->pts >= end_at.pos) ||
+      (end_at.type == END_AT_SIZE && stream_tell(mpctx->stream) >= end_at.pos)))
      mpctx->eof = PT_NEXT_ENTRY;
 
 } // end if(mpctx->sh_video)

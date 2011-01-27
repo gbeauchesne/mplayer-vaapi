@@ -118,7 +118,7 @@ static const char help_text[]=
 #define MSGTR_ForcedAudioCodec "Codec audio forzato: %s\n"
 #define MSGTR_Video_NoVideo "Video: nessun video!!!\n"
 #define MSGTR_NotInitializeVOPorVO "\nFATALE: Impossibile inizializzare i filtri video (-vf) o l'output video (-vo)!\n"
-#define MSGTR_Paused "\n  =====  PAUSA  =====\r"
+#define MSGTR_Paused "  =====  PAUSA  ====="
 #define MSGTR_PlaylistLoadUnable "\nImpossibile caricare la playlist %s\n"
 #define MSGTR_Exit_SIGILL_RTCpuSel \
 "- MPlayer è stato interrotto dal segnale 'Istruzione illegale'.\n"\
@@ -197,7 +197,6 @@ static const char help_text[]=
 #define MSGTR_EdloutBadStop "Salto EDL ingnorato, ultimo start > stop\n"
 #define MSGTR_EdloutStartSkip "Tempo di start EDL impostato, ripremere 'i' per impostare lo stop.\n"
 #define MSGTR_EdloutEndSkip "Fine del blocco EDL, riga scritta.\n"
-#define MSGTR_MPEndposNoSizeBased "L'opzione -endpos in MPlayer non supporta ancora unità di mis. di dimensione.\n"
 
 // mplayer.c OSD
 #define MSGTR_OSDenabled "abilitat"

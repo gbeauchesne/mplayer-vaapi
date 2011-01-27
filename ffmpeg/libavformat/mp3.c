@@ -68,7 +68,6 @@ static int mp3_read_probe(AVProbeData *p)
     if   (first_frames>=4) return AVPROBE_SCORE_MAX/2+1;
     else if(max_frames>500)return AVPROBE_SCORE_MAX/2;
     else if(max_frames>=4) return AVPROBE_SCORE_MAX/4;
-    else if(buf0!=p->buf)  return AVPROBE_SCORE_MAX/4-1;
     else if(max_frames>=1) return 1;
     else                   return 0;
 //mpegps_mp3_unrecognized_format.mpg has max_frames=3
@@ -129,7 +128,7 @@ static int mp3_parse_vbr_tags(AVFormatContext *s, AVStream *st, int64_t base)
     if(frames)
         st->duration = av_rescale_q(frames, (AVRational){spf, c.sample_rate},
                                     st->time_base);
-    if(size)
+    if(size && frames)
         st->codec->bit_rate = av_rescale(size, 8 * c.sample_rate, frames * (int64_t)spf);
 
     return 0;

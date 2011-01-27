@@ -53,6 +53,23 @@ AVFilterContext *avfilter_graph_get_filter(AVFilterGraph *graph, char *name);
 int avfilter_graph_add_filter(AVFilterGraph *graphctx, AVFilterContext *filter);
 
 /**
+ * Create and add a filter instance into an existing graph.
+ * The filter instance is created from the filter filt and inited
+ * with the parameters args and opaque.
+ *
+ * In case of success put in *filt_ctx the pointer to the created
+ * filter instance, otherwise set *filt_ctx to NULL.
+ *
+ * @param name the instance name to give to the created filter instance
+ * @param graph_ctx the filter graph
+ * @return a negative AVERROR error code in case of failure, a non
+ * negative value otherwise
+ */
+int avfilter_graph_create_filter(AVFilterContext **filt_ctx, AVFilter *filt,
+                                 const char *name, const char *args, void *opaque,
+                                 AVFilterGraph *graph_ctx);
+
+/**
  * Check validity and configure all the links and formats in the graph.
  *
  * @param graphctx the filter graph
@@ -62,7 +79,7 @@ int avfilter_graph_add_filter(AVFilterGraph *graphctx, AVFilterContext *filter);
 int avfilter_graph_config(AVFilterGraph *graphctx, AVClass *log_ctx);
 
 /**
- * Free a graph and destroy its links.
+ * Free a graph and destroy its links, graph may be NULL.
  */
 void avfilter_graph_free(AVFilterGraph *graph);
 

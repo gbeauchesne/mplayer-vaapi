@@ -657,8 +657,9 @@ static int mov_get_codec_tag(AVFormatContext *s, MOVTrack *track)
     int tag = track->enc->codec_tag;
 
     if (!tag || (track->enc->strict_std_compliance >= FF_COMPLIANCE_NORMAL &&
-                 (tag == MKTAG('d','v','c','p') ||
+                 (track->enc->codec_id == CODEC_ID_DVVIDEO ||
                   track->enc->codec_id == CODEC_ID_RAWVIDEO ||
+                  track->enc->codec_id == CODEC_ID_H263 ||
                   av_get_bits_per_sample(track->enc->codec_id)))) { // pcm audio
         if (track->enc->codec_id == CODEC_ID_DVVIDEO)
             tag = mov_get_dv_codec_tag(s, track);
@@ -2215,7 +2216,7 @@ AVOutputFormat mov_muxer = {
     mov_write_header,
     ff_mov_write_packet,
     mov_write_trailer,
-    .flags = AVFMT_GLOBALHEADER | AVFMT_VARIABLE_FPS,
+    .flags = AVFMT_GLOBALHEADER,
     .codec_tag = (const AVCodecTag* const []){codec_movvideo_tags, codec_movaudio_tags, 0},
 };
 #endif
@@ -2247,7 +2248,7 @@ AVOutputFormat mp4_muxer = {
     mov_write_header,
     ff_mov_write_packet,
     mov_write_trailer,
-    .flags = AVFMT_GLOBALHEADER | AVFMT_VARIABLE_FPS,
+    .flags = AVFMT_GLOBALHEADER,
     .codec_tag = (const AVCodecTag* const []){ff_mp4_obj_type, 0},
 };
 #endif

@@ -119,7 +119,7 @@ static const char help_text[]=
 #define MSGTR_ForcedAudioCodec "Форсирован аудиокодек: %s\n"
 #define MSGTR_Video_NoVideo "Видео: нет видео\n"
 #define MSGTR_NotInitializeVOPorVO "\nФАТАЛЬНАЯ ОШИБКА: Не могу инициализировать видеофильтры (-vf) или видеовывод (-vo).\n"
-#define MSGTR_Paused "\n=== ПРИОСТАНОВЛЕНО ===\r" // no more than 23 characters (status line for audio files)
+#define MSGTR_Paused "=== ПРИОСТАНОВЛЕНО ===" // no more than 23 characters (status line for audio files)
 #define MSGTR_PlaylistLoadUnable "\nНе могу загрузить список воспроизведения (плейлист) %s.\n"
 #define MSGTR_Exit_SIGILL_RTCpuSel \
 "- MPlayer рухнул из-за 'Неправильной Инструкции'.\n"\
@@ -191,7 +191,6 @@ static const char help_text[]=
 #define MSGTR_EdloutBadStop "EDL пропуск отменён, последний start > stop\n"
 #define MSGTR_EdloutStartSkip "Начало EDL пропуска, нажмите 'i' ещё раз для завершения блока.\n"
 #define MSGTR_EdloutEndSkip "Конец EDL пропуска, строка записана.\n"
-#define MSGTR_MPEndposNoSizeBased "В MPlayer опция -endpos пока не поддерживает единицы размера.\n"
 
 // mplayer.c OSD
 #define MSGTR_OSDenabled "включено"

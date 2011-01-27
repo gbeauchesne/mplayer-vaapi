@@ -1,8 +1,3 @@
-K 13
-svn:externals
-V 61
-libswscale     svn://svn.ffmpeg.org/mplayer/trunk/libswscale
-
 K 10
 svn:ignore
 V 98

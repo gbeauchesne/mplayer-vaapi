@@ -1,14 +1,14 @@
 8
 
 dir
-1218
+1219
 svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdnav/src/vm
 svn://svn.mplayerhq.hu/dvdnav
 
 
 
-2010-07-30T23:34:24.019663Z
-1211
+2010-11-21T23:59:43.835768Z
+1219
 erik
 has-props
 
@@ -32,10 +32,10 @@ file
 
 
 
-2010-08-03T10:15:16.000000Z
-1d02c4380e87abc87926d8c9e1f373e7
-2010-07-30T23:34:24.019663Z
-1211
+2011-01-27T13:55:05.000000Z
+eb4c36ee561336e7cad5ec1d55c681ef
+2010-11-21T23:59:43.835768Z
+1219
 erik
 has-props
 

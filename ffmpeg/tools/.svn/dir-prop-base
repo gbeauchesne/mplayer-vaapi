@@ -1,10 +1,11 @@
 K 10
 svn:ignore
-V 69
+V 88
 *.d
 *.exe
 cws2fws
 graph2dot
+lavfi-showfiltfmts
 pktdumper
 probetest
 qt-faststart

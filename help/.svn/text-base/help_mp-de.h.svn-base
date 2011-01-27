@@ -131,7 +131,7 @@ static const char help_text[]=
 #define MSGTR_ForcedAudioCodec "Erzwungener Audiocodec: %s\n"
 #define MSGTR_Video_NoVideo "Video: kein Video\n"
 #define MSGTR_NotInitializeVOPorVO "\nFATAL: Konnte Videofilter (-vf) oder -ausgabetreiber (-vo) nicht initialisieren.\n"
-#define MSGTR_Paused "\n  =====  PAUSE  =====\r"
+#define MSGTR_Paused "  =====  PAUSE  ====="
 #define MSGTR_PlaylistLoadUnable "\nKann Playlist %s nicht laden.\n"
 #define MSGTR_Exit_SIGILL_RTCpuSel \
 "- MPlayer stürzte aufgrund einer 'ungültigen Anweisung' ab.\n"\
@@ -207,7 +207,6 @@ static const char help_text[]=
 #define MSGTR_EdloutBadStop "EDL-Sprung abgebrochen, letzter Start > Stop\n"
 #define MSGTR_EdloutStartSkip "EDL-Sprung begonnen, drücke 'i' erneut, um den Block zu beenden.\n"
 #define MSGTR_EdloutEndSkip "EDL-Sprung beendet, Zeile geschrieben.\n"
-#define MSGTR_MPEndposNoSizeBased "Die Option -endpos unterstützt für MPlayer noch keine Größenangaben.\n"
 
 // mplayer.c OSD
 #define MSGTR_OSDenabled "aktiviert"
@@ -2175,7 +2174,7 @@ static const char help_text[]=
 #define MSGTR_TVI_DS_UnableTerminateVPPin "tvi_dshow: Kann VideoPort-Pin mit keinem Filter des Graphen terminieren. Fehler:0x%x\n"
 #define MSGTR_TVI_DS_UnableBuildVideoSubGraph "tvi_dshow: Kann Videokette des Capture-Graphen nicht erstellen. Fehler:0x%x\n"
 #define MSGTR_TVI_DS_UnableBuildAudioSubGraph "tvi_dshow: Kann Audiokette des Capture-Graphen nicht erstellen. Fehler:0x%x\n"
-#define MSGTR_TVI_DS_UnableBuildVBISubGraph "tvi_dshow: Kann VBI-Kette des Capture-Graphen nicht erstellen. Fehler:0x%x\n""
+#define MSGTR_TVI_DS_UnableBuildVBISubGraph "tvi_dshow: Kann VBI-Kette des Capture-Graphen nicht erstellen. Fehler:0x%x\n"
 #define MSGTR_TVI_DS_GraphInitFailure "tvi_dshow: Initialisierung des Directshow-Graph fehlgeschlagen.\n"
 #define MSGTR_TVI_DS_NoVideoCaptureDevice "tvi_dshow: Kein Gerät für Videoerfassung gefunden\n"
 #define MSGTR_TVI_DS_NoAudioCaptureDevice "tvi_dshow: Kein Gerät für Audioerfassung gefunden\n"

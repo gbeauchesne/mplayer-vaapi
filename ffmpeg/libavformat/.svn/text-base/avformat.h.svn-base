@@ -22,7 +22,7 @@
 #define AVFORMAT_AVFORMAT_H
 
 #define LIBAVFORMAT_VERSION_MAJOR 52
-#define LIBAVFORMAT_VERSION_MINOR 84
+#define LIBAVFORMAT_VERSION_MINOR 93
 #define LIBAVFORMAT_VERSION_MICRO  0
 
 #define LIBAVFORMAT_VERSION_INT AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR, \
@@ -148,6 +148,7 @@ struct AVFormatContext;
  * comment      -- any additional description of the file.
  * composer     -- who composed the work, if different from artist.
  * copyright    -- name of copyright holder.
+ * creation_time-- date when the file was created, preferably in ISO 8601.
  * date         -- date when the work was created, preferably in ISO 8601.
  * disc         -- number of a subset, e.g. disc in a multi-disc collection.
  * encoder      -- name/settings of the software/hardware that produced the file.
@@ -226,6 +227,16 @@ attribute_deprecated void av_metadata_conv(struct AVFormatContext *ctx, const AV
 #endif
 
 /**
+ * Copy metadata from one AVMetadata struct into another.
+ * @param dst pointer to a pointer to a AVMetadata struct. If *dst is NULL,
+ *            this function will allocate a struct for you and put it in *dst
+ * @param src pointer to source AVMetadata struct
+ * @param flags flags to use when setting metadata in *dst
+ * @note metadata is read using the AV_METADATA_IGNORE_SUFFIX flag
+ */
+void av_metadata_copy(AVMetadata **dst, AVMetadata *src, int flags);
+
+/**
  * Free all the memory allocated for an AVMetadata struct.
  */
 void av_metadata_free(AVMetadata **m);
@@ -244,6 +255,21 @@ void av_metadata_free(AVMetadata **m);
  */
 int av_get_packet(ByteIOContext *s, AVPacket *pkt, int size);
 
+
+/**
+ * Read data and append it to the current content of the AVPacket.
+ * If pkt->size is 0 this is identical to av_get_packet.
+ * Note that this uses av_grow_packet and thus involves a realloc
+ * which is inefficient. Thus this function should only be used
+ * when there is no reasonable way to know (an upper bound of)
+ * the final size.
+ *
+ * @param pkt packet
+ * @param size amount of data to read
+ * @return >0 (read size) if OK, AVERROR_xxx otherwise, previous data
+ *         will not be lost even if an error occurs.
+ */
+int av_append_packet(ByteIOContext *s, AVPacket *pkt, int size);
 
 /*************************************************/
 /* fractional numbers for exact pts handling */
@@ -304,9 +330,10 @@ typedef struct AVFormatParameters {
 #define AVFMT_GLOBALHEADER  0x0040 /**< Format wants global header. */
 #define AVFMT_NOTIMESTAMPS  0x0080 /**< Format does not need / have any timestamps. */
 #define AVFMT_GENERIC_INDEX 0x0100 /**< Use generic index building code. */
-#define AVFMT_TS_DISCONT    0x0200 /**< Format allows timestamp discontinuities. */
+#define AVFMT_TS_DISCONT    0x0200 /**< Format allows timestamp discontinuities. Note, muxers always require valid (monotone) timestamps */
 #define AVFMT_VARIABLE_FPS  0x0400 /**< Format allows variable fps. */
 #define AVFMT_NODIMENSIONS  0x0800 /**< Format does not need width/height */
+#define AVFMT_NOSTREAMS     0x1000 /**< Format does not require any streams */
 
 typedef struct AVOutputFormat {
     const char *name;
@@ -350,6 +377,8 @@ typedef struct AVOutputFormat {
 #if FF_API_OLD_METADATA
     const AVMetadataConv *metadata_conv;
 #endif
+
+    const AVClass *priv_class; ///< AVClass for the private context
 
     /* private fields */
     struct AVOutputFormat *next;
@@ -1122,6 +1151,37 @@ AVFormatContext *avformat_alloc_context(void);
  *       we do not waste time getting stuff the user does not need.
  */
 int av_find_stream_info(AVFormatContext *ic);
+
+/**
+ * Find the "best" stream in the file.
+ * The best stream is determined according to various heuristics as the most
+ * likely to be what the user expects.
+ * If the decoder parameter is non-NULL, av_find_best_stream will find the
+ * default decoder for the stream's codec; streams for which no decoder can
+ * be found are ignored.
+ *
+ * @param ic                media file handle
+ * @param type              stream type: video, audio, subtitles, etc.
+ * @param wanted_stream_nb  user-requested stream number,
+ *                          or -1 for automatic selection
+ * @param related_stream    try to find a stream related (eg. in the same
+ *                          program) to this one, or -1 if none
+ * @param decoder_ret       if non-NULL, returns the decoder for the
+ *                          selected stream
+ * @param flags             flags; none are currently defined
+ * @return  the non-negative stream number in case of success,
+ *          AVERROR_STREAM_NOT_FOUND if no stream with the requested type
+ *          could be found,
+ *          AVERROR_DECODER_NOT_FOUND if streams were found but no decoder
+ * @note  If av_find_best_stream returns successfully and decoder_ret is not
+ *        NULL, then *decoder_ret is guaranteed to be set to a valid AVCodec.
+ */
+int av_find_best_stream(AVFormatContext *ic,
+                        enum AVMediaType type,
+                        int wanted_stream_nb,
+                        int related_stream,
+                        AVCodec **decoder_ret,
+                        int flags);
 
 /**
  * Read a transport packet from a media file.

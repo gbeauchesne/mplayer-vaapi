@@ -118,7 +118,7 @@ static const char help_text[]=
 #define MSGTR_ForcedAudioCodec "Vynucen audio kodek: %s\n"
 #define MSGTR_Video_NoVideo "Video: Žádné video\n"
 #define MSGTR_NotInitializeVOPorVO "\nKritická chyba: Nemohu inicializovat video filtry (-vf) nebo video výstup (-vo)!\n"
-#define MSGTR_Paused "\n===== POZASTAVENO =====\r"
+#define MSGTR_Paused "===== POZASTAVENO ====="
 #define MSGTR_PlaylistLoadUnable "\nNemohu načíst playlist %s.\n"
 #define MSGTR_Exit_SIGILL_RTCpuSel \
 "- MPlayer havaroval kvůli 'Illegal Instruction'.\n"\
@@ -190,7 +190,6 @@ static const char help_text[]=
 #define MSGTR_EdloutBadStop "EDL: Vynechání zrušeno, poslední start > stop\n"
 #define MSGTR_EdloutStartSkip "EDL: Začátek vynechaného bloku, stiskněte znovu 'i' pro ukončení bloku.\n"
 #define MSGTR_EdloutEndSkip "EDL: Konec vynechaného bloku, řádek zapsán.\n"
-#define MSGTR_MPEndposNoSizeBased "Volba -endpos v MPlayeru zatím nepodporuje rozměrové jednotky.\n"
 
 // mplayer.c OSD
 #define MSGTR_OSDenabled "zapnuto"
