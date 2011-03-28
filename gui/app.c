@@ -16,225 +16,185 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "config.h"
-#include "mp_msg.h"
-#include "help_mp.h"
-
 #include "app.h"
-#include "wm/wskeys.h"
-#include "skin/skin.h"
-#include "mplayer/gmplayer.h"
+
 #include "interface.h"
+#include "skin/font.h"
 
-static const evName evNames[] =
- {
-  { evNone,              "evNone"              },
-  { evPlay,              "evPlay"              },
-  { evStop,              "evStop"              },
-  { evPause,             "evPause"             },
-  { evPrev,              "evPrev"              },
-  { evNext,              "evNext"              },
-  { evLoad,              "evLoad"              },
-  { evEqualizer,         "evEqualizer"         },
-  { evEqualizer,         "evEqualeaser"        },
-  { evPlayList,          "evPlaylist"          },
-  { evExit,              "evExit"              },
-  { evIconify,           "evIconify"           },
-  { evIncBalance,        "evIncBalance"        },
-  { evDecBalance,        "evDecBalance"        },
-  { evFullScreen,        "evFullScreen"        },
-  { evFName,             "evFName"             },
-  { evMovieTime,         "evMovieTime"         },
-  { evAbout,             "evAbout"             },
-  { evLoadPlay,          "evLoadPlay"          },
-  { evPreferences,       "evPreferences"       },
-  { evSkinBrowser,       "evSkinBrowser"       },
-  { evBackward10sec,     "evBackward10sec"     },
-  { evForward10sec,      "evForward10sec"      },
-  { evBackward1min,      "evBackward1min"      },
-  { evForward1min,       "evForward1min"       },
-  { evBackward10min,     "evBackward10min"     },
-  { evForward10min,      "evForward10min"      },
-  { evIncVolume,         "evIncVolume"         },
-  { evDecVolume,         "evDecVolume"         },
-  { evMute,              "evMute"              },
-  { evIncAudioBufDelay,  "evIncAudioBufDelay"  },
-  { evDecAudioBufDelay,  "evDecAudioBufDelay"  },
-  { evPlaySwitchToPause, "evPlaySwitchToPause" },
-  { evPauseSwitchToPlay, "evPauseSwitchToPlay" },
-  { evNormalSize,        "evHalfSize"          },
-  { evNormalSize,        "evNormalSize"        },
-  { evDoubleSize,        "evDoubleSize"        },
-  { evSetMoviePosition,  "evSetMoviePosition"  },
-  { evSetVolume,         "evSetVolume"         },
-  { evSetBalance,        "evSetBalance"        },
-  { evHelp,		 "evHelp"	       },
-  { evLoadSubtitle,      "evLoadSubtitle"      },
-  { evPlayDVD,		 "evPlayDVD"	       },
-  { evPlayVCD,		 "evPlayVCD"	       },
-  { evSetURL,		 "evSetURL"	       },
-  { evLoadAudioFile,	 "evLoadAudioFile"     },
-  { evDropSubtitle,      "evDropSubtitle"      },
-  { evSetAspect,	 "evSetAspect"	       }
- };
+#include "libavutil/common.h"
 
-static const int evBoxs = sizeof( evNames ) / sizeof( evName );
+guiItems appMPlayer;
 
-// ---
+static const evName evNames[] = {
+    { evNone,              "evNone"              },
+    { evPlay,              "evPlay"              },
+    { evStop,              "evStop"              },
+    { evPause,             "evPause"             },
+    { evPrev,              "evPrev"              },
+    { evNext,              "evNext"              },
+    { evLoad,              "evLoad"              },
+    { evEqualizer,         "evEqualizer"         },
+    { evEqualizer,         "evEqualeaser"        }, // NOTE TO MYSELF: any skin using this?
+    { evPlayList,          "evPlaylist"          },
+    { evExit,              "evExit"              },
+    { evIconify,           "evIconify"           },
+    { evIncBalance,        "evIncBalance"        }, // NOTE TO MYSELF: not all of these events
+    { evDecBalance,        "evDecBalance"        }, // are actually implemented, and update doc
+    { evFullScreen,        "evFullScreen"        },
+    { evFName,             "evFName"             },
+    { evMovieTime,         "evMovieTime"         },
+    { evAbout,             "evAbout"             },
+    { evLoadPlay,          "evLoadPlay"          },
+    { evPreferences,       "evPreferences"       },
+    { evSkinBrowser,       "evSkinBrowser"       },
+    { evBackward10sec,     "evBackward10sec"     },
+    { evForward10sec,      "evForward10sec"      },
+    { evBackward1min,      "evBackward1min"      },
+    { evForward1min,       "evForward1min"       },
+    { evBackward10min,     "evBackward10min"     },
+    { evForward10min,      "evForward10min"      },
+    { evIncVolume,         "evIncVolume"         },
+    { evDecVolume,         "evDecVolume"         },
+    { evMute,              "evMute"              },
+    { evIncAudioBufDelay,  "evIncAudioBufDelay"  },
+    { evDecAudioBufDelay,  "evDecAudioBufDelay"  },
+    { evPlaySwitchToPause, "evPlaySwitchToPause" },
+    { evPauseSwitchToPlay, "evPauseSwitchToPlay" },
+    { evNormalSize,        "evHalfSize"          },
+    { evNormalSize,        "evNormalSize"        },
+    { evDoubleSize,        "evDoubleSize"        },
+    { evSetMoviePosition,  "evSetMoviePosition"  },
+    { evSetVolume,         "evSetVolume"         },
+    { evSetBalance,        "evSetBalance"        },
+    { evHelp,              "evHelp"              },
+    { evLoadSubtitle,      "evLoadSubtitle"      },
+    { evPlayDVD,           "evPlayDVD"           },
+    { evPlayVCD,           "evPlayVCD"           },
+    { evSetURL,            "evSetURL"            },
+    { evLoadAudioFile,     "evLoadAudioFile"     },
+    { evDropSubtitle,      "evDropSubtitle"      },
+    { evSetAspect,         "evSetAspect"         }
+};
 
-listItems   appMPlayer;
-
-/* FIXME: Eventually remove the obsolete directory names. */
-char      * skinDirInHome=NULL;
-char      * skinDirInHome_obsolete=NULL;
-char      * skinMPlayerDir=NULL;
-char      * skinMPlayerDir_obsolete=NULL;
-char      * skinName = NULL;
-
-void appClearItem( wItem * item )
+static void appClearItem(wItem *item)
 {
- item->type=0;
-// ---
- item->x=0; item->y=0; item->width=0; item->height=0;
-// ---
- item->px=0; item->py=0; item->psx=0; item->psy=0;
-// ---
- item->msg=0; item->msg2=0;
- item->pressed=btnReleased;
- item->tmp=0;
- item->key=0; item->key2=0;
- item->Bitmap.Width=0; item->Bitmap.Height=0; item->Bitmap.BPP=0; item->Bitmap.ImageSize=0;
- free(item->Bitmap.Image);
- item->Bitmap.Image=NULL;
-// ---
- item->fontid=0;
- free(item->label);
- item->label=NULL;
- item->event=0;
+    bpFree(&item->Bitmap);
+    bpFree(&item->Mask);
+    free(item->label);
+    free(item->text);
+    memset(item, 0, sizeof(*item));
 }
 
-void appCopy( listItems * dest,listItems * source )
+void appInitStruct(void)
 {
- dest->NumberOfItems=source->NumberOfItems;
- memcpy( &dest->Items,&source->Items,128 * sizeof( wItem ) );
+    appMPlayer.IndexOfMainItems = -1;
+    appMPlayer.IndexOfBarItems  = -1;
+    appMPlayer.IndexOfMenuItems = -1;
 
- dest->NumberOfMenuItems=source->NumberOfMenuItems;
- memcpy( &dest->MenuItems,&source->MenuItems,32 * sizeof( wItem ) );
-
- memcpy( &dest->main,&source->main,sizeof( wItem ) );
- memcpy( &dest->sub,&source->sub,sizeof( wItem ) );
- memcpy( &dest->menuBase,&source->menuBase,sizeof( wItem ) );
- memcpy( &dest->menuSelected,&source->menuSelected,sizeof( wItem ) );
+    appMPlayer.sub.x = -1;   // NOTE TO MYSELF: is this really necessary?
+    appMPlayer.sub.y = -1;   // NOTE TO MYSELF: is this really necessary?
 }
 
-void appInitStruct( listItems * item )
+void appFreeStruct(void)
 {
- int i;
- for ( i=0;i<item->NumberOfItems;i++ )
-  appClearItem( &item->Items[i] );
- for ( i=0;i<item->NumberOfMenuItems;i++ )
-  appClearItem( &item->MenuItems[i] );
- for ( i=0;i<item->NumberOfBarItems;i++ )
-  appClearItem( &item->barItems[i] );
+    int i;
 
- item->NumberOfItems=-1;
- memset( item->Items,0,256 * sizeof( wItem ) );
- item->NumberOfMenuItems=-1;
- memset( item->MenuItems,0,64 * sizeof( wItem ) );
- item->NumberOfBarItems=-1;
- memset( item->barItems,0,256 * sizeof( wItem ) );
+    appClearItem(&appMPlayer.main);
+    appMPlayer.mainDecoration = 0;
 
- appClearItem( &item->main );
- item->mainDecoration=0;
- appClearItem( &item->sub );
- item->sub.width=0; item->sub.height=0;
- item->sub.x=-1; item->sub.y=-1;
- appClearItem( &item->menuBase );
- appClearItem( &item->menuSelected );
- item->sub.R=item->sub.G=item->sub.B=0;
- item->bar.R=item->bar.G=item->bar.B=0;
- item->main.R=item->main.G=item->main.B=0;
- item->barIsPresent=0;
- item->menuIsPresent=0;
+    appClearItem(&appMPlayer.sub);
+
+    appClearItem(&appMPlayer.bar);
+    appMPlayer.barIsPresent = 0;
+
+    appClearItem(&appMPlayer.menuBase);
+    appClearItem(&appMPlayer.menuSelected);
+    appMPlayer.menuIsPresent = 0;
+
+    for (i = 0; i <= appMPlayer.IndexOfMainItems; i++)
+        appClearItem(&appMPlayer.mainItems[i]);
+    for (i = 0; i <= appMPlayer.IndexOfBarItems; i++)
+        appClearItem(&appMPlayer.barItems[i]);
+    for (i = 0; i <= appMPlayer.IndexOfMenuItems; i++)
+        appClearItem(&appMPlayer.menuItems[i]);
+
+    appInitStruct();
+    fntFreeFont();
 }
 
-int appFindKey( unsigned char * name )
+int appFindMessage(unsigned char *str)
 {
- int i;
- for ( i=0;i<wsKeyNumber;i++ )
-  if ( !strcmp( wsKeyNames[i].name,name ) ) return wsKeyNames[i].code;
- return -1;
+    unsigned int i;
+
+    for (i = 0; i < FF_ARRAY_ELEMS(evNames); i++)
+        if (!strcmp(evNames[i].name, str))
+            return evNames[i].message;
+
+    return -1;
 }
 
-int appFindMessage( unsigned char * str )
+void btnModify(int event, float state)
 {
- int i;
- for ( i=0;i<evBoxs;i++ )
-  if ( !strcmp( evNames[i].name,str ) ) return evNames[i].msg;
- return -1;
+    int i;
+
+    for (i = 0; i <= appMPlayer.IndexOfMainItems; i++) {
+        if (appMPlayer.mainItems[i].message == event) {
+            switch (appMPlayer.mainItems[i].type) {
+            case itButton:
+                appMPlayer.mainItems[i].pressed = (int)state;
+                appMPlayer.mainItems[i].tmp     = (int)state;
+                break;
+
+            case itPotmeter:
+            case itVPotmeter:
+            case itHPotmeter:
+                if (state < 0.0f)
+                    state = 0.0f;
+                if (state > 100.0f)
+                    state = 100.0f;
+                appMPlayer.mainItems[i].value = state;
+                break;
+            }
+        }
+    }
+
+    for (i = 0; i <= appMPlayer.IndexOfBarItems; i++) {
+        if (appMPlayer.barItems[i].message == event) {
+            switch (appMPlayer.barItems[i].type) {
+            case itButton:
+                appMPlayer.barItems[i].pressed = (int)state;
+                appMPlayer.barItems[i].tmp     = (int)state;
+                break;
+
+            case itPotmeter:
+            case itVPotmeter:
+            case itHPotmeter:
+                if (state < 0.0f)
+                    state = 0.0f;
+                if (state > 100.0f)
+                    state = 100.0f;
+                appMPlayer.barItems[i].value = state;
+                break;
+            }
+        }
+    }
 }
 
-void btnModify( int event,float state )
+void btnSet(int event, int set)
 {
- int j;
- for ( j=0;j < appMPlayer.NumberOfItems + 1;j++ )
-  if ( appMPlayer.Items[j].msg == event )
-   {
-    switch ( appMPlayer.Items[j].type )
-     {
-      case itButton:
-            appMPlayer.Items[j].pressed=(int)state;
-            appMPlayer.Items[j].tmp=(int)state;
-            break;
-      case itPotmeter:
-      case itVPotmeter:
-      case itHPotmeter:
-    	    if ( state < 0.0f ) state=0.0f;
-	    if ( state > 100.f ) state=100.0f;
-	    appMPlayer.Items[j].value=state;
-	    break;
-     }
-   }
+    int i;
 
- for ( j=0;j < appMPlayer.NumberOfBarItems + 1;j++ )
-  if ( appMPlayer.barItems[j].msg == event )
-   {
-    switch ( appMPlayer.barItems[j].type )
-     {
-      case itButton:
-            appMPlayer.barItems[j].pressed=(int)state;
-            appMPlayer.barItems[j].tmp=(int)state;
-            break;
-      case itPotmeter:
-      case itVPotmeter:
-      case itHPotmeter:
-    	    if ( state < 0.0f ) state=0.0f;
-	    if ( state > 100.f ) state=100.0f;
-	    appMPlayer.barItems[j].value=state;
-	    break;
-     }
-   }
-}
+    for (i = 0; i <= appMPlayer.IndexOfMainItems; i++) {
+        if (appMPlayer.mainItems[i].message == event) {
+            appMPlayer.mainItems[i].pressed = set;
+            appMPlayer.barItems[i].tmp      = 0;
+        }
+    }
 
-float btnGetValue( int event )
-{
- int j;
- for ( j=0;j<appMPlayer.NumberOfItems + 1;j++ )
-   if ( appMPlayer.Items[j].msg == event ) return appMPlayer.Items[j].value;
- return 0;
-}
-
-void btnSet( int event,int set )
-{
- int j;
- for ( j=0;j<appMPlayer.NumberOfItems + 1;j++ )
-   if ( appMPlayer.Items[j].msg == event )
-    { appMPlayer.Items[j].pressed=set; appMPlayer.barItems[j].tmp=0; }
- for ( j=0;j<appMPlayer.NumberOfBarItems + 1;j++ )
-   if ( appMPlayer.barItems[j].msg == event )
-    { appMPlayer.barItems[j].pressed=set; appMPlayer.barItems[j].tmp=0; }
+    for (i = 0; i <= appMPlayer.IndexOfBarItems; i++) {
+        if (appMPlayer.barItems[i].message == event) {
+            appMPlayer.barItems[i].pressed = set;
+            appMPlayer.barItems[i].tmp     = 0;
+        }
+    }
 }

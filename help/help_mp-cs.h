@@ -563,9 +563,6 @@ static const char help_text[]=
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "[témata] chyba v konfiguračním souboru témat na řádce %d: %s"
-#define MSGTR_SKIN_WARNING1 "[témata] varování v konfiguračním souboru témat na řádce %d:\nwidget nalezen ale před ním nebyla nalezena žádná \"section\" (%s)"
-#define MSGTR_SKIN_WARNING2 "[témata] varování v konfiguračním souboru témat na řádce %d:\nwidget nalezen ale před ním nebyla nalezena žádná \"subsection\" (%s)"
-#define MSGTR_SKIN_WARNING3 "[témata] varování v konfiguračním souboru témat na řádce %d:\nwidget (%s) nepodporuje tuto subsekci"
 #define MSGTR_SKIN_SkinFileNotFound "[témata] soubor ( %s ) nenalezen.\n"
 #define MSGTR_SKIN_SkinFileNotReadable "[témata] soubor ( %s ) nelze přečíst.\n"
 #define MSGTR_SKIN_BITMAP_16bit  "Bitmapy s hloubkou 16 bitů a méně nejsou podporovány (%s).\n"
@@ -585,7 +582,6 @@ static const char help_text[]=
 #define MSGTR_SKIN_UnknownParameter "neznámý parametr (%s)\n"
 #define MSGTR_SKIN_SKINCFG_SkinNotFound "Téma nenalezeno (%s).\n"
 #define MSGTR_SKIN_SKINCFG_SelectedSkinNotFound "Vybraný skin ( %s ) nenalezen, zkouším 'výchozí'...\n"
-#define MSGTR_SKIN_SKINCFG_SkinCfgReadError "chyba při čtení konfiguračního souboru témat (%s)\n"
 #define MSGTR_SKIN_LABEL "Témata:"
 
 // --- GTK menus

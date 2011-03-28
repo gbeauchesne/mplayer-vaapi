@@ -1,7 +1,6 @@
 K 13
 svn:externals
-V 165
-ffmpeg		svn://svn.ffmpeg.org/ffmpeg/trunk
+V 123
 libdvdread4	svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdread/src
 libdvdnav	svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdnav/src
 

@@ -112,6 +112,7 @@
 #include "mp_core.h"
 #include "mp_fifo.h"
 #include "mp_msg.h"
+#include "mp_strings.h"
 #include "mpcommon.h"
 #include "mplayer.h"
 #include "osdep/getch2.h"
@@ -212,6 +213,8 @@ int osd_level=1;
 // if nonzero, hide current OSD contents when GetTimerMS() reaches this
 unsigned int osd_visible;
 int osd_duration = 1000;
+int osd_fractions = 0; // determines how fractions of seconds are displayed
+                       // on OSD
 
 int term_osd = 1;
 static char* term_osd_esc = "\x1b[A\r\x1b[K";
@@ -290,6 +293,7 @@ char *font_name=NULL;
 char *sub_font_name=NULL;
 float font_factor=0.75;
 char **sub_name=NULL;
+char **sub_paths = NULL;
 float sub_delay=0;
 float sub_fps=0;
 int   sub_auto = 1;
@@ -435,7 +439,6 @@ static char *get_demuxer_info (char *tag) {
 }
 
 char *get_metadata (metadata_t type) {
-  char meta[128];
   sh_audio_t * const sh_audio = mpctx->sh_audio;
   sh_video_t * const sh_video = mpctx->sh_video;
 
@@ -457,18 +460,14 @@ char *get_metadata (metadata_t type) {
     else if (sh_video->format == 0x10000005)
       return strdup("h264");
     else if (sh_video->format >= 0x20202020)
-      snprintf(meta, sizeof(meta), "%.4s", (char *) &sh_video->format);
-    else
-      snprintf(meta, sizeof(meta), "0x%08X", sh_video->format);
-    return strdup(meta);
+      return mp_asprintf("%.4s", (char *)&sh_video->format);
+    return mp_asprintf("0x%08X", sh_video->format);
 
   case META_VIDEO_BITRATE:
-    snprintf(meta, sizeof(meta), "%d kbps", (int) (sh_video->i_bps * 8 / 1024));
-    return strdup(meta);
+    return mp_asprintf("%d kbps", (int)(sh_video->i_bps * 8 / 1024));
 
   case META_VIDEO_RESOLUTION:
-    snprintf(meta, sizeof(meta), "%d x %d", sh_video->disp_w, sh_video->disp_h);
-    return strdup(meta);
+    return mp_asprintf("%d x %d", sh_video->disp_w, sh_video->disp_h);
 
   case META_AUDIO_CODEC:
     if (sh_audio->codec && sh_audio->codec->name)
@@ -476,12 +475,10 @@ char *get_metadata (metadata_t type) {
     break;
 
   case META_AUDIO_BITRATE:
-    snprintf(meta, sizeof(meta), "%d kbps", (int)(sh_audio->i_bps * 8 / 1000));
-    return strdup(meta);
+    return mp_asprintf("%d kbps", (int)(sh_audio->i_bps * 8 / 1000));
 
   case META_AUDIO_SAMPLES:
-    snprintf(meta, sizeof(meta), "%d Hz, %d ch.", sh_audio->samplerate, sh_audio->channels);
-    return strdup(meta);
+    return mp_asprintf("%d Hz, %d ch.", sh_audio->samplerate, sh_audio->channels);
 
   /* check for valid demuxer */
   case META_INFO_TITLE:
@@ -1569,6 +1566,7 @@ static void update_osd_msg(void) {
             int len = demuxer_get_time_length(mpctx->demuxer);
             int percentage = -1;
             char percentage_text[10];
+            char fractions_text[4];
             int pts = demuxer_get_current_time(mpctx->demuxer);
 
             if (mpctx->osd_show_percentage)
@@ -1579,15 +1577,38 @@ static void update_osd_msg(void) {
             else
                 percentage_text[0] = 0;
 
+            if (osd_fractions==1) {
+                //print fractions as sub-second timestamp
+                snprintf(fractions_text, sizeof(fractions_text), ".%02d",
+                         (int)( (mpctx->sh_video->pts - pts)* 100 + 0.5)
+                         % 100);
+            } else if (osd_fractions==2) {
+                //print fractions by estimating the frame count within the
+                //second
+
+                //rounding or cutting off numbers after the decimal point
+                //causes problems because of float's precision and movies,
+                //whose first frame is not exactly at timestamp 0. Therefore,
+                //we add 0.2 and cut off at the decimal point, which proved
+                //as good heuristic
+                snprintf(fractions_text, sizeof(fractions_text), ".%02d",
+                         (int) ( ( mpctx->sh_video->pts - pts ) *
+                         mpctx->sh_video->fps + 0.2 ) );
+            } else {
+                //do not print fractions
+                fractions_text[0] = 0;
+            }
+
             if (osd_level == 3)
                 snprintf(osd_text_timer, 63,
-                         "%c %02d:%02d:%02d / %02d:%02d:%02d%s",
+                         "%c %02d:%02d:%02d%s / %02d:%02d:%02d%s",
                          mpctx->osd_function,pts/3600,(pts/60)%60,pts%60,
-                         len/3600,(len/60)%60,len%60,percentage_text);
+                         fractions_text,len/3600,(len/60)%60,len%60,
+                         percentage_text);
             else
-                snprintf(osd_text_timer, 63, "%c %02d:%02d:%02d%s",
+                snprintf(osd_text_timer, 63, "%c %02d:%02d:%02d%s%s",
                          mpctx->osd_function,pts/3600,(pts/60)%60,
-                         pts%60,percentage_text);
+                         pts%60,fractions_text,percentage_text);
         } else
             osd_text_timer[0]=0;
 
@@ -1690,31 +1711,7 @@ static double written_audio_pts(sh_audio_t *sh_audio, demux_stream_t *d_audio)
 {
     double buffered_output;
     // first calculate the end pts of audio that has been output by decoder
-    double a_pts = sh_audio->pts;
-    if (a_pts != MP_NOPTS_VALUE)
-	// Good, decoder supports new way of calculating audio pts.
-	// sh_audio->pts is the timestamp of the latest input packet with
-	// known pts that the decoder has decoded. sh_audio->pts_bytes is
-	// the amount of bytes the decoder has written after that timestamp.
-	a_pts += sh_audio->pts_bytes / (double) sh_audio->o_bps;
-    else {
-	// Decoder doesn't support new way of calculating pts (or we're
-	// being called before it has decoded anything with known timestamp).
-	// Use the old method of audio pts calculation: take the timestamp
-	// of last packet with known pts the decoder has read data from,
-	// and add amount of bytes read after the beginning of that packet
-	// divided by input bps. This will be inaccurate if the input/output
-	// ratio is not constant for every audio packet or if it is constant
-	// but not accurately known in sh_audio->i_bps.
-
-	a_pts = d_audio->pts;
-	// ds_tell_pts returns bytes read after last timestamp from
-	// demuxing layer, decoder might use sh_audio->a_in_buffer for bytes
-	// it has read but not decoded
-	if (sh_audio->i_bps)
-	    a_pts += (ds_tell_pts(d_audio) - sh_audio->a_in_buffer_len) /
-		(double)sh_audio->i_bps;
-    }
+    double a_pts = calc_a_pts(sh_audio, d_audio);
     // Now a_pts hopefully holds the pts for end of audio from decoder.
     // Substract data in buffers between decoder and audio out.
 
@@ -2045,6 +2042,9 @@ static void adjust_sync_and_print_status(int between_frames, float timing_error)
 	    static int drop_message=0;
 	    double AV_delay = a_pts - audio_delay - v_pts;
 	    double x;
+	    // not a good idea to do A-V correction with with bogus values
+	    if (a_pts == MP_NOPTS_VALUE || v_pts == MP_NOPTS_VALUE)
+		AV_delay = 0;
 	    if (AV_delay>0.5 && drop_frame_cnt>50 && drop_message==0){
 		++drop_message;
 		mp_msg(MSGT_AVSYNC,MSGL_WARN,MSGTR_SystemTooSlow);
@@ -2463,6 +2463,8 @@ static double update_video(int *blit_frame)
 	    mp_msg(MSGT_CPLAYER, MSGL_V, "pts value < previous\n");
 	}
 	frame_time = sh_video->pts - sh_video->last_pts;
+	if (!frame_time)
+	    frame_time = sh_video->frametime;
 	sh_video->last_pts = sh_video->pts;
 	sh_video->timer += frame_time;
 	if(mpctx->sh_audio)
@@ -2518,8 +2520,7 @@ static void pause_loop(void)
             vf_menu_pause_update(vf_menu);
 #endif
 #ifdef CONFIG_STREAM_CACHE
-        if (!quiet && stream_cache_size > 0)
-        {
+        if (!quiet && stream_cache_size > 0) {
             int new_cache_fill = cache_fill_status(mpctx->stream);
             if (new_cache_fill != old_cache_fill) {
                 if (term_osd && !mpctx->sh_video) {
@@ -3725,9 +3726,13 @@ if(!mpctx->sh_video) {
 	  mp_msg(MSGT_CPLAYER,MSGL_FATAL, MSGTR_NotInitializeVOPorVO);
 	  mpctx->eof = 1; goto goto_next_file;
       }
-      if (frame_time < 0)
+      if (frame_time < 0) {
+          // if we have no more video, sleep some arbitrary time
+          frame_time = 1.0/20.0;
+          // only stop playing when audio is at end as well
+          if (!mpctx->sh_audio || mpctx->d_audio->eof)
 	  mpctx->eof = 1;
-      else {
+      } else {
 	  // might return with !eof && !blit_frame if !correct_pts
 	  mpctx->num_buffered_frames += blit_frame;
 	  mpctx->time_frame += frame_time / playback_speed;  // for nosound
@@ -4033,7 +4038,7 @@ while(mpctx->playtree_iter != NULL) {
         if(play_tree_iter_step(mpctx->playtree_iter,mpctx->eof,0) != PLAY_TREE_ITER_ENTRY) {
             play_tree_iter_free(mpctx->playtree_iter);
             mpctx->playtree_iter = NULL;
-        };
+        }
     } else
         break;
 }

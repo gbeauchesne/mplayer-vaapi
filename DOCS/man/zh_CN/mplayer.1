@@ -1,4 +1,4 @@
-.\" sync with en/mplayer.1 rev. 32777
+.\" sync with en/mplayer.1 rev. 33107
 .\" Encoding: UTF-8
 .\"
 .\" MPlayer (C) 2000-2010 MPlayer 团队
@@ -361,29 +361,6 @@ MPlayer 有个完全可配置的, 命令驱动的控制层,
 停止并退出。
 .IPs "PREVIOUS 和 NEXT"
 后退/\:快进 1 分。
-.RE
-.PD 1
-.PP
-.RS
-(以下的按键仅适用于已编译支持 GUI 并优先于以前的定义。)
-.RE
-.PP
-.PD 0
-.RS
-.IPs ENTER
-开始播放。
-.IPs "ESC\ \ "
-停止播放。
-.IPs "l\ \ \ \ "
-加载文件。
-.IPs "t\ \ \ \ "
-加载字幕。
-.IPs "c\ \ \ \ "
-打开皮肤浏览器。
-.IPs "p\ \ \ \ "
-打开播放列表。
-.IPs "r\ \ \ \ "
-打开首选项。
 .RE
 .PD 1
 .PP
@@ -969,13 +946,14 @@ mplayer \-heartbeat\-cmd "gnome\-screensaver\-command \-p" file
 .
 .TP
 .B \-key\-fifo\-size <2\-65000>
-指定 FIFO 大小供缓冲按键事件（默认值：7）。
-n 大小的 FIFO 能容纳 (n\-1) 缓冲事件。
-如果太小会丢失一些事件
-(导致 "鼠标键卡住" 或类似效果)。
-如果太大, MPlayer 处理缓冲的事件时可能看上去挂住了。
-为得到同以前一样的行为效果而引入此选项,
-对 Linux 设置为 2 或对 Windows 为 1024。
+指定先入先出队列的大小供缓冲按键事件（默认值：7）。
+大小为 n 的先入先出队列能容纳 (n\-1) 缓冲事件。
+如果设太小一些按键事件会丢失。
+如果设太大，MPlayer 在处理被缓冲的事件时可能显得像是卡住了。
+如果想得到同引入此选项前的版本一样的行为效果，则
+对于 Linux 应设置为 2，对于 Windows 应设为 1024。
+如果值设得小，则应当设置 \-doubleclick\-time 为 0 以禁用双击，这样
+双击事件就不会与其它常规的键盘事件争夺缓冲空间了。
 .
 .TP
 .B \-lircconf <文件名> (仅适用于 LIRC)
@@ -1495,6 +1473,35 @@ MPlayer在关闭时将驱动器的速度重置至默认值。
 播放外部 MP3 文件时启用,
 因为我们需要搜索到非常精确的位置来保持 A/V 同步。
 这种方法在后退搜索时尤其慢, 因为需要绕回到开头来寻找准确的帧位置。
+.
+.TP
+.B \-http-header-fields <字段1,字段2>
+设置连接 HTTP 媒体流时使用自定义的 HTTP 字段。
+.sp 1
+.I 示例：
+.PD 0
+.RSs
+.IPs
+mplayer \-http\-header\-fields 'Field1: value1','Field2: value2' http://localhost:1234
+.br
+将生成 HTTP 请求：
+.RSss
+.br
+GET / HTTP/1.0
+.br
+Host: localhost:1234
+.br
+User-Agent: MPlayer
+.br
+Icy-MetaData: 1
+.br
+Field1: value1
+.br
+Field2: value2
+.br
+Connection: close
+.REss
+.RE
 .
 .TP
 .B \-idx (也请参见 \-forceidx)
@@ -2255,6 +2262,22 @@ SSA/ASS 提供器能在那里放置字幕 (与 \-ass\-use\-margins 组合用)。
 设置 OSD 信息的停留时间(以毫秒 ms 为单位) (默认是: 1000)。
 .
 .TP
+.B \-osd\-fractions <0\-2>
+设置 OSD 中当前时间的秒数的小数部分如何显示：
+.PD 0
+.RSs
+.IPs 0
+不显示小数部分（默认行为）。
+.IPs 1
+显示头两位十进制数字。
+.IPs 2
+显示当前秒钟内大致的帧计数值。
+该帧计数值并不精确而只是一个近似值。
+在可变帧数编码的情况下，发现这个近似值远远偏离实际的帧计数值。
+.RE
+.PD 1
+.
+.TP
 .B \-osdlevel <0\-3> (仅用于 MPlayer)
 指定 OSD 的启始模式。
 .PD 0
@@ -2378,7 +2401,7 @@ MPlayer 在 verbose (\-v) 模式下会打印可用的语言。
 .IPs 1
 装载所有包含电影名称的字幕。
 .IPs 2
-装载当前目录的所有字幕。
+装载当前目录以及 \-sub\-paths 目录中的所有字幕。
 .RE
 .PD 1
 .
@@ -2440,8 +2463,28 @@ CC 字幕到目前为止还没有在其它地区码的 DVD 中发现。
 .PD 1
 .
 .TP
-.B \-subdelay <数>
-字幕延迟 <数> 秒。可以是负数。
+.B \-sub\-paths <路径1,路径2,...>
+指定媒体文件的目录额外需要追踪的字幕路径。
+.sp 1
+.I 示例：
+假设播放 /path/\:to/\:movie/\:movie.avi，并且指定了 \-sub\-paths
+sub,subtitles,/tmp/subs，那么 MPlayer 将在这些目录下搜索字幕文件：
+.RSs
+/path/\:to/\:movie/
+.br
+/path/\:to/\:movie/\:sub/
+.br
+/path/\:to/\:movie/\:subtitles/
+.br
+/tmp/\:subs/
+.br
+~/.mplayer/\:sub/
+.RE
+.PD 1
+.
+.TP
+.B \-subdelay <秒数>
+字幕延迟 <秒数> 秒。可以是负数。
 .
 .TP
 .B \-subfile <文件名> (BETA 代码)
@@ -3044,6 +3087,11 @@ VESA 帧缓冲不支持改变模式。
 修复 OpenBox 1.x 的全屏开关。
 .RE
 .PD 1
+.
+.TP
+.B \-gamma <\-100\-100>
+调整视频信号的伽玛校正值（默认值：0）。
+并非所有视频输出驱动支持该选项。
 .
 .TP
 .B \-geometry x[%][:y[%]] 或 [WxH][+-x+-y]
@@ -3902,7 +3950,6 @@ gamma 的设置只能是通过全局的 X 服务器的设置才有效。
 .TP
 .B "aa\ \ \ \ \ "
 ASCII art 视频输出驱动工作于文字控制台。
-通过执行 \-vo aa:help，你能得到可用子选项的列表和解释。
 .br
 .I 注意：
 该驱动不能正确处理 \-aspect 选项。
@@ -4286,6 +4333,9 @@ PGMYUV 像 PGM, 但也包含 U 和 V 平面, 添加在图像的底部。
 0 没压缩, 9 最强压缩。
 .IPs outdir=<目录名>
 指定保存 PNG 文件的目录（默认值：./）。
+.IPs prefix=<前缀字符串>
+指定用于 PNG 文件名的前缀。（默认：无前缀）。
+Specify the prefix to be used for the PNG filenames (default: no prefix).
 .IPs alpha（默认值：noalpha）
 创建使用 alpha 通道的 PNG 文件。
 注意 MPlayer 通常不支持 alpha 通道，所以该选项只在极少数情况下才有用。
@@ -10947,11 +10997,19 @@ MEncoder 用户设置
 .
 .TP
 ~/.mplayer/\:gui.conf
-GUI 配置文件
+图形界面的配置文件
+.
+.TP
+~/.mplayer/\:gui.history
+图形界面的路径历史
 .
 .TP
 ~/.mplayer/\:gui.pl
-GUI 播放列表
+图形界面的播放列表
+.
+.TP
+~/.mplayer/\:gui.url
+图形界面的URL列表
 .
 .TP
 ~/.mplayer/\:font/
@@ -10960,13 +11018,6 @@ GUI 播放列表
 .TP
 ~/.mplayer/\:DVDkeys/
 缓存的 CSS 钥匙
-.
-.TP
-假如播放文件是 /path/\:to/\:movie.avi, MPlayer 按以下顺序搜索字幕文件:
-.RS
-/path/\:to/\:movie.sub
-.br
-~/.mplayer/\:sub/\:movie.sub
 .RE
 .PD 1
 .

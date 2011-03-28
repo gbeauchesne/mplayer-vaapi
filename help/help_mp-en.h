@@ -1,4 +1,4 @@
-// $Revision: 32817 $
+// $Revision: 33112 $
 // MASTER FILE. Use this file as base for translations.
 // Translated files should be sent to the mplayer-DOCS mailing list or
 // to the help messages maintainer, see DOCS/tech/MAINTAINERS.
@@ -568,19 +568,19 @@ static const char help_text[]=
 #define MSGTR_Browse "Browse"
 
 // --- error messages ---
-#define MSGTR_NEMDB "Sorry, not enough memory to draw buffer."
+#define MSGTR_NEMDB "Sorry, not enough memory to draw buffer.\n"
 #define MSGTR_NEMFMR "Sorry, not enough memory for menu rendering."
-#define MSGTR_IDFGCVD "Sorry, I did not find a GUI-compatible video output driver."
+#define MSGTR_IDFGCVD "Sorry, no GUI-compatible video output driver found.\n"
 #define MSGTR_NEEDLAVC "Sorry, you cannot play non-MPEG files with your DXR3/H+ device without reencoding.\nPlease enable lavc in the DXR3/H+ configuration box."
 #define MSGTR_UNKNOWNWINDOWTYPE "Unknown window type found ..."
 
 // --- skin loader error messages
-#define MSGTR_SKIN_ERRORMESSAGE "[skin] error in skin config file on line %d: %s"
-#define MSGTR_SKIN_WARNING1 "[skin] warning: in config file line %d:\nwidget (%s) found but no \"section\" found before"
-#define MSGTR_SKIN_WARNING2 "[skin] warning: in config file line %d:\nwidget (%s) found but no \"subsection\" found before"
-#define MSGTR_SKIN_WARNING3 "[skin] warning: in config file line %d:\nthis subsection is not supported by widget (%s)"
-#define MSGTR_SKIN_SkinFileNotFound "[skin] file ( %s ) not found.\n"
-#define MSGTR_SKIN_SkinFileNotReadable "[skin] file ( %s ) not readable.\n"
+#define MSGTR_SKIN_ERRORMESSAGE "Error in skin config file on line %d: %s"
+#define MSGTR_SKIN_ERROR_SECTION "No section specified for '%s'.\n"
+#define MSGTR_SKIN_ERROR_WINDOW "No window specified for '%s'.\n"
+#define MSGTR_SKIN_ERROR_IN_WINDOW "This item is not supported by '%s'.\n"
+#define MSGTR_SKIN_SkinFileNotFound "Skin file %s not found.\n"
+#define MSGTR_SKIN_SkinFileNotReadable "Skin file %s not readable.\n"
 #define MSGTR_SKIN_BITMAP_16bit  "Bitmaps of 16 bits or less depth not supported (%s).\n"
 #define MSGTR_SKIN_BITMAP_FileNotFound  "File not found (%s)\n"
 #define MSGTR_SKIN_BITMAP_BMPReadError "BMP read error (%s)\n"
@@ -596,9 +596,9 @@ static const char help_text[]=
 #define MSGTR_SKIN_FONT_FontImageNotFound "Font image file not found.\n"
 #define MSGTR_SKIN_FONT_NonExistentFontID "non-existent font identifier (%s)\n"
 #define MSGTR_SKIN_UnknownParameter "unknown parameter (%s)\n"
-#define MSGTR_SKIN_SKINCFG_SkinNotFound "Skin not found (%s).\n"
-#define MSGTR_SKIN_SKINCFG_SelectedSkinNotFound "Selected skin ( %s ) not found, trying 'default'...\n"
-#define MSGTR_SKIN_SKINCFG_SkinCfgReadError "skin config file read error (%s)\n"
+#define MSGTR_SKIN_SKINCFG_SkinNotFound "Skin '%s' not found.\n"
+#define MSGTR_SKIN_SKINCFG_SelectedSkinNotFound "Selected skin '%s' not found, trying skin 'default'...\n"
+#define MSGTR_SKIN_SKINCFG_SkinCfgError "Config file processing error with skin '%s'\n"
 #define MSGTR_SKIN_LABEL "Skins:"
 
 // --- GTK menus

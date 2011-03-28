@@ -1,4 +1,4 @@
-// Synced with help_mp-en.h rev. 32066 (MSGTR_DownloadCodecPackage)
+// Synced with help_mp-en.h rev. 33112 (MSGTR_LIBASS_SelectedFontFamilyIsNotTheRequestedOne)
 // Reminder of hard terms which need better/final solution later:
 //   (file links to be updated later if available!);
 //   NAV; section/subsection;  XScreenSaver; keycolor;
@@ -22,7 +22,7 @@ static const char help_text[]=
 " dvd://<标题号>   从设备而不是从普通文件上播放 DVD 标题\n"
 #endif
 " -alang/-slang    选择 DVD 音频/字幕的语言（使用两字符的国家代号）\n"
-" -ss <位置>       定位至给定（秒数或时:分:秒 - hh:mm:ss）位置\n"
+" -ss <位置>       定位至给定的（秒数或时:分:秒 - hh:mm:ss）位置\n"
 " -nosound         不播放声音\n"
 " -fs              全屏播放（或用 -vm、-zoom，详见手册相关页面）\n"
 " -x <x> -y <y>    设置显示的分辨率（用以与 -vm 或 -zoom 一起使用）\n"
@@ -209,6 +209,8 @@ static const char help_text[]=
 #define MSGTR_OSDChapter "章节：（%d）%s"
 #define MSGTR_OSDAngle "视角：%d/%d"
 #define MSGTR_OSDDeinterlace "解除隔行扫描：%s"
+#define MSGTR_OSDCapturing "抓取：%s"
+#define MSGTR_OSDCapturingFailure "抓取失败"
 
 // property values
 #define MSGTR_Enabled "已启用"
@@ -550,19 +552,19 @@ static const char help_text[]=
 #define MSGTR_Browse "浏览"
 
 // --- error messages ---
-#define MSGTR_NEMDB "抱歉，没有足够的内存用作绘图缓冲。"
+#define MSGTR_NEMDB "抱歉，没有足够的内存用作绘图缓冲。\n"
 #define MSGTR_NEMFMR "抱歉，没有足够的内存用于菜单渲染。"
-#define MSGTR_IDFGCVD "抱歉，未找到与 GUI 兼容的视频输出驱动。"
+#define MSGTR_IDFGCVD "抱歉，未找到与 GUI 兼容的视频输出驱动。\n"
 #define MSGTR_NEEDLAVC "抱歉，未重新编码前不能用你的 DXR3/H+ 设备播放非 MPEG 文件。\n请启用 DXR3/H+ 配置盒中的 lavc 编解码器。"
 #define MSGTR_UNKNOWNWINDOWTYPE "发现未知窗口类型..."
 
 // --- skin loader error messages
-#define MSGTR_SKIN_ERRORMESSAGE "[界面外观] 界面外观配置文件错误，行 %d：%s"
-#define MSGTR_SKIN_WARNING1 "[界面外观] 警告：配置文件行 %d：\n找到组件（%s），但在其之前没有找到“section”的内容"
-#define MSGTR_SKIN_WARNING2 "[界面外观] 警告: 配置文件行 %d：\n找到组件（%s），但在其之前没有找到“subsection”的内容"
-#define MSGTR_SKIN_WARNING3 "[界面外观] 警告: 配置文件行 %d：\n组件（%s）不支持该 subsection"
-#define MSGTR_SKIN_SkinFileNotFound "[界面外观] 未找到文件（%s）。\n"
-#define MSGTR_SKIN_SkinFileNotReadable "[界面外观] 无法读取文件（%s）。\n"
+#define MSGTR_SKIN_ERRORMESSAGE "界面外观配置文件错误，行 %d：%s"
+#define MSGTR_SKIN_ERROR_SECTION "没有指定‘%s’的区域。\n"
+#define MSGTR_SKIN_ERROR_WINDOW "没有指定‘%s’的窗口。\n"
+#define MSGTR_SKIN_ERROR_IN_WINDOW "该项目‘%s’不支持。\n"
+#define MSGTR_SKIN_SkinFileNotFound "未找到界面外观文件 %s。\n"
+#define MSGTR_SKIN_SkinFileNotReadable "无法读取界面外观文件 %s。\n"
 #define MSGTR_SKIN_BITMAP_16bit  "不支持少于或等于 16 比特颜色精度的位图（%s）。\n"
 #define MSGTR_SKIN_BITMAP_FileNotFound  "未找到文件（%s）\n"
 #define MSGTR_SKIN_BITMAP_BMPReadError "BMP 读取错误（%s）\n"
@@ -578,10 +580,10 @@ static const char help_text[]=
 #define MSGTR_SKIN_FONT_FontImageNotFound "找不到字体图像文件。\n"
 #define MSGTR_SKIN_FONT_NonExistentFontID "不存在的字体标识符（%s）\n"
 #define MSGTR_SKIN_UnknownParameter "未知参数（%s）\n"
-#define MSGTR_SKIN_SKINCFG_SkinNotFound "找不到界面外观（%s）。\n"
-#define MSGTR_SKIN_SKINCFG_SelectedSkinNotFound "未找到选定的界面外观（%s），尝试使用‘default’参数...\n"
-#define MSGTR_SKIN_SKINCFG_SkinCfgReadError "界面外观配置文件（%s）读取错误。\n"
-#define MSGTR_SKIN_LABEL "Skins:"
+#define MSGTR_SKIN_SKINCFG_SkinNotFound "未找到界面外观‘%s’。\n"
+#define MSGTR_SKIN_SKINCFG_SelectedSkinNotFound "未找到选定的界面外观‘%s’，尝试使用‘default’参数...\n"
+#define MSGTR_SKIN_SKINCFG_SkinCfgError "处理配置文件中的界面外观‘%s’时出错\n"
+#define MSGTR_SKIN_LABEL "界面外观："
 
 // --- GTK menus
 #define MSGTR_MENU_AboutMPlayer "关于 MPlayer"
@@ -1618,62 +1620,62 @@ static const char help_text[]=
 #define MSGTR_MovieAspectUndefined "电影宽高比未定义 - 没有使用预先放大功能。\n"
 
 // vd_dshow.c, vd_dmo.c
-#define MSGTR_DownloadCodecPackage "你需要升级/安装二进制编解码器包。\n请访问 http:\/\/www.mplayerhq.hu/dload.html\n"
-#define MSGTR_DShowInitOK "信息: Win32/DShow 视频编解码器初始化成功。\n"
-#define MSGTR_DMOInitOK "信息: Win32/DMO 视频编解码器初始化成功。\n"
+#define MSGTR_DownloadCodecPackage "你需要升级/安装编解码器可执行代码包。\n请访问 http:\/\/www.mplayerhq.hu/dload.html\n"
+#define MSGTR_DShowInitOK "信息：Win32/DShow 视频编解码器初始化成功。\n"
+#define MSGTR_DMOInitOK "信息：Win32/DMO 视频编解码器初始化成功。\n"
 
 // libmpcodecs/vd_dmo.c vd_dshow.c vd_vfw.c
-#define MSGTR_MPCODECS_CouldntAllocateImageForCinepakCodec "[VD_DMO] 无法为 cinepak 编解码器分配图像。\n"
+#define MSGTR_MPCODECS_CouldntAllocateImageForCinepakCodec "[VD_DMO] 无法为 cinepak 编解码器分配进程映像。\n"
 
 // libmpcodecs/vd_ffmpeg.c
-#define MSGTR_MPCODECS_XVMCAcceleratedCodec "[VD_FFMPEG] XVMC 加速的编解码器。\n"
-#define MSGTR_MPCODECS_ArithmeticMeanOfQP "[VD_FFMPEG] QP 的算术平均值: %2.4f, QP 的调和平均值: %2.4f\n"
+#define MSGTR_MPCODECS_XVMCAcceleratedCodec "[VD_FFMPEG] 经 XVMC 加速的编解码器。\n"
+#define MSGTR_MPCODECS_ArithmeticMeanOfQP "[VD_FFMPEG] QP 的算术平均值：%2.4f，QP 的调和平均值：%2.4f\n"
 #define MSGTR_MPCODECS_DRIFailure "[VD_FFMPEG] DRI 失败。\n"
-#define MSGTR_MPCODECS_CouldntAllocateImageForCodec "[VD_FFMPEG] 无法为编解码器分配图像。\n"
-#define MSGTR_MPCODECS_XVMCAcceleratedMPEG2 "[VD_FFMPEG] XVMC-加速的 MPEG-2。\n"
+#define MSGTR_MPCODECS_CouldntAllocateImageForCodec "[VD_FFMPEG] 无法为编解码器分配进程镜像。\n"
+#define MSGTR_MPCODECS_XVMCAcceleratedMPEG2 "[VD_FFMPEG] 经 XVMC 加速的 MPEG-2。\n"
 #define MSGTR_MPCODECS_TryingPixfmt "[VD_FFMPEG] 尝试 pixfmt=%d。\n"
-#define MSGTR_MPCODECS_McGetBufferShouldWorkOnlyWithXVMC "[VD_FFMPEG] Mc_get_buffer 只能用于 XVMC 加速!!"
-#define MSGTR_MPCODECS_UnexpectedInitVoError "[VD_FFMPEG] Init_vo 意外错误。\n"
-#define MSGTR_MPCODECS_UnrecoverableErrorRenderBuffersNotTaken "[VD_FFMPEG] 无法恢复的错误, 渲染缓冲无法获得。\n"
+#define MSGTR_MPCODECS_McGetBufferShouldWorkOnlyWithXVMC "[VD_FFMPEG] Mc_get_buffer 只能用于 XVMC 加速！！"
+#define MSGTR_MPCODECS_UnexpectedInitVoError "[VD_FFMPEG] 预料外的 Init_vo 错误。\n"
+#define MSGTR_MPCODECS_UnrecoverableErrorRenderBuffersNotTaken "[VD_FFMPEG] 无法恢复的错误，未获得渲染缓冲。\n"
 #define MSGTR_MPCODECS_OnlyBuffersAllocatedByVoXvmcAllowed "[VD_FFMPEG] 只允许 vo_xvmc 分配的缓冲。\n"
 
 // libmpcodecs/ve_lavc.c
-#define MSGTR_MPCODECS_HighQualityEncodingSelected "[VE_LAVC] 已选高品质编码 (非实时)!\n"
-#define MSGTR_MPCODECS_UsingConstantQscale "[VE_LAVC] 使用常数的 qscale = %f (VBR)。\n"
+#define MSGTR_MPCODECS_HighQualityEncodingSelected "[VE_LAVC] 已选择高品质编码（非实时编码）！\n"
+#define MSGTR_MPCODECS_UsingConstantQscale "[VE_LAVC] 使用恒定的 qscale = %f（VBR）。\n"
 
 // libmpcodecs/ve_raw.c
-#define MSGTR_MPCODECS_OutputWithFourccNotSupported "[VE_RAW] 不支持 FourCC [%x] 的 raw 输出!\n"
-#define MSGTR_MPCODECS_NoVfwCodecSpecified "[VE_RAW] 未指定需要的 VfW 编解码器!!\n"
+#define MSGTR_MPCODECS_OutputWithFourccNotSupported "[VE_RAW] 不支持 FourCC [%x] 的原生输出！\n"
+#define MSGTR_MPCODECS_NoVfwCodecSpecified "[VE_RAW] 未指定必须的 VfW 编解码器！！\n"
 
 // vf.c
-#define MSGTR_CouldNotFindVideoFilter "找不到视频滤镜 '%s'。\n"
-#define MSGTR_CouldNotOpenVideoFilter "打不开视频滤镜 '%s'。\n"
-#define MSGTR_OpeningVideoFilter "打开视频滤镜: "
-#define MSGTR_CannotFindColorspace "找不到匹配的色彩空间, 甚至靠插入 'scale' 也不行 :(\n"
+#define MSGTR_CouldNotFindVideoFilter "无法找到视频滤镜‘%s’。\n"
+#define MSGTR_CouldNotOpenVideoFilter "无法打开视频滤镜‘%s’。\n"
+#define MSGTR_OpeningVideoFilter "打开视频滤镜："
+#define MSGTR_CannotFindColorspace "即使通过插值方式，也无法找到匹配的色彩空间 :(\n"
 
 // libmpcodecs/vf_crop.c
-#define MSGTR_MPCODECS_CropBadPositionWidthHeight "[CROP] 错误的位置/宽度/高度 - 切割区域在原始图像外!\n"
+#define MSGTR_MPCODECS_CropBadPositionWidthHeight "[CROP] 无效的位置/宽度/高度 - 裁剪区域在原始图像范围外！\n"
 
 // libmpcodecs/vf_cropdetect.c
-#define MSGTR_MPCODECS_CropArea "[CROP] 切割区域: X: %d..%d  Y: %d..%d  (-vf crop=%d:%d:%d:%d)。\n"
+#define MSGTR_MPCODECS_CropArea "[CROP] 裁剪区域：X: %d..%d  Y: %d..%d  (-vf crop=%d:%d:%d:%d)。\n"
 
 // libmpcodecs/vf_format.c, vf_palette.c, vf_noformat.c
-#define MSGTR_MPCODECS_UnknownFormatName "[VF_FORMAT] 未知格式名: '%s'。\n"
+#define MSGTR_MPCODECS_UnknownFormatName "[VF_FORMAT] 未知格式名：‘%s’。\n"
 
 // libmpcodecs/vf_framestep.c vf_noformat.c vf_palette.c vf_tile.c
 #define MSGTR_MPCODECS_ErrorParsingArgument "[VF_FRAMESTEP] 解析参数错误。\n"
 
 // libmpcodecs/ve_vfw.c
-#define MSGTR_MPCODECS_CompressorType "压缩类型: %.4lx\n"
-#define MSGTR_MPCODECS_CompressorSubtype "副压缩类型: %.4lx\n"
-#define MSGTR_MPCODECS_CompressorFlags "压缩标记: %lu, 版本 %lu, ICM 版本: %lu\n"
-#define MSGTR_MPCODECS_Flags "标记:"
-#define MSGTR_MPCODECS_Quality "品质"
+#define MSGTR_MPCODECS_CompressorType "压缩器类型：%.4lx\n"
+#define MSGTR_MPCODECS_CompressorSubtype "压缩器子类型：%.4lx\n"
+#define MSGTR_MPCODECS_CompressorFlags "压缩器标记：%lu，版本：%lu，ICM 版本：%lu\n"
+#define MSGTR_MPCODECS_Flags "标记："
+#define MSGTR_MPCODECS_Quality " 质量"
 
 // libmpcodecs/vf_expand.c
-#define MSGTR_MPCODECS_FullDRNotPossible "无法完全使用 DR, 尝试使用 SLICES!\n"
-#define MSGTR_MPCODECS_WarnNextFilterDoesntSupportSlices  "警告! 下一个滤镜不支持 SLICES, 等着 sig11...\n"
-#define MSGTR_MPCODECS_FunWhydowegetNULL "为什么我们得到了 NULL??\n"
+#define MSGTR_MPCODECS_FullDRNotPossible "无法使用完全 DR 模式，尝试使用 SLICES！\n"
+#define MSGTR_MPCODECS_WarnNextFilterDoesntSupportSlices  "警告！下一个滤镜不支持 SLICES，准备使用 sig11...\n"
+#define MSGTR_MPCODECS_FunWhydowegetNULL "为什么返回的是 NULL？？\n"
 
 // libmpcodecs/vf_test.c, vf_yuy2.c, vf_yvu9.c
 #define MSGTR_MPCODECS_WarnNextFilterDoesntSupport "下一个滤镜/视频输出不支持 %s :(\n"
@@ -1683,29 +1685,29 @@ static const char help_text[]=
 
 // ass_bitmap.c
 #define MSGTR_LIBASS_FT_Glyph_To_BitmapError "[ass] FT_Glyph_To_Bitmap 出错 %d \n"
-#define MSGTR_LIBASS_UnsupportedPixelMode "[ass] 不支持的象素模式: %d\n"
+#define MSGTR_LIBASS_UnsupportedPixelMode "[ass] 该像素模式不支持：%d\n"
 #define MSGTR_LIBASS_GlyphBBoxTooLarge "[ass] 文本边界框太大：%dx%dpx\n"
 
 // ass.c
-#define MSGTR_LIBASS_NoStyleNamedXFoundUsingY "[ass] [%p] 警告: 没有找到风格(style) '%s', 将使用 '%s'\n"
-#define MSGTR_LIBASS_BadTimestamp "[ass] 错误的时间戳\n"
-#define MSGTR_LIBASS_BadEncodedDataSize "[ass] 错误的编码数据大小\n"
-#define MSGTR_LIBASS_FontLineTooLong "[ass] 字体行太长: %d, %s\n"
-#define MSGTR_LIBASS_EventFormatHeaderMissing "[ass] 未找到事件格式头\n"
-#define MSGTR_LIBASS_ErrorOpeningIconvDescriptor "[ass] 打开iconv描述符出错。\n"
-#define MSGTR_LIBASS_ErrorRecodingFile "[ass] 记录到文件出错。\n"
-#define MSGTR_LIBASS_FopenFailed "[ass] ass_read_file(%s): 文件打开(fopen)失败\n"
-#define MSGTR_LIBASS_FseekFailed "[ass] ass_read_file(%s): 文件定位(fseek)失败\n"
+#define MSGTR_LIBASS_NoStyleNamedXFoundUsingY "[ass] [%p] 警告：未找到样式‘%s’，将使用‘%s’\n"
+#define MSGTR_LIBASS_BadTimestamp "[ass] 时间戳错误\n"
+#define MSGTR_LIBASS_BadEncodedDataSize "[ass] 编码数据大小错误\n"
+#define MSGTR_LIBASS_FontLineTooLong "[ass] 字体的行高太长：%d, %s\n"
+#define MSGTR_LIBASS_EventFormatHeaderMissing "[ass] 事件格式头部数据不存在\n"
+#define MSGTR_LIBASS_ErrorOpeningIconvDescriptor "[ass] 打开 iconv 描述符出错。\n"
+#define MSGTR_LIBASS_ErrorRecodingFile "[ass] 记录到文件时出错。\n"
+#define MSGTR_LIBASS_FopenFailed "[ass] ass_read_file(%s)：fopen 失败\n"
+#define MSGTR_LIBASS_FseekFailed "[ass] ass_read_file(%s)：fseek 失败\n"
 #define MSGTR_LIBASS_RefusingToLoadSubtitlesLargerThan100M "[ass] ass_read_file(%s)：拒绝装入大于 100M 的字幕\n"
-#define MSGTR_LIBASS_ReadFailed "读失败, %d: %s\n"
-#define MSGTR_LIBASS_AddedSubtitleFileMemory "[ass] 已加入字幕文件: <内存> (%d styles, %d events)\n"
-#define MSGTR_LIBASS_AddedSubtitleFileFname "[ass] 已加入字幕文件: %s (%d styles, %d events)\n"
+#define MSGTR_LIBASS_ReadFailed "读取失败，%d：%s\n"
+#define MSGTR_LIBASS_AddedSubtitleFileMemory "[ass] 已添加字幕文件：<内存> (%d 个样式, %d 个事件)\n"
+#define MSGTR_LIBASS_AddedSubtitleFileFname "[ass] 已添加字幕文件：%s (%d 个样式, %d 个事件)\n"
 #define MSGTR_LIBASS_FailedToCreateDirectory "[ass] 创建目录失败 %s\n"
-#define MSGTR_LIBASS_NotADirectory "[ass] 不是一个目录: %s\n"
+#define MSGTR_LIBASS_NotADirectory "[ass] 这不是目录：%s\n"
 
 // ass_cache.c
-#define MSGTR_LIBASS_TooManyFonts "[ass] 太多字体\n"
-#define MSGTR_LIBASS_ErrorOpeningFont "[ass] 打开字体出错: %s, %d\n"
+#define MSGTR_LIBASS_TooManyFonts "[ass] 字体太多\n"
+#define MSGTR_LIBASS_ErrorOpeningFont "[ass] 打开字体出错：%s, %d\n"
 
 // ass_fontconfig.c
 #define MSGTR_LIBASS_SelectedFontFamilyIsNotTheRequestedOne "[ass] fontconfig：所选字体不是所要求使用的：'%s' != '%s'\n"

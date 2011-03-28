@@ -695,9 +695,6 @@ static const char help_text[]=
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "[témy] chyba v konfig. súbore tém %d: %s"
-#define MSGTR_SKIN_WARNING1 "[témy] varovanie v konfig. súbore tém na riadku %d: widget najdený ale pred  \"section\" nenájdený (%s)"
-#define MSGTR_SKIN_WARNING2 "[témy] varovanie v konfig. súbore tém na riadku %d: widget najdený ale pred \"subsection\" nenájdený (%s)"
-#define MSGTR_SKIN_WARNING3 "[témy] varovanie v konfig. súbore tém na riadku %d: táto subsekcia nie je podporovaná týmto widget (%s)"
 #define MSGTR_SKIN_SkinFileNotFound "[skin] súbor ( %s ) nenájdený.\n"
 #define MSGTR_SKIN_SkinFileNotReadable "[skin] súbor ( %s ) sa nedá prečítať.\n"
 #define MSGTR_SKIN_BITMAP_16bit  "bitmapa s hĺbkou 16 bit a menej je nepodporovaná (%s).\n"
@@ -717,7 +714,6 @@ static const char help_text[]=
 #define MSGTR_SKIN_UnknownParameter "neznámy parameter (%s)\n"
 #define MSGTR_SKIN_SKINCFG_SkinNotFound "Téma nenájdená (%s).\n"
 #define MSGTR_SKIN_SKINCFG_SelectedSkinNotFound "Vybraná téma ( %s ) nenájdená, skúšam 'prednastavenú'...\n"
-#define MSGTR_SKIN_SKINCFG_SkinCfgReadError "Chyba pri čítaní konfiguračného súboru tém (%s).\n"
 #define MSGTR_SKIN_LABEL "Témy:"
 
 // --- gtk menus

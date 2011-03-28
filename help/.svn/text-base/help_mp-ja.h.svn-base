@@ -303,9 +303,6 @@ static const char help_text[]=
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "[skin] エラー: スキン設定ファイル %d 行: %s"
-#define MSGTR_SKIN_WARNING1 "[skin] 警告: スキン設定ファイル %d 行: widget found but before \"section\" not found ( %s )"
-#define MSGTR_SKIN_WARNING2 "[skin] 警告: スキン設定ファイル %d 行: widget found but before \"subsection\" not found (%s)"
-#define MSGTR_SKIN_WARNING3 "[skin] 警告: スキン設定ファイル %d 行: this subsection not supported by this widget (%s)"
 #define MSGTR_SKIN_BITMAP_16bit  "16 ビット以下の解消度はサポートされていません (%s).\n"
 #define MSGTR_SKIN_BITMAP_FileNotFound  "ファイルが存在しません (%s)\n"
 #define MSGTR_SKIN_BITMAP_BMPReadError "bmp 読み込みエラー (%s)\n"
@@ -320,7 +317,6 @@ static const char help_text[]=
 #define MSGTR_SKIN_FONT_FontImageNotFound "フォントイメージファイルが存在しません\n"
 #define MSGTR_SKIN_UnknownParameter "未知のパラメータ(%s)\n"
 #define MSGTR_SKIN_SKINCFG_SkinNotFound "スキンが存在しません( %s ).\n"
-#define MSGTR_SKIN_SKINCFG_SkinCfgReadError "スキン設定ファイルの読み込みエラー(%s).\n"
 #define MSGTR_SKIN_LABEL "スキン:"
 
 // --- gtk menus

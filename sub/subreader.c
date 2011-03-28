@@ -1957,6 +1957,22 @@ static void append_dir_subtitles(struct sub_list *slist, const char *path,
             strcpy_get_ext(tmp_fname_ext, de->d_name);
             strcpy_trim(tmp_fname_trim, tmp_fname_noext);
 
+            // If it's a .sub, check if there is a .idx with the same name. If
+            // there is one, it's certainly a vobsub so we skip it.
+            if (strcasecmp(tmp_fname_ext, "sub") == 0) {
+                char *idx, *idxname = strdup(de->d_name);
+
+                strcpy(idxname + strlen(de->d_name) - sizeof("idx") + 1, "idx");
+                idx = mp_dir_join(path, idxname);
+                free(idxname);
+                f = fopen(idx, "rt");
+                free(idx);
+                if (f) {
+                    fclose(f);
+                    continue;
+                }
+            }
+
             // does it end with a subtitle extension?
             found = 0;
 #ifdef CONFIG_ICONV
@@ -2012,21 +2028,23 @@ static void append_dir_subtitles(struct sub_list *slist, const char *path,
                 }
 
                 if (prio) {
+                    char *subpath;
                     prio += prio;
 #ifdef CONFIG_ICONV
                     if (i < 3){ // prefer UTF-8 coded
                         prio++;
                     }
 #endif
-                    sprintf(tmpresult, "%s/%s", path, de->d_name);
-                    // fprintf(stderr, "%s priority %d\n", tmpresult, prio);
-                    if ((f = fopen(tmpresult, "rt"))) {
+                    subpath = mp_dir_join(path, de->d_name);
+                    // fprintf(stderr, "%s priority %d\n", subpath, prio);
+                    if ((f = fopen(subpath, "rt"))) {
                         struct subfn *sub = &slist->subs[slist->sid++];
 
                         fclose(f);
                         sub->priority = prio;
-                        sub->fname    = strdup(tmpresult);
-                    }
+                        sub->fname    = subpath;
+                    } else
+                        free(subpath);
                 }
 
             }
@@ -2058,7 +2076,7 @@ static void append_dir_subtitles(struct sub_list *slist, const char *path,
  * @note Subtitles are tracked and scored in various places according to the
  *       user options, sorted, and then added by calling the add_f function.
  */
-void load_subtitles(const char *fname, int fps, open_sub_func add_f)
+void load_subtitles(const char *fname, float fps, open_sub_func add_f)
 {
     int i;
     char *mp_subdir, *path = NULL;
@@ -2085,6 +2103,19 @@ void load_subtitles(const char *fname, int fps, open_sub_func add_f)
     }
     append_dir_subtitles(&slist, path, fname, 0);
     free(path);
+
+    // Load subtitles in dirs specified by sub-paths option
+    if (sub_paths) {
+        for (i = 0; sub_paths[i]; i++) {
+            path = mp_path_join(fname, sub_paths[i]);
+            if (!path) {
+                free(slist.subs);
+                return;
+            }
+            append_dir_subtitles(&slist, path, fname, 0);
+            free(path);
+        }
+    }
 
     // Load subtitles in ~/.mplayer/sub limiting sub fuzziness
     mp_subdir = get_path("sub/");
@@ -2113,7 +2144,7 @@ void load_subtitles(const char *fname, int fps, open_sub_func add_f)
 void load_vob_subtitle(const char *fname, const char * const ifo, void **spu,
                        open_vob_func add_f)
 {
-    char *name, *mp_subdir;
+    char *name = NULL, *mp_subdir = NULL;
 
     // Load subtitles specified by vobsub option
     if (vobsub_name) {
@@ -2130,18 +2161,44 @@ void load_vob_subtitle(const char *fname, const char * const ifo, void **spu,
     if (!name)
         return;
     strcpy_strip_ext(name, fname);
-    if (add_f(name, ifo, 0, spu)) {
-        free(name);
-        return;
+    if (add_f(name, ifo, 0, spu))
+        goto out;
+
+    // Try looking at the dirs specified by sub-paths option
+    if (sub_paths) {
+        int i;
+
+        for (i = 0; sub_paths[i]; i++) {
+            char *path, *psub;
+            int sub_found;
+
+            path = mp_path_join(fname, sub_paths[i]);
+            if (!path)
+                goto out;
+
+            psub = mp_dir_join(path, mp_basename(name));
+            free(path);
+            if (!psub)
+                goto out;
+
+            sub_found = add_f(psub, ifo, 0, spu);
+            free(psub);
+            if (sub_found)
+                goto out;
+        }
     }
 
     // If still no VOB found, try loading it from ~/.mplayer/sub
     mp_subdir = get_path("sub/");
     if (mp_subdir) {
         char *psub = mp_path_join(mp_subdir, mp_basename(name));
+        if (!psub)
+            goto out;
         add_f(psub, ifo, 0, spu);
         free(psub);
     }
+
+out:
     free(mp_subdir);
     free(name);
 }

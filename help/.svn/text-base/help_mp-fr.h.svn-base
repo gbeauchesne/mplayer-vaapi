@@ -745,9 +745,6 @@ static const char help_text[]=
 
 // --- messages d'erreurs du chargement de peau ---
 #define MSGTR_SKIN_ERRORMESSAGE "[Peau] erreur à la ligne %d du fichier de config de peau : %s"
-#define MSGTR_SKIN_WARNING1 "[Peau] attention à la ligne %d du fichier de config de peau : Widget (%s) trouvé mais aucune \"section\" trouvé avant lui."
-#define MSGTR_SKIN_WARNING2 "[Peau] attention à la ligne %d du fichier de config de peau : Widget (%s) trouvé mais aucune \"subsection\" trouvé avant lui."
-#define MSGTR_SKIN_WARNING3 "[Peau] attention à la ligne %d du fichier de config de peau : cette sous-section n'est pas supporté par le widget (%s)"
 #define MSGTR_SKIN_SkinFileNotFound "[peau] fichier ( %s ) non trouvé.\n"
 #define MSGTR_SKIN_SkinFileNotReadable "[peau] fichier ( %s ) non lisible.\n"
 #define MSGTR_SKIN_BITMAP_16bit  "les images bitmaps 16 bits ou moins ne sont pas supportées ( %s ).\n"
@@ -767,7 +764,6 @@ static const char help_text[]=
 #define MSGTR_SKIN_UnknownParameter "paramètre inconnu (%s)\n"
 #define MSGTR_SKIN_SKINCFG_SkinNotFound "Skin non trouvée (%s).\n"
 #define MSGTR_SKIN_SKINCFG_SelectedSkinNotFound "Peau choisi ( %s ) non trouvé, essaie de 'par défaut'...\n"
-#define MSGTR_SKIN_SKINCFG_SkinCfgReadError "erreur de lecture du fichier de configuration du peau (%s)\n"
 #define MSGTR_SKIN_LABEL "Peaux :"
 
 // --- menus gtk

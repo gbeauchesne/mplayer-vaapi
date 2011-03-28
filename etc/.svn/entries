@@ -1,14 +1,14 @@
 8
 
 dir
-32819
+33132
 svn://svn.mplayerhq.hu/mplayer/trunk/etc
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2011-01-09T18:47:46.714637Z
-32773
+2011-03-27T07:16:38.004720Z
+33125
 cehoyos
 
 
@@ -97,10 +97,10 @@ file
 
 
 
-2011-01-27T13:50:05.000000Z
-4ab7badedef1f25c8fc9c03077411577
-2011-01-09T18:47:46.714637Z
-32773
+2011-03-28T07:44:58.000000Z
+242ee11fa91d1a25919baa642d74f253
+2011-03-27T07:16:38.004720Z
+33125
 cehoyos
 has-props
 

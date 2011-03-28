@@ -1,15 +1,15 @@
 8
 
 dir
-32819
+33132
 svn://svn.mplayerhq.hu/mplayer/trunk/gui/win32
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-11-14T09:12:34.694315Z
-32624
-cboesch
+2011-03-21T19:21:32.045687Z
+33092
+ib
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -32,11 +32,11 @@ file
 
 
 
-2010-11-15T05:39:01.000000Z
-263f3c9363520672358fad4ee8d76228
-2010-09-12T11:11:44.775862Z
-32177
-reimar
+2011-03-28T07:44:56.000000Z
+42b1072e0bf9b14c09b22d7e0feda3e5
+2011-03-21T19:21:32.045687Z
+33092
+ib
 
 playlist.c
 file
@@ -104,11 +104,11 @@ file
 
 
 
-2010-11-15T05:39:01.000000Z
-5b8c52d280442af27170adc469c65104
-2010-11-14T09:12:34.694315Z
-32624
-cboesch
+2011-03-28T07:44:56.000000Z
+5de21a97b0301cacce8d865d96e193c5
+2011-02-17T11:09:44.834330Z
+32920
+diego
 
 Changelog
 file

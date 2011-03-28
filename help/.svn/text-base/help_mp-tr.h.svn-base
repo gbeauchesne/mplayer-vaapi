@@ -756,9 +756,6 @@ static const char help_text[]=
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "[arayüz] Hata : arayüz ayar dosyası %d satırı: %s"
-#define MSGTR_SKIN_WARNING1 "[arayüz] Uyarı: arayüz ayar dosyası %d satırı: widget (%s) bulundu ama \"section\" bulunamadı"
-#define MSGTR_SKIN_WARNING2 "[arayüz] Uyarı: arayüz ayar dosyası %d satırı: widget (%s) bulundu ama \"subsection\" bulunamadı "
-#define MSGTR_SKIN_WARNING3 "[arayüz] Uyarı: Ayar dosyasında satır %d\nbu altseçenek widget (%s) tarafından desteklenmiyor."
 #define MSGTR_SKIN_SkinFileNotFound "[arayüz] ( %s ) dosyası bulunamadı.\n"
 #define MSGTR_SKIN_SkinFileNotReadable "[arayüz] ( %s ) dosyası okunabilir değil.\n"
 #define MSGTR_SKIN_BITMAP_16bit  "16 bit veya daha az derinlikteki bitmap desteklenmiyor (%s).\n"
@@ -778,7 +775,6 @@ static const char help_text[]=
 #define MSGTR_SKIN_UnknownParameter "bilinmeyen parametre (%s)\n"
 #define MSGTR_SKIN_SKINCFG_SkinNotFound "Arayüz bulunamadı (%s).\n"
 #define MSGTR_SKIN_SKINCFG_SelectedSkinNotFound "Seçili arayüz ( %s ) bulunamadı , 'varsayılan'ı deneyiniz...\n"
-#define MSGTR_SKIN_SKINCFG_SkinCfgReadError "Arayüz ayar dosyası okuma hatası (%s).\n"
 #define MSGTR_SKIN_LABEL "Arayüzler:"
 
 // --- gtk menus

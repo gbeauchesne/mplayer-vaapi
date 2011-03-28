@@ -369,9 +369,6 @@ static const char help_text[]=
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "[스킨] 스킨 설정파일의 %d번째 줄에 오류가 있습니다.: %s"
-#define MSGTR_SKIN_WARNING1 "[스킨] 설정파일의 %d번째 줄 경고:\n위젯(%s)을 찾았지만 그 앞에 \"section\"을 찾을 수 없습니다."
-#define MSGTR_SKIN_WARNING2 "[스킨] 설정파일의 %d번째 줄 경고:\n위젯(%s)을 찾았지만 그 앞에 \"subsection\"을 찾을 수 없습니다."
-#define MSGTR_SKIN_WARNING3 "[스킨] 설정파일의 %d번째 줄 경고:\n이 subsection은 현재 위젯에서 지원되지 않습니다. (%s)"
 #define MSGTR_SKIN_BITMAP_16bit  "16 비트 혹은 더 낮은 품질의 비트맵은 지원되지 않습니다. (%s)\n"
 #define MSGTR_SKIN_BITMAP_FileNotFound  "파일을 찾을 수 없습니다. (%s)\n"
 #define MSGTR_SKIN_BITMAP_BMPReadError "BMP 읽기 오류입니다. (%s)\n"
@@ -388,7 +385,6 @@ static const char help_text[]=
 #define MSGTR_SKIN_FONT_NonExistentFontID "폰트 지정자가 존재하지 않습니다. (%s)\n"
 #define MSGTR_SKIN_UnknownParameter "알 수 없는 매개변수입니다. (%s)\n"
 #define MSGTR_SKIN_SKINCFG_SkinNotFound "스킨을 찾을 수 없습니다. (%s)\n"
-#define MSGTR_SKIN_SKINCFG_SkinCfgReadError "스킨 설정파일 읽기 오류입니다. (%s)\n"
 #define MSGTR_SKIN_LABEL "스킨:"
 
 // --- gtk menus

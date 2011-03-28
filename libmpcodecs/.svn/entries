@@ -1,15 +1,15 @@
 8
 
 dir
-32819
+33132
 svn://svn.mplayerhq.hu/mplayer/trunk/libmpcodecs
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2011-01-24T20:09:28.055262Z
-32814
-reimar
+2011-03-27T21:25:58.292882Z
+33132
+cehoyos
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -221,19 +221,6 @@ file
 diego
 has-props
 
-ad_dshow.c
-file
-
-
-
-
-2010-04-14T19:51:49.000000Z
-adb71269eea8b5d6ccd0aaa61315c335
-2010-02-12T16:29:34.875693Z
-30546
-diego
-has-props
-
 ve_xvid4.c
 file
 
@@ -247,29 +234,16 @@ file
 iive
 has-props
 
-vf_rotate.c
-file
-
-
-
-
-2011-01-27T13:50:02.000000Z
-5155ffd78ee6ce6f3c850fb57ab5609e
-2011-01-14T22:10:21.925748Z
-32789
-cehoyos
-has-props
-
-ae_pcm.h
+ad_dshow.c
 file
 
 
 
 
 2010-04-14T19:51:49.000000Z
-d7dc0135a73e075dbc93add0593d6e4c
-2010-01-30T16:57:40.024358Z
-30463
+adb71269eea8b5d6ccd0aaa61315c335
+2010-02-12T16:29:34.875693Z
+30546
 diego
 has-props
 
@@ -286,17 +260,30 @@ file
 diego
 has-props
 
-vd_mpng.c
+ae_pcm.h
 file
 
 
 
 
-2010-05-19T13:41:58.000000Z
-3f52dc8a32476f2c6c65927d08a2561f
-2010-02-26T15:01:37.585956Z
-30744
+2010-04-14T19:51:49.000000Z
+d7dc0135a73e075dbc93add0593d6e4c
+2010-01-30T16:57:40.024358Z
+30463
 diego
+has-props
+
+vf_rotate.c
+file
+
+
+
+
+2011-01-27T13:50:02.000000Z
+5155ffd78ee6ce6f3c850fb57ab5609e
+2011-01-14T22:10:21.925748Z
+32789
+cehoyos
 has-props
 
 ve_libdv.c
@@ -310,6 +297,19 @@ file
 2010-09-12T16:08:57.205994Z
 32207
 reimar
+has-props
+
+vd_mpng.c
+file
+
+
+
+
+2011-03-28T07:44:56.000000Z
+62f4e021c87f6da5c51aeb6aefb70821
+2011-02-01T20:45:41.015408Z
+32840
+cboesch
 has-props
 
 vf_1bpp.c
@@ -382,24 +382,24 @@ file
 
 
 
-2010-11-15T05:39:01.000000Z
-5689c42716e7d36891b449407dfb6b1e
-2010-11-06T15:48:21.343057Z
-32583
+2011-03-28T07:44:56.000000Z
+590dfa45d65da4de32446f216422fbc7
+2011-03-19T11:53:32.105729Z
+33084
 reimar
 has-props
 
-vf_pp.c
+ad_qtaudio.c
 file
 
 
 
 
-2010-11-15T05:39:01.000000Z
-29abea7d7d9e19e1b6a13c00aec5808b
-2010-09-13T18:19:25.767550Z
-32226
-diego
+2011-03-28T07:44:56.000000Z
+e25ad377dc2616bc7813b47369d357f5
+2011-02-06T13:09:09.743916Z
+32863
+faust3
 has-props
 
 vd_internal.h
@@ -415,16 +415,16 @@ file
 diego
 has-props
 
-ad_qtaudio.c
+vf_pp.c
 file
 
 
 
 
-2010-07-20T11:39:37.000000Z
-dc351fe1ee1b7f9424fde5d0f051c2d2
-2010-06-14T14:35:57.046714Z
-31414
+2011-03-28T07:44:56.000000Z
+371ff05465ef42a0592829c044ef91e3
+2011-02-04T10:01:46.415164Z
+32849
 diego
 has-props
 
@@ -498,10 +498,10 @@ file
 
 
 
-2011-01-27T13:50:02.000000Z
-365a6a2bd4650d4b2705661da9761570
-2011-01-14T22:10:21.925748Z
-32789
+2011-03-28T07:44:56.000000Z
+3088228714d62c9c7f0115de663510ef
+2011-01-31T09:55:19.796014Z
+32835
 cehoyos
 has-props
 
@@ -576,11 +576,11 @@ file
 
 
 
-2011-01-27T13:50:02.000000Z
-6772ef1dc96d91c1e67a55e9432b7380
-2011-01-14T22:10:21.925748Z
-32789
-cehoyos
+2011-03-28T07:44:56.000000Z
+d81eef97cffa628ef107da1e7b1192ec
+2011-01-30T22:57:16.355928Z
+32834
+michael
 has-props
 
 vf_lavcdeint.c
@@ -734,10 +734,10 @@ file
 
 
 
-2010-11-15T05:39:01.000000Z
-4f1c6ca18b305b3df109a10602679092
-2010-11-03T16:44:13.524229Z
-32577
+2011-03-28T07:44:56.000000Z
+bfb5383e6c38e7852feaa3360a0f5797
+2011-02-28T20:15:45.728544Z
+32989
 reimar
 has-props
 
@@ -747,11 +747,11 @@ file
 
 
 
-2010-07-20T11:39:37.000000Z
-8c33c44e433ae9cf45cf301928f649a5
-2010-05-23T14:15:27.985687Z
-31193
-diego
+2011-03-28T07:44:56.000000Z
+95cf27c8347893fab28a1ef8e282bb0b
+2011-03-12T10:55:33.476640Z
+33076
+cehoyos
 has-props
 
 vf_down3dright.c
@@ -832,19 +832,6 @@ file
 diego
 has-props
 
-ad_libdv.c
-file
-
-
-
-
-2010-05-19T13:41:58.000000Z
-a1edd8c1c28917f49f3dd2ee1181a552
-2010-02-16T14:52:59.826113Z
-30595
-diego
-has-props
-
 vf_divtc.c
 file
 
@@ -856,6 +843,19 @@ file
 2011-01-14T22:10:21.925748Z
 32789
 cehoyos
+has-props
+
+ad_libdv.c
+file
+
+
+
+
+2010-05-19T13:41:58.000000Z
+a1edd8c1c28917f49f3dd2ee1181a552
+2010-02-16T14:52:59.826113Z
+30595
+diego
 has-props
 
 ae_toolame.c
@@ -903,24 +903,11 @@ file
 
 
 
-2010-11-15T06:41:15.000000Z
-1be8396140c38ce35a88c3c50a6009d8
-2010-09-13T18:19:25.767550Z
-32226
-diego
-has-props
-
-ae_toolame.h
-file
-
-
-
-
-2010-07-20T11:39:37.000000Z
-76b325a784a678d7f6613f593a38cc67
-2010-06-21T09:51:26.364456Z
-31504
-diego
+2011-03-28T07:44:56.000000Z
+798a86c7458f8fd1f2072ff5ca865438
+2011-03-26T18:37:05.619037Z
+33119
+reimar
 has-props
 
 vf_expand.c
@@ -934,6 +921,19 @@ file
 2010-10-27T17:53:24.557962Z
 32556
 cigaes
+has-props
+
+ae_toolame.h
+file
+
+
+
+
+2010-07-20T11:39:37.000000Z
+76b325a784a678d7f6613f593a38cc67
+2010-06-21T09:51:26.364456Z
+31504
+diego
 has-props
 
 vf_hqdn3d.c
@@ -962,19 +962,6 @@ file
 reimar
 has-props
 
-vd.h
-file
-
-
-
-
-2010-11-15T06:41:15.000000Z
-0a791ecb60559aff688b11c6fe2ae970
-2010-06-21T17:10:07.786423Z
-31523
-diego
-has-props
-
 vf_dvbscale.c
 file
 
@@ -988,17 +975,17 @@ b71a8b32e08b48aafa034bee5c066a75
 diego
 has-props
 
-dec_video.c
+vd.h
 file
 
 
 
 
-2011-01-27T13:50:02.000000Z
-1c63bd3ce5cbce4b2a5d706f19624149
-2010-12-11T14:40:39.474795Z
-32682
-reimar
+2010-11-15T06:41:15.000000Z
+0a791ecb60559aff688b11c6fe2ae970
+2010-06-21T17:10:07.786423Z
+31523
+diego
 has-props
 
 vf_gradfun.c
@@ -1013,30 +1000,17 @@ file
 31025
 diego
 
-vf_uspp.c
+dec_video.c
 file
 
 
 
 
 2011-01-27T13:50:02.000000Z
-91320835094b6778b7c20e480230c21d
-2011-01-14T22:10:21.925748Z
-32789
-cehoyos
-has-props
-
-ae_twolame.h
-file
-
-
-
-
-2010-07-20T11:39:37.000000Z
-97470c1dc5eb4d5297a0f87cd5aa0907
-2010-06-21T09:51:26.364456Z
-31504
-diego
+1c63bd3ce5cbce4b2a5d706f19624149
+2010-12-11T14:40:39.474795Z
+32682
+reimar
 has-props
 
 ad_libdca.c
@@ -1051,6 +1025,32 @@ file
 32070
 diego
 
+ae_twolame.h
+file
+
+
+
+
+2010-07-20T11:39:37.000000Z
+97470c1dc5eb4d5297a0f87cd5aa0907
+2010-06-21T09:51:26.364456Z
+31504
+diego
+has-props
+
+vf_uspp.c
+file
+
+
+
+
+2011-01-27T13:50:02.000000Z
+91320835094b6778b7c20e480230c21d
+2011-01-14T22:10:21.925748Z
+32789
+cehoyos
+has-props
+
 vf_telecine.c
 file
 
@@ -1059,19 +1059,6 @@ file
 
 2011-01-27T13:50:02.000000Z
 705ebc19c663e47635dbe01dac18d16b
-2011-01-14T22:10:21.925748Z
-32789
-cehoyos
-has-props
-
-vf_yuvcsp.c
-file
-
-
-
-
-2011-01-27T13:50:02.000000Z
-97d84796aa59fa73a7933507525a4767
 2011-01-14T22:10:21.925748Z
 32789
 cehoyos
@@ -1088,6 +1075,19 @@ c26c6640d908a65d1939a9f603b7d840
 2010-09-13T18:19:25.767550Z
 32226
 diego
+has-props
+
+vf_yuvcsp.c
+file
+
+
+
+
+2011-01-27T13:50:02.000000Z
+97d84796aa59fa73a7933507525a4767
+2011-01-14T22:10:21.925748Z
+32789
+cehoyos
 has-props
 
 vf_tfields.c
@@ -1116,19 +1116,6 @@ file
 cehoyos
 has-props
 
-vf_tile.c
-file
-
-
-
-
-2011-01-27T13:50:02.000000Z
-e5ff8955a9571104a7e9bd5b1d4457b3
-2011-01-14T22:10:21.925748Z
-32789
-cehoyos
-has-props
-
 ad_speex.c
 file
 
@@ -1140,6 +1127,19 @@ e3b2a985646381b85189be3f65bebc66
 2010-12-12T12:36:56.285191Z
 32704
 reimar
+has-props
+
+vf_tile.c
+file
+
+
+
+
+2011-01-27T13:50:02.000000Z
+e5ff8955a9571104a7e9bd5b1d4457b3
+2011-01-14T22:10:21.925748Z
+32789
+cehoyos
 has-props
 
 ad.h
@@ -1168,19 +1168,6 @@ b7e52953cdfc62a01235f6fbb050257c
 cboesch
 has-props
 
-vf_softpulldown.c
-file
-
-
-
-
-2011-01-27T13:50:02.000000Z
-2a5a6e68252a137b355f234ad270d48a
-2011-01-14T22:10:21.925748Z
-32789
-cehoyos
-has-props
-
 vd_vfw.c
 file
 
@@ -1194,29 +1181,16 @@ file
 cehoyos
 has-props
 
-vf_spp.c
+vf_softpulldown.c
 file
 
 
 
 
 2011-01-27T13:50:02.000000Z
-9f6e1a4851884ea2877d538d5101bfaf
+2a5a6e68252a137b355f234ad270d48a
 2011-01-14T22:10:21.925748Z
 32789
-cehoyos
-has-props
-
-vd_ffmpeg.c
-file
-
-
-
-
-2011-01-27T13:50:02.000000Z
-9cfa9e4dad7a0d2b3c3280ec195a9c9d
-2011-01-09T18:47:46.714637Z
-32773
 cehoyos
 has-props
 
@@ -1233,6 +1207,32 @@ da1e5110a92163fb31c86ea3645d4438
 lorenm
 has-props
 
+vd_ffmpeg.c
+file
+
+
+
+
+2011-03-28T07:44:56.000000Z
+46fbdd1ce6468feba2bc7c7a568aab7b
+2011-03-27T14:17:48.284581Z
+33131
+reimar
+has-props
+
+vf_spp.c
+file
+
+
+
+
+2011-01-27T13:50:02.000000Z
+9f6e1a4851884ea2877d538d5101bfaf
+2011-01-14T22:10:21.925748Z
+32789
+cehoyos
+has-props
+
 vf_ilpack.c
 file
 
@@ -1241,6 +1241,19 @@ file
 
 2011-01-27T13:50:02.000000Z
 9818ed733c6fca3521b0da8f2399c4a8
+2011-01-14T22:10:21.925748Z
+32789
+cehoyos
+has-props
+
+vf_il.c
+file
+
+
+
+
+2011-01-27T13:50:02.000000Z
+3501a991bee4144d2320938b9261a9ab
 2011-01-14T22:10:21.925748Z
 32789
 cehoyos
@@ -1259,16 +1272,16 @@ file
 diego
 has-props
 
-vf_il.c
+vf_pp7.c
 file
 
 
 
 
-2011-01-27T13:50:02.000000Z
-3501a991bee4144d2320938b9261a9ab
-2011-01-14T22:10:21.925748Z
-32789
+2011-03-28T07:44:56.000000Z
+913730a18be762e0cd05be88f97d5d39
+2011-01-31T09:55:19.796014Z
+32835
 cehoyos
 has-props
 
@@ -1285,18 +1298,17 @@ d709465a538459e7397b30a37dbc7f02
 diego
 has-props
 
-vf_pp7.c
+vd_ffmpeg.h
 file
 
 
 
 
-2011-01-27T13:50:02.000000Z
-a1a06609c7da59b11dadfbf6a01847de
-2011-01-14T22:10:21.925748Z
-32789
-cehoyos
-has-props
+2010-11-15T05:39:01.000000Z
+7776a3babd4bbd86609031d346518478
+2010-09-04T08:11:31.294610Z
+32043
+diego
 
 ve_x264.h
 file
@@ -1308,18 +1320,6 @@ file
 111cdb01e03815dd0fff14b3807e8a7a
 2010-04-03T14:20:34.135783Z
 30991
-diego
-
-vd_ffmpeg.h
-file
-
-
-
-
-2010-11-15T05:39:01.000000Z
-7776a3babd4bbd86609031d346518478
-2010-09-04T08:11:31.294610Z
-32043
 diego
 
 vfcap.h
@@ -1400,17 +1400,18 @@ file
 cehoyos
 has-props
 
-vf_mcdeint.c
+vf_field.c
 file
 
 
 
 
 2011-01-27T13:50:02.000000Z
-469b9b1c38a2330d6b229069d0838b99
+f77ad124d5eaca4415f791c9626df004
 2011-01-14T22:10:21.925748Z
 32789
 cehoyos
+has-props
 
 mp_image.c
 file
@@ -1425,18 +1426,17 @@ file
 cehoyos
 has-props
 
-vf_field.c
+vf_mcdeint.c
 file
 
 
 
 
 2011-01-27T13:50:02.000000Z
-f77ad124d5eaca4415f791c9626df004
+469b9b1c38a2330d6b229069d0838b99
 2011-01-14T22:10:21.925748Z
 32789
 cehoyos
-has-props
 
 vd_realvid.c
 file
@@ -1463,19 +1463,6 @@ file
 30684
 diego
 
-ad_dvdpcm.c
-file
-
-
-
-
-2010-04-14T19:51:49.000000Z
-b24707a63d2e77b0edd37cbcd90ae562
-2010-02-12T16:29:34.875693Z
-30546
-diego
-has-props
-
 ad_realaud.c
 file
 
@@ -1489,17 +1476,17 @@ file
 diego
 has-props
 
-ad_liba52.c
+ad_dvdpcm.c
 file
 
 
 
 
-2010-11-15T05:39:01.000000Z
-a26cb713c5ac8202d2c9cf4407005d8f
-2010-10-04T06:40:32.949423Z
-32438
-reimar
+2010-04-14T19:51:49.000000Z
+b24707a63d2e77b0edd37cbcd90ae562
+2010-02-12T16:29:34.875693Z
+30546
+diego
 has-props
 
 vd_raw.c
@@ -1515,17 +1502,17 @@ d076acfc9dfec0a46d2f92c2ed0bd03d
 reimar
 has-props
 
-mp_image.h
+ad_liba52.c
 file
 
 
 
 
-2011-01-27T13:50:02.000000Z
-bde214e390e5fbc5269ff9000e61d5bd
-2011-01-14T22:10:21.925748Z
-32789
-cehoyos
+2011-03-28T07:44:56.000000Z
+fdf7bc0c9780de902a043740c41d3020
+2011-03-05T12:24:33.515203Z
+33028
+reimar
 has-props
 
 ad_dmo.c
@@ -1539,6 +1526,19 @@ file
 2010-09-08T17:38:52.255703Z
 32070
 diego
+has-props
+
+mp_image.h
+file
+
+
+
+
+2011-01-27T13:50:02.000000Z
+bde214e390e5fbc5269ff9000e61d5bd
+2011-01-14T22:10:21.925748Z
+32789
+cehoyos
 has-props
 
 img_format.c
@@ -1776,11 +1776,11 @@ file
 
 
 
-2011-01-27T13:50:02.000000Z
-50b357b95d17cb2b79be8903db9f773e
-2011-01-01T19:39:19.507954Z
-32743
-reimar
+2011-03-28T07:44:56.000000Z
+f42513feda30d4c2fcf93a07be46e7d7
+2011-03-27T21:25:58.292882Z
+33132
+cehoyos
 has-props
 
 ae_lavc.h
@@ -1892,11 +1892,11 @@ file
 
 
 
-2011-01-27T13:50:02.000000Z
-7a8cebaca2ee15253c6ace8bf73f8520
-2011-01-06T14:38:55.435951Z
-32765
-ranma
+2011-03-28T07:44:56.000000Z
+83f480de3fb99672df73148d54c8dd2d
+2011-03-26T13:00:11.397523Z
+33115
+reimar
 has-props
 
 vf_harddup.c
@@ -2113,11 +2113,11 @@ file
 
 
 
-2010-11-15T05:39:01.000000Z
-0417254ee239d6c65546bb09fadb8020
-2010-11-14T09:12:34.694315Z
-32624
-cboesch
+2011-03-28T07:44:56.000000Z
+8b38629727a066e840667b10a829ff5a
+2011-02-28T17:51:02.106778Z
+32988
+reimar
 has-props
 
 vf_detc.c

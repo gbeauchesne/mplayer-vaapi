@@ -199,6 +199,7 @@ const m_option_t mplayer_opts[]={
     {"saturation",&vo_gamma_saturation, CONF_TYPE_INT, CONF_RANGE, -100, 100, NULL},
     {"contrast",&vo_gamma_contrast, CONF_TYPE_INT, CONF_RANGE, -100, 100, NULL},
     {"hue",&vo_gamma_hue, CONF_TYPE_INT, CONF_RANGE, -100, 100, NULL},
+    {"gamma",&vo_gamma_gamma, CONF_TYPE_INT, CONF_RANGE, -100, 100, NULL},
     {"keepaspect", &vo_keepaspect, CONF_TYPE_FLAG, 0, 0, 1, NULL},
     {"nokeepaspect", &vo_keepaspect, CONF_TYPE_FLAG, 0, 1, 0, NULL},
 
@@ -235,6 +236,7 @@ const m_option_t mplayer_opts[]={
 #endif
     {"osdlevel", &osd_level, CONF_TYPE_INT, CONF_RANGE, 0, 3, NULL},
     {"osd-duration", &osd_duration, CONF_TYPE_INT, CONF_MIN, 0, 0, NULL},
+    {"osd-fractions", &osd_fractions, CONF_TYPE_INT, CONF_RANGE, 0, 2, NULL},
 #ifdef CONFIG_MENU
     {"menu", &use_menu, CONF_TYPE_FLAG, CONF_GLOBAL, 0, 1, NULL},
     {"nomenu", &use_menu, CONF_TYPE_FLAG, CONF_GLOBAL, 1, 0, NULL},

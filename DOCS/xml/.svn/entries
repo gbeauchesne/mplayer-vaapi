@@ -1,15 +1,15 @@
 8
 
 dir
-32819
+33132
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2011-01-02T18:52:46.617670Z
-32748
-diego
+2011-03-02T13:30:44.767962Z
+32997
+ib
 has-props
 
 svn:special svn:externals svn:needs-lock
@@ -96,10 +96,13 @@ dir
 xsl
 dir
 
+fr
+dir
+
 es
 dir
 
-fr
+pl
 dir
 
 default.css
@@ -114,9 +117,6 @@ file
 31032
 diego
 has-props
-
-pl
-dir
 
 hu
 dir

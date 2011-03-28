@@ -1,15 +1,15 @@
 8
 
 dir
-32819
+33132
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man/de
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-10-22T17:46:12.974817Z
-32527
-reimar
+2011-02-21T11:03:33.614176Z
+32946
+ib
 
 
 svn:special svn:externals svn:needs-lock
@@ -32,10 +32,10 @@ file
 
 
 
-2010-11-15T05:39:00.000000Z
-f1d482b6b5bda2fa3cf5e712a78d2ab0
-2010-10-22T17:46:12.974817Z
-32527
-reimar
+2011-03-28T07:44:57.000000Z
+6c5b50f6baed0fc2af222f622081ddaa
+2011-02-21T11:03:33.614176Z
+32946
+ib
 has-props
 

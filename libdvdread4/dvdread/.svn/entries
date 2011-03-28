@@ -1,15 +1,15 @@
 8
 
 dir
-1219
+1226
 svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdread/src/dvdread
 svn://svn.mplayerhq.hu/dvdnav
 
 
 
-2010-08-08T22:49:28.848294Z
-1217
-siretart
+2011-01-30T23:44:13.159764Z
+1221
+erik
 
 
 svn:special svn:externals svn:needs-lock
@@ -110,11 +110,11 @@ file
 
 
 
-2009-01-29T11:51:04.000000Z
-ef22e37b27ccc420e288b8ecc0d823a7
-2008-12-31T08:43:03.809552Z
-1162
-reimar
+2011-03-28T07:45:04.000000Z
+d08c7c1c40d225ff7a2658e35e2654f4
+2011-01-30T23:44:13.159764Z
+1221
+erik
 has-props
 
 ifo_read.h

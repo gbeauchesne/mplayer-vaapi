@@ -729,9 +729,6 @@ static const char help_text[]=
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "[skin] 皮膚配置文件的 %d: %s行出錯"
-#define MSGTR_SKIN_WARNING1 "[skin] 警告: 在配置文件的 %d行:\n找到組件 (%s) 但在這之前没有找到 \"section\""
-#define MSGTR_SKIN_WARNING2 "[skin] 警告: 在配置文件的 %d行:\n找到組件 (%s) 但在這之前没有找到 \"subsection\""
-#define MSGTR_SKIN_WARNING3 "[skin] 警告: 在配置文件的 %d行:\n組件 (%s) 不支持此 subsection"
 #define MSGTR_SKIN_SkinFileNotFound "[skin] 文件 (%s) 没找到。\n"
 #define MSGTR_SKIN_SkinFileNotReadable "[skin] 文件 (%s) 不可讀。\n"
 #define MSGTR_SKIN_BITMAP_16bit  "不支持少于 16 比特色深的位圖 (%s)。\n"
@@ -751,7 +748,6 @@ static const char help_text[]=
 #define MSGTR_SKIN_UnknownParameter "未知參數 (%s)\n"
 #define MSGTR_SKIN_SKINCFG_SkinNotFound "找不到皮膚 (%s)。\n"
 #define MSGTR_SKIN_SKINCFG_SelectedSkinNotFound "没找到選定的皮膚 (%s), 試着使用默認的...\n"
-#define MSGTR_SKIN_SKINCFG_SkinCfgReadError "皮膚配置文件 (%s) 讀取錯誤。\n"
 #define MSGTR_SKIN_LABEL "Skins:"
 
 // --- gtk menus
