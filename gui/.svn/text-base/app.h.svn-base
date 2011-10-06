@@ -19,7 +19,7 @@
 #ifndef MPLAYER_GUI_APP_H
 #define MPLAYER_GUI_APP_H
 
-#include "bitmap.h"
+#include "util/bitmap.h"
 #include "wm/ws.h"
 
 // User events
@@ -119,7 +119,7 @@ typedef struct {
 #define itDLabel    105
 #define itBase      106
 #define itPotmeter  107
-#define itFont      108
+#define itMenu      108
 
 #define itPLMButton (itNone - 1)
 #define itPRMButton (itNone - 2)
@@ -140,8 +140,8 @@ typedef struct {
     int x, y;
     int width, height;
 
-    txSample Bitmap;
-    txSample Mask;
+    guiImage Bitmap;
+    guiImage Mask;
 
     int fontid;
     int align;
@@ -160,7 +160,7 @@ typedef struct {
     unsigned int starttime;
     int last_x;
 
-    int pressed, tmp;
+    int pressed;
 } wItem;
 
 typedef struct {
@@ -171,11 +171,11 @@ typedef struct {
     wItem sub;
     wsTWindow subWindow;
 
-    wItem bar;
-    wsTWindow barWindow;
-    int barIsPresent;
+    wItem playbar;
+    wsTWindow playbarWindow;
+    int playbarIsPresent;
 
-    wItem menuBase;
+    wItem menu;
     wItem menuSelected;
     wsTWindow menuWindow;
     int menuIsPresent;
@@ -183,18 +183,17 @@ typedef struct {
     int IndexOfMainItems;
     wItem mainItems[MAX_ITEMS];
 
-    int IndexOfBarItems;
-    wItem barItems[MAX_ITEMS];
+    int IndexOfPlaybarItems;
+    wItem playbarItems[MAX_ITEMS];
 
     int IndexOfMenuItems;
     wItem menuItems[MAX_ITEMS];
 } guiItems;
 
-extern guiItems appMPlayer;
+extern guiItems guiApp;
 
 int appFindMessage(unsigned char *str);
 void appFreeStruct(void);
-void appInitStruct(void);
 void btnModify(int event, float state);
 void btnSet(int event, int set);
 

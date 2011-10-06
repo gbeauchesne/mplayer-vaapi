@@ -264,6 +264,9 @@
 #ifndef GL_FLOAT_RGB32_NV
 #define GL_FLOAT_RGB32_NV 0x8889
 #endif
+#ifndef GL_LUMINANCE16
+#define GL_LUMINANCE16 0x8042
+#endif
 #ifndef GL_UNPACK_CLIENT_STORAGE_APPLE
 #define GL_UNPACK_CLIENT_STORAGE_APPLE 0x85B2
 #endif
@@ -348,6 +351,20 @@ int loadGPUProgram(GLenum target, char *prog);
 #define SET_YUV_CONVERSION(c)   ((c) & YUV_CONVERSION_MASK)
 #define SET_YUV_LUM_SCALER(s)   (((s) & YUV_SCALER_MASK) << YUV_LUM_SCALER_SHIFT)
 #define SET_YUV_CHROM_SCALER(s) (((s) & YUV_SCALER_MASK) << YUV_CHROM_SCALER_SHIFT)
+//! returns whether the yuv conversion supports large brightness range etc.
+static inline int glYUVLargeRange(int conv)
+{
+  switch (conv)
+  {
+  case YUV_CONVERSION_NONE:
+  case YUV_CONVERSION_COMBINERS:
+  case YUV_CONVERSION_COMBINERS_ATI:
+  case YUV_CONVERSION_FRAGMENT_LOOKUP3D:
+  case YUV_CONVERSION_TEXT_FRAGMENT:
+    return 0;
+  }
+  return 1;
+}
 /** \} */
 
 typedef struct {
@@ -359,6 +376,7 @@ typedef struct {
   int chrom_texw;
   int chrom_texh;
   float filter_strength;
+  float noise_strength;
 } gl_conversion_params_t;
 
 int glAutodetectYUVConversion(void);
@@ -443,7 +461,6 @@ extern void (GLAPIENTRY *mpglDeleteTextures)(GLsizei, const GLuint *);
 extern void (GLAPIENTRY *mpglTexEnvf)(GLenum, GLenum, GLfloat);
 extern void (GLAPIENTRY *mpglTexEnvi)(GLenum, GLenum, GLint);
 extern void (GLAPIENTRY *mpglColor4ub)(GLubyte, GLubyte, GLubyte, GLubyte);
-extern void (GLAPIENTRY *mpglColor3f)(GLfloat, GLfloat, GLfloat);
 extern void (GLAPIENTRY *mpglColor4f)(GLfloat, GLfloat, GLfloat, GLfloat);
 extern void (GLAPIENTRY *mpglClearColor)(GLclampf, GLclampf, GLclampf, GLclampf);
 extern void (GLAPIENTRY *mpglClearDepth)(GLclampd);

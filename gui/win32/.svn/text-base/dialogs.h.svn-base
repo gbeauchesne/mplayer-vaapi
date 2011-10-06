@@ -34,14 +34,12 @@
 #define SOLID_GREY (HBRUSH) CreateSolidBrush(RGB(232, 232, 232))
 #define SOLID_GREY2 (HBRUSH) CreateSolidBrush(RGB(175, 175, 175))
 
-#define gfree free
-
 #define MAXFILE 1024
 
-#define COPYRIGHT   "               MPlayer GUI for Windows\n\n" \
-                    "     Copyright (c) 2003 Sascha Sommer\n" \
-                    "     Copyright (c) 2006 Erik Augustson\n" \
-                    "     Copyright (c) 2006 Gianluigi Tiesi"
+#define COPYRIGHT   "MPlayer GUI for Windows\n\n" \
+                    "Copyright (c) 2003 Sascha Sommer\n" \
+                    "Copyright (c) 2006 Erik Augustson\n" \
+                    "Copyright (c) 2006 Gianluigi Tiesi"
 
 #define ONLINE_HELP_URL      "http://www.mplayerhq.hu/DOCS/HTML/en/index.html"
 
@@ -124,6 +122,7 @@
 #define ID_TIMER             88
 #define ID_MUTE              89
 #define ID_FULLSCREEN        90
+#define ID_IDLE              91
 
 /* gtk emulation */
 #define GTK_MB_FATAL         0x1

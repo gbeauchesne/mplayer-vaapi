@@ -1,7 +1,7 @@
-8
+10
 
 dir
-33132
+34180
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/xsl
 svn://svn.mplayerhq.hu/mplayer
 
@@ -12,7 +12,7 @@ svn://svn.mplayerhq.hu/mplayer
 diego
 
 
-svn:special svn:externals svn:needs-lock
+
 
 
 
@@ -32,12 +32,33 @@ file
 
 
 
-2009-06-18T13:42:55.000000Z
+2011-10-06T11:40:11.000000Z
 f1feaf5b06120978882e35d3aa1f7ce4
 2009-05-13T02:58:57.333510Z
 29305
 diego
 has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1084
 
 ldp-html-chunk.xsl
 file
@@ -45,12 +66,33 @@ file
 
 
 
-2009-06-18T13:42:55.000000Z
+2011-10-06T11:40:11.000000Z
 9a957463fc0a94e6bcc29ecc0ec226ac
 2009-05-13T02:58:57.333510Z
 29305
 diego
 has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1071
 
 ldp-html-common.xsl
 file
@@ -58,12 +100,33 @@ file
 
 
 
-2010-07-20T11:39:37.000000Z
+2011-10-06T11:40:11.000000Z
 333704fe3ad6ea3031256204c53c968b
 2010-04-12T10:56:17.152819Z
 31032
 diego
 has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9016
 
 ldp-print.xsl
 file
@@ -71,10 +134,31 @@ file
 
 
 
-2009-01-29T11:50:45.000000Z
+2011-10-06T11:40:11.000000Z
 5cc6b3cf12c7f467c0b2c4d47545616e
 2003-03-23T23:35:12.000000Z
 9676
 nicolas
 has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+689
 

@@ -65,6 +65,7 @@ static void *ThreadProc(void *s);
 
 #include "stream.h"
 #include "cache2.h"
+#include "mp_global.h"
 
 typedef struct {
   // constats:
@@ -92,6 +93,7 @@ typedef struct {
   volatile int control_res;
   volatile off_t control_new_pos;
   volatile double stream_time_length;
+  volatile double stream_time_pos;
 } cache_vars_t;
 
 static int min_fill=0;
@@ -119,7 +121,7 @@ static int cache_read(cache_vars_t *s, unsigned char *buf, int size)
 	if(s->eof) break;
 	if (s->max_filepos == last_max) {
 	    if (sleep_count++ == 10)
-	        mp_msg(MSGT_CACHE, MSGL_WARN, "Cache not filling, consider increasing -cache and/or -cache-min!\n");
+	        mp_msg(MSGT_CACHE, MSGL_WARN, "Cache empty, consider increasing -cache and/or -cache-min. [performance issue]\n");
 	} else {
 	    last_max = s->max_filepos;
 	    sleep_count = 0;
@@ -255,37 +257,48 @@ static int cache_fill(cache_vars_t *s)
 }
 
 static int cache_execute_control(cache_vars_t *s) {
+  double double_res;
+  unsigned uint_res;
   static unsigned last;
   int quit = s->control == -2;
   if (quit || !s->stream->control) {
     s->stream_time_length = 0;
+    s->stream_time_pos = MP_NOPTS_VALUE;
     s->control_new_pos = 0;
     s->control_res = STREAM_UNSUPPORTED;
     s->control = -1;
     return !quit;
   }
   if (GetTimerMS() - last > 99) {
-    double len;
+    double len, pos;
     if (s->stream->control(s->stream, STREAM_CTRL_GET_TIME_LENGTH, &len) == STREAM_OK)
       s->stream_time_length = len;
     else
       s->stream_time_length = 0;
+    if (s->stream->control(s->stream, STREAM_CTRL_GET_CURRENT_TIME, &pos) == STREAM_OK)
+      s->stream_time_pos = pos;
+    else
+      s->stream_time_pos = MP_NOPTS_VALUE;
     last = GetTimerMS();
   }
   if (s->control == -1) return 1;
   switch (s->control) {
-    case STREAM_CTRL_GET_CURRENT_TIME:
     case STREAM_CTRL_SEEK_TO_TIME:
+      double_res = s->control_double_arg;
+    case STREAM_CTRL_GET_CURRENT_TIME:
     case STREAM_CTRL_GET_ASPECT_RATIO:
-      s->control_res = s->stream->control(s->stream, s->control, &s->control_double_arg);
+      s->control_res = s->stream->control(s->stream, s->control, &double_res);
+      s->control_double_arg = double_res;
       break;
     case STREAM_CTRL_SEEK_TO_CHAPTER:
+    case STREAM_CTRL_SET_ANGLE:
+      uint_res = s->control_uint_arg;
     case STREAM_CTRL_GET_NUM_CHAPTERS:
     case STREAM_CTRL_GET_CURRENT_CHAPTER:
     case STREAM_CTRL_GET_NUM_ANGLES:
     case STREAM_CTRL_GET_ANGLE:
-    case STREAM_CTRL_SET_ANGLE:
-      s->control_res = s->stream->control(s->stream, s->control, &s->control_uint_arg);
+      s->control_res = s->stream->control(s->stream, s->control, &uint_res);
+      s->control_uint_arg = uint_res;
       break;
     default:
       s->control_res = STREAM_UNSUPPORTED;
@@ -355,6 +368,7 @@ void cache_uninit(stream_t *s) {
   s->cache_data = NULL;
 }
 
+#if FORKED_CACHE
 static void exit_sighandler(int x){
   // close stream
   exit(0);
@@ -362,6 +376,7 @@ static void exit_sighandler(int x){
 
 static void dummy_sighandler(int x) {
 }
+#endif
 
 /**
  * Main loop of the cache process or thread.
@@ -369,8 +384,7 @@ static void dummy_sighandler(int x) {
 static void cache_mainloop(cache_vars_t *s) {
     int sleep_count = 0;
 #if FORKED_CACHE
-    struct sigaction sa = { 0 };
-    sa.sa_handler = SIG_IGN;
+    struct sigaction sa = { .sa_handler = SIG_IGN };
     sigaction(SIGUSR1, &sa, NULL);
 #endif
     do {
@@ -577,11 +591,13 @@ int cache_do_control(stream_t *stream, int cmd, void *arg) {
       s->control_uint_arg = *(unsigned *)arg;
       s->control = cmd;
       break;
-// the core might call these every frame, they are too slow for this...
+    // the core might call these every frame, so cache them...
     case STREAM_CTRL_GET_TIME_LENGTH:
-//    case STREAM_CTRL_GET_CURRENT_TIME:
       *(double *)arg = s->stream_time_length;
       return s->stream_time_length ? STREAM_OK : STREAM_UNSUPPORTED;
+    case STREAM_CTRL_GET_CURRENT_TIME:
+      *(double *)arg = s->stream_time_pos;
+      return s->stream_time_pos != MP_NOPTS_VALUE ? STREAM_OK : STREAM_UNSUPPORTED;
     case STREAM_CTRL_GET_NUM_CHAPTERS:
     case STREAM_CTRL_GET_CURRENT_CHAPTER:
     case STREAM_CTRL_GET_ASPECT_RATIO:
@@ -596,12 +612,14 @@ int cache_do_control(stream_t *stream, int cmd, void *arg) {
   cache_wakeup(stream);
   while (s->control != -1) {
     if (sleep_count++ == 1000)
-      mp_msg(MSGT_CACHE, MSGL_WARN, "Cache not responding!\n");
+      mp_msg(MSGT_CACHE, MSGL_WARN, "Cache not responding! [performance issue]\n");
     if (stream_check_interrupt(CONTROL_SLEEP_TIME)) {
       s->eof = 1;
       return STREAM_UNSUPPORTED;
     }
   }
+  if (s->control_res != STREAM_OK)
+    return s->control_res;
   switch (cmd) {
     case STREAM_CTRL_GET_TIME_LENGTH:
     case STREAM_CTRL_GET_CURRENT_TIME:
@@ -617,8 +635,7 @@ int cache_do_control(stream_t *stream, int cmd, void *arg) {
     case STREAM_CTRL_SEEK_TO_CHAPTER:
     case STREAM_CTRL_SEEK_TO_TIME:
     case STREAM_CTRL_SET_ANGLE:
-      if (s->control_res != STREAM_UNSUPPORTED)
-          stream->pos = s->read_filepos = s->control_new_pos;
+      stream->pos = s->read_filepos = s->control_new_pos;
       break;
   }
   return s->control_res;

@@ -1,7 +1,7 @@
-8
+10
 
 dir
-33132
+34180
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/tech/mirrors
 svn://svn.mplayerhq.hu/mplayer
 
@@ -12,7 +12,7 @@ svn://svn.mplayerhq.hu/mplayer
 diego
 
 
-svn:special svn:externals svn:needs-lock
+
 
 
 
@@ -32,11 +32,33 @@ file
 
 
 
-2010-07-20T11:39:37.000000Z
+2011-10-06T11:40:11.000000Z
 32cf0fbaf0cbecf6a21642d65868ddc0
 2010-04-12T10:56:17.152819Z
 31032
 diego
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9617
 
 update_mplayer_rsync
 file
@@ -44,10 +66,31 @@ file
 
 
 
-2010-05-19T13:41:57.000000Z
+2011-10-06T11:40:11.000000Z
 63d6e311af746db84999a1db4d4650fd
 2010-03-04T15:57:21.776130Z
 30838
 diego
 has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1046
 

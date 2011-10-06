@@ -1,7 +1,7 @@
-8
+10
 
 dir
-33132
+34180
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/tech/realcodecs
 svn://svn.mplayerhq.hu/mplayer
 
@@ -12,7 +12,7 @@ svn://svn.mplayerhq.hu/mplayer
 diego
 
 
-svn:special svn:externals svn:needs-lock
+
 
 
 
@@ -32,12 +32,33 @@ file
 
 
 
-2010-07-20T11:39:37.000000Z
+2011-10-06T11:40:11.000000Z
 ac2b29f96eec357a088f502cf36cabd4
 2010-04-12T10:56:17.152819Z
 31032
 diego
 has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4973
 
 TODO
 file
@@ -45,12 +66,33 @@ file
 
 
 
-2010-05-19T13:41:57.000000Z
+2011-10-06T11:40:11.000000Z
 76f211cae326f4e2e245893abbcacc25
 2010-02-20T21:02:49.035536Z
 30675
 diego
 has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1144
 
 streaming.txt
 file
@@ -58,12 +100,33 @@ file
 
 
 
-2010-07-20T11:39:37.000000Z
+2011-10-06T11:40:11.000000Z
 33046a323282f0878b774410ca8b6b18
 2010-04-12T10:56:17.152819Z
 31032
 diego
 has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2765
 
 audio-codecs.txt
 file
@@ -71,10 +134,31 @@ file
 
 
 
-2010-07-20T11:39:37.000000Z
+2011-10-06T11:40:11.000000Z
 f6b21b57f3adadb27f1483c53622f40e
 2010-04-12T10:56:17.152819Z
 31032
 diego
 has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4492
 

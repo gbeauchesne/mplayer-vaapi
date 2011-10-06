@@ -6,10 +6,11 @@ libdvdnav	svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdnav/src
 
 K 10
 svn:ignore
-V 139
+V 146
 *.d
 *.ho
 config.*
+ffmpeg
 gmplayer
 help_mp.h
 mencoder

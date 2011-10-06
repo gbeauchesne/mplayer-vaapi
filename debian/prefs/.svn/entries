@@ -1,7 +1,7 @@
-8
+10
 
 dir
-33132
+34180
 svn://svn.mplayerhq.hu/mplayer/trunk/debian/prefs
 svn://svn.mplayerhq.hu/mplayer
 
@@ -12,7 +12,7 @@ svn://svn.mplayerhq.hu/mplayer
 siretart
 
 
-svn:special svn:externals svn:needs-lock
+
 
 
 
@@ -32,11 +32,33 @@ file
 
 
 
-2010-09-21T04:28:00.000000Z
+2011-10-06T11:40:11.000000Z
 c5a205a915073146a08b6cf5cfc0bd12
 2010-08-03T13:02:07.405307Z
 31912
 siretart
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+270
 
 MD5SUMS
 file
@@ -44,11 +66,33 @@ file
 
 
 
-2010-09-21T04:28:00.000000Z
+2011-10-06T11:40:11.000000Z
 4327fd7169436851c77ca7783156e05e
 2010-08-03T13:02:07.405307Z
 31912
 siretart
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2145
 
 mirrors
 file
@@ -56,9 +100,31 @@ file
 
 
 
-2010-09-21T04:28:00.000000Z
+2011-10-06T11:40:11.000000Z
 60b3512bbf117665ded98e4058b7322e
 2010-08-03T13:02:07.405307Z
 31912
 siretart
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+238
 

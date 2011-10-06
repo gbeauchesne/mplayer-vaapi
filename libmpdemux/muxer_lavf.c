@@ -29,6 +29,7 @@
 #include "aviheader.h"
 #include "ms_hdr.h"
 #include "av_opts.h"
+#include "av_helpers.h"
 
 #include "stream/stream.h"
 #include "muxer.h"
@@ -47,7 +48,7 @@ enum PixelFormat imgfmt2pixfmt(int fmt);
 typedef struct {
 	//AVInputFormat *avif;
 	AVFormatContext *oc;
-	ByteIOContext *pb;
+	AVIOContext *pb;
 	int audio_streams;
 	int video_streams;
 	int64_t last_pts;
@@ -283,7 +284,7 @@ static void write_header(muxer_t *muxer)
 	muxer_priv_t *priv = (muxer_priv_t *) muxer->priv;
 
 	mp_msg(MSGT_MUXER, MSGL_INFO, MSGTR_WritingHeader);
-	av_write_header(priv->oc);
+	avformat_write_header(priv->oc, NULL);
 	muxer->cont_write_header = NULL;
 }
 
@@ -308,7 +309,7 @@ static void write_trailer(muxer_t *muxer)
 static void list_formats(void) {
 	AVOutputFormat *fmt;
 	mp_msg(MSGT_DEMUX, MSGL_INFO, "Available lavf output formats:\n");
-	for (fmt = first_oformat; fmt; fmt = fmt->next)
+	for (fmt = av_oformat_next(NULL); fmt; fmt = av_oformat_next(fmt))
 		mp_msg(MSGT_DEMUX, MSGL_INFO, "%15s : %s\n", fmt->name, fmt->long_name);
 }
 
@@ -317,7 +318,7 @@ int muxer_init_muxer_lavf(muxer_t *muxer)
 	muxer_priv_t *priv;
 	AVOutputFormat *fmt = NULL;
 
-	av_register_all();
+	init_avformat();
 
 	if (conf_format && strcmp(conf_format, "help") == 0) {
 		list_formats();
@@ -354,25 +355,20 @@ int muxer_init_muxer_lavf(muxer_t *muxer)
 	priv->oc->oformat = fmt;
 
 
-	if(av_set_parameters(priv->oc, NULL) < 0)
-	{
-		mp_msg(MSGT_MUXER, MSGL_FATAL, "invalid output format parameters\n");
-		goto fail;
-	}
 	priv->oc->packet_size= mux_packet_size;
         priv->oc->mux_rate= mux_rate;
         priv->oc->preload= (int)(mux_preload*AV_TIME_BASE);
         priv->oc->max_delay= (int)(mux_max_delay*AV_TIME_BASE);
         if (info_name)
-            av_strlcpy(priv->oc->title    , info_name,      sizeof(priv->oc->title    ));
+            av_dict_set(&priv->oc->metadata, "title",     info_name,      0);
         if (info_artist)
-            av_strlcpy(priv->oc->author   , info_artist,    sizeof(priv->oc->author   ));
+            av_dict_set(&priv->oc->metadata, "author",    info_artist,    0);
         if (info_genre)
-            av_strlcpy(priv->oc->genre    , info_genre,     sizeof(priv->oc->genre    ));
+            av_dict_set(&priv->oc->metadata, "genre",     info_genre,     0);
         if (info_copyright)
-            av_strlcpy(priv->oc->copyright, info_copyright, sizeof(priv->oc->copyright));
+            av_dict_set(&priv->oc->metadata, "copyright", info_copyright, 0);
         if (info_comment)
-            av_strlcpy(priv->oc->comment  , info_comment,   sizeof(priv->oc->comment  ));
+            av_dict_set(&priv->oc->metadata, "comment",   info_comment,   0);
 
         if(mux_avopt){
             if(parse_avopts(priv->oc, mux_avopt) < 0){
@@ -381,7 +377,7 @@ int muxer_init_muxer_lavf(muxer_t *muxer)
             }
         }
 
-	priv->oc->pb = av_alloc_put_byte(priv->buffer, BIO_BUFFER_SIZE, 1, muxer, NULL, mp_write, mp_seek);
+	priv->oc->pb = avio_alloc_context(priv->buffer, BIO_BUFFER_SIZE, 1, muxer, NULL, mp_write, mp_seek);
 	if ((muxer->stream->flags & MP_STREAM_SEEK) != MP_STREAM_SEEK)
             priv->oc->pb->is_streamed = 1;
 

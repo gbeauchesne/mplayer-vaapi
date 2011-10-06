@@ -39,6 +39,9 @@ static void mplayer_put_key_internal(int code){
     return;
   // in the worst case, just reset key state
   if (fifo_free == 1) {
+    // ensure we do not only create MP_KEY_RELEASE_ALL events
+    if (previous_down_key & MP_KEY_RELEASE_ALL)
+      return;
     // HACK: this ensures that a fifo size of 2 does
     // not queue any key presses while still allowing
     // the mouse wheel to work (which sends down and up
@@ -52,7 +55,7 @@ static void mplayer_put_key_internal(int code){
   if (code & MP_KEY_DOWN)
     previous_down_key = code & ~MP_KEY_DOWN;
   else
-    previous_down_key = 0;
+    previous_down_key = code & MP_KEY_RELEASE_ALL;
 }
 
 int mplayer_get_key(int fd){
@@ -69,7 +72,7 @@ int mplayer_get_key(int fd){
 unsigned doubleclick_time = 300;
 
 static void put_double(int code) {
-  if (code >= MOUSE_BTN0 && code <= MOUSE_BTN9)
+  if (code >= MOUSE_BTN0 && code <= MOUSE_BTN_LAST)
     mplayer_put_key_internal(code - MOUSE_BTN0 + MOUSE_BTN0_DBL);
 }
 
@@ -80,7 +83,7 @@ void mplayer_put_key(int code) {
   // ignore system-doubleclick if we generate these events ourselves
   if (doubleclick_time &&
       (code & ~MP_KEY_DOWN) >= MOUSE_BTN0_DBL &&
-      (code & ~MP_KEY_DOWN) <= MOUSE_BTN9_DBL)
+      (code & ~MP_KEY_DOWN) <= MOUSE_BTN_LAST_DBL)
     return;
   mplayer_put_key_internal(code);
   if (code & MP_KEY_DOWN) {

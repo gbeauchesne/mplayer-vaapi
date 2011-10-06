@@ -1,18 +1,18 @@
-8
+10
 
 dir
-33132
+34180
 svn://svn.mplayerhq.hu/mplayer/trunk/loader/qtx
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2010-06-14T14:19:58.804791Z
-31413
+2011-07-27T13:40:06.167164Z
+33929
 diego
 has-props
 
-svn:special svn:externals svn:needs-lock
+
 
 
 
@@ -32,12 +32,33 @@ file
 
 
 
-2010-07-20T11:39:38.000000Z
+2011-10-06T11:40:12.000000Z
 c7a2ab1f17929fa2da25de863db09f1a
 2010-06-14T11:46:40.494411Z
 31411
 diego
 has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2430
 
 qtxload.c
 file
@@ -45,12 +66,33 @@ file
 
 
 
-2010-07-20T11:39:38.000000Z
+2011-10-06T11:40:12.000000Z
 ed2566e4a88a826272059d7bb725188b
 2010-06-14T11:46:40.494411Z
 31411
 diego
 has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4304
 
 qtxsdk
 dir
