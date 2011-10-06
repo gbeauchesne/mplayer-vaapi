@@ -2653,7 +2653,7 @@ static int set_equalizer(const char *name, int value)
     return VO_TRUE;
 }
 
-static int control(uint32_t request, void *data, ...)
+static int control(uint32_t request, void *data)
 {
     switch (request) {
     case VOCTRL_GET_DEINTERLACE:
@@ -2685,24 +2685,15 @@ static int control(uint32_t request, void *data, ...)
         resize();
         return VO_TRUE;
     case VOCTRL_SET_EQUALIZER: {
-        va_list ap;
-        int value;
+        vf_equalizer_t *eq = data;
+        if (g_image_format == IMGFMT_BGRA)
+            return VO_NOTIMPL;
 
-        va_start(ap, data);
-        value = va_arg(ap, int);
-
-        va_end(ap);
-        return set_equalizer(data, value);
+        return set_equalizer(eq->item, eq->value);
     }
     case VOCTRL_GET_EQUALIZER: {
-        va_list ap;
-        int *value;
-
-        va_start(ap, data);
-        value = va_arg(ap, int *);
-
-        va_end(ap);
-        return get_equalizer(data, value);
+        vf_equalizer_t *eq = data;
+        return get_equalizer(eq->item, &eq->value);
     }
     case VOCTRL_ONTOP:
         vo_x11_ontop();
