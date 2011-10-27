@@ -5974,14 +5974,14 @@ if test "$_vaapi" = yes -o "$_vaapi" = auto; then
 #include <va/va_x11.h>
 int main(void) { (void) vaGetDisplay(0); return 0; }
 EOF
-  cc_check $_vaapiinc $_vaapilib -lva-x11 && _vaapi=yes
+  cc_check $_vaapiinc $_vaapilib -lva-x11 -lva && _vaapi=yes
 fi
 
 if test "$_vaapi" = yes ; then
   def_vaapi='#define CONFIG_VAAPI 1'
   extra_cflags="$extra_cflags $_vaapiinc"
   libs_mencoder="$libs_mencoder $_vaapilib -lva"
-  libs_mplayer="$libs_mplayer $_vaapilib -lva -lva-x11"
+  libs_mplayer="$libs_mplayer $_vaapilib -lva-x11 -lva"
   vomodules="vaapi $vomodules"
 else
   def_vaapi='#define CONFIG_VAAPI 0'
@@ -5998,12 +5998,12 @@ if test "$_vaapi" = yes; then
 #include <va/va_glx.h>
 int main(void) { (void) vaGetDisplayGLX(0); return 0; }
 EOF
-    cc_check $_vaapiinc $_vaapilib -lva-glx && _vaapi_glx=yes
+    cc_check $_vaapiinc $_vaapilib -lva-glx -lva && _vaapi_glx=yes
   fi
 fi
 if test "$_vaapi_glx" = yes; then
   def_vaapi_glx='#define CONFIG_VAAPI_GLX 1'
-  libs_mplayer="$libs_mplayer -lva-glx"
+  libs_mplayer="$libs_mplayer -lva-glx -lva"
 else
   def_vaapi_glx='#define CONFIG_VAAPI_GLX 0'
 fi
