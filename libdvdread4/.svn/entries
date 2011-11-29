@@ -1,15 +1,15 @@
 10
 
 dir
-1234
+1243
 svn://svn.mplayerhq.hu/dvdnav/trunk/libdvdread/src
 svn://svn.mplayerhq.hu/dvdnav
 
 
 
-2011-10-06T12:10:01.838083Z
-1234
-rathann
+2011-10-07T16:56:02.130775Z
+1238
+erik
 has-props
 
 
@@ -94,40 +94,6 @@ has-props
 
 7649
 
-bitreader.c
-file
-
-
-
-
-2011-10-06T11:40:11.000000Z
-9048cf8bf6fe99c81d21c94876e2ae78
-2009-04-28T13:26:33.798743Z
-1172
-nicodvb
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3942
-
 dvd_input.h
 file
 
@@ -162,16 +128,50 @@ has-props
 
 1974
 
+bitreader.c
+file
+
+
+
+
+2011-10-06T11:40:11.000000Z
+9048cf8bf6fe99c81d21c94876e2ae78
+2009-04-28T13:26:33.798743Z
+1172
+nicodvb
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3942
+
 ifo_read.c
 file
 
 
 
 
-2011-10-06T12:14:54.000000Z
-3d1e88a583e8107fc2189eadea2a1516
-2011-08-13T17:28:48.586016Z
-1233
+2011-11-29T13:02:23.000000Z
+ce426049fd995dc175fe95c13cc76477
+2011-10-07T16:56:02.130775Z
+1238
 erik
 has-props
 
@@ -194,7 +194,7 @@ has-props
 
 
 
-67488
+67587
 
 dvdread_internal.h
 file
@@ -366,9 +366,6 @@ has-props
 
 13402
 
-dvdread
-dir
-
 Makefile.am
 file
 
@@ -402,6 +399,9 @@ has-props
 
 
 756
+
+dvdread
+dir
 
 ifo_print.c
 file

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * $Id: pnm.c 33433 2011-05-07 21:15:13Z reimar $
+ * $Id: pnm.c 34262 2011-10-26 15:12:35Z diego $
  *
  * pnm protocol implementation
  * based upon code from joschka
@@ -44,7 +44,7 @@
 #endif
 
 #include "libavutil/intreadwrite.h"
-
+#include "mp_msg.h"
 #include "stream.h"
 #include "libmpdemux/demuxer.h"
 #include "help_mp.h"

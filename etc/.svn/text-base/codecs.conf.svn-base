@@ -3,7 +3,7 @@
 ;  Before editing this file, please read DOCS/tech/codecs.conf.txt !
 ;=============================================================================
 
-release 20110311
+release 20111012
 
 ;=============================================================================
 ;                   VIDEO CODECS
@@ -43,6 +43,14 @@ videocodec ffcdgraphics
   fourcc CDGR ; internal MPlayer FourCC
   driver ffmpeg
   dll cdgraphics
+  out BGR8
+
+videocodec ffeacmv
+  info "FFmpeg EA CMV"
+  status working
+  fourcc MVIf ; internal MPlayer FourCC
+  driver ffmpeg
+  dll eacmv
   out BGR8
 
 videocodec ffmvi1
@@ -206,6 +214,7 @@ videocodec ffmpeg1
   fourcc VCR2
   fourcc MPEG
   fourcc m1v1
+  fourcc "m1v "
   driver ffmpeg
   dll "mpeg1video"
   out YV12,I420,IYUV
@@ -282,6 +291,7 @@ videocodec ffmpeg12
   fourcc AVmp
   fourcc mp2v,mpgv
   fourcc m2v1,m1v1
+  fourcc "m1v "
   fourcc LMP2 ; Lead mpeg2 in avi
   fourcc slif ; SoftLab MPEG-2 I-frames Codec
   fourcc EM2V ; Etymonix MPEG-2 I-frame Video Codec
@@ -324,6 +334,7 @@ videocodec mpeg12
   fourcc AVmp
   fourcc mp2v,mpgv
   fourcc m2v1,m1v1
+  fourcc "m1v "
   fourcc LMP2 ; Lead mpeg2 in avi
   driver libmpeg2
 ;  dll "libmpeg2"
@@ -360,6 +371,7 @@ videocodec ffmpeg12mc
   fourcc AVmp
   fourcc mp2v,mpgv
   fourcc m2v1,m1v1
+  fourcc "m1v "
   fourcc LMP2 ; Lead mpeg2 in avi
   driver ffmpeg
   dll "mpegvideo_xvmc"
@@ -393,6 +405,7 @@ videocodec ffmpeg12vdpau
   fourcc mp2v,mpgv
   fourcc LMP2 ; Lead mpeg2 in avi
   fourcc m2v1,m1v1
+  fourcc "m1v "
   driver ffmpeg
   dll "mpegvideo_vdpau"
   out VDPAU_MPEG1
@@ -458,6 +471,7 @@ videocodec mpegpes
   fourcc AVmp
   fourcc mp2v,mpgv
   fourcc m2v1,m1v1
+  fourcc "m1v "
   fourcc PIM1        ; Pinnacle hardware-MPEG-1
   fourcc PIM2        ; Pinnacle hardware-MPEG-2
   fourcc LMP2 ; Lead mpeg2 in avi
@@ -469,7 +483,9 @@ videocodec mpegpes
 videocodec ffnuv
   info "NuppelVideo"
   status working
-  fourcc NUV1 ; former internal MPlayer FOURCC
+  fourcc NUV1 ; internal MPlayer FOURCC
+              ; note that RJPG is _not_ equivalent,
+              ; these are slightly different formats
   fourcc RJPG
   driver ffmpeg
   dll nuv
@@ -1108,10 +1124,14 @@ videocodec ffh264
   fourcc ai5p,ai5q,ai52,ai53
   fourcc ai55,ai56
   fourcc x3eV
+  fourcc Q264
   format 0x10000005
   driver ffmpeg
   dll h264
   out YV12,I420,IYUV,420P10,420P9
+  out 422P,422P10
+  out 444P,444P9,444P10
+  out GBR24P
 
 videocodec ffh264vdpau
   info "FFmpeg H.264 (VDPAU)"
@@ -1125,6 +1145,7 @@ videocodec ffh264vdpau
   fourcc ai5p,ai5q,ai52,ai53
   fourcc ai55,ai56
   fourcc x3eV
+  fourcc Q264
   format 0x10000005
   driver ffmpeg
   dll h264_vdpau
@@ -1207,6 +1228,7 @@ videocodec ffodivx
   fourcc uldx,ULDX,VSPX
   fourcc SIPP ; Samsung SHR-6040
   fourcc DreX,DM4V,LMP4,DP02
+  fourcc QMP4
   driver ffmpeg
   dll mpeg4 ;opendivx
   out YV12,I420,IYUV
@@ -1241,6 +1263,7 @@ videocodec ffodivxvdpau
   fourcc uldx,ULDX,VSPX
   fourcc SIPP ; Samsung SHR-6040
   fourcc DreX,DM4V,LMP4,DP02
+  fourcc QMP4
   driver ffmpeg
   dll mpeg4_vdpau
   out VDPAU_MPEG4
@@ -1286,6 +1309,14 @@ videocodec ffwv1f
   dll mpeg4
   out YV12,I420,IYUV flip
 
+videocodec ffdirac
+  info "FFmpeg Dirac"
+  status working
+  fourcc drac
+  driver ffmpeg
+  dll dirac
+  out 422P,YV12,444P
+
 videocodec fflibschroedinger
   info "Dirac (through FFmpeg libschroedinger)"
   status working
@@ -1329,6 +1360,7 @@ videocodec xvid
   format 0x10000004  ; mpeg 4 es
   fourcc SIPP ; Samsung SHR-6040
   fourcc DreX,DM4V,LMP4,DP02
+  fourcc QMP4
   driver xvid
   out YV12
   out I420
@@ -1523,7 +1555,7 @@ videocodec eescreen
 videocodec gotomeeting
   info "GoToMeeting codec"
   status working
-  fourcc G2M2,G2M3
+  fourcc G2M2,G2M3,G2M4
   driver dmo
   dll "G2M.dll"
   guid 0x23F891A4, 0x572B, 0x474A, 0x86, 0xDA, 0x66, 0xCD, 0xD3, 0xD1, 0xAC, 0x2E
@@ -1759,7 +1791,7 @@ videocodec fffrwu
   status working
   fourcc FRWU
   driver ffmpeg
-  dll "FRWU"
+  dll frwu
   out UYVY
 
 videocodec frwuvfw
@@ -2261,6 +2293,37 @@ videocodec lagarith
   dll "lagarith.dll"
   out BGR32,BGR24 flip
 
+videocodec ffutvideo
+  info "FFmpeg Ut Video"
+  status working
+  fourcc ULRA,ULRG,ULY2,ULY0
+  driver ffmpeg
+  dll utvideo
+  out YV12,422P,RGB24,RGB32
+
+videocodec utvideovfw
+  info "UTVideo Codec"
+  comment "http://umezawa.dyndns.info/wordpress/"
+  status working
+  fourcc ULRA,ULRG,ULY2,ULY0
+  driver vfw
+  dll "utv_vcm.dll"  ; requires utv_core.dll
+  out BGR32,BGR24 flip
+  out RGB32,RGB24 flip
+  out YV12,UYVY,YUY2 flip
+
+videocodec utvideodmo
+  info "UTVideo Codec"
+  comment "http://umezawa.dyndns.info/wordpress/"
+  status buggy ; input format not accepted
+  fourcc ULRA,ULRG,ULY2,ULY0
+  driver dmo
+  dll "utv_dmo.dll"  ; requires utv_core.dll
+  guid 0x30594c55, 0xe991, 0x460d, 0x84, 0x0b, 0xc1, 0xc6, 0x49, 0x74, 0x57, 0xef
+  out YV12,UYVY,YUY2
+  out RGB32,RGB24
+  out BGR32,BGR24
+
 videocodec psiv
   info "Infinite Video PSI_V"
   status working
@@ -2664,6 +2727,14 @@ videocodec ffamv
   fourcc AMVV  ; internal MPlayer FourCC
   driver ffmpeg
   dll "amv"
+  out YV12
+
+videocodec ffmxpeg
+  info "FFmpeg MxPEG"
+  status working
+  fourcc MXPG ; internal MPlayer FourCC
+  driver ffmpeg
+  dll mxpeg
   out YV12
 
 videocodec ffsp5x
@@ -3131,20 +3202,8 @@ videocodec ffprores
   dll prores
   out 422P10,444P10
 
-videocodec ffproresgpl
-  info "FFmpeg ProRes, GPL v2 only"
-  status working
-  fourcc apch
-  fourcc apcn
-  fourcc apcs
-  fourcc apco
-  fourcc ap4h
-  driver ffmpeg
-  dll prores_gpl
-  out 422P10,444P10
-
 videocodec ffproreslgpl
-  info "FFmpeg ProRes, LGPL"
+  info "Libav ProRes"
   status working
   fourcc apch
   fourcc apcn
@@ -3435,12 +3494,28 @@ videocodec ffvqa
   dll "vqavideo"
   out BGR8
 
+videocodec ffbmvvideo
+  info "FFmpeg Discoworld II BMV Video"
+  status working
+  fourcc BMVV ; internal MPlayer FourCC
+  driver ffmpeg
+  dll bmv_video
+  out BGR8
+
 videocodec ffc93
   info "FFmpeg C93 Video"
   status buggy
   fourcc C93V ; internal MPlayer FourCC
   driver ffmpeg
   dll c93
+  out BGR8
+
+videocodec ffdfa
+  info "FFmpeg Chronomaster DFA"
+  status working
+  fourcc CDFA ; internal MPlayer FourCC
+  driver ffmpeg
+  dll dfa
   out BGR8
 
 videocodec ffeatgv
@@ -4224,6 +4299,13 @@ audiocodec ffbinkrdftaud
   driver ffmpeg
   dll "binkaudio_rdft"
 
+audiocodec ffbmvaudio
+  info "FFmpeg Discoworld II BMV Audio"
+  status working
+  fourcc BMVA ; internal MPlayer FourCC
+  driver ffmpeg
+  dll bmv_audio
+
 audiocodec ffdsicinaudio
   info "FFmpeg Delphine CIN audio"
   status working
@@ -4599,7 +4681,7 @@ audiocodec ffmp3on4
 ; in libmpdemux/demuxer.c
 audiocodec ffmp3float
   info "FFmpeg MPEG layer-3 audio"
-  comment "integer only"
+  comment "floating point decoder"
   status working
   format 0x55
   format 0x5500736d  ; "ms\0\x55" older mp3 fcc (MOV files)
@@ -4643,7 +4725,7 @@ audiocodec ffmp3adu
 ; in libmpdemux/demuxer.c
 audiocodec ffmp2float
   info "FFmpeg MPEG layer-1 and layer-2 audio"
-  comment "integer only"
+  comment "floating point decoder"
   status working
   format 0x50
   format 0x5000736d  ; "ms\0\x50" older mp2 fcc (MOV files)
@@ -4801,6 +4883,7 @@ audiocodec ffeac3
   info "FFmpeg E-AC-3"
   status working
   fourcc EAC3
+  fourcc ec-3 ; eac3 in mp4
   driver ffmpeg
   dll eac3
 
@@ -5182,6 +5265,27 @@ audiocodec TwinVQ
   driver vqf
   dll "tvqdec.dll"
 
+audiocodec ff8svxraw
+  info "FFmpeg 8SVX raw"
+  status working
+  fourcc 8raw ; internal MPlayer FourCC
+  driver ffmpeg
+  dll 8svx_raw
+
+audiocodec ff8svxexp
+  info "FFmpeg 8SVX exponential"
+  status working
+  fourcc 8exp ; internal MPlayer FourCC
+  driver ffmpeg
+  dll 8svx_exp
+
+audiocodec ff8svxfib
+  info "FFmpeg 8SVX fibonacci"
+  status working
+  fourcc 8fib ; internal MPlayer FourCC
+  driver ffmpeg
+  dll 8svx_fib
+
 audiocodec hwmpa
   info "MPEG audio pass-through for hardware MPEG decoders"
   status working
@@ -5208,3 +5312,62 @@ audiocodec uleaddva
   format 0x216
   driver acm
   dll "dvacm.acm"
+
+audiocodec spdifaac
+  info "libavformat/spdifenc AAC pass-through decoder"
+  status working
+  comment "for AAC hardware decoders"
+  fourcc MP4A
+  dll    aac
+  driver spdif
+
+audiocodec spdifac3
+  info "libavformat/spdifenc AC-3 pass-through decoder"
+  status working
+  comment "for AC-3 hardware decoders"
+  format 0x2000      ; AC-3
+  format 0x332D6361  ; AC-3 in MP4
+  fourcc dnet        ; AC-3
+  dll    ac3
+  driver spdif
+
+audiocodec spdifeac3
+  info "libavformat/spdifenc E-AC-3 pass-through decoder"
+  status working
+  comment "for E-AC-3 hardware decoders"
+  fourcc EAC3        ; E-AC-3
+  dll    eac3
+  driver spdif
+
+audiocodec spdifdts
+  info "libavformat/spdifenc DTS pass-through decoder"
+  status working
+  comment "needs -channels 8"
+  format 0x2001
+  format 0x86
+  dll    dca
+  driver spdif
+
+audiocodec spdifmpa
+  info "libavformat/spdifenc MPEG AUDIO BC pass-through decoder"
+  status working
+  comment "for MPEG AUDIO BC hardware decoders"
+  format 0x50        ; layer-1 && layer-2
+  format 0x55        ; layer-3
+  format 0x5500736d  ; "ms\0\x55" older MP3 fcc (MOV files)
+  format 0x5000736d  ; "ms\0\x50" older MP2 fcc (MOV files)
+  fourcc ".mp3"      ; CBR/VBR MP3 (MOV files)
+  fourcc ".mp2"      ; MP2 (MOV files)
+  fourcc ".mp1"      ; MP1 (MOV files)
+  fourcc "MP3 "      ; used in .nsv files
+  fourcc "LAME"      ; used in mythtv .nuv files
+  dll    mpa
+  driver spdif
+
+audiocodec spdifthd
+  info "libavformat/spdifenc Dolby TrueHD pass-through decoder"
+  status working
+  comment "needs -channels 8"
+  fourcc TRHD ; internal MPlayer FourCC
+  dll    thd
+  driver spdif

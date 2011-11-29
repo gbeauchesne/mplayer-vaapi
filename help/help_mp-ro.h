@@ -1,5 +1,5 @@
 // FIXME: This needs to be redone properly.
-// Partially sync'ed with help_mp-en.h $Revision: 33962 $
+// Partially sync'ed with help_mp-en.h $Revision: 34253 $
 // This is a retranslation of the file by Bogdan Butnaru <bogdanb@fastmail.fm>,
 // based on the previous translation by Codre Adrian
 // <codreadrian@softhome.net> (address bounces).
@@ -347,7 +347,7 @@ static const char help_text[]=
 #define MSGTR_MENU_AudioLanguages "Limbi pentru audio"
 #define MSGTR_MENU_SubtitleLanguages "Limbi pentru subtitrãri"
 #define MSGTR_MENU_SkinBrowser "Alegere skin"
-#define MSGTR_MENU_Exit "Ieºire..."
+#define MSGTR_MENU_Exit "Ieºire"
 #define MSGTR_MENU_Mute "Fãrã sunet"
 #define MSGTR_MENU_Original "Original"
 #define MSGTR_MENU_AspectRatio "Raport dimensiuni"

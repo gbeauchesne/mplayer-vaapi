@@ -82,6 +82,7 @@ extern const vf_info_t vf_info_ivtc;
 extern const vf_info_t vf_info_kerndeint;
 extern const vf_info_t vf_info_lavc;
 extern const vf_info_t vf_info_lavcdeint;
+extern const vf_info_t vf_info_lavfi;
 extern const vf_info_t vf_info_mcdeint;
 extern const vf_info_t vf_info_mirror;
 extern const vf_info_t vf_info_noformat;
@@ -142,6 +143,9 @@ static const vf_info_t* const filter_list[]={
     &vf_info_pp,
     &vf_info_lavc,
     &vf_info_lavcdeint,
+#ifdef CONFIG_VF_LAVFI
+    &vf_info_lavfi,
+#endif
     &vf_info_screenshot,
     &vf_info_geq,
 #endif
@@ -334,6 +338,7 @@ mp_image_t* vf_get_image(vf_instance_t* vf, unsigned int outfmt, int mp_imgtype,
     break;
   }
   if(mpi){
+    int missing_palette = !(mpi->flags & MP_IMGFLAG_RGB_PALETTE) && (mp_imgflag & MP_IMGFLAG_RGB_PALETTE);
     mpi->type=mp_imgtype;
     mpi->w=vf->w; mpi->h=vf->h;
     // keep buffer allocation status & color flags only:
@@ -342,12 +347,14 @@ mp_image_t* vf_get_image(vf_instance_t* vf, unsigned int outfmt, int mp_imgtype,
     // accept restrictions, draw_slice and palette flags only:
     mpi->flags|=mp_imgflag&(MP_IMGFLAGMASK_RESTRICTIONS|MP_IMGFLAG_DRAW_CALLBACK|MP_IMGFLAG_RGB_PALETTE);
     if(!vf->draw_slice) mpi->flags&=~MP_IMGFLAG_DRAW_CALLBACK;
-    if(mpi->width!=w2 || mpi->height!=h){
+    if(mpi->width!=w2 || mpi->height!=h || missing_palette){
 //      printf("vf.c: MPI parameters changed!  %dx%d -> %dx%d   \n", mpi->width,mpi->height,w2,h);
         if(mpi->flags&MP_IMGFLAG_ALLOCATED){
-            if(mpi->width<w2 || mpi->height<h){
+            if(mpi->width<w2 || mpi->height<h || missing_palette){
                 // need to re-allocate buffer memory:
-                av_free(mpi->planes[0]);
+                av_freep(&mpi->planes[0]);
+                if (mpi->flags & MP_IMGFLAG_RGB_PALETTE)
+                    av_freep(&mpi->planes[1]);
                 mpi->flags&=~MP_IMGFLAG_ALLOCATED;
                 mp_msg(MSGT_VFILTER,MSGL_V,"vf.c: have to REALLOCATE buffer memory :(\n");
             }

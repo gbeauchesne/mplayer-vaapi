@@ -1,14 +1,14 @@
 10
 
 dir
-34180
+34365
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/xml/zh_CN
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2011-02-03T12:31:09.427386Z
-32844
+2011-11-07T19:54:29.251036Z
+34318
 diego
 has-props
 
@@ -270,10 +270,10 @@ file
 
 
 
-2011-10-06T11:40:11.000000Z
-237b7b3c2e732a974948462b55793f70
-2010-08-18T23:10:10.038954Z
-31980
+2011-11-29T13:02:20.000000Z
+287ab362b53f49393f202f817898ceb8
+2011-11-07T19:54:29.251036Z
+34318
 diego
 
 
@@ -296,7 +296,7 @@ diego
 
 
 
-7052
+6876
 
 bugreports.xml
 file

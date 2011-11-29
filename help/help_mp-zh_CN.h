@@ -1,6 +1,6 @@
-// Synced with help_mp-en.h rev. 33962
+// Synced with help_mp-en.h rev. 34335
 //
-// Translated by JRaSH <jrash06@163.com>
+// Translated by JRaSH <jrash06@gmail.com>
 
 
 
@@ -625,7 +625,7 @@ static const char help_text[]=
 #define MSGTR_MENU_PlayList MSGTR_PlayList
 #define MSGTR_MENU_SkinBrowser "界面外观配置浏览器"
 #define MSGTR_MENU_Preferences MSGTR_Preferences
-#define MSGTR_MENU_Exit "退出..."
+#define MSGTR_MENU_Exit "退出"
 #define MSGTR_MENU_Mute "静音"
 #define MSGTR_MENU_Original "原始的"
 #define MSGTR_MENU_AspectRatio "宽高比"
@@ -809,6 +809,35 @@ static const char help_text[]=
 // wsxdnd.c
 #define MSGTR_WS_NotAFile "这好像不是一个文件...\n"
 #define MSGTR_WS_DDNothing "D&D：未返回任何东西！\n"
+
+// Win32 GUI
+#define MSGTR_Close "关闭"
+#define MSGTR_Default "默认值"
+#define MSGTR_Down "向下"
+#define MSGTR_Load "加载"
+#define MSGTR_Save "保存"
+#define MSGTR_Up "向上"
+#define MSGTR_DirectorySelect "选择目录..."
+#define MSGTR_PlaylistSave "保存播放列表..."
+#define MSGTR_PlaylistSelect "选择播放列表..."
+#define MSGTR_SelectChapter "选择章节..."
+#define MSGTR_MENU_DebugConsole "调试控制终端"
+#define MSGTR_MENU_OnlineHelp "线上帮助内容"
+#define MSGTR_MENU_PlayDirectory "播放目录内容..."
+#define MSGTR_MENU_SeekBack "向后定位"
+#define MSGTR_MENU_SeekForw "向前定位"
+#define MSGTR_MENU_ShowHide "显示/隐藏"
+#define MSGTR_MENU_SubtitlesOnOff "显示字幕开/关"
+#define MSGTR_PLAYLIST_AddFile "添加文件..."
+#define MSGTR_PLAYLIST_AddURL "添加 URL..."
+#define MSGTR_PREFERENCES_Priority "进程优先级："
+#define MSGTR_PREFERENCES_PriorityHigh "高"
+#define MSGTR_PREFERENCES_PriorityLow "低"
+#define MSGTR_PREFERENCES_PriorityNormal "标准"
+#define MSGTR_PREFERENCES_PriorityNormalAbove "高于标准"
+#define MSGTR_PREFERENCES_PriorityNormalBelow "低于标准"
+#define MSGTR_PREFERENCES_VideoInSubwin "在子窗口中显示视频（仅用于 DirectX）"
+
 
 // ======================= video output drivers ========================
 
@@ -1204,31 +1233,6 @@ static const char help_text[]=
 #define MSGTR_AO_SUN_UnsupSampleRate "[AO SUN] 音频设置：你的声卡不支持 %d 声道，%s，%d Hz 采样率。\n"
 #define MSGTR_AO_SUN_CantUseSelect "[AO SUN]\n   ***  你的音频驱动不支持 select()  ***\n需要在 config.h 中设置 #undef HAVE_AUDIO_SELECT 并重新编译 MPlayer！\n\n"
 #define MSGTR_AO_SUN_CantReopenReset "[AO SUN]\n致命错误：*** 无法重新打开/重启音频设备（%s）***\n"
-
-// ao_alsa5.c
-#define MSGTR_AO_ALSA5_InitInfo "[AO ALSA5] alsa-init：所请求格式：%d Hz，%d 声道，%s\n"
-#define MSGTR_AO_ALSA5_SoundCardNotFound "[AO ALSA5] alsa-init：未找到声卡。\n"
-#define MSGTR_AO_ALSA5_InvalidFormatReq "[AO ALSA5] alsa-init：所请求格式无效（%s）- 禁用音频输出。\n"
-#define MSGTR_AO_ALSA5_PlayBackError "[AO ALSA5] alsa-init：打开播放模式错误：%s\n"
-#define MSGTR_AO_ALSA5_PcmInfoError "[AO ALSA5] alsa-init：PCM 信息错误：%s\n"
-#define MSGTR_AO_ALSA5_SoundcardsFound "[AO ALSA5] alsa-init：找到声卡 %d，使用：%s\n"
-#define MSGTR_AO_ALSA5_PcmChanInfoError "[AO ALSA5] alsa-init：PCM 声道信息错误：%s\n"
-#define MSGTR_AO_ALSA5_CantSetParms "[AO ALSA5] alsa-init：设定参数错误：%s\n"
-#define MSGTR_AO_ALSA5_CantSetChan "[AO ALSA5] alsa-init：设定声道错误：%s\n"
-#define MSGTR_AO_ALSA5_ChanPrepareError "[AO ALSA5] alsa-init：准备声道错误：%s\n"
-#define MSGTR_AO_ALSA5_DrainError "[AO ALSA5] alsa-uninit：播放数据清空错误：%s\n"
-#define MSGTR_AO_ALSA5_FlushError "[AO ALSA5] alsa-uninit：播放数据刷新错误：%s\n"
-#define MSGTR_AO_ALSA5_PcmCloseError "[AO ALSA5] alsa-uninit：PCM 关闭错误：%s\n"
-#define MSGTR_AO_ALSA5_ResetDrainError "[AO ALSA5] alsa-reset：播放数据清空错误：%s\n"
-#define MSGTR_AO_ALSA5_ResetFlushError "[AO ALSA5] alsa-reset：播放数据刷新错误：%s\n"
-#define MSGTR_AO_ALSA5_ResetChanPrepareError "[AO ALSA5] alsa-reset：声道准备错误：%s\n"
-#define MSGTR_AO_ALSA5_PauseDrainError "[AO ALSA5] alsa-pause：播放数据刷新错误：%s\n"
-#define MSGTR_AO_ALSA5_PauseFlushError "[AO ALSA5] alsa-pause：播放数据刷新错误：%s\n"
-#define MSGTR_AO_ALSA5_ResumePrepareError "[AO ALSA5] alsa-resume：声道准备错误：%s\n"
-#define MSGTR_AO_ALSA5_Underrun "[AO ALSA5] alsa-play：alsa 输出滞后，重新设置音频流。\n"
-#define MSGTR_AO_ALSA5_PlaybackPrepareError "[AO ALSA5] alsa-play：播放准备错误：%s\n"
-#define MSGTR_AO_ALSA5_WriteErrorAfterReset "[AO ALSA5] alsa-play：重置后写入错误：%s - 放弃。\n"
-#define MSGTR_AO_ALSA5_OutPutError "[AO ALSA5] alsa-play：输出错误：%s\n"
 
 // ao_alsa.c
 #define MSGTR_AO_ALSA_InvalidMixerIndexDefaultingToZero "[AO_ALSA] 无效的混音器索引号。取默认值 0。\n"
@@ -1722,12 +1726,12 @@ static const char help_text[]=
 
 // ================================== stream ====================================
 
-// ai_alsa1x.c
-#define MSGTR_MPDEMUX_AIALSA1X_CannotSetSamplerate "无法设置采样率。\n"
-#define MSGTR_MPDEMUX_AIALSA1X_CannotSetBufferTime "无法设置缓冲时间。\n"
-#define MSGTR_MPDEMUX_AIALSA1X_CannotSetPeriodTime "无法设置采样间隔时间。\n"
+// ai_alsa.c
+#define MSGTR_MPDEMUX_AIALSA_CannotSetSamplerate "无法设置采样率。\n"
+#define MSGTR_MPDEMUX_AIALSA_CannotSetBufferTime "无法设置缓冲时间。\n"
+#define MSGTR_MPDEMUX_AIALSA_CannotSetPeriodTime "无法设置采样间隔时间。\n"
 
-// ai_alsa1x.c / ai_alsa.c
+// ai_alsa.c
 #define MSGTR_MPDEMUX_AIALSA_PcmBrokenConfig "该 PCM 的配置文件已损坏：无可用配置。\n"
 #define MSGTR_MPDEMUX_AIALSA_UnavailableAccessType "无可用访问类型。\n"
 #define MSGTR_MPDEMUX_AIALSA_UnavailableSampleFmt "无可用采样格式。\n"

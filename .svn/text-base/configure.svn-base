@@ -35,28 +35,28 @@
 #
 #############################################################################
 
-  if test -e ffmpeg/.svn ; then
+if test -e ffmpeg/.svn ; then
     echo "You have an outdated FFmpeg SVN checkout in ffmpeg/, please (re)move or replace it"
     exit 1
-  fi
+fi
 
-  if test -e ffmpeg/mp_auto_pull ; then
+if test -e ffmpeg/mp_auto_pull ; then
     if ! (cd ffmpeg && git pull --rebase --ff-only) ; then
-      echo "git pull failed, (re)move ffmpeg/mp_auto_pull to disable pulling"
-      exit 1
+        echo "git pull failed, (re)move ffmpeg/mp_auto_pull to disable pulling"
+        exit 1
     fi
-  fi
+fi
 
-  if ! test -e ffmpeg ; then
+if ! test -e ffmpeg ; then
     echo "No FFmpeg checkout, press enter to download one with git or CTRL+C to abort"
     read tmp
     if ! git clone --depth 1 git://git.videolan.org/ffmpeg.git ffmpeg ; then
-      rm -rf ffmpeg
-      echo "Failed to get a FFmpeg checkout"
-      exit 1
+        rm -rf ffmpeg
+        echo "Failed to get a FFmpeg checkout"
+        exit 1
     fi
     touch ffmpeg/mp_auto_pull
-  fi
+fi
 
 # Prevent locale nonsense from breaking basic text processing utilities
 export LC_ALL=C
@@ -240,7 +240,8 @@ openbsd()   { issystem "OpenBSD"; }
 os2()       { issystem "OS/2"; }
 qnx()       { issystem "QNX"; }
 sunos()     { issystem "SunOS"; }
-win32()     { cygwin || mingw32; }
+wine()      { issystem "Wine"; }
+win32()     { cygwin || mingw32 || wine; }
 
 # arch test boolean functions
 # x86/x86pc is used by QNX
@@ -414,6 +415,7 @@ Codecs:
   --disable-libnut          disable libnut [autodetect]
   --disable-ffmpeg_a        disable static FFmpeg [autodetect]
   --disable-ffmpeg_so       disable shared FFmpeg [autodetect]
+  --enable-vf-lavfi         enable libavfilter wrapper [disabled]
   --disable-libavcodec_mpegaudio_hp disable high precision audio decoding
                                     in libavcodec [enabled]
   --disable-tremor-internal disable internal Tremor [enabled]
@@ -647,12 +649,13 @@ _cross_compile=auto
 _prefix="/usr/local"
 ffmpeg_a=auto
 ffmpeg_so=auto
+_vf_lavfi=no
 _libavcodec_mpegaudio_hp=yes
 _libopencore_amrnb=auto
 _libopencore_amrwb=auto
 libopenjpeg=auto
 libavdecoders_all=$(sed -n 's/^[^#]*DEC.*(.*, *\(.*\)).*/\1_decoder/p' ffmpeg/libavcodec/allcodecs.c | tr '[a-z]' '[A-Z]')
-libavdecoders=$(echo $libavdecoders_all | sed -e 's/ LIB[A-Z0-9_]*_DECODER//g' -e s/PRORES_GPL_DECODER//)
+libavdecoders=$(echo $libavdecoders_all | sed -e 's/ LIB[A-Z0-9_]*_DECODER//g')
 libavencoders_all=$(sed -n 's/^[^#]*ENC.*(.*, *\(.*\)).*/\1_encoder/p' ffmpeg/libavcodec/allcodecs.c | tr '[a-z]' '[A-Z]')
 libavencoders=$(echo $libavencoders_all | sed -e 's/ LIB[A-Z0-9_]*_ENCODER//g')
 libavparsers_all=$(sed -n 's/^[^#]*PARSER.*(.*, *\(.*\)).*/\1_parser/p' ffmpeg/libavcodec/allcodecs.c | tr '[a-z]' '[A-Z]')
@@ -668,6 +671,9 @@ libavmuxers_all=$(sed -n 's/^[^#]*_MUX.*(.*, *\(.*\)).*/\1_muxer/p' ffmpeg/libav
 libavmuxers=$(echo $libavmuxers_all | sed -e 's/ LIB[A-Z0-9_]*_MUXER//g' -e s/RTP_MUXER// -e s/RTSP_MUXER// -e s/SAP_MUXER//)
 libavprotocols_all=$(sed -n 's/^[^#]*PROTOCOL.*(.*, *\(.*\)).*/\1_protocol/p' ffmpeg/libavformat/allformats.c | tr '[a-z]' '[A-Z]')
 libavprotocols=$libavprotocols_all
+libavprotocols=$(echo $libavprotocols | sed -e s/HTTPS_PROTOCOL// -e s/TLS_PROTOCOL//)
+libavfilters_all=$(sed -n 's/^[^#]*FILTER.*(.*, *\(.*\),.*).*/\1_filter/p' ffmpeg/libavfilter/allfilters.c | tr '[a-z]' '[A-Z]')
+libavfilters=$(echo $libavfilters_all | sed -e 's/ LIB[A-Z0-9_]*_FILTER//g' -e 's/ FREI0R[A-Z0-9_]*_FILTER//g' -e 's/ OCV_FILTER//g' -e 's/ MP_FILTER//g')
 _mencoder=yes
 _mplayer=yes
 _x11=auto
@@ -1270,10 +1276,14 @@ for ac_option do
   --disable-demuxer=*) libavdemuxers=$(echo $libavdemuxers | sed "s/$(echo $ac_option | cut -d '=' -f 2 | tr '[a-z]' '[A-Z]')//g") ;;
   --enable-muxer=*)    libavmuxers="$libavmuxers $(echo $ac_option | cut -d '=' -f 2 | tr '[a-z]' '[A-Z]')" ;;
   --disable-muxer=*)    libavmuxers=$(echo $libavmuxers | sed "s/$(echo $ac_option | cut -d '=' -f 2 | tr '[a-z]' '[A-Z]')//g") ;;
+  --enable-filter=*)    libavfilters="$libavfilters $(echo $ac_option | cut -d '=' -f 2 | tr '[a-z]' '[A-Z]')" ;;
+  --disable-filter=*)    libavfilters=$(echo $libavfilters | sed "s/$(echo $ac_option | cut -d '=' -f 2 | tr '[a-z]' '[A-Z]')//g") ;;
   --enable-ffmpeg_a)    ffmpeg_a=yes    ;;
   --disable-ffmpeg_a)   ffmpeg_a=no     ;;
   --enable-ffmpeg_so)   ffmpeg_so=yes   ;;
   --disable-ffmpeg_so)  ffmpeg_so=no    ;;
+  --enable-vf-lavfi)    _vf_lavfi=yes   ;;
+  --disable-vf-lavfi)   _vf_lavfi=no    ;;
   --enable-libavcodec_mpegaudio_hp)     _libavcodec_mpegaudio_hp=yes    ;;
   --disable-libavcodec_mpegaudio_hp)    _libavcodec_mpegaudio_hp=no     ;;
 
@@ -1483,7 +1493,7 @@ if test -z "$_target" ; then
 
   # host's CPU/instruction set
   case "$(uname -m 2>&1)" in
-      x86_64|amd64|i[3-9]86*|x86|x86pc|k5|k6|k6_2|k6_3|k6-2|k6-3|pentium*|athlon*|i586_i686|i586-i686) host_arch=i386 ;;
+      x86_64|amd64|i[3-9]86*|i86pc|x86|x86pc|k5|k6|k6_2|k6_3|k6-2|k6-3|pentium*|athlon*|i586_i686|i586-i686) host_arch=i386 ;;
       ia64) host_arch=ia64 ;;
       macppc|ppc*|Power*) host_arch=ppc ;;
       alpha) host_arch=alpha ;;
@@ -1514,6 +1524,7 @@ else # if test -z "$_target"
     morphos) system_name=MorphOS ;;
     amigaos) system_name=AmigaOS ;;
     mingw32*) system_name=MINGW32 ;;
+    wine) system_name=Wine ;;
   esac
   # We need to convert underscores so that values like k6-2 and pentium-mmx can be passed
   host_arch=$(echo $_target | cut -d '-' -f 1)
@@ -1581,6 +1592,10 @@ if os2 ; then
   _priority=yes
   def_dos_paths="#define HAVE_DOS_PATHS 1"
   def_priority="#define CONFIG_PRIORITY 1"
+fi
+
+if wine ; then
+  extra_cflags="-fno-pic -UWIN32 -U_WIN32 -U__WIN32 -U__WIN32__ -DWINE_NOWINSOCK -Dstricmp=strcasecmp $extra_cflags"
 fi
 
 for tmpdir in "$TMPDIR" "$TEMPDIR" "/tmp" ; do
@@ -2670,7 +2685,7 @@ def_ebx_available='#define HAVE_EBX_AVAILABLE 0'
 def_xmm_clobbers='#define HAVE_XMM_CLOBBERS 0'
 
 if x86_64 ; then
-inline_asm_check '"mov (%eax), %eax"' || die "Your binutils version is too old and not supported"
+inline_asm_check '"mov (%eax), %eax"' || die "Your binutils version is too old to compile for 64-bit"
 fi
 
 if x86 ; then
@@ -2712,7 +2727,7 @@ echocheck "yasm"
 if test -z "$YASMFLAGS" ; then
   if darwin ; then
     x86_64 && objformat="macho64" || objformat="macho"
-  elif win32 ; then
+  elif win32 && ! wine ; then
     objformat="win32"
   elif os2 ; then
     _yasm=nasm
@@ -2769,8 +2784,11 @@ inline_asm_check '"":::"%xmm0"' &&
   xmm_clobbers=yes || xmm_clobbers=no
 echores "$xmm_clobbers"
 
+else
+  _yasm=''
+  def_yasm='#define HAVE_YASM 0'
+  have_yasm="no"
 fi #if x86
-
 
 #FIXME: This should happen before the check for CFLAGS..
 def_altivec_h='#define HAVE_ALTIVEC_H 0'
@@ -3089,7 +3107,7 @@ fi
 echores "$_kstat"
 
 
-for func in exp2 exp2f llrint llrintf log2 log2f lrint lrintf round roundf trunc truncf; do
+for func in cbrtf exp2 exp2f llrint llrintf log2 log2f lrint lrintf round roundf trunc truncf; do
 echocheck $func
 eval _$func=no
 statement_check math.h "${func}(2.0)" -D_ISOC99_SOURCE && eval _$func=yes
@@ -3540,6 +3558,8 @@ echores "$_dynamic_plugins"
 
 
 def_threads='#define HAVE_THREADS 0'
+def_pthreads='#define HAVE_PTHREADS 0'
+def_w32threads='#define HAVE_W32THREADS 0'
 
 echocheck "pthread"
 if linux ; then
@@ -3592,7 +3612,7 @@ if test "$_w32threads" = auto ; then
   _w32threads=no
   mingw32 && _w32threads=yes
 fi
-test "$_w32threads" = yes && def_threads='#define HAVE_THREADS 1'
+test "$_w32threads" = yes && def_threads='#define HAVE_THREADS 1' && def_w32threads='#define HAVE_W32THREADS 1'
 echores "$_w32threads"
 
 echocheck "rpath"
@@ -3827,7 +3847,7 @@ cat > $TMPC << EOF
 #define _ISOC99_SOURCE
 #include <stdarg.h>
 #include <stdio.h>
-int main(void) { va_list ap = { 0 }; vsscanf("foo", "bar", ap); return 0; }
+int main(void) { va_list ap; vsscanf("foo", "bar", ap); return 0; }
 EOF
 cc_check || { vsscanf=no ; def_vsscanf='#undef HAVE_VSSCANF' ; }
 echores "$vsscanf"
@@ -3869,10 +3889,13 @@ echores "$gettimeofday"
 
 
 echocheck "glob()"
+# glob_win disables a Windows-specific glob() replacement.
 glob=yes
+glob_win=yes
 def_glob='#define HAVE_GLOB 1'
 statement_check glob.h 'glob("filename", 0, 0, 0)' ||
-    { glob=no ; def_glob='#undef HAVE_GLOB' ; }
+    { glob=no ; def_glob='#undef HAVE_GLOB' ;
+      mingw32 && glob_win=no ; }
 echores "$glob"
 
 
@@ -4817,7 +4840,7 @@ fi
 echocheck "OpenJPEG (JPEG 2000) support"
 if test "$libopenjpeg" = auto ; then
   libopenjpeg=no
-  define_statement_check OPJ_STATIC openjpeg.h 'opj_dparameters_t dec_params; opj_set_default_decoder_parameters(&dec_params)' -lopenjpeg && libopenjpeg=yes
+  define_statement_check OPJ_STATIC openjpeg.h 'opj_dparameters_t dec_params; opj_set_default_decoder_parameters(&dec_params);opj_decode_with_info(0,0,0)' -lopenjpeg && libopenjpeg=yes
 fi
 echores "$libopenjpeg"
 if test "$libopenjpeg" = yes ; then
@@ -5464,68 +5487,19 @@ else
 fi
 echores "$_openal"
 
+
 echocheck "ALSA audio"
-if test "$_alloca" != yes ; then
+if test "$_alloca" = yes && test "$_alsa" = auto ; then
   _alsa=no
-  res_comment="alloca missing"
+  header_check alsa/asoundlib.h -lasound $ld_dl $ld_pthread && _alsa=yes
 fi
-if test "$_alsa" != no ; then
-  _alsa=no
-  cpp_condition_check 'sys/asoundlib.h'  '(SND_LIB_MAJOR == 0) && (SND_LIB_MINOR == 5)' -lasound $ld_dl $ld_pthread && _alsaver='0.5.x'
-  cpp_condition_check 'sys/asoundlib.h'  '(SND_LIB_MAJOR == 0) && (SND_LIB_MINOR == 9)' -lasound $ld_dl $ld_pthread && _alsaver='0.9.x-sys'
-  cpp_condition_check 'alsa/asoundlib.h' '(SND_LIB_MAJOR == 0) && (SND_LIB_MINOR == 9)' -lasound $ld_dl $ld_pthread && _alsaver='0.9.x-alsa'
-  cpp_condition_check 'sys/asoundlib.h'  '(SND_LIB_MAJOR == 1) && (SND_LIB_MINOR == 0)' -lasound $ld_dl $ld_pthread && _alsaver='1.0.x-sys'
-  cpp_condition_check 'alsa/asoundlib.h' '(SND_LIB_MAJOR == 1) && (SND_LIB_MINOR == 0)' -lasound $ld_dl $ld_pthread && _alsaver='1.0.x-alsa'
-fi
-def_alsa='#undef CONFIG_ALSA'
-def_alsa5='#undef CONFIG_ALSA5'
-def_alsa9='#undef CONFIG_ALSA9'
-def_alsa1x='#undef CONFIG_ALSA1X'
-def_sys_asoundlib_h='#undef HAVE_SYS_ASOUNDLIB_H'
-def_alsa_asoundlib_h='#undef HAVE_ALSA_ASOUNDLIB_H'
-if test "$_alsaver" ; then
-  _alsa=yes
-  if test "$_alsaver" = '0.5.x' ; then
-    _alsa5=yes
-    aomodules="alsa5 $aomodules"
-    def_alsa5='#define CONFIG_ALSA5 1'
-    def_sys_asoundlib_h='#define HAVE_SYS_ASOUNDLIB_H 1'
-    res_comment="using alsa 0.5.x and sys/asoundlib.h"
-  elif test "$_alsaver" = '0.9.x-sys' ; then
-    _alsa9=yes
-    aomodules="alsa $aomodules"
-    def_alsa='#define CONFIG_ALSA 1'
-    def_alsa9='#define CONFIG_ALSA9 1'
-    def_sys_asoundlib_h='#define HAVE_SYS_ASOUNDLIB_H 1'
-    res_comment="using alsa 0.9.x and sys/asoundlib.h"
-  elif test "$_alsaver" = '0.9.x-alsa' ; then
-    _alsa9=yes
-    aomodules="alsa $aomodules"
-    def_alsa='#define CONFIG_ALSA 1'
-    def_alsa9='#define CONFIG_ALSA9 1'
-    def_alsa_asoundlib_h='#define HAVE_ALSA_ASOUNDLIB_H 1'
-    res_comment="using alsa 0.9.x and alsa/asoundlib.h"
-  elif test "$_alsaver" = '1.0.x-sys' ; then
-    _alsa1x=yes
-    aomodules="alsa $aomodules"
-    def_alsa='#define CONFIG_ALSA 1'
-    def_alsa1x="#define CONFIG_ALSA1X 1"
-    def_alsa_asoundlib_h='#define HAVE_SYS_ASOUNDLIB_H 1'
-    res_comment="using alsa 1.0.x and sys/asoundlib.h"
-  elif test "$_alsaver" = '1.0.x-alsa' ; then
-    _alsa1x=yes
-    aomodules="alsa $aomodules"
-    def_alsa='#define CONFIG_ALSA 1'
-    def_alsa1x="#define CONFIG_ALSA1X 1"
-    def_alsa_asoundlib_h='#define HAVE_ALSA_ASOUNDLIB_H 1'
-    res_comment="using alsa 1.0.x and alsa/asoundlib.h"
-  else
-    _alsa=no
-    res_comment="unknown version"
-  fi
+if test "$_alsa" = yes ; then
+  aomodules="alsa $aomodules"
+  def_alsa='#define CONFIG_ALSA 1'
   extra_ldflags="$extra_ldflags -lasound $ld_dl $ld_pthread"
 else
   noaomodules="alsa $noaomodules"
+  def_alsa='#undef CONFIG_ALSA'
 fi
 echores "$_alsa"
 
@@ -5752,7 +5726,7 @@ if test "$_libdvdcss_internal" = auto && test "$_dvdread_internal" = yes ; then
   hpux && test "$_hpux_scsi_h" = no && _libdvdcss_internal=no
 fi
 if test "$_libdvdcss_internal" = yes ; then
-  if linux || netbsd || openbsd || bsdos ; then
+  if linux || netbsd || openbsd || bsdos || wine ; then
     def_dvd_linux='#define HAVE_LINUX_DVD_STRUCT 1'
     openbsd && def_dvd_openbsd='#define HAVE_OPENBSD_DVD_STRUCT 1'
   elif freebsd || dragonfly ; then
@@ -5959,7 +5933,7 @@ EOF
     if test "$_ass" = no ; then
         res_comment="FreeType >= 2.2.1 needed"
     elif test "$ass_internal" != yes ; then
-    cat > $TMPC << EOF
+        cat > $TMPC << EOF
 #include <ass/ass.h>
 int main(void) {
 #if !defined(LIBASS_VERSION) || LIBASS_VERSION < 0x00910000
@@ -6769,6 +6743,7 @@ else
   def_ffmpeg_so='#undef CONFIG_FFMPEG_SO'
   nocodecmodules="ffmpeg $nocodecmodules"
 fi
+test "$_vf_lavfi" = yes && def_vf_lavfi='#define CONFIG_VF_LAVFI 1'|| libavfilters=''
 test "$_libavcodec_mpegaudio_hp" = yes &&
   def_libavcodec_mpegaudio_hp='#define CONFIG_MPEGAUDIO_HP 1' &&
   mak_libavcodec_mpegaudio_hp='CONFIG_MPEGAUDIO_HP = yes'
@@ -6819,14 +6794,6 @@ else
   nocodecmodules="libopencore_amrwb $nocodecmodules"
 fi
 echores "$_libopencore_amrwb"
-
-
-if test "$_libopencore_amrnb" = no && test "$_libopencore_amrwb" = no ; then
-  libavdecoders="$libavdecoders PRORES_GPL_DECODER"
-  def_ffmpeg_license='#define FFMPEG_LICENSE "GPL version 2"'
-else
-  def_ffmpeg_license='#define FFMPEG_LICENSE "GPL version 2 or later"'
-fi
 
 
 echocheck "libdv-0.9.5+"
@@ -6898,7 +6865,7 @@ if test "$_x264" = auto && test "$_mencoder" = yes ; then
   cat > $TMPC << EOF
 #include <inttypes.h>
 #include <x264.h>
-#if !(X264_BUILD >= 115)
+#if !(X264_BUILD >= 118)
 #error We do not support old versions of x264. Get the latest from git.
 #endif
 int main(void) { x264_encoder_open((void*)0); return 0; }
@@ -7098,13 +7065,11 @@ echores "$_mp3lame"
 
 
 echocheck "mencoder"
-if test "$_mencoder" = yes ; then
-  def_muxers='#define CONFIG_MUXERS 1'
-else
+if test "$_mencoder" = no ; then
   # mpeg1video for vf_lavc, snow for vf_uspp / vf_mcdeint,
   libavencoders="$mplayer_encoders MPEG1VIDEO_ENCODER SNOW_ENCODER"
-  libavmuxers=""
-  def_muxers='#define CONFIG_MUXERS 0'
+  # needed for codec id -> tag conversion
+  libavmuxers="AVI_MUXER"
 fi
 echores "$_mencoder"
 
@@ -7268,7 +7233,7 @@ echocheck "Radio interface"
 if test "$_radio" = yes ; then
   def_radio='#define CONFIG_RADIO 1'
   inputmodules="radio $inputmodules"
-  if test "$_alsa9" != yes -a "$_alsa1x" != yes -a "$_ossaudio" != yes ; then
+  if test "$_alsa" != yes -a "$_ossaudio" != yes ; then
     _radio_capture=no
   fi
   if test "$_radio_capture" = yes ; then
@@ -7713,7 +7678,7 @@ libs_mplayer=$ld_tmp
 
 CFLAGS="$CFLAGS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 
-CXXFLAGS=" $CFLAGS -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS"
+CXXFLAGS=" $CFLAGS -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
 
 # This must be the last test to be performed. Any other tests following it
 # could fail due to linker errors. libdvdnavmini is intentionally not linked
@@ -7756,6 +7721,187 @@ echores "$_dvdnav"
 # DO NOT ADD ANY TESTS THAT USE LINKER FLAGS HERE (like cc_check).
 # Read dvdnav comment above.
 
+
+# XML documentation tests
+echocheck "XML catalogs"
+for try_catalog in \
+  /etc/sgml/catalog \
+  /usr/share/xml/docbook/*/catalog.xml \
+  /opt/local/share/xml/docbook-xml/*/catalog.xml \
+  /opt/local/share/xml/docbook/*/catalog.xml \
+  /usr/share/sgml/docbook/*/*catalog \
+  /usr/share/apps/ksgmltools2/customization/en/catalog \
+  /usr/share/sgml/catalog \
+  /usr/local/share/sgml/catalog \
+  /usr/lib/sgml/catalog \
+  /usr/local/lib/sgml/catalog \
+  /usr/share/docbook-xml42/catalog.xml \
+  /usr/share/sgml/docbook/xmlcatalog; do
+  if test -f "$try_catalog"; then
+    catalog=$try_catalog
+    break
+  fi
+done
+
+if test -n "$catalog"; then
+  echores "SGML catalog"
+  catalog_opts=--catalogs
+else
+  echores "No SGML catalog found."
+fi
+
+echocheck "XML chunked stylesheet"
+for try_chunk_xsl in \
+  /usr/share/xml/docbook/*/html/chunk.xsl \
+  /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/html/chunk.xsl \
+  /usr/share/sgml/docbook/yelp/docbook/html/chunk.xsl \
+  /usr/local/share/sgml/docbook/stylesheet/xsl/nwalsh/html/chunk.xsl \
+  /usr/local/share/sgml/docbook/yelp/docbook/html/chunk.xsl \
+  /usr/share/docbook-xsl/html/chunk.xsl \
+  /usr/share/sgml/docbook/xsl-stylesheets*/html/chunk.xsl \
+  /usr/share/xml/docbook/stylesheet/nwalsh/current/html/chunk.xsl \
+  /opt/local/share/xsl/docbook-xsl/html/chunk.xsl; do
+  if test -f "$try_chunk_xsl"; then
+    chunk_xsl=$try_chunk_xsl
+    break
+  fi
+done
+
+if test -z "$chunk_xsl"; then
+  chunk_xsl=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/html/chunk.xsl
+  echores "not found, using default"
+  fake_chunk_xsl=yes
+else
+  echores "chunk.xsl"
+fi
+
+echocheck "XML monolithic stylesheet"
+for try_docbook_xsl in \
+  /usr/share/xml/docbook/*/html/docbook.xsl \
+  /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/html/docbook.xsl \
+  /usr/share/sgml/docbook/yelp/docbook/html/docbook.xsl \
+  /usr/local/share/sgml/docbook/stylesheet/xsl/nwalsh/html/docbook.xsl \
+  /usr/local/share/sgml/docbook/yelp/docbook/html/docbook.xsl \
+  /usr/share/docbook-xsl/html/docbook.xsl \
+  /usr/share/sgml/docbook/xsl-stylesheets*/html/docbook.xsl \
+  /usr/share/xml/docbook/stylesheet/nwalsh/current/html/docbook.xsl \
+  /opt/local/share/xsl/docbook-xsl/html/docbook.xsl; do
+  if test -f "$try_docbook_xsl"; then
+    docbook_xsl=$try_docbook_xsl
+    break
+  fi
+done
+
+if test -z "$docbook_xsl"; then
+  docbook_xsl=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/html/docbook.xsl
+  echores "not found, using default"
+else
+  echores "docbook.xsl"
+fi
+
+cat > DOCS/xml/html-chunk.xsl << EOF
+<?xml version="1.0" encoding="utf-8"?>
+<!-- **************************************************
+     This file is generated automatically. DO NOT EDIT.
+     ************************************************** -->
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                version="1.0">
+
+  <xsl:import href="$chunk_xsl"/>
+  <xsl:include href="html-common.xsl"/>
+
+</xsl:stylesheet>
+EOF
+
+cat > DOCS/xml/html-single.xsl << EOF
+<?xml version="1.0" encoding="utf-8"?>
+<!-- **************************************************
+     This file is generated automatically. DO NOT EDIT.
+     ************************************************** -->
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                version="1.0">
+
+  <xsl:import href="$docbook_xsl"/>
+  <xsl:include href="html-common.xsl"/>
+
+</xsl:stylesheet>
+EOF
+
+echocheck "XML DTD"
+#FIXME: This should prefer higher version numbers, not the other way around ..
+for try_dtd in \
+  /usr/share/xml/docbook/*/dtd/4*/docbookx.dtd \
+  /usr/share/xml/docbook/*/docbookx.dtd \
+  /usr/share/sgml/docbook/*/docbookx.dtd \
+  /usr/share/sgml/docbook/dtd/*/docbookx.dtd \
+  /usr/share/sgml/docbook/dtd/xml/*/docbookx.dtd \
+  /usr/share/docbook-xml*/docbookx.dtd \
+  /opt/local/share/xml/docbook*/*/docbookx.dtd \
+  /usr/share/apps/ksgmltools2/docbook/*/docbookx.dtd; do
+  if test -f "$try_dtd"; then
+    dtd=$try_dtd
+    break
+  fi
+done
+
+if test -z "$dtd"; then
+  dtd=/usr/share/sgml/docbook/dtd/xml/4.1.2/docbookx.dtd
+  echores "not found, using default"
+else
+  echores "docbookx.dtd"
+fi
+
+for lang in $language_doc; do
+  cat > DOCS/xml/$lang/main.xml << EOF
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!-- **************************************************
+     This file is generated automatically. DO NOT EDIT.
+     ************************************************** -->
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+    "$dtd"
+[
+<!ENTITY bugreports.xml SYSTEM "bugreports.xml">
+<!ENTITY documentation.xml SYSTEM "documentation.xml">
+<!ENTITY encoding-guide.xml SYSTEM "encoding-guide.xml">
+<!ENTITY faq.xml SYSTEM "faq.xml">
+<!ENTITY install.xml SYSTEM "install.xml">
+<!ENTITY mencoder.xml SYSTEM "mencoder.xml">
+<!ENTITY ports.xml SYSTEM "ports.xml">
+<!ENTITY skin.xml SYSTEM "skin.xml">
+<!ENTITY usage.xml SYSTEM "usage.xml">
+<!ENTITY video.xml SYSTEM "video.xml">
+]>
+<book id="index" lang="$lang">
+&documentation.xml;
+&install.xml;
+&usage.xml;
+&video.xml;
+&ports.xml;
+&mencoder.xml;
+&encoding-guide.xml;
+&faq.xml;
+&bugreports.xml;
+&skin.xml;
+</book>
+EOF
+
+done
+
+echocheck "valid XSLT processor"
+if xsltproc --version > /dev/null 2>&1; then
+  if test -z "$fake_chunk_xsl"; then
+    echores "xsltproc"
+    xsltcommand="xsltproc $catalog_opts -o \$\$1 \$\$2 \$\$3"
+  else
+    echores "Found xsltproc but no stylesheets on your system."
+    echores "xsltproc is unusable without stylesheets."
+  fi
+else
+  echores "xsltproc not found"
+fi
+
+#############################################################################
+
 mak_enable () {
 list=$(echo $1 | tr '[a-z]' '[A-Z]')
 item=$(echo $2 | tr '[a-z]' '[A-Z]')
@@ -7782,6 +7928,10 @@ DOC_LANGS = $language_doc
 DOC_LANG_ALL = $doc_lang_all
 MAN_LANGS = $language_man
 MAN_LANG_ALL = $man_lang_all
+
+CATALOG = $catalog
+XMLLINT_COMMAND = xmllint --noout --noent --postvalid $catalog_opts \$*
+XSLT_COMMAND = $xsltcommand
 
 prefix  = \$(DESTDIR)$_prefix
 BINDIR  = \$(DESTDIR)$_bindir
@@ -7834,6 +7984,7 @@ MPLAYER  = $_mplayer
 # operating system features which have local fallbacks
 GETTIMEOFDAY = $gettimeofday
 GLOB         = $glob
+GLOB_WIN     = $glob_win
 MMAP         = $mmap
 SETENV       = $setenv
 SHMEM        = $shmem
@@ -7843,9 +7994,7 @@ VSSCANF      = $vsscanf
 # features
 3DFX = $_3dfx
 AA = $_aa
-ALSA1X = $_alsa1x
-ALSA9 = $_alsa9
-ALSA5 = $_alsa5
+ALSA = $_alsa
 APPLE_IR = $_apple_ir
 APPLE_REMOTE = $_apple_remote
 ARTS = $_arts
@@ -8006,6 +8155,7 @@ FFMPEG     = $ffmpeg
 FFMPEG_A   = $ffmpeg_a
 
 CONFIG_AVCODEC  = $ffmpeg_a
+CONFIG_AVFILTER = $ffmpeg_a
 CONFIG_AVFORMAT = $ffmpeg_a
 CONFIG_AVUTIL   = $ffmpeg_a
 CONFIG_POSTPROC = $ffmpeg_a
@@ -8063,8 +8213,10 @@ CONFIG_CRYSTALHD= $crystalhd
 CONFIG_ENCODERS = yes
 CONFIG_GPL      = yes
 CONFIG_MLIB     = $_mlib
-CONFIG_MUXERS   = $_mencoder
+CONFIG_MUXERS   = yes
+CONFIG_NETWORK  = $networking
 CONFIG_RTPDEC   = $networking
+CONFIG_VF_LAVFI = $_vf_lavfi
 CONFIG_VDPAU    = $_vdpau
 CONFIG_XVMC     = $_xvmc
 CONFIG_ZLIB     = $_zlib
@@ -8083,6 +8235,7 @@ $(echo $libavmuxers    | tr '[a-z] ' '[A-Z]\n' | sed 's/^/CONFIG_/;s/$/=yes/')
 $(echo $libavprotocols | tr '[a-z] ' '[A-Z]\n' | sed 's/^/CONFIG_/;s/$/=yes/')
 $(echo $libavbsfs      | tr '[a-z] ' '[A-Z]\n' | sed 's/^/CONFIG_/;s/$/=yes/')
 $(echo $libavhwaccels  | tr '[a-z] ' '[A-Z]\n' | sed 's/^/CONFIG_/;s/$/=yes/')
+$(echo $libavfilters   | tr '[a-z] ' '[A-Z]\n' | sed 's/^/CONFIG_/;s/$/=yes/')
 EOF
 
 #############################################################################
@@ -8121,8 +8274,8 @@ cat > $TMPH << EOF
    */
 #define CONFIG_FAKE_MONO 1
 
-/* set up max. outburst. use 65536 for ALSA 0.5, for others 16384 is enough */
-#define MAX_OUTBURST 65536
+/* set up max. outburst. use 131072 for TrueHD SPDIF pass-through */
+#define MAX_OUTBURST 131072
 
 /* set up audio OUTBURST. Do not change this! */
 #define OUTBURST 512
@@ -8165,13 +8318,11 @@ $def_dvdcss
 
 /* system headers */
 $def_alloca_h
-$def_alsa_asoundlib_h
 $def_altivec_h
 $def_malloc_h
 $def_mman_h
 $def_mman_has_map_failed
 $def_soundcard_h
-$def_sys_asoundlib_h
 $def_sys_soundcard_h
 $def_sys_sysinfo_h
 $def_sys_videoio_h
@@ -8319,9 +8470,6 @@ $def_xshape
 
 /* Audio output drivers */
 $def_alsa
-$def_alsa1x
-$def_alsa5
-$def_alsa9
 $def_arts
 $def_coreaudio
 $def_dart
@@ -8480,13 +8628,14 @@ $def_ffmpeg_so
 #define CONFIG_DECODERS 1
 #define CONFIG_ENCODERS 1
 #define CONFIG_DEMUXERS 1
-$def_muxers
+#define CONFIG_MUXERS 1
 $def_rtpdec
 
 $def_arpa_inet_h
 $def_bswap
 $def_bzlib
 $def_dcbzl
+$def_cbrtf
 $def_exp2
 $def_exp2f
 $def_fast_64bit
@@ -8516,16 +8665,22 @@ $def_roundf
 $def_threads
 $def_trunc
 $def_truncf
+$def_vf_lavfi
+$def_w32threads
 $def_xform_asm
 $def_xmm_clobbers
 $def_yasm
 
 #define CONFIG_AUDIO_FLOAT 0
+#define CONFIG_AVSERVER 0
 #define CONFIG_FASTDIV 0
 #define CONFIG_FFSERVER 0
+#define CONFIG_GNUTLS 0
 #define CONFIG_GPL 1
 #define CONFIG_GRAY 0
+#define CONFIG_LIBMODPLUG 0
 #define CONFIG_LIBVORBIS 0
+#define CONFIG_OPENSSL 0
 #define CONFIG_POWERPC_PERF 0
 #define CONFIG_SHARED 0
 #define CONFIG_SMALL 0
@@ -8538,9 +8693,12 @@ $def_yasm
 #define HAVE_INLINE_ASM 1
 #define HAVE_ISATTY 0
 #define HAVE_LDBRX 0
+#define HAVE_LOCALTIME_R 0
 #define HAVE_MAPVIEWOFFILE 0
+#define HAVE_OS2THREADS 0
 #define HAVE_PPC4XX 0
 #define HAVE_STRERROR_R 0
+#define HAVE_STRPTIME 0
 #define HAVE_SYMVER_ASM_LABEL 0
 #define HAVE_SYMVER_GNU_ASM 0
 #define HAVE_SYS_SELECT_H 0
@@ -8567,7 +8725,7 @@ $def_yasm
 #endif
 
 #define FFMPEG_CONFIGURATION "--enable-gpl --enable-postproc"
-$def_ffmpeg_license
+#define FFMPEG_LICENSE "GPL version 2 or later"
 
 #define LIBAV_CONFIGURATION FFMPEG_CONFIGURATION
 #define LIBAV_LICENSE FFMPEG_LICENSE
@@ -8594,6 +8752,7 @@ $(ff_config_enable "$libavmuxers_all"    "$libavmuxers" "#")
 $(ff_config_enable "$libavprotocols_all" "$libavprotocols" "#")
 $(ff_config_enable "$libavbsfs_all"      "$libavbsfs" "#")
 $(ff_config_enable "$libavhwaccels_all"  "$libavhwaccels" "#")
+$(ff_config_enable "$libavfilters_all"   "$libavfilters" "#")
 
 #endif /* MPLAYER_CONFIG_H */
 EOF

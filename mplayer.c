@@ -859,7 +859,7 @@ static void parse_cfgfiles(m_config_t *conf)
     char *conffile;
     int conffile_fd;
     if (!disable_system_conf &&
-        m_config_parse_config_file(conf, MPLAYER_CONFDIR "/mplayer.conf") < 0)
+        m_config_parse_config_file(conf, MPLAYER_CONFDIR "/mplayer.conf", 1) < 0)
         exit_player(EXIT_NONE);
     if ((conffile = get_path("")) == NULL) {
         mp_msg(MSGT_CPLAYER, MSGL_WARN, MSGTR_NoHomeDir);
@@ -879,7 +879,7 @@ static void parse_cfgfiles(m_config_t *conf)
                 close(conffile_fd);
             }
             if (!disable_user_conf &&
-                m_config_parse_config_file(conf, conffile) < 0)
+                m_config_parse_config_file(conf, conffile, 1) < 0)
                 exit_player(EXIT_NONE);
             free(conffile);
         }
@@ -956,7 +956,7 @@ static int try_load_config(m_config_t *conf, const char *file)
     if (stat(file, &st))
         return 0;
     mp_msg(MSGT_CPLAYER, MSGL_INFO, MSGTR_LoadingConfig, file);
-    m_config_parse_config_file(conf, file);
+    m_config_parse_config_file(conf, file, 0);
     return 1;
 }
 
@@ -988,6 +988,17 @@ static void load_per_file_config(m_config_t *conf, const char *const file)
 
         free(confpath);
     }
+}
+
+static int load_profile_config(m_config_t *conf, const char *const file)
+{
+    if (file) {
+        load_per_protocol_config(conf, file);
+        load_per_extension_config(conf, file);
+        load_per_file_config(conf, file);
+    }
+
+    return file != NULL;
 }
 
 /* When libmpdemux performs a blocking operation (network connection or
@@ -1586,8 +1597,7 @@ static void update_osd_msg(void)
             if (osd_fractions == 1) {
                 // print fractions as sub-second timestamp
                 snprintf(fractions_text, sizeof(fractions_text), ".%02d",
-                         (int)((mpctx->sh_video->pts - pts) * 100 + 0.5)
-                         % 100);
+                         (int)((mpctx->sh_video->pts - pts) * 100) % 100);
             } else if (osd_fractions == 2) {
                 // print fractions by estimating the frame count within the
                 // second
@@ -2719,6 +2729,7 @@ static int seek(MPContext *mpctx, double amount, int style)
 int main(int argc, char *argv[])
 {
     int opt_exit = 0; // Flag indicating whether MPlayer should exit without playing anything.
+    int profile_config_loaded;
     int i;
 
     common_preinit();
@@ -2990,7 +3001,9 @@ int main(int argc, char *argv[])
 #ifdef CONFIG_SIGHANDLER
     // fatal errors:
     signal(SIGBUS, exit_sighandler); // bus error
+#ifndef __WINE__                      // hack: the Wine executable will crash else
     signal(SIGSEGV, exit_sighandler); // segfault
+#endif
     signal(SIGILL, exit_sighandler); // illegal instruction
     signal(SIGFPE, exit_sighandler); // floating point exc.
     signal(SIGABRT, exit_sighandler); // abort()
@@ -3016,11 +3029,7 @@ play_next_file:
     mpctx->global_sub_size = 0;
     memset(mpctx->sub_counts, 0, sizeof(mpctx->sub_counts));
 
-    if (filename) {
-        load_per_protocol_config(mconfig, filename);
-        load_per_extension_config(mconfig, filename);
-        load_per_file_config(mconfig, filename);
-    }
+    profile_config_loaded = load_profile_config(mconfig, filename);
 
     if (video_driver_list)
         load_per_output_config(mconfig, PROFILE_CFG_VO, video_driver_list[0]);
@@ -3115,6 +3124,8 @@ play_next_file:
             filename = play_tree_iter_get_file(mpctx->playtree_iter, 1);
         }
     }
+
+    if (!profile_config_loaded) load_profile_config(mconfig, filename);
 //---------------------------------------------------------------------------
 
     if (mpctx->video_out && vo_config_count)
@@ -4040,7 +4051,7 @@ goto_next_file:  // don't jump here after ao/vo/getch initialization!
         (use_gui && guiInfo.Playing) ||
 #endif
                                         mpctx->playtree_iter != NULL || player_idle_mode) {
-        if (!mpctx->playtree_iter)
+        if (!mpctx->playtree_iter && !use_gui)
             filename = NULL;
         mpctx->eof = 0;
         goto play_next_file;

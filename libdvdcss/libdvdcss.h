@@ -2,7 +2,7 @@
  * libdvdcss.h: private DVD reading library data
  *****************************************************************************
  * Copyright (C) 1998-2001 VideoLAN
- * $Id: libdvdcss.h 32349 2010-09-25 15:53:03Z diego $
+ * $Id: libdvdcss.h 34296 2011-11-04 12:30:36Z diego $
  *
  * Authors: Stéphane Borel <stef@via.ecp.fr>
  *          Sam Hocevar <sam@zoy.org>
@@ -88,12 +88,12 @@ struct dvdcss_s
 #include <stdarg.h>
 __forceinline void print_debug(dvdcss_t dvdcss, const char *msg,...)
 {
-	va_list args;
+    va_list args;
 
     fprintf( stderr, "libdvdcss debug: " );
-	va_start( args, msg );
+    va_start( args, msg );
     vfprintf( stderr, msg, args );
-	va_end( args );
+    va_end( args );
     fprintf( stderr, "\n" );
 }
 #else
