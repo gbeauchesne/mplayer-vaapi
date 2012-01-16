@@ -55,7 +55,7 @@ if ! test -e ffmpeg ; then
         echo "Failed to get a FFmpeg checkout"
         exit 1
     fi
-    ffrevision=fc09bf57a60d4c4a6d339b204b3282337067c06d
+    ffrevision=d93b6340d70f47ab77b2640ee2bbc7524d68b20f
     cd ffmpeg && git checkout $ffrevision && cd ..
 fi
 
