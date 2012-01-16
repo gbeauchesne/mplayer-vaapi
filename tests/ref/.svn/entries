@@ -1,15 +1,15 @@
 10
 
 dir
-34365
+34578
 svn://svn.mplayerhq.hu/mplayer/trunk/tests/ref
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2011-11-13T17:05:58.917711Z
-34345
-cehoyos
+2012-01-08T17:52:59.773853Z
+34537
+reimar
 
 
 
@@ -29,10 +29,13 @@ b3059339-0415-0410-9bf9-f77b7e298cf2
 iv32
 dir
 
-mxf
+ea-mad
 dir
 
 cljr
+dir
+
+mxf
 dir
 
 ea-dct
@@ -50,19 +53,19 @@ dir
 aasc
 dir
 
-4xm
+vp3
 dir
 
 ea-cmv
 dir
 
-vp3
-dir
-
-lcl
+4xm
 dir
 
 vp5
+dir
+
+lcl
 dir
 
 fraps
@@ -71,10 +74,10 @@ dir
 ulti
 dir
 
-sipr
+vp8
 dir
 
-vp8
+wtv
 dir
 
 wc4-xan
@@ -92,10 +95,16 @@ dir
 ea-tgv
 dir
 
+iv41
+dir
+
 qtrle
 dir
 
 film
+dir
+
+dxtory
 dir
 
 pcm-dvd
@@ -105,6 +114,9 @@ interplay-mve
 dir
 
 wc3movie
+dir
+
+qpeg
 dir
 
 vp8-test-vectors-r1
@@ -125,43 +137,52 @@ dir
 nsv
 dir
 
-fli
+isom
 dir
 
 tiertex-seq
 dir
 
-vcr1
+fli
 dir
 
-rpza
+vcr1
 dir
 
 dxa
 dir
 
-msrle
+rpza
+dir
+
+utvideo
 dir
 
 vixl
 dir
 
-real
-dir
-
-iv50
+msrle
 dir
 
 h264
 dir
 
+iv50
+dir
+
+real
+dir
+
 smacker
 dir
 
-cyuv
+smjpeg
 dir
 
 duck
+dir
+
+cyuv
 dir
 
 SIFF
@@ -176,25 +197,28 @@ dir
 thp
 dir
 
-loco
-dir
-
-chronomaster-dfa
+tscc
 dir
 
 svq3
 dir
 
-tscc
+chronomaster-dfa
+dir
+
+loco
+dir
+
+rpl
 dir
 
 mimic
 dir
 
-sp5x
+txd
 dir
 
-txd
+sp5x
 dir
 
 KMVC
@@ -203,13 +227,16 @@ dir
 flash-vp6
 dir
 
-kega
-dir
-
 cdgraphics
 dir
 
+kega
+dir
+
 prores
+dir
+
+alg-mm
 dir
 
 CSCD
@@ -230,6 +257,12 @@ dir
 bink
 dir
 
+bmv
+dir
+
+r210
+dir
+
 lmlm4
 dir
 
@@ -248,6 +281,9 @@ dir
 v210
 dir
 
+vble
+dir
+
 vc1
 dir
 
@@ -255,6 +291,9 @@ quickdraw
 dir
 
 ansi
+dir
+
+v410
 dir
 
 deluxepaint-anm
@@ -270,6 +309,9 @@ bfi
 dir
 
 ea-mpc
+dir
+
+tmv
 dir
 
 nuv

@@ -1,15 +1,15 @@
 10
 
 dir
-34365
+34578
 svn://svn.mplayerhq.hu/mplayer/trunk/tests/ref/lmlm4
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2011-11-10T16:06:23.192622Z
-34340
-cehoyos
+2012-01-08T17:52:59.773853Z
+34537
+reimar
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2011-11-29T13:02:21.000000Z
-47b3d8b05f43769cc78adcec5a521f06
-2011-11-10T16:06:23.192622Z
-34340
-cehoyos
+2012-01-16T14:48:09.000000Z
+aaa25fa06b31f8c5eb8cd7375b201b80
+2012-01-08T17:52:59.773853Z
+34537
+reimar
 
 
 

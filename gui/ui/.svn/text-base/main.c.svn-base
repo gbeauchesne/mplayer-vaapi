@@ -114,11 +114,8 @@ static void guiInfoMediumClear (int what)
     listSet(gtkDelPl, NULL);
   }
 
-#ifdef CONFIG_VCD
   if (what & CLEAR_VCD) guiInfo.Tracks = 0;
-#endif
 
-#ifdef CONFIG_DVDREAD
   if (what & CLEAR_DVD)
   {
     guiInfo.AudioStreams = 0;
@@ -127,7 +124,6 @@ static void guiInfoMediumClear (int what)
     guiInfo.Chapters = 0;
     guiInfo.Angles = 0;
   }
-#endif
 }
 
 static unsigned last_redraw_time = 0;
@@ -144,26 +140,34 @@ void uiEventHandling( int msg,float param )
         mplayer( MPLAYER_EXIT_GUI, EXIT_QUIT, 0 );
         break;
 
-   case evSetURL:
-        gtkShow( evPlayNetwork,NULL );
+   case evLoadURL:
+        gtkShow( evLoadURL,NULL );
 	break;
 
-   case evSetAudio:
+   case ivSetAudio:
         if ( !mpctx_get_demuxer(guiInfo.mpcontext) || audio_id == iparam ) break;
-	audio_id=iparam;
-	goto play;
+	mp_property_do("switch_audio",M_PROPERTY_SET,&iparam,guiInfo.mpcontext);
+	break;
 
-   case evSetVideo:
+   case ivSetVideo:
         if ( !mpctx_get_demuxer(guiInfo.mpcontext) || video_id == iparam ) break;
-	video_id=iparam;
-	goto play;
+	mp_property_do("switch_video",M_PROPERTY_SET,&iparam,guiInfo.mpcontext);
+	break;
 
-   case evSetSubtitle:
+   case ivSetSubtitle:
         mp_property_do("sub",M_PROPERTY_SET,&iparam,guiInfo.mpcontext);
 	break;
 
+#ifdef CONFIG_CDDA
+   case ivSetCDTrack:
+        guiInfo.Track=iparam;
+   case evPlayCD:
+ 	guiInfoMediumClear ( CLEAR_ALL );
+	guiInfo.StreamType=STREAMTYPE_CDDA;
+	goto play;
+#endif
 #ifdef CONFIG_VCD
-   case evSetVCDTrack:
+   case ivSetVCDTrack:
         guiInfo.Track=iparam;
    case evPlayVCD:
  	guiInfoMediumClear ( CLEAR_ALL );
@@ -171,11 +175,29 @@ void uiEventHandling( int msg,float param )
 	goto play;
 #endif
 #ifdef CONFIG_DVDREAD
+   case ivSetDVDSubtitle:
+        dvdsub_id=iparam;
+        uiEventHandling( ivPlayDVD, 0 );
+        break;
+   case ivSetDVDAudio:
+        audio_id=iparam;
+        uiEventHandling( ivPlayDVD, 0 );
+        break;
+   case ivSetDVDChapter:
+        guiInfo.Chapter=iparam;
+        uiEventHandling( ivPlayDVD, 0 );
+        break;
+   case ivSetDVDTitle:
+        guiInfo.Track=iparam;
+        guiInfo.Chapter=1;
+        guiInfo.Angle=1;
+        uiEventHandling( ivPlayDVD, 0 );
+        break;
    case evPlayDVD:
         guiInfo.Track=1;
         guiInfo.Chapter=1;
         guiInfo.Angle=1;
-play_dvd_2:
+   case ivPlayDVD:
  	guiInfoMediumClear( CLEAR_ALL - CLEAR_DVD );
         guiInfo.StreamType=STREAMTYPE_DVD;
 	goto play;
@@ -190,7 +212,7 @@ play:
 	 {
 	  plItem * next = listSet( gtkGetCurrPlItem,NULL );
 	  plLastPlayed=next;
-	  uiSetFileName( next->path,next->name,STREAMTYPE_FILE );
+	  uiSetFileName( next->path,next->name,SAME_STREAMTYPE );
 	 }
 
         switch ( guiInfo.StreamType )
@@ -202,11 +224,19 @@ play:
 	         guiInfo.Track=1;
 	       guiInfo.NewPlay=GUI_FILE_NEW;
 	       break;
-#ifdef CONFIG_VCD
+
+          case STREAMTYPE_CDDA:
+	       guiInfoMediumClear( CLEAR_ALL - CLEAR_VCD - CLEAR_FILE );
+	       if ( guiInfo.Playing != GUI_PAUSE )
+	        {
+		 if ( !guiInfo.Track )
+                   guiInfo.Track=1;
+                 guiInfo.NewPlay=GUI_FILE_SAME;
+		}
+	       break;
+
           case STREAMTYPE_VCD:
 	       guiInfoMediumClear( CLEAR_ALL - CLEAR_VCD - CLEAR_FILE );
-	       if ( !cdrom_device ) cdrom_device=gstrdup( DEFAULT_CDROM_DEVICE );
-	       uiSetFileName( NULL,cdrom_device,STREAMTYPE_VCD );
 	       if ( guiInfo.Playing != GUI_PAUSE )
 	        {
 		 if ( !guiInfo.Track )
@@ -214,41 +244,17 @@ play:
                  guiInfo.NewPlay=GUI_FILE_SAME;
 		}
 	       break;
-#endif
-#ifdef CONFIG_DVDREAD
+
           case STREAMTYPE_DVD:
 	       guiInfoMediumClear( CLEAR_ALL - CLEAR_DVD - CLEAR_FILE );
-	       if ( !dvd_device ) dvd_device=gstrdup( DEFAULT_DVD_DEVICE );
-	       uiSetFileName( NULL,dvd_device,STREAMTYPE_DVD );
 	       if ( guiInfo.Playing != GUI_PAUSE )
 	        {
                  guiInfo.NewPlay=GUI_FILE_SAME;
 		}
                break;
-#endif
          }
         uiPlay();
         break;
-#ifdef CONFIG_DVDREAD
-   case evSetDVDSubtitle:
-        dvdsub_id=iparam;
-        goto play_dvd_2;
-        break;
-   case evSetDVDAudio:
-        audio_id=iparam;
-        goto play_dvd_2;
-        break;
-   case evSetDVDChapter:
-        guiInfo.Chapter=iparam;
-        goto play_dvd_2;
-        break;
-   case evSetDVDTitle:
-        guiInfo.Track=iparam;
-	guiInfo.Chapter=1;
-	guiInfo.Angle=1;
-        goto play_dvd_2;
-        break;
-#endif
 
    case evPause:
    case evPauseSwitchToPlay:
@@ -277,7 +283,7 @@ NoPause:
    case evPrev: uiPrev(); break;
    case evNext: uiNext(); break;
 
-   case evPlayList:    gtkShow( evPlayList,NULL );        break;
+   case evPlaylist:    gtkShow( evPlaylist,NULL );        break;
    case evSkinBrowser: gtkShow( evSkinBrowser,skinName ); break;
    case evAbout:       gtkShow( evAbout,NULL );           break;
    case evPreferences: gtkShow( evPreferences,NULL );     break;
@@ -318,6 +324,15 @@ set_volume:
 	 }
         break;
 
+
+   case evMenu:
+        /*if (guiApp.menuIsPresent)   NOTE TO MYSELF: Uncomment only after mouse
+         {                                            pointer and cursor keys work
+          gtkShow( ivHidePopUpMenu,NULL );            with this menu from skin as
+          uiShowMenu( 0,0 );                          they do with normal menus.
+         }
+        else*/ gtkShow( ivShowPopUpMenu,NULL );
+        break;
 
    case evIconify:
         switch ( iparam )
@@ -386,15 +401,14 @@ set_volume:
 	  default: movie_aspect=-1;
 	 }
 	wsClearWindow( guiApp.subWindow );
-#ifdef CONFIG_DVDREAD
-	if ( guiInfo.StreamType == STREAMTYPE_VCD || guiInfo.StreamType == STREAMTYPE_DVD ) goto play_dvd_2;
+	if ( guiInfo.StreamType == STREAMTYPE_VCD ) uiEventHandling( evPlayVCD, 0 );
+	 else if ( guiInfo.StreamType == STREAMTYPE_DVD ) uiEventHandling( ivPlayDVD, 0 );
 	 else
-#endif
 	 guiInfo.NewPlay=GUI_FILE_NEW;
 	break;
 
 // --- timer events
-   case evRedraw:
+   case ivRedraw:
         {
           unsigned now = GetTimerMS();
           if ((now > last_redraw_time) &&
@@ -408,14 +422,12 @@ set_volume:
 	wsPostRedisplay( &guiApp.playbarWindow );
         break;
 // --- system events
-#ifdef MP_DEBUG
    case evNone:
-        mp_msg( MSGT_GPLAYER,MSGL_STATUS,"[mw] event none received.\n" );
+        mp_msg( MSGT_GPLAYER,MSGL_DBG2,"[main] uiEventHandling: evNone\n" );
         break;
    default:
-        mp_msg( MSGT_GPLAYER,MSGL_STATUS,"[mw] unknown event received ( %d,%.2f ).\n",msg,param );
+        mp_msg( MSGT_GPLAYER,MSGL_DBG2,"[main] uiEventHandling: unknown event %d, param %.2f\n", msg, param );
         break;
-#endif
   }
 }
 
@@ -437,7 +449,7 @@ void uiMainMouseHandle( int Button,int X,int Y,int RX,int RY )
  switch ( Button )
   {
    case wsPMMouseButton:
-	  gtkShow( evHidePopUpMenu,NULL );
+	  gtkShow( ivHidePopUpMenu,NULL );
           uiShowMenu( RX,RY );
           itemtype=itPRMButton;
           break;
@@ -446,7 +458,7 @@ void uiMainMouseHandle( int Button,int X,int Y,int RX,int RY )
           break;
 
    case wsPLMouseButton:
-	  gtkShow( evHidePopUpMenu,NULL );
+	  gtkShow( ivHidePopUpMenu,NULL );
           sx=X; sy=Y; boxMoved=1; itemtype=itPLMButton;
           SelectedItem=currentselected;
           if ( SelectedItem == -1 ) break;
@@ -493,7 +505,7 @@ void uiMainMouseHandle( int Button,int X,int Y,int RX,int RY )
           break;
 
    case wsRRMouseButton:
-        gtkShow( evShowPopUpMenu,NULL );
+        gtkShow( ivShowPopUpMenu,NULL );
         break;
 
 // --- rolled mouse ... de szar :)))
@@ -519,7 +531,7 @@ rollerhandled:
                  uiMainRender=0;
                  break;
             case itPRMButton:
-                 uiMenuMouseHandle( X,Y,RX,RY );
+                 uiMenuMouseHandle( RX,RY );
                  break;
             case itPotmeter:
                  item->value=(float)( X - item->x ) / item->width * 100.0f;

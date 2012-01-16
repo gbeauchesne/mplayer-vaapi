@@ -57,15 +57,15 @@ void uiSubMouseHandle( int Button,int X,int Y,int RX,int RY )
  static int mplSubMoved = 0;
  static int msButton = 0;
 
- uiPlaybarShow( X,Y );
+ uiPlaybarShow( Y );
 
  switch( Button )
   {
    case wsRRMouseButton:
-          gtkShow( evShowPopUpMenu,NULL );
+          gtkShow( ivShowPopUpMenu,NULL );
           break;
    case wsPMMouseButton:
-          gtkShow( evHidePopUpMenu,NULL );
+          gtkShow( ivHidePopUpMenu,NULL );
           uiShowMenu( RX,RY );
           msButton=wsPMMouseButton;
           break;
@@ -75,7 +75,7 @@ void uiSubMouseHandle( int Button,int X,int Y,int RX,int RY )
           break;
 // ---
    case wsPLMouseButton:
-          gtkShow( evHidePopUpMenu,NULL );
+          gtkShow( ivHidePopUpMenu,NULL );
           sx=X; sy=Y;
           msButton=wsPLMouseButton;
           mplSubMoved=0;
@@ -94,9 +94,9 @@ void uiSubMouseHandle( int Button,int X,int Y,int RX,int RY )
                     }
                    break;
             case wsPMMouseButton:
-                   uiMenuMouseHandle( X,Y,RX,RY );
+                   uiMenuMouseHandle( RX,RY );
                    break;
-	    default: uiPlaybarShow( X,Y ); break;
+	    default: uiPlaybarShow( Y ); break;
            }
           break;
    case wsRLMouseButton:

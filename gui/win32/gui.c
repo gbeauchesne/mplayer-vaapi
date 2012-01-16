@@ -238,7 +238,7 @@ static void handlemsg(HWND hWnd, int msg)
         case evLoadPlay:
         case evLoad:
             if(display_openfilewindow(gui, 0) && (msg == evLoadPlay))
-                handlemsg(hWnd, evDropFile);
+                gui->playercontrol(evLoadPlay);
             return;
         case evLoadSubtitle:
             display_opensubtitlewindow(gui);
@@ -246,7 +246,7 @@ static void handlemsg(HWND hWnd, int msg)
         case evPreferences:
             display_prefswindow(gui);
             return;
-        case evPlayList:
+        case evPlaylist:
             display_playlistwindow(gui);
             return;
         case evSkinBrowser:
@@ -451,11 +451,9 @@ static LRESULT CALLBACK SubProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
                 case ID_NTRACK:
                     handlemsg(hWnd, evNext);
                     break;
-#ifdef CONFIG_DVDREAD
                 case ID_CHAPTERSEL:
                     display_chapterselwindow(gui);
                     break;
-#endif
                 case ID_FULLSCREEN:
                     mp_input_queue_cmd(mp_input_parse_cmd("vo_fullscreen"));
                     break;
@@ -501,13 +499,13 @@ static LRESULT CALLBACK SubProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
                         gui->playlist->add_track(gui->playlist, file, NULL, NULL, 0);
                 }
                 DragFinish((HDROP) wParam);
-                handlemsg(hWnd, evDropFile);
+                gui->playercontrol(evLoadPlay);
             }
             else
             {
                 gui->playlist->clear_playlist(gui->playlist);
                 gui->playlist->add_track(gui->playlist, (const char *) wParam, NULL, NULL, 0);
-                handlemsg(hWnd, evDropFile);
+                gui->playercontrol(evLoadPlay);
             }
             SetForegroundWindow(gui->subwindow);
             return 0;
@@ -790,13 +788,13 @@ static LRESULT CALLBACK EventProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
                         gui->playlist->add_track(gui->playlist, file, NULL, NULL, 0);
                 }
                 DragFinish((HDROP) wParam);
-                handlemsg(hWnd, evDropFile);
+                gui->playercontrol(evLoadPlay);
             }
             else
             {
                 gui->playlist->clear_playlist(gui->playlist);
                 gui->playlist->add_track(gui->playlist, (const char *) wParam, NULL, NULL, 0);
-                handlemsg(hWnd, evDropFile);
+                gui->playercontrol(evLoadPlay);
             }
             SetForegroundWindow(gui->mainwindow);
             return 0;
@@ -847,10 +845,6 @@ static LRESULT CALLBACK EventProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
             POINT point;
             char device[MAX_PATH];
             char searchpath[MAX_PATH];
-            char searchpath2[MAX_PATH];
-#ifdef CONFIG_LIBCDIO
-            char searchpath3[MAX_PATH];
-#endif
             int len, pos = 0, cdromdrive = 0;
             UINT errmode;
             point.x = GET_X_LPARAM(lParam);
@@ -866,23 +860,22 @@ static LRESULT CALLBACK EventProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
                 {
                     char volname[MAX_PATH];
                     char menuitem[MAX_PATH];
-                    int flags = MF_STRING;
+                    int flags = MF_STRING, enable = 0;
                     mp_msg(MSGT_GPLAYER, MSGL_V, "[GUI] checking %s for CD/VCD/SVCD/DVDs\n", device + pos);
+#ifdef CONFIG_DVDREAD
                     sprintf(searchpath, "%sVIDEO_TS", device + pos);
-                    sprintf(searchpath2, "%sMpegav", device + pos);
-#ifdef CONFIG_LIBCDIO
-                    sprintf(searchpath3, "%sTrack01.cda", device + pos);
-#endif
                     if(GetFileAttributes(searchpath) != INVALID_FILE_ATTRIBUTES)
-                        flags |= MF_ENABLED;
-                    else if(GetFileAttributes(searchpath2) != INVALID_FILE_ATTRIBUTES)
-                        flags |= MF_ENABLED;
-#ifdef CONFIG_LIBCDIO
-                    else if(GetFileAttributes(searchpath3) != INVALID_FILE_ATTRIBUTES)
-                        flags |= MF_ENABLED;
+                        enable = 1;
 #endif
-                    else
-                        flags |= MF_GRAYED;
+                    sprintf(searchpath, "%sMpegav", device + pos);
+                    if(GetFileAttributes(searchpath) != INVALID_FILE_ATTRIBUTES)
+                        enable = 1;
+#ifdef CONFIG_CDDA
+                    sprintf(searchpath, "%sTrack01.cda", device + pos);
+                    if(GetFileAttributes(searchpath) != INVALID_FILE_ATTRIBUTES)
+                        enable = 1;
+#endif
+                    flags |= (enable ? MF_ENABLED : MF_GRAYED);
                     volname[0] = 0;
                     strcpy(menuitem, device + pos);
                     menuitem[strlen(menuitem) - 1]=0;
@@ -1021,7 +1014,7 @@ static LRESULT CALLBACK EventProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
                     break;
                 }
                 case ID_PLAYLIST:
-                    handlemsg(hWnd, evPlayList);
+                    handlemsg(hWnd, evPlaylist);
                     break;
                 case ID_PREFS:
                     handlemsg(hWnd, evPreferences);
@@ -1052,23 +1045,18 @@ static LRESULT CALLBACK EventProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
                             sprintf(searchpath, "%sVIDEO_TS", device + pos);
                             if(GetFileAttributes(searchpath) != INVALID_FILE_ATTRIBUTES)
                             {
-#ifdef CONFIG_DVDREAD
                                 free(dvd_device);
                                 dvd_device = strdup(device + pos);
-                                dvd_title = dvd_chapter = dvd_angle = 1;
                                 handlemsg(hWnd, evPlayDVD);
-#endif
                             }
                             sprintf(searchpath, "%sTrack01.cda", device + pos);
                             if(GetFileAttributes(searchpath) != INVALID_FILE_ATTRIBUTES)
                             {
-#ifdef CONFIG_LIBCDIO
                                 free(cdrom_device);
                                 cdrom_device = strdup(device + pos);
                                 /* mplayer doesn't seem to like the trailing \ after the device name */
                                 cdrom_device[2]=0;
                                 handlemsg(hWnd, evPlayCD);
-#endif
                             } else {
                                 HANDLE searchhndl;
                                 WIN32_FIND_DATA finddata;
@@ -1118,7 +1106,7 @@ static LRESULT CALLBACK EventProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 
 static void startplay(gui_t *gui)
 {
-    handlemsg(gui->mainwindow, evDropFile);
+    gui->playercontrol(evLoadPlay);
 }
 
 /* returns the bits per pixel of the desktop */
@@ -1258,9 +1246,9 @@ static void create_submenu(gui_t *gui)
     AppendMenu(gui->submenu, MF_SEPARATOR, 0, 0);
     AppendMenu(gui->submenu, MF_STRING | MF_POPUP, (UINT_PTR) gui->aspectmenu, acp(MSGTR_MENU_AspectRatio));
     AppendMenu(gui->submenu, MF_STRING | MF_POPUP, (UINT_PTR) gui->subtitlemenu, acp(MSGTR_MENU_Subtitles));
-    AppendMenu(gui->submenu, MF_STRING | MF_POPUP, (UINT_PTR) gui->dvdmenu, acp(MSGTR_MENU_DVD));
 #ifdef CONFIG_DVDREAD
-    AppendMenu(gui->dvdmenu, MF_STRING | MF_GRAYED, ID_CHAPTERSEL, acp(MSGTR_SelectChapter));
+    AppendMenu(gui->submenu, MF_STRING | MF_POPUP, (UINT_PTR) gui->dvdmenu, acp(MSGTR_MENU_DVD));
+    AppendMenu(gui->dvdmenu, MF_STRING | MF_GRAYED, ID_CHAPTERSEL, acp(MSGTR_SelectTitleChapter));
 #endif
     AppendMenu(gui->subtitlemenu, MF_STRING, IDSUB_TOGGLE, acp(MSGTR_MENU_SubtitlesOnOff));
     AppendMenu(gui->subtitlemenu, MF_STRING, IDSUB_CYCLE, acp(MSGTR_MENU_SubtitleLanguages));

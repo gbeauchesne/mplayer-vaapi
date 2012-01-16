@@ -45,6 +45,7 @@ enum {
     GUI_PREPARE,
     GUI_REDRAW,
     GUI_RUN_COMMAND,
+    GUI_RUN_MESSAGE,
     GUI_SETUP_VIDEO_WINDOW,
     GUI_SET_AFILTER,
     GUI_SET_AUDIO,
@@ -101,30 +102,22 @@ typedef struct {
     int StreamType;
     int AudioChannels;
 
-#ifdef CONFIG_DVDREAD
     int AudioStreams;
     stream_language_t AudioStream[32];
 
     int Subtitles;
     stream_language_t Subtitle[32];
-#endif
 
     char *Filename;           // public, read access by MPlayer
     char *AudioFilename;
     char *SubtitleFilename;
 
-#if defined(CONFIG_VCD) || defined(CONFIG_DVDREAD)
     int Tracks;
-#endif
-
     int Track;                // public, read access by MPlayer
-
-#ifdef CONFIG_DVDREAD
     int Chapters;
     int Chapter;              // public, write access by MPlayer
     int Angles;
     int Angle;
-#endif
 
     int Playing;              // public, read access by MPlayer
 

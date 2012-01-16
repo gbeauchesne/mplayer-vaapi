@@ -1,4 +1,4 @@
-// $Revision: 34335 $
+// $Revision: 34569 $
 // MASTER FILE. Use this file as base for translations.
 // Translated files should be sent to the mplayer-DOCS mailing list or
 // to the help messages maintainer, see DOCS/tech/MAINTAINERS.
@@ -562,7 +562,7 @@ static const char help_text[]=
 #define MSGTR_NEMFMR "Sorry, not enough memory for menu rendering."
 #define MSGTR_IDFGCVD "Sorry, no GUI-compatible video output driver found.\n"
 #define MSGTR_NEEDLAVC "Sorry, you cannot play non-MPEG files with your DXR3/H+ device without reencoding.\nPlease enable lavc in the DXR3/H+ configuration box."
-#define MSGTR_ICONERROR "Icon '%s' not found or unsupported format.\n"
+#define MSGTR_ICONERROR "Icon '%s' (size %d) not found or unsupported format.\n"
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "Error in skin config file on line %d: %s"
@@ -594,6 +594,7 @@ static const char help_text[]=
 #define MSGTR_MENU_AboutMPlayer "About MPlayer"
 #define MSGTR_MENU_Open "Open..."
 #define MSGTR_MENU_PlayFile "Play file..."
+#define MSGTR_MENU_PlayCD "Play CD..."
 #define MSGTR_MENU_PlayVCD "Play VCD..."
 #define MSGTR_MENU_PlayDVD "Play DVD..."
 #define MSGTR_MENU_PlayURL "Play URL..."
@@ -611,6 +612,7 @@ static const char help_text[]=
 #define MSGTR_MENU_NormalSize "Normal size"
 #define MSGTR_MENU_DoubleSize "Double size"
 #define MSGTR_MENU_FullScreen "Fullscreen"
+#define MSGTR_MENU_CD "CD"
 #define MSGTR_MENU_DVD "DVD"
 #define MSGTR_MENU_VCD "VCD"
 #define MSGTR_MENU_PlayDisc "Open disc..."
@@ -820,7 +822,7 @@ static const char help_text[]=
 #define MSGTR_DirectorySelect "Select directory..."
 #define MSGTR_PlaylistSave "Save playlist..."
 #define MSGTR_PlaylistSelect "Select playlist..."
-#define MSGTR_SelectChapter "Select chapter..."
+#define MSGTR_SelectTitleChapter "Select title/chapter..."
 #define MSGTR_MENU_DebugConsole "Debug Console"
 #define MSGTR_MENU_OnlineHelp "Online Help"
 #define MSGTR_MENU_PlayDirectory "Play directory..."
@@ -1229,6 +1231,7 @@ static const char help_text[]=
 
 // ao_sun.c
 #define MSGTR_AO_SUN_RtscSetinfoFailed "[AO SUN] rtsc: SETINFO failed.\n"
+#define MSGTR_AO_SUN_RtscWriteFailed "[AO SUN] rtsc: write failed.\n"
 #define MSGTR_AO_SUN_CantOpenAudioDev "[AO SUN] Can't open audio device %s, %s  -> nosound.\n"
 #define MSGTR_AO_SUN_UnsupSampleRate "[AO SUN] audio_setup: your card doesn't support %d channel, %s, %d Hz samplerate.\n"
 #define MSGTR_AO_SUN_CantUseSelect "[AO SUN]\n   ***  Your audio driver DOES NOT support select()  ***\nRecompile MPlayer with #undef HAVE_AUDIO_SELECT in config.h !\n\n"

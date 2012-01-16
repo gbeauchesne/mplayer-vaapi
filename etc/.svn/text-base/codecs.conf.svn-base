@@ -53,6 +53,14 @@ videocodec ffeacmv
   dll eacmv
   out BGR8
 
+videocodec ffeamad
+  info "FFmpeg EA MAD"
+  status working
+  fourcc MADk ; internal MPlayer FourCC
+  driver ffmpeg
+  dll eamad
+  out YV12
+
 videocodec ffmvi1
   info "FFmpeg Motion Pixels"
   status working
@@ -69,6 +77,14 @@ videocodec ffmdec
   driver ffmpeg
   dll mdec
   out YV12
+
+videocodec ffmmvideo
+  info "FFmpeg American Laser Games MM Video"
+  status working
+  fourcc "MMV " ; internal MPlayer FourCC
+  driver ffmpeg
+  dll mmvideo
+  out BGR8
 
 videocodec ffsiff
   info "FFmpeg Beam Software SIFF"
@@ -178,6 +194,22 @@ videocodec ffr210
   dll "r210"
   out RGB48BE,RGB48LE
 
+videocodec ffy41p
+  info "FFmpeg Y41P - packed 4:1:1"
+  status working
+  fourcc Y41P
+  driver ffmpeg
+  dll y41p
+  out 411P
+
+videocodec ffv410
+  info "FFmpeg v410 - packed 4:4:4 10-bit"
+  status working
+  fourcc v410
+  driver ffmpeg
+  dll v410
+  out 444P10
+
 videocodec ffr10k
   info "FFmpeg R10k - 10-bit RGB"
   status working
@@ -185,6 +217,30 @@ videocodec ffr10k
   driver ffmpeg
   dll "r10k"
   out RGB48BE,RGB48LE
+
+videocodec ffavrp
+  info "FFmpeg Avid 1:1 10-bit RGB Packer"
+  status working
+  fourcc AVrp
+  driver ffmpeg
+  dll avrp
+  out RGB48BE,RGB48LE
+
+videocodec ffv308
+  info "FFmpeg Quicktime v308 packed 4:4:4"
+  status working
+  fourcc v308
+  driver ffmpeg
+  dll v308
+  out 444P
+
+videocodec ffyuv4
+  info "FFmpeg libquicktime yuv4 packed 4:2:0"
+  status working
+  fourcc yuv4
+  driver ffmpeg
+  dll yuv4
+  out YV12
 
 videocodec blackmagic
   info "Blackmagic 10-bit"
@@ -215,6 +271,7 @@ videocodec ffmpeg1
   fourcc MPEG
   fourcc m1v1
   fourcc "m1v "
+  fourcc BW10
   driver ffmpeg
   dll "mpeg1video"
   out YV12,I420,IYUV
@@ -522,7 +579,7 @@ videocodec fftiff
   fourcc "tiff" ; for TIFF-encoded QuickTime files
   driver ffmpeg
   dll tiff
-  out BGR32,BGR24,BGR8,Y800,RGB32,RGB24,RGB8
+  out BGR32,BGR24,BGR8,Y800,RGB48BE,RGB48LE,RGB32,RGB24,RGB8
 
 videocodec ffpcx
   info "FFmpeg PCX"
@@ -1169,8 +1226,9 @@ videocodec ffh264crystalhd
   dll h264_crystalhd
   out YUY2
 
+;http://corecodec.org/
 videocodec coreavcwindows
-  info "CoreAVC H.264 for x86 - http://corecodec.org/"
+  info "CoreAVC H.264 for x86"
   comment "this codec will only work after purchasing it"
   status working
   fourcc H264,h264
@@ -1623,7 +1681,7 @@ videocodec ffmjpeg
   out 440P
   out YUY2  ; queried (conversion from yuv422p)
   out YV12,I420,IYUV
-  out BGR32 ; lossless JPEG
+  out BGR24 ; lossless JPEG
   out RGB24 ; JPEG-LS
   out Y800
 
@@ -1723,6 +1781,9 @@ videocodec fflibopenjpeg
   driver ffmpeg
   dll "libopenjpeg"
   out RGB24,RGB32,BGR32,Y8,Y800
+  out 420P16,420P10,420P9
+  out 422P16,422P10,422P9
+  out 444P16,444P10,444P9
 
 videocodec ffj2k
   info "FFmpeg JPEG 2000"
@@ -1999,6 +2060,14 @@ videocodec indeo3xa
   fourcc IV32,iv32
   driver xanim
   dll "vid_iv32.xa"
+  out YVU9
+
+videocodec ffindeo4
+  info "FFmpeg Indeo 4"
+  status working
+  fourcc IV41
+  driver ffmpeg
+  dll indeo4
   out YVU9
 
 videocodec ffindeo5
@@ -2284,9 +2353,10 @@ videocodec fflagarith
   dll lagarith
   out YV12
 
+;http://lags.leetcode.net/codec.html
 videocodec lagarith
   info "Lagarith Lossless Video Codec"
-  comment "http://lags.leetcode.net/codec.html, requires an MMX2 CPU."
+  comment "requires an MMX2 CPU."
   status working
   fourcc LAGS
   driver vfw
@@ -2301,9 +2371,9 @@ videocodec ffutvideo
   dll utvideo
   out YV12,422P,RGB24,RGB32
 
+ ;http://umezawa.dyndns.info/wordpress/
 videocodec utvideovfw
   info "UTVideo Codec"
-  comment "http://umezawa.dyndns.info/wordpress/"
   status working
   fourcc ULRA,ULRG,ULY2,ULY0
   driver vfw
@@ -2312,9 +2382,9 @@ videocodec utvideovfw
   out RGB32,RGB24 flip
   out YV12,UYVY,YUY2 flip
 
+ ;http://umezawa.dyndns.info/wordpress/
 videocodec utvideodmo
   info "UTVideo Codec"
-  comment "http://umezawa.dyndns.info/wordpress/"
   status buggy ; input format not accepted
   fourcc ULRA,ULRG,ULY2,ULY0
   driver dmo
@@ -2324,6 +2394,14 @@ videocodec utvideodmo
   out RGB32,RGB24
   out BGR32,BGR24
 
+videocodec ffvble
+  info "FFmpeg VBLE lossless codec"
+  status working
+  fourcc VBLE
+  driver ffmpeg
+  dll vble
+  out YV12
+
 videocodec psiv
   info "Infinite Video PSI_V"
   status working
@@ -2332,8 +2410,8 @@ videocodec psiv
   dll "psiv.dll"
   out BGR32,BGR24 query,flip
 
+;http://www.midivid.com/codec/download.html
 videocodec midivid1
-  info "http://www.midivid.com/codec/download.html"
   status working
   fourcc MVLZ
   driver vfw
@@ -2341,7 +2419,6 @@ videocodec midivid1
   out BGR24,BGR16 flip
 
 videocodec midivid2
-  info "http://www.midivid.com/codec/download.html"
   status working
   fourcc MVDV
   driver vfw
@@ -2349,7 +2426,6 @@ videocodec midivid2
   out BGR24 flip
 
 videocodec midivid3
-  info "www.midivid.com/codec/mv3codec.html"
   status working
   fourcc MV30
   driver vfw
@@ -3313,6 +3389,15 @@ videocodec qpeg
   dll "qpeg32.dll"
   out BGR8 flip
 
+videocodec ffqpeg
+  info "FFmpeg Q-team QPEG"
+  status working
+  fourcc Q1.0,QPEG
+  fourcc Q1.1,qpeq
+  driver ffmpeg
+  dll "qpeg"
+  out BGR8
+
 videocodec rricm
   info "rricm"
   status crashing
@@ -3364,6 +3449,14 @@ videocodec fffraps
   driver ffmpeg
   dll "fraps"
   out BGR24,YV12,I420
+
+videocodec ffxtor
+  info "FFmpeg Dxtory"
+  status working
+  fourcc xtor
+  driver ffmpeg
+  dll dxtory
+  out YV12
 
 videocodec ffjv
   info "FFmpeg Bitmap Brothers JV"
@@ -3446,6 +3539,14 @@ videocodec fftxd
   dll txd
   out BGR32
 
+videocodec fftmv
+  info "FFmpeg 8088flex TMV"
+  status working
+  fourcc tmv8 ; internal MPlayer FourCC
+  driver ffmpeg
+  dll tmv
+  out BGR8
+
 videocodec xan
   info "XAN Video"
   status working
@@ -3521,10 +3622,26 @@ videocodec ffdfa
 videocodec ffeatgv
   info "FFmpeg Electronic Arts TGV"
   status working
-  fourcc fVGT
+  fourcc fVGT ; internal MPlayer FourCC
   driver ffmpeg
   dll eatgv
   out BGR8
+
+videocodec ffescape124
+  info "FFmpeg Escape 124"
+  status buggy
+  fourcc E124 ; internal MPlayer FourCC
+  driver ffmpeg
+  dll escape124
+  out BGR15
+
+videocodec ffescape130
+  info "FFmpeg Escape 130"
+  status working
+  fourcc E130 ; internal MPlayer FourCC
+  driver ffmpeg
+  dll escape130
+  out YV12
 
 ; raw formats:  (now RGB formats are autodetected)
 
@@ -3824,8 +3941,9 @@ videocodec ffrawuyvy
   fourcc uyv1,UYV1
   fourcc 2Vu1,2vu1,2VU1
   fourcc 2Vuy,2vuy,2VUY
-  fourcc AV1x,AVup
+  fourcc AV1x,AVup,AVUI
   fourcc VDTZ,auv2
+  fourcc cyuv
   driver ffmpeg
   dll rawvideo
   out UYVY
@@ -3884,6 +4002,14 @@ videocodec ffrawyvu9
   driver ffmpeg
   dll rawvideo
   out YVU9
+
+videocodec ffrawy41b
+  info "RAW Y41B"
+  status working
+  fourcc Y41B
+  driver ffmpeg
+  dll rawvideo
+  out 411P
 
 videocodec ffrawy800
   info "RAW Y8/Y800"
@@ -4202,6 +4328,13 @@ audiocodec ffadpcmimaamv
   driver ffmpeg
   dll adpcm_ima_amv
 
+audiocodec ffadpcmimasmjpeg
+  info "FFmpeg SMJPEG IMA ADPCM audio"
+  status working
+  fourcc APCM
+  driver ffmpeg
+  dll adpcm_ima_smjpeg
+
 audiocodec ffadpcmimaqt
   info "FFmpeg QT IMA ADPCM audio"
   status working
@@ -4263,6 +4396,27 @@ audiocodec ffadpcmimadk3
               ; registered with Microsoft
   driver ffmpeg
   dll adpcm_ima_dk3
+
+audiocodec ffadpcmimaiss
+  info "FFmpeg Funcom IMA ISS ADPCM"
+  status working
+  fourcc AISS ; internal MPlayer FourCC
+  driver ffmpeg
+  dll adpcm_ima_iss
+
+audiocodec ffadpcmimaeasead
+  info "FFmpeg ADPCM IMA Electronic Arts SEAD"
+  status working
+  fourcc SEAD ; internal MPlayer FourCC
+  driver ffmpeg
+  dll adpcm_ima_ea_sead
+
+audiocodec ffadpcmimaeaeacs
+  info "FFmpeg ADPCM IMA Electronic Arts EACS"
+  status working
+  fourcc EACS ; internal MPlayer FourCC
+  driver ffmpeg
+  dll adpcm_ima_ea_eacs
 
 audiocodec dk3adpcm
   info "Duck DK3 ADPCM (rogue format number)"
@@ -4579,6 +4733,13 @@ audiocodec ffpcmdaud
   fourcc "daud"
   driver ffmpeg
   dll "pcm_s24daud"
+
+audiocodec ffpcms16leplanar
+  info "FFmpeg PCM 16-bit little-endian planar"
+  status working
+  fourcc 16PL ; internal MPlayer FourCC
+  driver ffmpeg
+  dll pcm_s16le_planar
 
 audiocodec ffwmav1
   info "DivX audio v1 (FFmpeg)"
@@ -5018,10 +5179,10 @@ audiocodec ffimc
   driver ffmpeg
   dll "imc"
 
+ ;driver at http://codeczone.virtualave.net/FXIMCAUD.zip
 audiocodec imc
   info "Intel Music Coder"
   status working
-  comment "driver at http://codeczone.virtualave.net/FXIMCAUD.zip"
   format 0x401
   driver acm
   dll "imc32.acm"
@@ -5067,6 +5228,13 @@ audiocodec hwdts
   status working
   format 0x2001
   driver hwac3
+
+audiocodec ffvmdaudio
+  info "FFmpeg Sierra VMD audio"
+  status working
+  fourcc VMDA ; intermal MPlayer FourCC
+  driver ffmpeg
+  dll "vmdaudio"
 
 audiocodec ffvorbis
   info "FFmpeg Vorbis"
@@ -5371,3 +5539,11 @@ audiocodec spdifthd
   fourcc TRHD ; internal MPlayer FourCC
   dll    thd
   driver spdif
+
+audiocodec ffwavesynth
+  info "FFmpeg wave synthesizer"
+  status working
+  fourcc "FFWS" ; internal MPlayer FourCC
+  driver ffmpeg
+  dll "wavesynth"
+

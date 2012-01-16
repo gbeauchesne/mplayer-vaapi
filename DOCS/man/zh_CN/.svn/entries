@@ -1,15 +1,15 @@
 10
 
 dir
-34365
+34578
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS/man/zh_CN
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2011-11-09T01:22:02.664249Z
-34335
-diego
+2011-12-24T13:31:49.970526Z
+34466
+jrash
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2011-11-29T13:02:21.000000Z
-168824de3e7db5dd913fbb9b5d274ab9
-2011-11-09T01:22:02.664249Z
-34335
-diego
+2012-01-16T14:48:09.000000Z
+3c2915cb9b2217da72e11a31aaa9eb6c
+2011-12-24T13:31:49.970526Z
+34466
+jrash
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-358526
+358780
 

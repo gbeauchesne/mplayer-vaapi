@@ -115,6 +115,7 @@ SRCS_COMMON-$(LIBASS_INTERNAL)       += libass/ass.c \
                                         libass/ass_parse.c \
                                         libass/ass_render.c \
                                         libass/ass_render_api.c \
+                                        libass/ass_shaper.c \
                                         libass/ass_strtod.c \
                                         libass/ass_utils.c \
 
@@ -758,6 +759,9 @@ ADDSUFFIXES     = $(foreach suf,$(1),$(addsuffix $(suf),$(2)))
 ADD_ALL_DIRS    = $(call ADDSUFFIXES,$(1),$(ALL_DIRS))
 ADD_ALL_EXESUFS = $(1) $(call ADDSUFFIXES,$(EXESUFS_ALL),$(1))
 
+GUI_ICONSIZES = 16x16 22x22 24x24 32x32 48x48 256x256
+
+
 
 ###### generic rules #######
 
@@ -904,12 +908,12 @@ install-dirs:
 install-%: %$(EXESUF) install-dirs
 	$(INSTALL) -m 755 $(INSTALLSTRIP) $< $(BINDIR)
 
-install-gui: install-mplayer
+install-gui: install-mplayer install-gui-icons
 	-ln -sf mplayer$(EXESUF) $(BINDIR)/gmplayer$(EXESUF)
-	$(INSTALL) -d $(DATADIR)/skins $(prefix)/share/pixmaps $(prefix)/share/applications
-	$(INSTALL) -m 644 etc/mplayer.png $(prefix)/share/pixmaps/
+	$(INSTALL) -d $(DATADIR)/skins $(prefix)/share/applications
 	$(INSTALL) -m 644 etc/mplayer.desktop $(prefix)/share/applications/
 
+install-gui-icons:    $(foreach size,$(GUI_ICONSIZES),install-gui-icon-$(size))
 install-gui-man:      $(foreach lang,$(MAN_LANGS),install-gui-man-$(lang))
 install-mencoder-man: $(foreach lang,$(MAN_LANGS),install-mencoder-man-$(lang))
 install-mplayer-man:  $(foreach lang,$(MAN_LANGS),install-mplayer-man-$(lang))
@@ -923,6 +927,12 @@ install-mencoder-man-en: install-mplayer-man-en
 install-mplayer-man-en:
 	$(INSTALL) -d $(MANDIR)/man1
 	$(INSTALL) -m 644 DOCS/man/en/mplayer.1 $(MANDIR)/man1/
+
+define GUI_ICON_RULE
+install-gui-icon-$(size):
+	$(INSTALL) -d $(prefix)/share/icons/hicolor/$(size)/apps
+	$(INSTALL) -m 644 etc/mplayer$(size).png $(prefix)/share/icons/hicolor/$(size)/apps/mplayer.png
+endef
 
 define GUI_MAN_RULE
 install-gui-man-$(lang): install-mplayer-man-$(lang)
@@ -940,6 +950,7 @@ install-mplayer-man-$(lang):
 	$(INSTALL) -m 644 DOCS/man/$(lang)/mplayer.1 $(MANDIR)/$(lang)/man1/
 endef
 
+$(foreach size,$(GUI_ICONSIZES),$(eval $(GUI_ICON_RULE)))
 $(foreach lang,$(filter-out en,$(MAN_LANG_ALL)),$(eval $(GUI_MAN_RULE)))
 $(foreach lang,$(filter-out en,$(MAN_LANG_ALL)),$(eval $(MENCODER_MAN_RULE)))
 $(foreach lang,$(filter-out en,$(MAN_LANG_ALL)),$(eval $(MPLAYER_MAN_RULE)))
@@ -948,14 +959,14 @@ uninstall:
 	rm -f $(BINDIR)/mplayer$(EXESUF) $(BINDIR)/gmplayer$(EXESUF)
 	rm -f $(BINDIR)/mencoder$(EXESUF)
 	rm -f $(MANDIR)/man1/mencoder.1 $(MANDIR)/man1/mplayer.1
-	rm -f $(prefix)/share/pixmaps/mplayer.png
+	rm -f $(foreach size,$(GUI_ICONSIZES),$(prefix)/share/icons/hicolor/$(size)/apps/mplayer.png)
 	rm -f $(prefix)/share/applications/mplayer.desktop
 	rm -f $(MANDIR)/man1/mplayer.1 $(MANDIR)/man1/mencoder.1
 	rm -f $(foreach lang,$(MAN_LANGS),$(foreach man,mplayer.1 mencoder.1,$(MANDIR)/$(lang)/man1/$(man)))
 
 clean:
 	-$(MAKE) -C ffmpeg $@
-	-$(MAKE) -C tests clean
+	-rm -rf tests/res
 	-rm -f $(call ADD_ALL_DIRS,/*.o /*.a /*.ho /*~)
 	-rm -f $(call ADD_ALL_EXESUFS,mplayer mencoder)
 
@@ -976,6 +987,43 @@ TAGS:
 
 tags:
 	rm -f $@; find . -name '*.[chS]' -o -name '*.asm' | xargs ctags -a
+
+
+
+###### regression tests #######
+
+BROKEN_SAMPLES =                         \
+    h264-conformance/FM1_BT_B.h264       \
+    h264-conformance/FM1_FT_E.264        \
+    h264-conformance/FM2_SVA_B.264       \
+    pva/PVA_test-partial.pva             \
+    wmv8/wmv_drm.wmv                     \
+    wtv/law-and-order-partial.wtv        \
+
+AUDIO_ONLY_SAMPLES =                                               \
+    aac/% ac3/% amrnb/% amrwb/% atrac1/% atrac3/% bink/binkaudio%  \
+    creative/% dts/% duck/%-audio-only.avi eac3/% gsm/% imc/%      \
+    lossless-audio/% mp3-conformance/% musepack/% nellymoser/%     \
+    qcp/%                                                          \
+    qt-surge-suite/% real/ra% sipr/% truespeech/% vorbis/%         \
+    vqf/% w64/% wmapro/% wmavoice/%                                \
+
+# running wildcard with empty FATE_SAMPLES seems to cause a lot of issues
+ifdef FATE_SAMPLES
+ALLSAMPLES_FULLPATH = $(wildcard $(FATE_SAMPLES)/*/*.*)
+ALLSAMPLES          = $(patsubst $(FATE_SAMPLES)/%,%,$(ALLSAMPLES_FULLPATH))
+SAMPLES := $(filter-out $(BROKEN_SAMPLES),$(ALLSAMPLES))
+SAMPLES := $(filter-out $(AUDIO_ONLY_SAMPLES),$(SAMPLES))
+RESULTS  = $(patsubst %,tests/res/%.md5,$(SAMPLES))
+
+fatetest: $(RESULTS)
+
+tests/res/%.md5: mplayer$(EXESUF) $(FATE_SAMPLES)/%
+	@tests/faterun.sh $*
+else
+fatetest:
+	@echo "You need to set FATE_SAMPLES for fatetest to work"
+endif
 
 
 
@@ -1117,9 +1165,6 @@ install-dhahelperwin:
 dhahelperclean:
 	-rm -f vidix/dhahelper/*.o vidix/dhahelper/*~ vidix/dhahelper/test
 	-rm -f $(addprefix vidix/dhahelperwin/,*.o *~ dhahelper.sys dhasetup.exe base.tmp temp.exp)
-
-fatetest: mplayer$(EXESUF)
-	$(MAKE) -C tests fatetest
 
 
 -include $(DEP_FILES) $(DRIVER_DEP_FILES) $(TESTS_DEP_FILES) $(TOOLS_DEP_FILES) $(DHAHELPER_DEP_FILES)

@@ -1,15 +1,15 @@
 10
 
 dir
-34365
+34578
 svn://svn.mplayerhq.hu/mplayer/trunk/input
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2011-08-27T09:58:54.579297Z
-34017
-reimar
+2011-12-11T14:43:16.766920Z
+34427
+ib
 has-props
 
 
@@ -66,11 +66,11 @@ file
 
 
 
-2011-10-06T12:44:03.000000Z
-fa9ef09e6919d9314ce242d8d2fa3120
-2011-08-27T09:58:54.579297Z
-34017
-reimar
+2012-01-16T14:48:09.000000Z
+b536c9bdaf02a4b4d6b0d8c7dcd3d509
+2011-12-11T14:43:16.766920Z
+34427
+ib
 has-props
 
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-56833
+56969
 
 joystick.c
 file
@@ -168,11 +168,11 @@ file
 
 
 
-2011-10-06T11:40:11.000000Z
-e227dd1bfff6bdd5291dba7a8f938bf4
-2011-03-24T22:11:18.330447Z
-33104
-reimar
+2012-01-16T14:48:09.000000Z
+d77c012d6798201e84e5f6749aeb0c35
+2011-12-11T14:43:16.766920Z
+34427
+ib
 has-props
 
 
@@ -194,7 +194,7 @@ has-props
 
 
 
-8720
+8753
 
 joystick.h
 file

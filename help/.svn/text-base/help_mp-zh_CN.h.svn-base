@@ -1,4 +1,4 @@
-// Synced with help_mp-en.h rev. 34335
+// Synced with help_mp-en.h rev. 34475
 //
 // Translated by JRaSH <jrash06@gmail.com>
 
@@ -562,7 +562,6 @@ static const char help_text[]=
 #define MSGTR_NEMFMR "抱歉，没有足够的内存用于菜单渲染。"
 #define MSGTR_IDFGCVD "抱歉，未找到与 GUI 兼容的视频输出驱动。\n"
 #define MSGTR_NEEDLAVC "抱歉，未重新编码前无法用你的 DXR3/H+ 设备播放非 MPEG 文件。\n请启用 DXR3/H+ 配置盒中的 lavc 编解码器。"
-#define MSGTR_ICONERROR "图标‘%s’未找到或格式不支持。\n"
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "界面外观配置文件错误，行 %d：%s"
@@ -594,6 +593,7 @@ static const char help_text[]=
 #define MSGTR_MENU_AboutMPlayer "关于 MPlayer"
 #define MSGTR_MENU_Open "打开..."
 #define MSGTR_MENU_PlayFile "播放文件..."
+#define MSGTR_MENU_PlayCD "播放 CD..."
 #define MSGTR_MENU_PlayVCD "播放 VCD..."
 #define MSGTR_MENU_PlayDVD "播放 DVD..."
 #define MSGTR_MENU_PlayURL "播放网络链接..."
@@ -611,6 +611,7 @@ static const char help_text[]=
 #define MSGTR_MENU_NormalSize "正常尺寸"
 #define MSGTR_MENU_DoubleSize "双倍尺寸"
 #define MSGTR_MENU_FullScreen "全屏"
+#define MSGTR_MENU_CD "CD"
 #define MSGTR_MENU_DVD "DVD"
 #define MSGTR_MENU_VCD "VCD"
 #define MSGTR_MENU_PlayDisc "打开光盘..."
@@ -820,7 +821,7 @@ static const char help_text[]=
 #define MSGTR_DirectorySelect "选择目录..."
 #define MSGTR_PlaylistSave "保存播放列表..."
 #define MSGTR_PlaylistSelect "选择播放列表..."
-#define MSGTR_SelectChapter "选择章节..."
+#define MSGTR_SelectTitleChapter "选择标题/章节..."
 #define MSGTR_MENU_DebugConsole "调试控制终端"
 #define MSGTR_MENU_OnlineHelp "线上帮助内容"
 #define MSGTR_MENU_PlayDirectory "播放目录内容..."
@@ -1229,6 +1230,7 @@ static const char help_text[]=
 
 // ao_sun.c
 #define MSGTR_AO_SUN_RtscSetinfoFailed "[AO SUN] rtsc：SETINFO 失败。\n"
+#define MSGTR_AO_SUN_RtscWriteFailed "[AO SUN] rtsc：写入失败。\n"
 #define MSGTR_AO_SUN_CantOpenAudioDev "[AO SUN] 无法打开音频设备 %s，%s  -> nosound。\n"
 #define MSGTR_AO_SUN_UnsupSampleRate "[AO SUN] 音频设置：你的声卡不支持 %d 声道，%s，%d Hz 采样率。\n"
 #define MSGTR_AO_SUN_CantUseSelect "[AO SUN]\n   ***  你的音频驱动不支持 select()  ***\n需要在 config.h 中设置 #undef HAVE_AUDIO_SELECT 并重新编译 MPlayer！\n\n"

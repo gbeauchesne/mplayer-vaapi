@@ -756,7 +756,7 @@ static const char help_text[]=
 #define MSGTR_NEMFMR "Sorry, nicht genug Speicher für Menü-Rendering."
 #define MSGTR_IDFGCVD "Sorry, es wurde kein GUI-kompatibler Ausgabetreiber gefunden.\n"
 #define MSGTR_NEEDLAVC "Sorry, du versuchst, Nicht-MPEG Dateien ohne erneute Encodierung abzuspielen.\nBitte aktiviere lavc in der DXR3/H+-Konfigurationsbox."
-#define MSGTR_ICONERROR "Icon '%s' wurde nicht gefunden oder das Format wird nicht unterstützt.\n"
+#define MSGTR_ICONERROR "Icon '%s' (Größe %d) wurde nicht gefunden oder das Format wird nicht unterstützt.\n"
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "Fehler in Skin-Konfigurationsdatei in Zeile %d: %s"
@@ -788,6 +788,7 @@ static const char help_text[]=
 #define MSGTR_MENU_AboutMPlayer "Über MPlayer"
 #define MSGTR_MENU_Open "Öffnen..."
 #define MSGTR_MENU_PlayFile "Spiele Datei..."
+#define MSGTR_MENU_PlayCD "Spiele CD..."
 #define MSGTR_MENU_PlayVCD "Spiele VCD..."
 #define MSGTR_MENU_PlayDVD "Spiele DVD..."
 #define MSGTR_MENU_PlayURL "Spiele URL..."
@@ -805,9 +806,10 @@ static const char help_text[]=
 #define MSGTR_MENU_NormalSize "Normale Größe"
 #define MSGTR_MENU_DoubleSize "Doppelte Größe"
 #define MSGTR_MENU_FullScreen "Vollbild"
+#define MSGTR_MENU_CD "CD"
 #define MSGTR_MENU_DVD "DVD"
 #define MSGTR_MENU_VCD "VCD"
-#define MSGTR_MENU_PlayDisc "Öffne CD/DVD..."
+#define MSGTR_MENU_PlayDisc "Öffne Disc..."
 #define MSGTR_MENU_ShowDVDMenu "Zeige DVD Menü"
 #define MSGTR_MENU_Titles "Titel"
 #define MSGTR_MENU_Title "Titel %2d"
@@ -1015,7 +1017,7 @@ static const char help_text[]=
 #define MSGTR_DirectorySelect "Wähle ein Verzeichnis ..."
 #define MSGTR_PlaylistSave "Speichere Wiedergabeliste ..."
 #define MSGTR_PlaylistSelect "Wähle Wiedergabeliste ..."
-#define MSGTR_SelectChapter "Wähle Kapitel ..."
+#define MSGTR_SelectTitleChapter "Wähle Titel/Kapitel ..."
 #define MSGTR_MENU_DebugConsole "Debugging-Konsole"
 #define MSGTR_MENU_OnlineHelp "Online-Hilfe"
 #define MSGTR_MENU_PlayDirectory "Spiele ein Verzeichnis..."
@@ -1191,6 +1193,7 @@ static const char help_text[]=
 
 // ao_sun.c
 #define MSGTR_AO_SUN_RtscSetinfoFailed "[AO SUN] rtsc: SETINFO fehlgeschlagen.\n"
+#define MSGTR_AO_SUN_RtscWriteFailed "[AO SUN] rtsc: Schreiben fehlgeschlagen.\n"
 #define MSGTR_AO_SUN_CantOpenAudioDev "[AO SUN] Kann Audiogerät %s nicht öffnen, %s  -> nosound.\n"
 #define MSGTR_AO_SUN_UnsupSampleRate "[AO SUN] audio_setup: Deine Karte unterstützt %d Kanäle nicht, %s, %d Hz Samplerate.\n"
 #define MSGTR_AO_SUN_CantUseSelect "[AO SUN]\n" \

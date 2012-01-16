@@ -128,45 +128,11 @@ has-props
 
 2904
 
-vm
-dir
-
 dvdnav
 dir
 
-searching.c
-file
-
-
-
-
-2011-11-29T13:02:24.000000Z
-b84eb059ca33144a9489303a98b2c1cd
-2011-10-07T17:06:24.644533Z
-1239
-erik
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-19361
+vm
+dir
 
 read_cache.h
 file
@@ -202,6 +168,40 @@ has-props
 
 1912
 
+searching.c
+file
+
+
+
+
+2011-11-29T13:02:24.000000Z
+b84eb059ca33144a9489303a98b2c1cd
+2011-10-07T17:06:24.644533Z
+1239
+erik
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+19361
+
 remap.c
 file
 
@@ -236,40 +236,6 @@ has-props
 
 6354
 
-highlight.c
-file
-
-
-
-
-2011-10-06T11:40:11.000000Z
-e06e2584e5a936b96b80a352ed9a745c
-2011-03-20T18:06:39.039529Z
-1226
-erik
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-15319
-
 FELLOWSHIP.map
 file
 
@@ -303,6 +269,40 @@ has-props
 
 
 7283
+
+highlight.c
+file
+
+
+
+
+2011-10-06T11:40:11.000000Z
+e06e2584e5a936b96b80a352ed9a745c
+2011-03-20T18:06:39.039529Z
+1226
+erik
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+15319
 
 remap.h
 file
@@ -406,40 +406,6 @@ has-props
 
 5703
 
-README.MAP
-file
-
-
-
-
-2011-10-06T11:40:11.000000Z
-5293a76007ce8e373b3a1ad52209d198
-2008-10-09T22:20:01.041141Z
-1155
-diego
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4212
-
 Makefile.am
 file
 
@@ -473,4 +439,38 @@ has-props
 
 
 982
+
+README.MAP
+file
+
+
+
+
+2011-10-06T11:40:11.000000Z
+5293a76007ce8e373b3a1ad52209d198
+2008-10-09T22:20:01.041141Z
+1155
+diego
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4212
 

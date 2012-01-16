@@ -515,6 +515,17 @@ static int mp_property_chapter(m_option_t *prop, int action, void *arg,
     return M_PROPERTY_OK;
 }
 
+/// Number of titles in file
+static int mp_property_titles(m_option_t *prop, int action, void *arg,
+                              MPContext *mpctx)
+{
+    if (!mpctx->demuxer)
+        return M_PROPERTY_UNAVAILABLE;
+    if (mpctx->demuxer->num_titles == 0)
+        stream_control(mpctx->demuxer->stream, STREAM_CTRL_GET_NUM_TITLES, &mpctx->demuxer->num_titles);
+    return m_property_int_ro(prop, action, arg, mpctx->demuxer->num_titles);
+}
+
 /// Number of chapters in file
 static int mp_property_chapters(m_option_t *prop, int action, void *arg,
                                MPContext *mpctx)
@@ -2142,6 +2153,8 @@ static const m_option_t mp_properties[] = {
      M_OPT_MIN, 0, 0, NULL },
     { "chapter", mp_property_chapter, CONF_TYPE_INT,
      M_OPT_MIN, 0, 0, NULL },
+    { "titles", mp_property_titles, CONF_TYPE_INT,
+     0, 0, 0, NULL },
     { "chapters", mp_property_chapters, CONF_TYPE_INT,
      0, 0, 0, NULL },
     { "angle", mp_property_angle, CONF_TYPE_INT,
@@ -3511,6 +3524,11 @@ int run_command(MPContext *mpctx, mp_cmd_t *cmd)
         break;
 
         default:
+#ifdef CONFIG_GUI
+                if (use_gui && cmd->id == MP_CMD_GUI)
+                    gui(GUI_RUN_MESSAGE, cmd->args[0].v.s);
+                else
+#endif
                 mp_msg(MSGT_CPLAYER, MSGL_V,
                        "Received unknown cmd %s\n", cmd->name);
         }
