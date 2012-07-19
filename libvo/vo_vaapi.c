@@ -102,6 +102,11 @@
 # define USE_VAAPI_SCALING 0
 #endif
 
+/* Compatibility glue with VA-API >= 0.34 */
+#if VA_CHECK_VERSION(0,34,0)
+#include <va/va_compat.h>
+#endif
+
 static vo_info_t info = {
     "VA API with X11",
     "vaapi",
@@ -945,6 +950,15 @@ static int is_direct_mapping_init(void)
     if (va_dm < 2)
         return va_dm;
 
+#if VA_CHECK_VERSION(0,34,0)
+    attr.type  = VADisplayAttribRenderMode;
+    attr.flags = VA_DISPLAY_ATTRIB_GETTABLE;
+
+    status = vaGetDisplayAttributes(va_context->display, &attr, 1);
+    if (status == VA_STATUS_SUCCESS)
+        return !(attr.value & (VA_RENDER_MODE_LOCAL_OVERLAY|
+                               VA_RENDER_MODE_EXTERNAL_OVERLAY));
+#else
     /* If the driver doesn't make a copy of the VA surface for
        display, then we have to retain it until it's no longer the
        visible surface. In other words, if the driver is using
@@ -956,6 +970,7 @@ static int is_direct_mapping_init(void)
     status = vaGetDisplayAttributes(va_context->display, &attr, 1);
     if (status == VA_STATUS_SUCCESS)
         return !attr.value;
+#endif
     return 0;
 }
 
