@@ -1477,7 +1477,7 @@ sub_data* sub_read_file (const char *filename, float fps) {
 	    int l,k;
 	    k = -1;
 	    if ((l=strlen(filename))>4){
-		    char *exts[] = {".utf", ".utf8", ".utf-8" };
+		    static const char exts[][8] = {".utf", ".utf8", ".utf-8" };
 		    for (k=3;--k>=0;)
 			if (l >= strlen(exts[k]) && !strcasecmp(filename+(l - strlen(exts[k])), exts[k])){
 			    sub_utf8 = 1;
@@ -2496,6 +2496,7 @@ void sub_free( sub_data * subd )
  * @param len length of text in txt
  * @param endpts pts at which this subtitle text should be removed again
  * @param strip_markup if strip markup is set (!= 0), markup tags like <b></b> are ignored
+ *                     and fribidi is used to process right-to-left markers
  *
  * <> and {} are interpreted as comment delimiters, "\n", "\N", '\n', '\r'
  * and '\0' are interpreted as newlines, duplicate, leading and trailing
@@ -2576,6 +2577,7 @@ void sub_add_text(subtitle *sub, const char *txt, int len, double endpts, int st
     free(sub->text[sub->lines]);
   }
 #ifdef CONFIG_FRIBIDI
+  if (strip_markup)
   sub = sub_fribidi(sub, sub_utf8, orig_lines);
 #endif
 }

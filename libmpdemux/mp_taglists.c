@@ -29,7 +29,11 @@
 static const struct AVCodecTag mp_wav_tags[] = {
     { CODEC_ID_ADPCM_4XM,         MKTAG('4', 'X', 'M', 'A')},
     { CODEC_ID_ADPCM_ADX,         MKTAG('S', 'a', 'd', 'x')},
+    { CODEC_ID_ADPCM_IMA_APC,     MKTAG('A', 'P', 'C', 'A')},
     { CODEC_ID_ADPCM_EA,          MKTAG('A', 'D', 'E', 'A')},
+    { CODEC_ID_ADPCM_EA_R1,       MKTAG('E', 'A', 'R', '1')},
+    { CODEC_ID_ADPCM_EA_R2,       MKTAG('E', 'A', 'R', '2')},
+    { CODEC_ID_ADPCM_EA_R3,       MKTAG('E', 'A', 'R', '3')},
     { CODEC_ID_ADPCM_EA_MAXIS_XA, MKTAG('A', 'D', 'X', 'A')},
     { CODEC_ID_ADPCM_IMA_EA_EACS, MKTAG('E', 'A', 'C', 'S')},
     { CODEC_ID_ADPCM_IMA_ISS,     MKTAG('A', 'I', 'S', 'S')},
@@ -37,6 +41,7 @@ static const struct AVCodecTag mp_wav_tags[] = {
     { CODEC_ID_ADPCM_THP,         MKTAG('T', 'H', 'P', 'A')},
     { CODEC_ID_ADPCM_XA,          MKTAG('P', 'S', 'X', 'A')},
     { CODEC_ID_AMR_NB,            MKTAG('n', 'b',   0,   0)},
+    { CODEC_ID_ATRAC1,            MKTAG('A', 'T', 'R', '1')},
     { CODEC_ID_BINKAUDIO_DCT,     MKTAG('B', 'A', 'U', '1')},
     { CODEC_ID_BINKAUDIO_RDFT,    MKTAG('B', 'A', 'U', '2')},
     { CODEC_ID_BMV_AUDIO,         MKTAG('B', 'M', 'V', 'A')},
@@ -54,6 +59,7 @@ static const struct AVCodecTag mp_wav_tags[] = {
     { CODEC_ID_MUSEPACK7,         MKTAG('M', 'P', 'C', ' ')},
     { CODEC_ID_MUSEPACK8,         MKTAG('M', 'P', 'C', '8')},
     { CODEC_ID_NELLYMOSER,        MKTAG('n', 'm', 'o', 's')},
+    { CODEC_ID_OPUS,              MKTAG('o', 'p', 'u', 's')},
     { CODEC_ID_PCM_LXF,           MKTAG('P', 'L', 'X', 'F')},
     { CODEC_ID_PCM_S16LE_PLANAR,  MKTAG('1', '6', 'P', 'L')},
     { CODEC_ID_QCELP,             MKTAG('Q', 'c', 'l', 'p')},
@@ -65,14 +71,15 @@ static const struct AVCodecTag mp_wav_tags[] = {
     { CODEC_ID_SPEEX,             MKTAG('s', 'p', 'x', ' ')},
     { CODEC_ID_TTA,               MKTAG('T', 'T', 'A', '1')},
     { CODEC_ID_TWINVQ,            MKTAG('T', 'W', 'I', '2')},
+#if LIBAVUTIL_VERSION_MICRO >= 100
+    { CODEC_ID_VIMA,              MKTAG('V', 'I', 'M', 'A')},
+#endif
     { CODEC_ID_VMDAUDIO,          MKTAG('V', 'M', 'D', 'A')},
     { CODEC_ID_WAVPACK,           MKTAG('W', 'V', 'P', 'K')},
     { CODEC_ID_WESTWOOD_SND1,     MKTAG('S', 'N', 'D', '1')},
     { CODEC_ID_XAN_DPCM,          MKTAG('A', 'x', 'a', 'n')},
     { 0, 0 },
 };
-
-static const struct AVCodecTag * const mp_wav_taglists[] = {mp_wav_tags, 0};
 
 static const struct AVCodecTag mp_codecid_override_tags[] = {
     { CODEC_ID_8SVX_EXP,          MKTAG('8', 'e', 'x', 'p')},
@@ -95,6 +102,10 @@ static const struct AVCodecTag mp_codecid_override_tags[] = {
     { CODEC_ID_H264,              MKTAG('H', '2', '6', '4')},
     { CODEC_ID_MP3,               0x55},
     { CODEC_ID_MPEG4,             MKTAG('M', 'P', '4', 'V')},
+#if LIBAVUTIL_VERSION_MICRO >= 100
+    { CODEC_ID_PAF_AUDIO,         MKTAG('P', 'A', 'F', 'A')},
+    { CODEC_ID_PAF_VIDEO,         MKTAG('P', 'A', 'F', 'V')},
+#endif
     { CODEC_ID_PCM_BLURAY,        MKTAG('B', 'P', 'C', 'M')},
     { CODEC_ID_PCM_S8,            MKTAG('t', 'w', 'o', 's')},
     { CODEC_ID_PCM_U8,            1},
@@ -123,12 +134,13 @@ static const struct AVCodecTag mp_bmp_tags[] = {
     { CODEC_ID_BMV_VIDEO,         MKTAG('B', 'M', 'V', 'V')},
     { CODEC_ID_C93,               MKTAG('C', '9', '3', 'V')},
     { CODEC_ID_CDGRAPHICS,        MKTAG('C', 'D', 'G', 'R')},
+    { CODEC_ID_CDXL,              MKTAG('C', 'D', 'X', 'L')},
     { CODEC_ID_CMV,               MKTAG('M', 'V', 'I', 'f')},
     { CODEC_ID_DFA,               MKTAG('C', 'D', 'F', 'A')},
     { CODEC_ID_DNXHD,             MKTAG('A', 'V', 'd', 'n')},
     { CODEC_ID_DSICINVIDEO,       MKTAG('D', 'C', 'I', 'V')},
     { CODEC_ID_DXA,               MKTAG('D', 'X', 'A', '1')},
-    { CODEC_ID_FLIC,              MKTAG('F', 'L', 'I', 'C')},
+    { CODEC_ID_FLIC,              MKTAG('f', 'l', 'i', 'c')},
     { CODEC_ID_IDCIN,             MKTAG('I', 'D', 'C', 'I')},
     { CODEC_ID_INTERPLAY_VIDEO,   MKTAG('I', 'N', 'P', 'V')},
     { CODEC_ID_JV,                MKTAG('F', 'F', 'J', 'V')},
@@ -144,6 +156,9 @@ static const struct AVCodecTag mp_bmp_tags[] = {
     { CODEC_ID_RV20,              MKTAG('R', 'V', '2', '0')},
     { CODEC_ID_RV30,              MKTAG('R', 'V', '3', '0')},
     { CODEC_ID_RV40,              MKTAG('R', 'V', '4', '0')},
+#if LIBAVUTIL_VERSION_MICRO >= 100
+    { CODEC_ID_SANM,              MKTAG('S', 'A', 'N', 'M')},
+#endif
     { CODEC_ID_SVQ3,              MKTAG('S', 'V', 'Q', '3')},
     { CODEC_ID_TMV,               MKTAG('t', 'm', 'v', '8')},
     { CODEC_ID_TGV,               MKTAG('f', 'V', 'G', 'T')},
@@ -157,25 +172,23 @@ static const struct AVCodecTag mp_bmp_tags[] = {
     { 0, 0 },
 };
 
-static const struct AVCodecTag * const mp_bmp_taglists[] = {mp_bmp_tags, 0};
+static void get_taglists(const struct AVCodecTag *dst[3], int audio)
+{
+    dst[0] = audio ? mp_wav_tags : mp_bmp_tags;
+    dst[1] = audio ? avformat_get_riff_audio_tags() : avformat_get_riff_video_tags();
+    dst[2] = NULL;
+}
 
 enum CodecID mp_tag2codec_id(uint32_t tag, int audio)
 {
-    AVOutputFormat *avi_format;
-    enum CodecID id = av_codec_get_id(audio ? mp_wav_taglists : mp_bmp_taglists, tag);
-    if (id != CODEC_ID_NONE)
-        return id;
-    avi_format = av_guess_format("avi", NULL, NULL);
-    if (!avi_format) {
-        mp_msg(MSGT_DEMUXER, MSGL_FATAL, "MPlayer cannot work properly without AVI muxer in libavformat!\n");
-        return 0;
-    }
-    return av_codec_get_id(avi_format->codec_tag, tag);
+    const struct AVCodecTag *taglists[3];
+    get_taglists(taglists, audio);
+    return av_codec_get_id(taglists, tag);
 }
 
 uint32_t mp_codec_id2tag(enum CodecID codec_id, uint32_t old_tag, int audio)
 {
-    AVOutputFormat *avi_format;
+    const struct AVCodecTag *taglists[3];
     // For some formats (like PCM) always trust CODEC_ID_* more than codec_tag
     uint32_t tag = av_codec_get_tag(mp_codecid_override_taglists, codec_id);
     if (tag)
@@ -189,14 +202,6 @@ uint32_t mp_codec_id2tag(enum CodecID codec_id, uint32_t old_tag, int audio)
     if (tag)
         return tag;
 
-    tag = av_codec_get_tag(audio ? mp_wav_taglists : mp_bmp_taglists, codec_id);
-    if (tag)
-        return tag;
-
-    avi_format = av_guess_format("avi", NULL, NULL);
-    if (!avi_format) {
-        mp_msg(MSGT_DEMUXER, MSGL_FATAL, "MPlayer cannot work properly without AVI muxer in libavformat!\n");
-        return 0;
-    }
-    return av_codec_get_tag(avi_format->codec_tag, codec_id);
+    get_taglists(taglists, audio);
+    return av_codec_get_tag(taglists, codec_id);
 }

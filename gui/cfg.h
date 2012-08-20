@@ -80,8 +80,8 @@ extern int gtkShowVideoWindow;
 extern int gui_save_pos;
 extern int gui_main_pos_x;
 extern int gui_main_pos_y;
-extern int gui_sub_pos_x;
-extern int gui_sub_pos_y;
+extern int gui_video_pos_x;
+extern int gui_video_pos_y;
 
 extern int guiWinID;
 
@@ -90,7 +90,7 @@ extern char *skinName;
 extern char *fsHistory[5];
 
 int cfg_gui_include(m_option_t *conf, const char *filename);
-int cfg_read(void);
-int cfg_write(void);
+void cfg_read(void);
+void cfg_write(void);
 
 #endif /* MPLAYER_GUI_CFG_H */

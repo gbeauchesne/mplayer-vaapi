@@ -65,7 +65,7 @@ static int demux_mf_fill_buffer(demuxer_t *demuxer, demux_stream_t *ds){
    if ( !fread( dp->buffer,fs.st_size,1,f ) ) return 0;
    dp->pts=mf->curr_frame / sh_video->fps;
    dp->pos=mf->curr_frame;
-   dp->flags=0;
+   dp->flags=1;
    // append packet to DS stream:
    ds_add_packet( demuxer->video,dp );
   }
@@ -83,18 +83,23 @@ static const struct {
 } type2format[] = {
   { "bmp",  mmioFOURCC('b', 'm', 'p', ' ') },
   { "dpx",  mmioFOURCC('d', 'p', 'x', ' ') },
+  { "j2c",  mmioFOURCC('M', 'J', '2', 'C') },
   { "j2k",  mmioFOURCC('M', 'J', '2', 'C') },
   { "jp2",  mmioFOURCC('M', 'J', '2', 'C') },
+  { "jpc",  mmioFOURCC('M', 'J', '2', 'C') },
   { "jpeg", mmioFOURCC('I', 'J', 'P', 'G') },
   { "jpg",  mmioFOURCC('I', 'J', 'P', 'G') },
+  { "jps",  mmioFOURCC('I', 'J', 'P', 'G') },
   { "jls",  mmioFOURCC('I', 'J', 'P', 'G') },
   { "thm",  mmioFOURCC('I', 'J', 'P', 'G') },
   { "db",   mmioFOURCC('I', 'J', 'P', 'G') },
   { "pcx",  mmioFOURCC('p', 'c', 'x', ' ') },
   { "png",  mmioFOURCC('M', 'P', 'N', 'G') },
+  { "pns",  mmioFOURCC('M', 'P', 'N', 'G') },
   { "ptx",  mmioFOURCC('p', 't', 'x', ' ') },
   { "tga",  mmioFOURCC('M', 'T', 'G', 'A') },
   { "tif",  mmioFOURCC('t', 'i', 'f', 'f') },
+  { "tiff",  mmioFOURCC('t', 'i', 'f', 'f') },
   { "sgi",  mmioFOURCC('S', 'G', 'I', '1') },
   { "sun",  mmioFOURCC('s', 'u', 'n', ' ') },
   { "ras",  mmioFOURCC('s', 'u', 'n', ' ') },

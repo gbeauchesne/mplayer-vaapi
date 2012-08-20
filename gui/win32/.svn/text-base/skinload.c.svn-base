@@ -104,7 +104,7 @@ static char *geteventname(int event)
 /* reads a complete image as is into image buffer */
 static image *pngRead(skin_t *skin, const char *fname)
 {
-    int i;
+    unsigned int i;
     guiImage bmp;
     image *bf;
     char *filename = NULL;
@@ -149,7 +149,7 @@ static image *pngRead(skin_t *skin, const char *fname)
       int src_stride[4] = { 4 * bmp.Width, 0, 0, 0 };
       uint8_t *dst[4] = { NULL, NULL, NULL, NULL };
       int dst_stride[4];
-      enum PixelFormat out_pix_fmt;
+      enum PixelFormat out_pix_fmt = PIX_FMT_NONE;
       struct SwsContext *sws;
       if      (skin->desktopbpp == 16) out_pix_fmt = PIX_FMT_RGB555;
       else if (skin->desktopbpp == 24) out_pix_fmt = PIX_FMT_RGB24;
@@ -618,9 +618,9 @@ skin_t* loadskin(char* skindir, int desktopbpp)
             mywindow = skin->windows[(skin->windowcount) - 1] = calloc(1, sizeof(window));
             mywindow->name = strdup(desc + 7);
             if(!strncmp(desc + 7, "main", 4)) mywindow->type = wiMain;
-            else if(!strncmp(desc+7, "sub", 3))
+            else if(!strncmp(desc+7, "video", 5) || !strncmp(desc+7, "sub", 3))   // legacy
             {
-                mywindow->type = wiSub;
+                mywindow->type = wiVideo;
                 mywindow->decoration = 1;
             }
             else if(!strncmp(desc + 7, "menu", 4)) mywindow->type = wiMenu;

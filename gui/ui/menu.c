@@ -16,6 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/* menu window */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -48,7 +50,7 @@ static void uiMenuDraw( void )
  if ( menuRender || menuItem != oldMenuItem )
   {
    memcpy( menuDrawBuffer,guiApp.menu.Bitmap.Image,guiApp.menu.Bitmap.ImageSize );
-// ---
+/* --- */
    if ( menuItem != -1 )
     {
      buf=(uint32_t *)menuDrawBuffer;
@@ -61,7 +63,7 @@ static void uiMenuDraw( void )
          }
     }
    oldMenuItem=menuItem;
-// ---
+/* --- */
    wsConvert( &guiApp.menuWindow,menuDrawBuffer );
    menuRender=0;
   }

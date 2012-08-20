@@ -55,7 +55,7 @@ if ! test -e ffmpeg ; then
         echo "Failed to get a FFmpeg checkout"
         exit 1
     fi
-    ffrevision=fc09bf57a60d4c4a6d339b204b3282337067c06d
+    ffrevision=d93b6340d70f47ab77b2640ee2bbc7524d68b20f
     cd ffmpeg && git checkout $ffrevision && cd ..
 fi
 
@@ -390,6 +390,7 @@ Optional features:
   --disable-vstream      disable TiVo vstream client support [autodetect]
   --disable-pthreads     disable Posix threads support [autodetect]
   --disable-w32threads   disable Win32 threads support [autodetect]
+  --disable-os2threads   disable OS/2 threads support [autodetect]
   --enable-ass-internal  enable internal SSA/ASS subtitle support [autodetect]
   --disable-ass          disable SSA/ASS subtitle support [autodetect]
   --enable-rpath         enable runtime linker path for extra libs [disabled]
@@ -859,6 +860,7 @@ _musepack=no
 _vstream=auto
 _pthreads=auto
 _w32threads=auto
+_os2threads=auto
 _ass=auto
 ass_internal=auto
 _rpath=no
@@ -1352,6 +1354,8 @@ for ac_option do
   --disable-pthreads)   _pthreads=no    ;;
   --enable-w32threads)  _w32threads=yes ;;
   --disable-w32threads) _w32threads=no  ;;
+  --enable-os2threads)  _os2threads=yes ;;
+  --disable-os2threads) _os2threads=no  ;;
   --enable-ass)         _ass=yes        ;;
   --disable-ass)        _ass=no         ;;
   --enable-ass-internal)  ass_internal=yes ;;
@@ -3561,6 +3565,7 @@ echores "$_dynamic_plugins"
 def_threads='#define HAVE_THREADS 0'
 def_pthreads='#define HAVE_PTHREADS 0'
 def_w32threads='#define HAVE_W32THREADS 0'
+def_os2threads='#define HAVE_OS2THREADS 0'
 
 echocheck "pthread"
 if linux ; then
@@ -3615,6 +3620,20 @@ if test "$_w32threads" = auto ; then
 fi
 test "$_w32threads" = yes && def_threads='#define HAVE_THREADS 1' && def_w32threads='#define HAVE_W32THREADS 1'
 echores "$_w32threads"
+
+if os2 ; then
+echocheck "os2threads"
+if test "$_pthreads" = yes ; then
+  res_comment="using pthread instead"
+  _os2threads=no
+fi
+if test "$_os2threads" = auto ; then
+  _os2threads=no
+  os2 && _os2threads=yes
+fi
+test "$_os2threads" = yes && def_threads='#define HAVE_THREADS 1' && def_os2threads='#define HAVE_OS2THREADS 1'
+echores "$_os2threads"
+fi #if os2
 
 echocheck "rpath"
 if test "$_rpath" = yes ; then
@@ -5065,6 +5084,10 @@ if (test "$_x11" = yes || test "$_sdl" = yes || win32) && test "$_gl" != no ; th
 // we allow SDL hacking our main() only on OSX
 #undef main
 #endif
+#elif defined(GL_EGL_X11)
+#include <GL/gl.h>
+#include <X11/Xlib.h>
+#include <EGL/egl.h>
 #else
 #include <GL/gl.h>
 #include <X11/Xlib.h>
@@ -5076,10 +5099,15 @@ int main(int argc, char *argv[]) {
   wglCreateContext(dc);
 #elif defined(GL_SDL)
   SDL_GL_SwapBuffers();
+#elif defined(GL_EGL_X11)
+  EGLDisplay eglDisplay = EGL_NO_DISPLAY;
+  eglInitialize(eglDisplay, NULL, NULL);
 #else
   glXCreateContext(NULL, NULL, NULL, True);
 #endif
+#ifndef GL_EGL_X11
   glFinish();
+#endif
   return 0;
 }
 EOF
@@ -5092,6 +5120,11 @@ EOF
       break
     fi
   done
+  if cc_check -DGL_EGL_X11 -lEGL ; then
+    _gl=yes
+    _gl_egl_x11=yes
+    libs_mplayer="$libs_mplayer -lEGL $ld_dl"
+  fi
   if cc_check -DGL_WIN32 -lopengl32 ; then
     _gl=yes
     _gl_win32=yes
@@ -5124,6 +5157,10 @@ if test "$_gl" = yes ; then
     def_gl_x11='#define CONFIG_GL_X11 1'
     res_comment="$res_comment x11"
   fi
+  if test "$_gl_egl_x11" = yes ; then
+    def_gl_egl_x11='#define CONFIG_GL_EGL_X11 1'
+    res_comment="$res_comment egl_x11"
+  fi
   if test "$_gl_sdl" = yes ; then
     def_gl_sdl='#define CONFIG_GL_SDL 1'
     res_comment="$res_comment sdl"
@@ -5133,6 +5170,7 @@ else
   def_gl='#undef CONFIG_GL'
   def_gl_win32='#undef CONFIG_GL_WIN32'
   def_gl_x11='#undef CONFIG_GL_X11'
+  def_gl_egl_x11='#undef CONFIG_GL_EGL_X11'
   def_gl_sdl='#undef CONFIG_GL_SDL'
   novomodules="opengl $novomodules"
 fi
@@ -5749,24 +5787,8 @@ fi
 echores "$_libdvdcss_internal"
 
 
-echocheck "cdparanoia"
-if test "$_cdparanoia" = auto ; then
-    _cdparanoia=no
-    for inc_tmp in "" "-I/usr/include/cdda" "-I/usr/local/include/cdda" ; do
-      statement_check_broken cdda_interface.h cdda_paranoia.h 'paranoia_cachemodel_size(NULL, 0)' $inc_tmp -lcdda_interface -lcdda_paranoia &&
-        _cdparanoia=yes && extra_cflags="$extra_cflags $inc_tmp" && break
-    done
-fi
-if test "$_cdparanoia" = yes ; then
-    _cdda='yes'
-    extra_ldflags="$extra_ldflags -lcdda_interface -lcdda_paranoia"
-    openbsd && extra_ldflags="$extra_ldflags -lutil"
-fi
-echores "$_cdparanoia"
-
-
 echocheck "libcdio"
-if test "$_libcdio" = auto && test "$_cdparanoia" = no ; then
+if test "$_libcdio" = auto ; then
         cat > $TMPC << EOF
 #include <stdio.h>
 #include <cdio/version.h>
@@ -5791,19 +5813,35 @@ EOF
         extra_ldflags="$extra_ldflags $ld_tmp" && extra_cflags="$extra_cflags $inc_tmp"
     fi
 fi
-if test "$_libcdio" = yes && test "$_cdparanoia" = no ; then
+if test "$_libcdio" = yes ; then
     _cdda='yes'
+    _cdparanoia=no
     def_libcdio='#define CONFIG_LIBCDIO 1'
     def_havelibcdio='yes'
 else
     _libcdio=no
-    if test "$_cdparanoia" = yes ; then
-       res_comment="using cdparanoia"
-    fi
     def_libcdio='#undef CONFIG_LIBCDIO'
     def_havelibcdio='no'
 fi
 echores "$_libcdio"
+
+echocheck "cdparanoia"
+if test "$_cdparanoia" = auto ; then
+    _cdparanoia=no
+    for inc_tmp in "" "-I/usr/include/cdda" "-I/usr/local/include/cdda" ; do
+      statement_check_broken cdda_interface.h cdda_paranoia.h 'paranoia_cachemodel_size(NULL, 0)' $inc_tmp -lcdda_interface -lcdda_paranoia &&
+        _cdparanoia=yes && extra_cflags="$extra_cflags $inc_tmp" && break
+    done
+fi
+if test "$_cdparanoia" = yes ; then
+    _cdda='yes'
+    extra_ldflags="$extra_ldflags -lcdda_interface -lcdda_paranoia"
+    openbsd && extra_ldflags="$extra_ldflags -lutil"
+elif test "$_libcdio" = yes ; then
+    res_comment='using libcdio'
+fi
+echores "$_cdparanoia"
+
 
 if test "$_cdda" = yes ; then
     test $_cddb = auto && test $networking = yes && _cddb=yes
@@ -5912,12 +5950,43 @@ fi
 echores "$_fontconfig"
 
 
+echocheck "fribidi with charsets"
+if test "$_fribidi" = auto ; then
+    cat > $TMPC << EOF
+#include <stdlib.h>
+#include <fribidi/fribidi.h>
+FriBidiParType test;
+int main(void) {
+    if (fribidi_parse_charset("UTF-8") != FRIBIDI_CHAR_SET_UTF8)
+       exit(1);
+    return 0;
+}
+EOF
+    _fribidi=no
+    cc_check -lfribidi && _fribidi=yes && extra_ldflags="$extra_ldflags -lfribidi"
+    if $_pkg_config --exists fribidi > /dev/null 2>&1 &&
+       test "$_fribidi" = no ; then
+        inc_tmp="$($_pkg_config --cflags fribidi)"
+        ld_tmp="$($_pkg_config --libs fribidi)"
+        cc_check $inc_tmp $ld_tmp && _fribidi=yes &&
+            extra_cflags="$extra_cflags $inc_tmp" &&
+            extra_ldflags="$extra_ldflags $ld_tmp"
+    fi
+fi
+if test "$_fribidi" = yes ; then
+    def_fribidi='#define CONFIG_FRIBIDI 1'
+else
+    def_fribidi='#undef CONFIG_FRIBIDI'
+fi
+echores "$_fribidi"
+
+
 echocheck "SSA/ASS support"
 # libass depends on FreeType
 if test "$_freetype" = no ; then
     _ass=no
     ass_internal=no
-    res_comment="FreeType support needed"
+    res_comment="FreeType and FriBiDi support needed"
 fi
 
 if test "$_ass" = auto ; then
@@ -5966,38 +6035,6 @@ else
     ass_internal=no
 fi
 echores "$_ass"
-
-
-echocheck "fribidi with charsets"
-if test "$_fribidi" = auto ; then
-    cat > $TMPC << EOF
-#include <stdlib.h>
-/* workaround for fribidi 0.10.4 and below */
-#define FRIBIDI_CHARSET_UTF8 FRIBIDI_CHAR_SET_UTF8
-#include <fribidi/fribidi.h>
-int main(void) {
-    if (fribidi_parse_charset("UTF-8") != FRIBIDI_CHAR_SET_UTF8)
-       exit(1);
-    return 0;
-}
-EOF
-    _fribidi=no
-    cc_check -lfribidi && _fribidi=yes && extra_ldflags="$extra_ldflags -lfribidi"
-    if $_pkg_config --exists fribidi > /dev/null 2>&1 &&
-       test "$_fribidi" = no ; then
-        inc_tmp="$($_pkg_config --cflags fribidi)"
-        ld_tmp="$($_pkg_config --libs fribidi)"
-        cc_check $inc_tmp $ld_tmp && _fribidi=yes &&
-            extra_cflags="$extra_cflags $inc_tmp" &&
-            extra_ldflags="$extra_ldflags $ld_tmp"
-    fi
-fi
-if test "$_fribidi" = yes ; then
-    def_fribidi='#define CONFIG_FRIBIDI 1'
-else
-    def_fribidi='#undef CONFIG_FRIBIDI'
-fi
-echores "$_fribidi"
 
 
 echocheck "ENCA"
@@ -6216,57 +6253,15 @@ echores "$_libgsm"
 echocheck "OggTheora support"
 if test "$_theora" = auto ; then
   _theora=no
-    cat > $TMPC << EOF
-#include <theora/theora.h>
-#include <string.h>
-int main(void) {
-  /* Theora is in flux, make sure that all interface routines and datatypes
-   * exist and work the way we expect it, so we don't break MPlayer. */
-  ogg_packet op;
-  theora_comment tc;
-  theora_info inf;
-  theora_state st;
-  yuv_buffer yuv;
-  int r;
-  double t;
-
-  theora_info_init(&inf);
-  theora_comment_init(&tc);
-
-  return 0;
-
-  /* we don't want to execute this kind of nonsense; just for making sure
-   * that compilation works... */
-  memset(&op, 0, sizeof(op));
-  r = theora_decode_header(&inf, &tc, &op);
-  r = theora_decode_init(&st, &inf);
-  t = theora_granule_time(&st, op.granulepos);
-  r = theora_decode_packetin(&st, &op);
-  r = theora_decode_YUVout(&st, &yuv);
-  theora_clear(&st);
-
-  return 0;
-}
-EOF
-  ld_theora=$($_pkg_config --silence-errors --libs theora)
-  inc_theora=$($_pkg_config --silence-errors --cflags theora)
-  cc_check $inc_theora $ld_theora && extra_ldflags="$extra_ldflags $ld_theora" &&
-    extra_cflags="$extra_cflags $inc_theora" && _theora=yes
+  ld_theora="-ltheoradec -logg"
+  statement_check theora/theoradec.h 'th_info_init(NULL)' $ld_theora &&
+    extra_ldflags="$extra_ldflags $ld_theora" && _theora=yes
   if test _theora = no; then
-    ld_theora="-ltheora -logg"
-    cc_check $ld_theora && extra_ldflags="$extra_ldflags $ld_theora" && _theora=yes
-  fi
-  if test "$_theora" = no && test "$_tremor_internal" = yes; then
-    ld_theora=$($_pkg_config --silence-errors --libs theora)
-    inc_theora=$($_pkg_config --silence-errors --cflags theora)
-    cc_check tremor/bitwise.c $inc_theora $ld_theora &&
+    ld_theora=$($_pkg_config --silence-errors --libs theoradec)
+    inc_theora=$($_pkg_config --silence-errors --cflags theoradec)
+    statement_check theora/theoradec.h 'th_info_init(NULL)' $inc_theora $ld_theora &&
       extra_ldflags="$extra_ldflags $ld_theora" &&
       extra_cflags="$extra_cflags $inc_theora" && _theora=yes
-    if test _theora = no; then
-      ld_theora="-ltheora -logg"
-      cc_check tremor/bitwise.c $ld_theora &&
-        extra_ldflags="$extra_ldflags $ld_theora" && _theora=yes
-    fi
   fi
 fi
 if test "$_theora" = yes ; then
@@ -6274,7 +6269,7 @@ if test "$_theora" = yes ; then
   codecmodules="libtheora $codecmodules"
   # when --enable-theora is forced, we'd better provide a probably sane
   # $ld_theora than nothing
-  test -z "$ld_theora" && extra_ldflags="$extra_ldflags -ltheora -logg"
+  test -z "$ld_theora" && extra_ldflags="$extra_ldflags -ltheoradec -logg"
 else
   def_theora='#undef CONFIG_OGGTHEORA'
   nocodecmodules="libtheora $nocodecmodules"
@@ -8031,6 +8026,7 @@ GGI = $_ggi
 GL = $_gl
 GL_WIN32 = $_gl_win32
 GL_X11 = $_gl_x11
+GL_EGL_X11 = $_gl_egl_x11
 GL_SDL = $_gl_sdl
 MATRIXVIEW = $matrixview
 GUI = $_gui
@@ -8193,6 +8189,7 @@ CONFIG_DCT     = yes
 CONFIG_DWT     = yes
 CONFIG_FFT     = yes
 CONFIG_GOLOMB  = yes
+CONFIG_H264CHROMA = yes
 CONFIG_H264DSP = yes
 CONFIG_H264PRED= yes
 CONFIG_HUFFMAN = yes
@@ -8223,6 +8220,7 @@ CONFIG_XVMC     = $_xvmc
 CONFIG_ZLIB     = $_zlib
 
 HAVE_GNU_AS     = $gnu_as
+HAVE_OS2THREADS = $_os2threads
 HAVE_PTHREADS   = $_pthreads
 HAVE_SHM        = $_shm
 HAVE_W32THREADS = $_w32threads
@@ -8570,6 +8568,7 @@ $def_gif_tvt_hack
 $def_gl
 $def_gl_win32
 $def_gl_x11
+$def_gl_egl_x11
 $def_gl_sdl
 $def_matrixview
 $def_ivtv
@@ -8657,6 +8656,7 @@ $def_mlib
 $def_mkstemp
 $def_mmap
 $def_network
+$def_os2threads
 $def_pic
 $def_poll_h
 $def_posix_memalign
@@ -8673,6 +8673,7 @@ $def_xmm_clobbers
 $def_yasm
 
 #define CONFIG_AUDIO_FLOAT 0
+#define CONFIG_AVCODEC 1
 #define CONFIG_AVSERVER 0
 #define CONFIG_FASTDIV 0
 #define CONFIG_FFSERVER 0
@@ -8683,6 +8684,8 @@ $def_yasm
 #define CONFIG_LIBVORBIS 0
 #define CONFIG_OPENSSL 0
 #define CONFIG_POWERPC_PERF 0
+/* For now prefer speed over avoiding potential invalid reads */
+#define CONFIG_SAFE_BITSTREAM_READER 0
 #define CONFIG_SHARED 0
 #define CONFIG_SMALL 0
 #define CONFIG_SWSCALE_ALPHA 1
@@ -8696,7 +8699,6 @@ $def_yasm
 #define HAVE_LDBRX 0
 #define HAVE_LOCALTIME_R 0
 #define HAVE_MAPVIEWOFFILE 0
-#define HAVE_OS2THREADS 0
 #define HAVE_PPC4XX 0
 #define HAVE_STRERROR_R 0
 #define HAVE_STRPTIME 0
@@ -8711,6 +8713,7 @@ $def_yasm
 #define CONFIG_DWT 1
 #define CONFIG_FFT 1
 #define CONFIG_GOLOMB 1
+#define CONFIG_H264CHROMA 1
 #define CONFIG_H264DSP 1
 #define CONFIG_H264PRED 1
 #define CONFIG_HUFFMAN 1

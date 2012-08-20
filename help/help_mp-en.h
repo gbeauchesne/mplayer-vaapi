@@ -1,4 +1,4 @@
-// $Revision: 34569 $
+// $Revision: 34958 $
 // MASTER FILE. Use this file as base for translations.
 // Translated files should be sent to the mplayer-DOCS mailing list or
 // to the help messages maintainer, see DOCS/tech/MAINTAINERS.
@@ -177,6 +177,17 @@ static const char help_text[]=
 #define MSGTR_MenuCall "Menu call\n"
 #define MSGTR_MasterQuit "Option -udp-slave: exiting because master exited\n"
 #define MSGTR_InvalidIP "Option -udp-ip: invalid IP address\n"
+#define MSGTR_Forking "Forking...\n"
+#define MSGTR_Forked "Forked...\n"
+#define MSGTR_CouldntStartGdb "Couldn't start gdb\n"
+#define MSGTR_CouldntFork "Couldn't fork\n"
+#define MSGTR_FilenameTooLong "Filename is too long, can not load file or directory specific config files\n"
+#define MSGTR_AudioDeviceStuck "Audio device got stuck!\n"
+#define MSGTR_AudioOutputTruncated "Audio output truncated at end.\n"
+#define MSGTR_ASSCannotAddVideoFilter "ASS: cannot add video filter\n"
+#define MSGTR_PtsAfterFiltersMissing "pts after filters MISSING\n"
+#define MSGTR_CommandLine "CommandLine:"
+#define MSGTR_MenuInitFailed "Menu init failed.\n"
 
 // --- edit decision lists
 #define MSGTR_EdlOutOfMem "Can't allocate enough memory to hold EDL data.\n"
@@ -546,6 +557,36 @@ static const char help_text[]=
 #define MSGTR_NoChapter "No chapter"
 #define MSGTR_Chapter "Chapter %d"
 #define MSGTR_NoFileLoaded "No file loaded."
+#define MSGTR_Filter_UTF8Subtitles "UTF-8 encoded subtitles (*.utf, *.utf-8, *.utf8)"
+#define MSGTR_Filter_AllSubtitles "All subtitles"
+#define MSGTR_Filter_AllFiles "All files"
+#define MSGTR_Filter_TTF "True Type fonts (*.ttf)"
+#define MSGTR_Filter_Type1 "Type1 fonts (*.pfb)"
+#define MSGTR_Filter_AllFonts "All fonts"
+#define MSGTR_Filter_FontFiles "Font files (*.desc)"
+#define MSGTR_Filter_DDRawAudio "Dolby Digital / PCM (*.ac3, *.pcm)"
+#define MSGTR_Filter_MPEGAudio "MPEG audio (*.mp2, *.mp3, *.mpga, *.m4a, *.aac, *.f4a)"
+#define MSGTR_Filter_MatroskaAudio "Matroska audio (*.mka)"
+#define MSGTR_Filter_OGGAudio "Ogg audio (*.oga, *.ogg, *.spx)"
+#define MSGTR_Filter_WAVAudio "WAV audio (*.wav)"
+#define MSGTR_Filter_WMAAudio "Windows Media audio (*.wma)"
+#define MSGTR_Filter_AllAudioFiles "All audio files"
+#define MSGTR_Filter_AllVideoFiles "All video files"
+#define MSGTR_Filter_AVIFiles "AVI files"
+#define MSGTR_Filter_DivXFiles "DivX files"
+#define MSGTR_Filter_FlashVideo "Flash Video"
+#define MSGTR_Filter_MP3Files "MP3 files"
+#define MSGTR_Filter_MP4Files "MP4 files"
+#define MSGTR_Filter_MPEGFiles "MPEG files"
+#define MSGTR_Filter_MP2TS "MPEG-2 transport streams"
+#define MSGTR_Filter_MatroskaMedia "Matroska media"
+#define MSGTR_Filter_OGGMedia "Ogg media"
+#define MSGTR_Filter_QTMedia "QuickTime media"
+#define MSGTR_Filter_RNMedia "RealNetworks media"
+#define MSGTR_Filter_VideoCDImages "VCD/SVCD images"
+#define MSGTR_Filter_WAVFiles "WAV files"
+#define MSGTR_Filter_WindowsMedia "Windows media"
+#define MSGTR_Filter_Playlists "Playlists"
 
 // --- buttons ---
 #define MSGTR_Ok "OK"
@@ -838,7 +879,7 @@ static const char help_text[]=
 #define MSGTR_PREFERENCES_PriorityNormal "normal"
 #define MSGTR_PREFERENCES_PriorityNormalAbove "above normal"
 #define MSGTR_PREFERENCES_PriorityNormalBelow "below normal"
-#define MSGTR_PREFERENCES_VideoInSubwin "Display videos in the sub window (DirectX only)"
+#define MSGTR_PREFERENCES_ShowInVideoWin "Display in the video window (DirectX only)"
 
 
 // ======================= video output drivers ========================
@@ -994,7 +1035,6 @@ static const char help_text[]=
 // vo_sdl.c
 #define MSGTR_LIBVO_SDL_CouldntGetAnyAcceptableSDLModeForOutput "[VO_SDL] Couldn't get any acceptable SDL Mode for output.\n"
 #define MSGTR_LIBVO_SDL_SetVideoModeFailed "[VO_SDL] set_video_mode: SDL_SetVideoMode failed: %s.\n"
-#define MSGTR_LIBVO_SDL_SetVideoModeFailedFull "[VO_SDL] Set_fullmode: SDL_SetVideoMode failed: %s.\n"
 #define MSGTR_LIBVO_SDL_MappingI420ToIYUV "[VO_SDL] Mapping I420 to IYUV.\n"
 #define MSGTR_LIBVO_SDL_UnsupportedImageFormat "[VO_SDL] Unsupported image format (0x%X).\n"
 #define MSGTR_LIBVO_SDL_InfoPleaseUseVmOrZoom "[VO_SDL] Info - please use -vm or -zoom to switch to the best resolution.\n"
@@ -1460,6 +1500,8 @@ static const char help_text[]=
 #define MSGTR_MPDEMUX_AVIHDR_IdxFileSaved "Saved index file: %s\n"
 
 // demux_audio.c
+#define MSGTR_MPDEMUX_AUDIO_BadID3v2TagSize "Audio demuxer: bad ID3v2 tag size: larger than stream (%u).\n"
+#define MSGTR_MPDEMUX_AUDIO_DamagedAppendedID3v2Tag "Audio demuxer: damaged appended ID3v2 tag detected.\n"
 #define MSGTR_MPDEMUX_AUDIO_UnknownFormat "Audio demuxer: unknown format %d.\n"
 
 // demux_demuxers.c

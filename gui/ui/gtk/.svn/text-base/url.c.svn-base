@@ -44,12 +44,15 @@ static GList     * URLComboEntrys = NULL;
 
 void ShowURLDialogBox( void )
 {
+ urlItem * item;
+
  if ( URL ) gtkActive( URL );
    else URL=create_URL();
 
- if ( urlList )
+ item = listMgr( URLLIST_GET,0 );
+
+ if ( item )
   {
-   urlItem * item = urlList;
    g_list_free( URLComboEntrys );
    URLComboEntrys=NULL;
    while( item )
@@ -86,11 +89,7 @@ static void on_Button_pressed( GtkButton * button,gpointer user_data )
 
    if ( str )
     {
-     if ( strncmp( str,"http://",7 )
-	&& strncmp( str,"ftp://",6 )
-	&& strncmp( str,"mms://",6 )
-	&& strncmp( str,"pnm://",6 )
-	&& strncmp( str,"rtsp://",7 ) )
+     if ( !strstr( str,"://" ) )
       {
        gchar * tmp;
        tmp=malloc( strlen( str ) + 8 );
@@ -101,7 +100,7 @@ static void on_Button_pressed( GtkButton * button,gpointer user_data )
 
      item=calloc( 1,sizeof( urlItem ) );
      item->url=gstrdup( str );
-     listSet( gtkAddURLItem,item );
+     listMgr( URLLIST_ITEM_ADD,item );
 
      uiSetFileName( NULL,str,STREAMTYPE_STREAM ); guiInfo.NewPlay=GUI_FILE_NEW;
      uiEventHandling( evPlay,0 );

@@ -64,22 +64,22 @@ int gtkInitialized    = 0;
 #include "gtk/url.h"
 #include "gtk/equalizer.h"
 
-#define GUI_ICON_NAME "mplayer"
+static const char gui_icon_name[] = "mplayer";
 
 #define THRESHOLD 128   // transparency values equal to or above this will become
                         // opaque, all values below this will become transparent
 
-// --- init & close gtk
+/* init & close gtk */
 
 guiIcon_t guiIcon;
 
-static void gtkLoadIcon(GtkIconTheme *theme, gint size, GdkPixmap **gdkIcon, GdkBitmap **gdkIconMask)
+static int gtkLoadIcon(GtkIconTheme *theme, gint size, GdkPixmap **gdkIcon, GdkBitmap **gdkIconMask)
 {
     GdkPixbuf *pixbuf;
     guchar *data;
     int csize, i;
 
-    pixbuf = gtk_icon_theme_load_icon(theme, GUI_ICON_NAME, size, 0, NULL);
+    pixbuf = gtk_icon_theme_load_icon(theme, gui_icon_name, size, 0, NULL);
 
     if (pixbuf)
         gdk_pixbuf_render_pixmap_and_mask_for_colormap(pixbuf, gdk_colormap_get_system(), gdkIcon, gdkIconMask, THRESHOLD);
@@ -105,10 +105,12 @@ static void gtkLoadIcon(GtkIconTheme *theme, gint size, GdkPixmap **gdkIcon, Gdk
 
         g_object_unref(pixbuf);
     } else
-        mp_msg(MSGT_GPLAYER, MSGL_WARN, MSGTR_ICONERROR, GUI_ICON_NAME, size);
+        mp_msg(MSGT_GPLAYER, MSGL_WARN, MSGTR_ICONERROR, gui_icon_name, size);
 
-    // start up GTK which realizes the pixmaps
+    /* start up GTK which realizes the pixmaps */
     gtk_main_iteration_do(FALSE);
+
+    return (pixbuf != NULL);
 }
 
 void gtkInit(void)
@@ -136,13 +138,15 @@ void gtkInit(void)
 
     theme = gtk_icon_theme_get_default();
 
-    gtkLoadIcon(theme, 16, &gdkIcon, &gdkIconMask);
-    guiIcon.small      = GDK_PIXMAP_XID(gdkIcon);
-    guiIcon.small_mask = GDK_PIXMAP_XID(gdkIconMask);
+    if (gtkLoadIcon(theme, 16, &gdkIcon, &gdkIconMask)) {
+        guiIcon.small      = GDK_PIXMAP_XID(gdkIcon);
+        guiIcon.small_mask = GDK_PIXMAP_XID(gdkIconMask);
+    }
 
-    gtkLoadIcon(theme, 32, &gdkIcon, &gdkIconMask);
-    guiIcon.normal      = GDK_PIXMAP_XID(gdkIcon);
-    guiIcon.normal_mask = GDK_PIXMAP_XID(gdkIconMask);
+    if (gtkLoadIcon(theme, 32, &gdkIcon, &gdkIconMask)) {
+        guiIcon.normal      = GDK_PIXMAP_XID(gdkIcon);
+        guiIcon.normal_mask = GDK_PIXMAP_XID(gdkIconMask);
+    }
 
     gtkLoadIcon(theme, 48, &gdkIcon, &gdkIconMask);
 
@@ -190,7 +194,7 @@ void gtkEventHandling(void)
         gtk_main_iteration_do(0);
 }
 
-// --- funcs
+/* funcs */
 
 void gtkMessageBox(int type, const gchar *str)
 {
@@ -237,7 +241,7 @@ void gtkMessageBox(int type, const gchar *str)
 
 void gtkSetLayer(GtkWidget *wdg)
 {
-    wsSetLayer(gdk_display, GDK_WINDOW_XWINDOW(wdg->window), guiApp.subWindow.isFullScreen);
+    wsSetLayer(gdk_display, GDK_WINDOW_XWINDOW(wdg->window), guiApp.videoWindow.isFullScreen);
     gtkActive(wdg);
 }
 

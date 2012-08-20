@@ -1,15 +1,15 @@
 10
 
 dir
-34578
+35107
 svn://svn.mplayerhq.hu/mplayer/trunk/DOCS
 svn://svn.mplayerhq.hu/mplayer
 
 
 
-2012-01-12T14:21:55.892217Z
-34546
-ib
+2012-08-18T16:17:31.494685Z
+35102
+reimar
 has-props
 
 
@@ -26,12 +26,6 @@ has-props
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
 
-xml
-dir
-
-tech
-dir
-
 man
 dir
 
@@ -41,7 +35,7 @@ file
 
 
 
-2011-10-06T11:40:11.000000Z
+2011-11-29T12:37:22.366499Z
 3cd7bf326ec8dcfd2423ef32e545d61e
 2010-04-12T10:56:17.152819Z
 31032
@@ -75,7 +69,7 @@ file
 
 
 
-2011-10-06T11:40:11.000000Z
+2011-11-29T12:37:22.366499Z
 a4404d60519202807b35dd4cd6bf0e98
 2009-12-13T22:51:55.024769Z
 30007
@@ -102,4 +96,10 @@ has-props
 
 
 1001
+
+xml
+dir
+
+tech
+dir
 

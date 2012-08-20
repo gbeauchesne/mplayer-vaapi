@@ -1,6 +1,4 @@
 /*
- * main window
- *
  * This file is part of MPlayer.
  *
  * MPlayer is free software; you can redistribute it and/or modify
@@ -17,6 +15,8 @@
  * with MPlayer; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+/* playbar window */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -62,14 +62,14 @@ static void uiPlaybarDraw( void )
 {
  int x;
 
- if ( !guiApp.subWindow.isFullScreen ) return;
+ if ( !guiApp.videoWindow.isFullScreen ) return;
  if ( !playbarVisible || !guiApp.playbarIsPresent ) return;
 
-// guiApp.playbar.x=( guiApp.subWindow.Width - guiApp.playbar.width ) / 2;
+// guiApp.playbar.x=( guiApp.videoWindow.Width - guiApp.playbar.width ) / 2;
  switch( guiApp.playbar.x )
   {
-   case -1: x=( guiApp.subWindow.Width - guiApp.playbar.width ) / 2; break;
-   case -2: x=( guiApp.subWindow.Width - guiApp.playbar.width ); break;
+   case -1: x=( guiApp.videoWindow.Width - guiApp.playbar.width ) / 2; break;
+   case -2: x=( guiApp.videoWindow.Width - guiApp.playbar.width ); break;
    default: x=guiApp.playbar.x;
   }
 
@@ -77,9 +77,9 @@ static void uiPlaybarDraw( void )
   {
    case 1: // fade in
         playbarLength--;
-        if ( guiApp.subWindow.Height - guiApp.playbar.height >= playbarLength )
+        if ( guiApp.videoWindow.Height - guiApp.playbar.height >= playbarLength )
 	 {
-	  playbarLength=guiApp.subWindow.Height - guiApp.playbar.height;
+	  playbarLength=guiApp.videoWindow.Height - guiApp.playbar.height;
 	  uiPlaybarFade=0;
 	  vo_mouse_autohide=0;
 	 }
@@ -87,9 +87,9 @@ static void uiPlaybarDraw( void )
 	break;
    case 2: // fade out
 	playbarLength+=10;
-	if ( playbarLength > guiApp.subWindow.Height )
+	if ( playbarLength > guiApp.videoWindow.Height )
 	 {
-	  playbarLength=guiApp.subWindow.Height;
+	  playbarLength=guiApp.videoWindow.Height;
 	  uiPlaybarFade=playbarVisible=0;
           vo_mouse_autohide=1;
           wsVisibleWindow( &guiApp.playbarWindow,wsHideWindow );
@@ -99,7 +99,7 @@ static void uiPlaybarDraw( void )
 	break;
   }
 
-// --- render
+/* render */
  if ( guiApp.playbarWindow.State == wsWindowExpose )
   {
    btnModify( evSetMoviePosition,guiInfo.Position );
@@ -141,7 +141,7 @@ static void uiPlaybarMouseHandle( int Button, int X, int Y, int RX, int RY )
    case wsRRMouseButton:
         gtkShow( ivShowPopUpMenu,NULL );
 	break;
-// ---
+/* --- */
    case wsPLMouseButton:
 	gtkShow( ivHidePopUpMenu,NULL );
         SelectedItem=currentselected;
@@ -189,7 +189,7 @@ static void uiPlaybarMouseHandle( int Button, int X, int Y, int RX, int RY )
 
 	itemtype=0;
 	break;
-// ---
+/* --- */
    case wsP5MouseButton: value=-2.5f; goto rollerhandled;
    case wsP4MouseButton: value= 2.5f;
 rollerhandled:
@@ -201,7 +201,7 @@ rollerhandled:
 	  uiEventHandling( item->message,item->value );
 	 }
 	break;
-// ---
+/* --- */
    case wsMoveMouse:
         item=&guiApp.playbarItems[SelectedItem];
 	switch ( itemtype )
@@ -230,9 +230,9 @@ potihandled:
 void uiPlaybarShow( int y )
 {
  if ( !guiApp.playbarIsPresent || !gtkEnablePlayBar ) return;
- if ( !guiApp.subWindow.isFullScreen ) return;
+ if ( !guiApp.videoWindow.isFullScreen ) return;
 
- if ( y > guiApp.subWindow.Height - guiApp.playbar.height )
+ if ( y > guiApp.videoWindow.Height - guiApp.playbar.height )
   {
    if ( !uiPlaybarFade ) wsVisibleWindow( &guiApp.playbarWindow,wsShowWindow );
    uiPlaybarFade=1; playbarVisible=1; wsPostRedisplay( &guiApp.playbarWindow );
@@ -252,7 +252,7 @@ void uiPlaybarInit( void )
    mplayer( MPLAYER_EXIT_GUI, EXIT_ERROR, 0 );
   }
 
- guiApp.playbarWindow.Parent=guiApp.subWindow.WindowID;
+ guiApp.playbarWindow.Parent=guiApp.videoWindow.WindowID;
  wsCreateWindow( &guiApp.playbarWindow,
    guiApp.playbar.x,guiApp.playbar.y,guiApp.playbar.width,guiApp.playbar.height,
    wsNoBorder,wsShowMouseCursor|wsHandleMouseButton|wsHandleMouseMove,wsHideFrame|wsHideWindow,"PlayBar" );
@@ -263,5 +263,5 @@ void uiPlaybarInit( void )
  guiApp.playbarWindow.MouseHandler=uiPlaybarMouseHandle;
  guiApp.playbarWindow.KeyHandler=uiMainKeyHandle;
 
- playbarLength=guiApp.subWindow.Height;
+ playbarLength=guiApp.videoWindow.Height;
 }

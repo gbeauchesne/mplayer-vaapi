@@ -68,6 +68,10 @@ static const unsigned int outfmt_list[]={
     IMGFMT_444P,
     IMGFMT_444P16_LE,
     IMGFMT_444P16_BE,
+    IMGFMT_444P14_LE,
+    IMGFMT_444P14_BE,
+    IMGFMT_444P12_LE,
+    IMGFMT_444P12_BE,
     IMGFMT_444P10_LE,
     IMGFMT_444P10_BE,
     IMGFMT_444P9_LE,
@@ -75,6 +79,10 @@ static const unsigned int outfmt_list[]={
     IMGFMT_422P,
     IMGFMT_422P16_LE,
     IMGFMT_422P16_BE,
+    IMGFMT_422P14_LE,
+    IMGFMT_422P14_BE,
+    IMGFMT_422P12_LE,
+    IMGFMT_422P12_BE,
     IMGFMT_422P10_LE,
     IMGFMT_422P10_BE,
     IMGFMT_422P9_LE,
@@ -83,11 +91,17 @@ static const unsigned int outfmt_list[]={
     IMGFMT_I420,
     IMGFMT_420P16_LE,
     IMGFMT_420P16_BE,
+    IMGFMT_420P14_LE,
+    IMGFMT_420P14_BE,
+    IMGFMT_420P12_LE,
+    IMGFMT_420P12_BE,
     IMGFMT_420P10_LE,
     IMGFMT_420P10_BE,
     IMGFMT_420P9_LE,
     IMGFMT_420P9_BE,
     IMGFMT_420A,
+    IMGFMT_422A,
+    IMGFMT_444A,
     IMGFMT_IYUV,
     IMGFMT_YVU9,
     IMGFMT_IF09,
@@ -103,6 +117,10 @@ static const unsigned int outfmt_list[]={
     IMGFMT_BGR24,
     IMGFMT_RGB24,
     IMGFMT_GBR24P,
+    IMGFMT_GBR12PLE,
+    IMGFMT_GBR12PBE,
+    IMGFMT_GBR14PLE,
+    IMGFMT_GBR14PBE,
     IMGFMT_RGB48LE,
     IMGFMT_RGB48BE,
     IMGFMT_BGR16,
@@ -113,6 +131,9 @@ static const unsigned int outfmt_list[]={
     IMGFMT_RGB12,
     IMGFMT_Y800,
     IMGFMT_Y8,
+    IMGFMT_Y8A,
+    IMGFMT_Y16_LE,
+    IMGFMT_Y16_BE,
     IMGFMT_BGR8,
     IMGFMT_RGB8,
     IMGFMT_BGR4,
@@ -147,15 +168,16 @@ static int preferred_conversions[][2] = {
 static unsigned int find_best_out(vf_instance_t *vf, int in_format){
     unsigned int best=0;
     int i = -1;
-    int j = -1;
+    int normalized_format = normalize_yuvp16(in_format);
+    int j = normalized_format ? -2 : -1;
     int format = 0;
 
     // find the best outfmt:
     while (1) {
         int ret;
         if (j < 0) {
-            format = in_format;
-            j = 0;
+            format = j == -1 && normalized_format ? normalized_format : in_format;
+            j++;
         } else if (i < 0) {
             while (preferred_conversions[j][0] &&
                    preferred_conversions[j][0] != in_format)

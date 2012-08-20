@@ -1,4 +1,4 @@
-.\" MPlayer (C) 2000-2010 MPlayer Team
+.\" MPlayer (C) 2000-2012 MPlayer Team
 .\" Diese Man-Page wurde/wird von Moritz Bunkus, Sebastian Krämer,
 .\" Tobias Diedrich gepflegt.
 .\"
@@ -33,7 +33,7 @@
 .\" Titel
 .\" --------------------------------------------------------------------------
 .
-.TH MPlayer 1 "01.01.2008" "Das MPlayer Projekt"
+.TH MPlayer 1 "03.03.2012" "Das MPlayer Projekt"
 .
 .SH NAME
 mplayer  \- Movie Player
@@ -547,6 +547,8 @@ flip=yes
 mf=type=png:fps=25
 # Unheimliche Negativbilder sind cool.
 vf=eq2=1.0:\-0.8
+# Vertikale Positionierung der OSD-Fortschrittsanzeige
+progbar-align=50
 .fi
 .PP
 .I "BEISPIEL FÜR DIE MENCODER-KONFIGURATIONSDATEI:"
@@ -2574,6 +2576,11 @@ sichtbar ist.
 aktivieren).
 .
 .TP
+.B \-progbar\-align <0-100>
+Gibt die vertikale Positionierung der OSD-Fortschrittsanzeige an.
+(0: oben, 100: unten, Standard ist 50, d. h. Mitte).
+.
+.TP
 .B \-sid <ID> (siehe auch \-slang, \-vobsubid)
 Zeigt den Untertitelstream an, der durch <ID> (0\-31) angegeben wird.
 Mplayer gibt eine Liste der verfügbaren Untertitel-IDs aus, wenn er im
@@ -3050,10 +3057,13 @@ Experimenteller OpenAL-Audioausgabetreiber
 PulseAudio-Audioausgabetreiber
 .PD 0
 .RSs
-.IPs "[<Host>][:<Ausgabesenke>]"
+.IPs "[<Host>[:<Ausgabesenke>[:Pausenproblem]]]"
 Gib den Host und optional die zu verwendende Ausgabesenke an.
 Leere Angabe von <Host> verwendet eine lokale Verbindung, "localhost" verwendet
 Netzwerkverbindungen (höchstwahrscheinlich nicht, was du willst).
+Der Behelf zur Umgehung des Pausenproblems lässt sich explizit erzwingen
+(Standard: automatische Erkennung). Um nur diesen ohne Host und Ausgabesenke
+anzugeben, lautet die Syntax: \-ao pulse:::Pausenproblem
 .RE
 .PD 1
 .
@@ -11964,7 +11974,7 @@ erstellt.
 MPlayer wurde ursprünglich von Arpad Gereöffy geschrieben.
 Siehe Datei AUTHORS für eine Liste einiger der vielen anderen Beitragenden.
 .PP
-MPlayer is (C) 2000\-2009 The MPlayer Team
+MPlayer is (C) 2000\-2012 The MPlayer Team
 .PP
 Diese Manpage wurde zum größten Teil von Gabucino, Diego Biurrun und
 Jonas Jermann geschrieben und von Moritz Bunkus und Sebastian Krämer

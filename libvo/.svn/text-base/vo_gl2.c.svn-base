@@ -272,7 +272,7 @@ static int initTextures(void)
       glCreateClearTex(GL_TEXTURE_2D, gl_internal_format, gl_bitmap_format,  gl_bitmap_type, GL_LINEAR,
                        texture_width, texture_height, 0);
 
-      glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+      glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
       if (is_yuv) {
         int xs, ys, depth;
         int chroma_clear_val = 128;
@@ -412,7 +412,7 @@ static void drawTextureDisplay (void)
       glDrawTex(square->fx, square->fy, square->fw, square->fh,
                 0, 0, texture_width, texture_height,
                 texture_width, texture_height,
-                0, is_yuv, 0);
+                0, is_yuv, 0, 0);
       square++;
     } /* for all texnumx */
   } /* for all texnumy */

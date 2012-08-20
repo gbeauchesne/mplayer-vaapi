@@ -86,20 +86,36 @@ static const struct tag_conv {
     {"<u>", "{\\u1}"}, {"</u>", "{\\u0}"},
     {"<s>", "{\\s1}"}, {"</s>", "{\\s0}"},
     {"{", "\\{"}, {"}", "\\}"},
-    {"\n", "\\N"}
+    {"\r\n", "\\N"}, {"\n", "\\N"}, {"\r", "\\N"},
 };
 
 static const struct {
     const char *s;
     uint32_t v;
 } subrip_web_colors[] = {
-    /* 16 named HTML colors in BGR format */
-    {"red",     0x0000ff}, {"blue",   0xff0000}, {"lime",   0x00ff00},
-    {"aqua",    0xffff00}, {"purple", 0x800080}, {"yellow", 0x00ffff},
-    {"fuchsia", 0xff00ff}, {"white",  0xffffff}, {"gray",   0x808080},
-    {"maroon",  0x000080}, {"olive",  0x008080}, {"black",  0x000000},
-    {"silver",  0xc0c0c0}, {"teal",   0x808000}, {"green",  0x008000},
-    {"navy",    0x800000}
+    /* Named CSS3 colors in BGR format; a subset of those
+       at http://www.w3.org/TR/css3-color/#svg-color */
+    {"aqua",    0xffff00},
+    {"black",   0x000000},
+    {"blue",    0xff0000},
+    {"cyan",    0xffff00},
+    {"fuchsia", 0xff00ff},
+    {"gray",    0x808080},
+    {"green",   0x008000},
+    {"grey",    0x808080},
+    {"lime",    0x00ff00},
+    {"magenta", 0xff00ff},
+    {"maroon",  0x000080},
+    {"navy",    0x800000},
+    {"olive",   0x008080},
+    {"orange",  0x00a5ff},
+    {"pink",    0xcbc0ff},
+    {"purple",  0x800080},
+    {"red",     0x0000ff},
+    {"silver",  0xc0c0c0},
+    {"teal",    0x808000},
+    {"white",   0xffffff},
+    {"yellow",  0x00ffff},
 };
 
 #define SUBRIP_MAX_STACKED_FONT_TAGS    16
@@ -181,50 +197,46 @@ void subassconvert_subrip(const char *orig, char *dest, size_t dest_buffer_size)
             line += 6;
 
             while (*line && *line != '>') {
-                if (strncmp(line, "size=\"", 6) == 0) {
-                    line += 6;
+                if (strncmp(line, "size=", 5) == 0) {
+                    line += 5;
+                    if (*line == '"') line++;
                     tag->size = strtol(line, &line, 10);
-                    if (*line != '"' || !tag->size)
+                    if (!tag->size)
                         break;
                     append_text(&new_line, "{\\fs%d}", tag->size);
                     has_valid_attr = 1;
-                } else if (strncmp(line, "color=\"", 7) == 0) {
-                    line += 7;
+                } else if (strncmp(line, "color=", 6) == 0) {
+                    line += 6;
+                    if (*line == '"') line++;
                     if (*line == '#') {
                         // #RRGGBB format
                         line++;
                         tag->color = strtol(line, &line, 16) & 0x00ffffff;
-                        if (*line != '"')
-                            break;
                         tag->color = ((tag->color & 0xff) << 16) |
                                       (tag->color & 0xff00) |
                                      ((tag->color & 0xff0000) >> 16) |
                                      SUBRIP_FLAG_COLOR;
                     } else {
                         // Standard web colors
-                        int i, len = indexof(line, '"');
-                        if (len <= 0)
-                            break;
+                        int i;
                         for (i = 0; i < FF_ARRAY_ELEMS(subrip_web_colors); i++) {
                             const char *color = subrip_web_colors[i].s;
-                            if (strlen(color) == len
-                                && strncasecmp(line, color, len) == 0) {
+                            const int len = strlen(color);
+                            if (strncasecmp(line, color, len) == 0) {
                                 tag->color = SUBRIP_FLAG_COLOR | subrip_web_colors[i].v;
+                                line += len;
                                 break;
                             }
                         }
 
                         if (i == FF_ARRAY_ELEMS(subrip_web_colors)) {
                             /* We didn't find any matching color */
-                            line = strchr(line, '"'); // can't be NULL, see above
+                            line += strcspn(line, "\" >");
                             mp_msg(MSGT_SUBREADER, MSGL_WARN,
                                    MSGTR_SUBTITLES_SubRip_UnknownFontColor, orig);
                             append_text(&new_line, "{\\c}");
-                            line += 2;
                             continue;
                         }
-
-                        line += len;
                     }
                     append_text(&new_line, "{\\c&H%06X&}", tag->color & 0xffffff);
                     has_valid_attr = 1;
@@ -241,7 +253,8 @@ void subassconvert_subrip(const char *orig, char *dest, size_t dest_buffer_size)
                     append_text(&new_line, "{\\fn%.*s}", BSTR_P(tag->face));
                     has_valid_attr = 1;
                 }
-                line++;
+                if (*line != '>')
+                    line++;
             }
 
             if (!has_valid_attr || *line != '>') { /* Not valid font tag */
@@ -300,7 +313,7 @@ static char *microdvd_load_tags(struct microdvd_tag *tags, char *s)
     while (*s == '{') {
         char *start = s;
         char tag_char = *(s + 1);
-        struct microdvd_tag tag = {};
+        struct microdvd_tag tag = {0};
 
         if (!tag_char || *(s + 2) != ':')
             break;
@@ -498,7 +511,7 @@ void subassconvert_microdvd(const char *orig, char *dest, size_t dest_buffer_siz
         .buf     = dest,
         .bufsize = dest_buffer_size,
     };
-    struct microdvd_tag tags[sizeof(MICRODVD_TAGS) - 1] = {};
+    struct microdvd_tag tags[sizeof(MICRODVD_TAGS) - 1] = {{0}};
 
     while (*line) {
         line = microdvd_load_tags(tags, line);

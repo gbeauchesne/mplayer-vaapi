@@ -309,7 +309,7 @@ static unsigned int read_golomb(unsigned char *buffer, unsigned int *init)
   return v2;
 }
 
-inline static int read_golomb_s(unsigned char *buffer, unsigned int *init)
+static inline int read_golomb_s(unsigned char *buffer, unsigned int *init)
 {
   unsigned int v = read_golomb(buffer, init);
   return (v & 1) ? ((v + 1) >> 1) : -(v >> 1);
@@ -325,10 +325,8 @@ static int h264_parse_vui(mp_mpeg_header_t * picture, unsigned char * buf, unsig
     n += 8;
     if(picture->aspect_ratio_information == 255)
     {
-      picture->display_picture_width = (getbits(buf, n, 8) << 8) | getbits(buf, n + 8, 8);
+      // aspect numerator and denominator
       n += 16;
-
-      picture->display_picture_height = (getbits(buf, n, 8) << 8) | getbits(buf, n + 8, 8);
       n += 16;
     }
   }

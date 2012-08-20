@@ -41,7 +41,7 @@
 #include "libavutil/avutil.h"
 #include "libavutil/avstring.h"
 #include "libavutil/mathematics.h"
-#include "libavcodec/opt.h"
+#include "libavutil/opt.h"
 
 #include "mp_taglists.h"
 
@@ -105,9 +105,13 @@ static int64_t mp_seek(void *opaque, int64_t pos, int whence) {
         pos += stream->end_pos;
     else if(whence == SEEK_SET)
         pos += stream->start_pos;
-    else if(whence == AVSEEK_SIZE && stream->end_pos > 0)
+    else if(whence == AVSEEK_SIZE && stream->end_pos > 0) {
+        off_t size;
+        stream_control(stream, STREAM_CTRL_GET_SIZE, &size);
+        if (size > stream->end_pos)
+            stream->end_pos = size;
         return stream->end_pos - stream->start_pos;
-    else
+    } else
         return -1;
 
     if(pos<0)
@@ -207,7 +211,16 @@ static int lavf_check_file(demuxer_t *demuxer){
     return DEMUXER_TYPE_LAVF;
 }
 
+/* Before adding anything to this list please stop and consider why.
+ * There are two good reasons
+ * 1) to reduce startup time when streaming these file types
+ * 2) workarounds around bugs in our native demuxers that are not reasonable to
+ *    fix
+ * For the case 2) that means the issue should be understood well
+ * enough to be able to decide that a fix is not reasonable.
+ */
 static const char * const preferred_list[] = {
+    "cdxl",
     "dxa",
     "flv",
     "gxf",
@@ -414,7 +427,6 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
         case AVMEDIA_TYPE_SUBTITLE:{
             sh_sub_t* sh_sub;
             char type;
-            /* only support text subtitles for now */
             if(codec->codec_id == CODEC_ID_TEXT)
                 type = 't';
             else if(codec->codec_id == CODEC_ID_MOV_TEXT)
@@ -431,6 +443,12 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
                 type = 'd';
             else if(codec->codec_id == CODEC_ID_HDMV_PGS_SUBTITLE)
                 type = 'p';
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 14, 100)
+            else if(codec->codec_id == CODEC_ID_EIA_608)
+                type = 'c';
+#endif
+            else if(codec->codec_tag == MKTAG('c', '6', '0', '8'))
+                type = 'c';
             else
                 break;
             sh_sub = new_sh_sub_sid(demuxer, i, priv->sub_streams, lang ? lang->value : NULL);
@@ -478,7 +496,6 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
 
 static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
     AVFormatContext *avfc;
-    const AVOption *opt;
     AVDictionaryEntry *t = NULL;
     lavf_priv_t *priv= demuxer->priv;
     int i;
@@ -496,12 +513,12 @@ static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
         avfc->flags |= AVFMT_FLAG_IGNIDX;
 
     if(opt_probesize) {
-        opt = av_set_int(avfc, "probesize", opt_probesize);
-        if(!opt) mp_msg(MSGT_HEADER,MSGL_ERR, "demux_lavf, couldn't set option probesize to %u\n", opt_probesize);
+        if (av_opt_set_int(avfc, "probesize", opt_probesize, 0) < 0)
+            mp_msg(MSGT_HEADER,MSGL_ERR, "demux_lavf, couldn't set option probesize to %u\n", opt_probesize);
     }
     if(opt_analyzeduration) {
-        opt = av_set_int(avfc, "analyzeduration", opt_analyzeduration * AV_TIME_BASE);
-        if(!opt) mp_msg(MSGT_HEADER,MSGL_ERR, "demux_lavf, couldn't set option analyzeduration to %u\n", opt_analyzeduration);
+        if (av_opt_set_int(avfc, "analyzeduration", opt_analyzeduration * AV_TIME_BASE, 0) < 0)
+            mp_msg(MSGT_HEADER,MSGL_ERR, "demux_lavf, couldn't set option analyzeduration to %u\n", opt_analyzeduration);
     }
 
     if(opt_avopt){
@@ -523,8 +540,8 @@ static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
         priv->pb = avio_alloc_context(priv->buffer, BIO_BUFFER_SIZE, 0,
                                       demuxer, mp_read, NULL, mp_seek);
         priv->pb->read_seek = mp_read_seek;
-        priv->pb->is_streamed = !demuxer->stream->end_pos || (demuxer->stream->flags & MP_STREAM_SEEK) != MP_STREAM_SEEK;
-        priv->pb->seekable = priv->pb->is_streamed ? 0 : AVIO_SEEKABLE_NORMAL;
+        if (!demuxer->stream->end_pos || (demuxer->stream->flags & MP_STREAM_SEEK) != MP_STREAM_SEEK)
+            priv->pb->seekable = 0;
         avfc->pb = priv->pb;
     }
 
@@ -541,7 +558,7 @@ static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
     }
 
     /* Add metadata. */
-    while((t = av_dict_get(avfc->metadata, "", t, AV_METADATA_IGNORE_SUFFIX)))
+    while((t = av_dict_get(avfc->metadata, "", t, AV_DICT_IGNORE_SUFFIX)))
         demux_info_add(demuxer, t->key, t->value);
 
     for(i=0; i < avfc->nb_chapters; i++) {
@@ -638,10 +655,10 @@ static int demux_lavf_fill_buffer(demuxer_t *demux, demux_stream_t *dsds){
     if(pkt.pts != AV_NOPTS_VALUE){
         dp->pts=pkt.pts * av_q2d(priv->avfc->streams[id]->time_base);
         priv->last_pts= dp->pts * AV_TIME_BASE;
-        // always set endpts for subtitles, even if AV_PKT_FLAG_KEY is not set,
-        // otherwise they will stay on screen to long if e.g. ASS is demuxed from mkv
-        if((ds == demux->sub || (pkt.flags & AV_PKT_FLAG_KEY)) &&
-           pkt.convergence_duration > 0)
+        if(pkt.duration > 0)
+            dp->endpts = dp->pts + pkt.duration * av_q2d(priv->avfc->streams[id]->time_base);
+        /* subtitle durations are sometimes stored in convergence_duration */
+        if(ds == demux->sub && pkt.convergence_duration > 0)
             dp->endpts = dp->pts + pkt.convergence_duration * av_q2d(priv->avfc->streams[id]->time_base);
     }
     dp->pos=demux->filepos;
@@ -834,7 +851,7 @@ static void demux_close_lavf(demuxer_t *demuxer)
         if(priv->avfc)
         {
          av_freep(&priv->avfc->key);
-         av_close_input_stream(priv->avfc);
+         avformat_close_input(&priv->avfc);
         }
         av_freep(&priv->pb);
         free(priv); demuxer->priv= NULL;

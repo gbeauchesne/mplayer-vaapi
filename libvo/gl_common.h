@@ -257,6 +257,9 @@
 #ifndef GL_UNSIGNED_SHORT_8_8_REV
 #define GL_UNSIGNED_SHORT_8_8_REV 0x85BB
 #endif
+#ifndef GL_YCBCR_422_APPLE
+#define GL_YCBCR_422_APPLE 0x85B9
+#endif
 #ifndef GL_YCBCR_MESA
 #define GL_YCBCR_MESA 0x8757
 #endif
@@ -269,8 +272,29 @@
 #ifndef GL_LUMINANCE16
 #define GL_LUMINANCE16 0x8042
 #endif
+#ifndef GL_DEPTH_COMPONENT
+#define GL_DEPTH_COMPONENT 0x1902
+#endif
+#ifndef GL_DEPTH_COMPONENT16
+#define GL_DEPTH_COMPONENT16 0x81A5
+#endif
+#ifndef GL_TEXTURE_LUMINANCE_SIZE
+#define GL_TEXTURE_LUMINANCE_SIZE 0x8060
+#endif
+#ifndef GL_DEPTH_TEXTURE_MODE
+#define GL_DEPTH_TEXTURE_MODE 0x884B
+#endif
+#ifndef GL_TEXTURE_COMPARE_MODE
+#define GL_TEXTURE_COMPARE_MODE 0x884C
+#endif
 #ifndef GL_UNPACK_CLIENT_STORAGE_APPLE
 #define GL_UNPACK_CLIENT_STORAGE_APPLE 0x85B2
+#endif
+#ifndef GL_TEXTURE_STORAGE_HINT_APPLE
+#define GL_TEXTURE_STORAGE_HINT_APPLE 0x85BC
+#endif
+#ifndef GL_STORAGE_CACHED_APPLE
+#define GL_STORAGE_CACHED_APPLE 0x85BE
 #endif
 #ifndef GL_FRAGMENT_PROGRAM
 #define GL_FRAGMENT_PROGRAM 0x8804
@@ -305,7 +329,8 @@ void glUploadTex(GLenum target, GLenum format, GLenum type,
                  int x, int y, int w, int h, int slice);
 void glDrawTex(GLfloat x, GLfloat y, GLfloat w, GLfloat h,
                GLfloat tx, GLfloat ty, GLfloat tw, GLfloat th,
-               int sx, int sy, int rect_tex, int is_yv12, int flip);
+               int sx, int sy, int rect_tex, int is_yv12, int flip,
+               int use_stipple);
 int loadGPUProgram(GLenum target, char *prog);
 
 /** \addtogroup glconversion
@@ -367,6 +392,18 @@ static inline int glYUVLargeRange(int conv)
   }
   return 1;
 }
+
+static inline int glYUVSupportsAlphaTex(int conv)
+{
+  switch (conv)
+  {
+  case YUV_CONVERSION_COMBINERS:
+  case YUV_CONVERSION_COMBINERS_ATI:
+  case YUV_CONVERSION_TEXT_FRAGMENT:
+    return 0;
+  }
+  return 1;
+}
 /** \} */
 
 typedef struct {
@@ -379,6 +416,7 @@ typedef struct {
   int chrom_texh;
   float filter_strength;
   float noise_strength;
+  int has_alpha_tex;
 } gl_conversion_params_t;
 
 int glAutodetectYUVConversion(void);
@@ -390,7 +428,9 @@ void glDisableYUVConversion(GLenum target, int type);
 #define GL_3D_RED_CYAN        1
 #define GL_3D_GREEN_MAGENTA   2
 #define GL_3D_QUADBUFFER      3
+#define GL_3D_STIPPLE         4
 
+void glSetupAlphaStippleTex(unsigned pattern);
 void glEnable3DLeft(int type);
 void glEnable3DRight(int type);
 void glDisable3D(int type);
@@ -446,6 +486,7 @@ typedef struct MPGLContext {
 int init_mpglcontext(MPGLContext *ctx, enum MPGLType type);
 void uninit_mpglcontext(MPGLContext *ctx);
 
+extern GLenum (GLAPIENTRY *mpglGetError)(void);
 extern void (GLAPIENTRY *mpglBegin)(GLenum);
 extern void (GLAPIENTRY *mpglEnd)(void);
 extern void (GLAPIENTRY *mpglViewport)(GLint, GLint, GLsizei, GLsizei);

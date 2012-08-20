@@ -22,9 +22,11 @@
 #include "mp_msg.h"
 #include "mp_fifo.h"
 #include "osdep/keycodes.h"
+#include "osdep/setenv.h"
 #include "input/input.h"
 #include "input/mouse.h"
 #include "video_out.h"
+#include "geometry.h"
 
 static int old_w;
 static int old_h;
@@ -43,21 +45,31 @@ static int reinit;
 static void get_screensize(void) {
     const SDL_VideoInfo *vi;
     // TODO: better to use a check that gets the runtime version instead?
-    if (!SDL_VERSION_ATLEAST(1, 2, 10)) return;
+#if SDL_VERSION_ATLEAST(1, 2, 10)
     // Keep user-provided settings
     if (vo_screenwidth > 0 || vo_screenheight > 0) return;
     vi = SDL_GetVideoInfo();
     vo_screenwidth  = vi->current_w;
     vo_screenheight = vi->current_h;
+#endif
 }
 
 int vo_sdl_init(void)
 {
     reinit = 0;
 
-    if (!SDL_WasInit(SDL_INIT_VIDEO) &&
-        SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE) < 0)
-        return 0;
+    if (!SDL_WasInit(SDL_INIT_VIDEO)) {
+        // Unfortunately SDL_WINDOWID must be set at SDL_Init
+        // and is ignored afterwards, thus it cannot work per-file.
+        // Also, a value of 0 does not work for selecting the root window.
+        if (WinID > 0) {
+            char envstr[20];
+            snprintf(envstr, sizeof(envstr), "0x%"PRIx64, WinID);
+            setenv("SDL_WINDOWID", envstr, 1);
+        }
+        if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE) < 0)
+            return 0;
+    }
 
     // Setup Keyrepeats (500/30 are defaults)
     SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, 100 /*SDL_DEFAULT_REPEAT_INTERVAL*/);
@@ -82,6 +94,20 @@ void vo_sdl_uninit(void)
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
+int vo_sdl_config(int w, int h, int flags, const char *title)
+{
+    SDL_WM_SetCaption(title, NULL);
+    vo_dwidth  = old_w = w;
+    vo_dheight = old_h = h;
+    vo_fs = !!(flags & VOFLAG_FULLSCREEN);
+    if (vo_fs) {
+        vo_dwidth  = vo_screenwidth;
+        vo_dheight = vo_screenheight;
+    }
+    SDL_GL_SetAttribute(SDL_GL_STEREO, !!(flags & VOFLAG_STEREO));
+    return 1;
+}
+
 void vo_sdl_fullscreen(void)
 {
     if (vo_fs) {
@@ -100,22 +126,31 @@ void vo_sdl_fullscreen(void)
     reinit = 1;
 }
 
-int sdl_set_mode(int bpp, uint32_t flags)
+SDL_Surface *sdl_set_mode(int bpp, uint32_t flags)
 {
     SDL_Surface *s;
     mode_flags = flags;
     if (vo_fs) flags |= SDL_FULLSCREEN;
     // doublebuf with opengl creates flickering
+#if !defined( __AMIGAOS4__ ) && !defined( __APPLE__ )
     if (vo_doublebuffering && !(flags & SDL_OPENGL))
         flags |= SDL_DOUBLEBUF;
+#endif
+    if (!vo_border)
+        flags |= SDL_NOFRAME;
+    if (geometry_xy_changed) {
+        char envstr[20];
+        snprintf(envstr, sizeof(envstr), "%i,%i", vo_dx, vo_dy);
+        setenv("SDL_VIDEO_WINDOW_POS", envstr, 1);
+    }
     s = SDL_SetVideoMode(vo_dwidth, vo_dheight, bpp, flags);
     if (!s) {
       mp_msg(MSGT_VO, MSGL_FATAL, "SDL SetVideoMode failed: %s\n", SDL_GetError());
-      return -1;
+      return NULL;
     }
     vo_dwidth  = s->w;
     vo_dheight = s->h;
-    return 0;
+    return s;
 }
 
 static const struct mp_keymap keysym_map[] = {

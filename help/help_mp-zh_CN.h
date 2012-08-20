@@ -1,4 +1,4 @@
-// Synced with help_mp-en.h rev. 34475
+// Synced with help_mp-en.h rev. 34958
 //
 // Translated by JRaSH <jrash06@gmail.com>
 
@@ -177,6 +177,17 @@ static const char help_text[]=
 #define MSGTR_MenuCall "菜单调用\n"
 #define MSGTR_MasterQuit "选项 -udp-slave：因主动方中止而中止\n"
 #define MSGTR_InvalidIP "选项 -udp-ip：无效的 IP 地址\n"
+#define MSGTR_Forking "正在创建子进程...\n"
+#define MSGTR_Forked "已经创建子进程...\n"
+#define MSGTR_CouldntStartGdb "无法启动 gdb\n"
+#define MSGTR_CouldntFork "无法创建子进程\n"
+#define MSGTR_FilenameTooLong "文件名太长，无法加载用于特定文件或目录的配置文件\n"
+#define MSGTR_AudioDeviceStuck "音频设备已堵塞！\n"
+#define MSGTR_AudioOutputTruncated "音频输入信号在尾端截断。\n"
+#define MSGTR_ASSCannotAddVideoFilter "ASS：无法添加视频过滤器\n"
+#define MSGTR_PtsAfterFiltersMissing "缺失过滤器后的 PTS\n"
+#define MSGTR_CommandLine "命令行："
+#define MSGTR_MenuInitFailed "菜单初始化失败。\n"
 
 // --- edit decision lists
 #define MSGTR_EdlOutOfMem "无法分配足够的内存以存放 EDL 数据。\n"
@@ -546,6 +557,36 @@ static const char help_text[]=
 #define MSGTR_NoChapter "无章节"
 #define MSGTR_Chapter "章节 %d"
 #define MSGTR_NoFileLoaded "未载入文件"
+#define MSGTR_Filter_UTF8Subtitles "UTF-8 编码的字幕（*.utf, *.utf-8, *.utf8）"
+#define MSGTR_Filter_AllSubtitles "所有字幕文件"
+#define MSGTR_Filter_AllFiles "所有文件"
+#define MSGTR_Filter_TTF "True Type 字体文件（*.ttf）"
+#define MSGTR_Filter_Type1 "Type1 字体文件（*.pfb）"
+#define MSGTR_Filter_AllFonts "所有字体"
+#define MSGTR_Filter_FontFiles "字体文件（*.desc）"
+#define MSGTR_Filter_DDRawAudio "Dolby 数字音频文件 / PCM 音频文件（*.ac3, *.pcm）"
+#define MSGTR_Filter_MPEGAudio "MPEG 音频文件（*.mp2, *.mp3, *.mpga, *.m4a, *.aac, *.f4a）"
+#define MSGTR_Filter_MatroskaAudio "Matroska 音频文件（*.mka）"
+#define MSGTR_Filter_OGGAudio "Ogg 音频文件（*.oga, *.ogg, *.spx）"
+#define MSGTR_Filter_WAVAudio "WAV 音频文件（*.wav）"
+#define MSGTR_Filter_WMAAudio "Windows Media 音频文件（*.wma）"
+#define MSGTR_Filter_AllAudioFiles "所有音频文件"
+#define MSGTR_Filter_AllVideoFiles "所有视频文件"
+#define MSGTR_Filter_AVIFiles "AVI 文件"
+#define MSGTR_Filter_DivXFiles "DivX 文件"
+#define MSGTR_Filter_FlashVideo "Flash 视频文件"
+#define MSGTR_Filter_MP3Files "MP3 文件"
+#define MSGTR_Filter_MP4Files "MP4 文件"
+#define MSGTR_Filter_MPEGFiles "MPEG 文件"
+#define MSGTR_Filter_MP2TS "MPEG-2 传输流"
+#define MSGTR_Filter_MatroskaMedia "Matroska 媒体文件"
+#define MSGTR_Filter_OGGMedia "Ogg 媒体文件"
+#define MSGTR_Filter_QTMedia "QuickTime 媒体文件"
+#define MSGTR_Filter_RNMedia "RealNetworks 媒体文件"
+#define MSGTR_Filter_VideoCDImages "VCD/SVCD 镜像文件"
+#define MSGTR_Filter_WAVFiles "WAV 文件"
+#define MSGTR_Filter_WindowsMedia "Windows 媒体文件"
+#define MSGTR_Filter_Playlists "播放列表文件"
 
 // --- buttons ---
 #define MSGTR_Ok "确定"
@@ -562,6 +603,7 @@ static const char help_text[]=
 #define MSGTR_NEMFMR "抱歉，没有足够的内存用于菜单渲染。"
 #define MSGTR_IDFGCVD "抱歉，未找到与 GUI 兼容的视频输出驱动。\n"
 #define MSGTR_NEEDLAVC "抱歉，未重新编码前无法用你的 DXR3/H+ 设备播放非 MPEG 文件。\n请启用 DXR3/H+ 配置盒中的 lavc 编解码器。"
+#define MSGTR_ICONERROR "未找到图标‘%s’（大小为 %d）或格式不支持。\n"
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "界面外观配置文件错误，行 %d：%s"
@@ -837,7 +879,7 @@ static const char help_text[]=
 #define MSGTR_PREFERENCES_PriorityNormal "标准"
 #define MSGTR_PREFERENCES_PriorityNormalAbove "高于标准"
 #define MSGTR_PREFERENCES_PriorityNormalBelow "低于标准"
-#define MSGTR_PREFERENCES_VideoInSubwin "在子窗口中显示视频（仅用于 DirectX）"
+#define MSGTR_PREFERENCES_ShowInVideoWin "在视频窗口中显示（仅用于 DirectX）"
 
 
 // ======================= video output drivers ========================
@@ -993,7 +1035,6 @@ static const char help_text[]=
 // vo_sdl.c
 #define MSGTR_LIBVO_SDL_CouldntGetAnyAcceptableSDLModeForOutput "[VO_SDL] 无法获得可接受的 SDL 模式以用于输出。\n"
 #define MSGTR_LIBVO_SDL_SetVideoModeFailed "[VO_SDL] set_video_mode：SDL_SetVideoMode 失败：%s。\n"
-#define MSGTR_LIBVO_SDL_SetVideoModeFailedFull "[VO_SDL] Set_fullmode：SDL_SetVideoMode 失败：%s。\n"
 #define MSGTR_LIBVO_SDL_MappingI420ToIYUV "[VO_SDL] 将 I420 映射到 IYUV。\n"
 #define MSGTR_LIBVO_SDL_UnsupportedImageFormat "[VO_SDL] 不支持的图像格式（0x%X）。\n"
 #define MSGTR_LIBVO_SDL_InfoPleaseUseVmOrZoom "[VO_SDL] 信息 - 请使用 -vm 或 -zoom 切换到最佳分辨率。\n"
@@ -1459,6 +1500,8 @@ static const char help_text[]=
 #define MSGTR_MPDEMUX_AVIHDR_IdxFileSaved "已保存索引文件：%s\n"
 
 // demux_audio.c
+#define MSGTR_MPDEMUX_AUDIO_BadID3v2TagSize "音频分离器：ID3v2 标签大小异常：大于流的长度（%u）。\n"
+#define MSGTR_MPDEMUX_AUDIO_DamagedAppendedID3v2Tag "音频分离器：检测到末尾中的 ID3v2 标签已损坏。\n"
 #define MSGTR_MPDEMUX_AUDIO_UnknownFormat "音频流分解器：未知格式 %d。\n"
 
 // demux_demuxers.c
@@ -1600,7 +1643,7 @@ static const char help_text[]=
 #define MSGTR_MovieAspectUndefined "电影宽高比未定义 - 没有使用预先放大功能。\n"
 
 // vd_dshow.c, vd_dmo.c
-#define MSGTR_DownloadCodecPackage "你需要升级/安装已编译编解码器包。\n请访问 http:\/\/www.mplayerhq.hu/dload.html\n"
+#define MSGTR_DownloadCodecPackage "你需要升级/安装已编译编解码器包。\n请访问 http://www.mplayerhq.hu/dload.html\n"
 
 // libmpcodecs/vd_dmo.c vd_dshow.c vd_vfw.c
 #define MSGTR_MPCODECS_CouldntAllocateImageForCinepakCodec "[VD_DMO] 无法为 cinepak 编解码器分配进程映像。\n"

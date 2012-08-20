@@ -1,5 +1,5 @@
 .\" $Revision$
-.\" MPlayer (C) 2000-2010 MPlayer Team
+.\" MPlayer (C) 2000-2012 MPlayer Team
 .\" This man page was/is done by Gabucino, Diego Biurrun, Jonas Jermann
 .
 .\" --------------------------------------------------------------------------
@@ -31,7 +31,7 @@
 .\" Title
 .\" --------------------------------------------------------------------------
 .
-.TH MPlayer 1 "2009-03-25" "The MPlayer Project" "The Movie Player"
+.TH MPlayer 1 "2012-03-03" "The MPlayer Project" "The Movie Player"
 .
 .SH NAME
 mplayer  \- movie player
@@ -533,6 +533,8 @@ flip=yes
 mf=type=png:fps=25
 # Eerie negative images are cool.
 vf=eq2=1.0:\-0.8
+# OSD progress bar vertical alignment
+progbar-align=50
 .fi
 .PP
 .I "EXAMPLE MENCODER CONFIGURATION FILE:"
@@ -2068,6 +2070,7 @@ Useful for playback from CD-ROM images or VOB files with junk at the beginning.
 .B \-speed <0.01\-100>
 Slow down or speed up playback by the factor given as parameter.
 Not guaranteed to work correctly with \-oac copy.
+Add \-af scaletempo to get past the 4x limit on playback.
 .
 .TP
 .B \-srate <Hz>
@@ -2609,6 +2612,11 @@ still visible (default is to enable the support only for specific
 formats).
 .
 .TP
+.B \-progbar\-align <0-100>
+Specify the vertical alignment of the progress bar
+(0: top, 100: bottom, default is 50, i.e. centered).
+.
+.TP
 .B \-sid <ID> (also see \-slang, \-vobsubid)
 Display the subtitle stream specified by <ID> (0\-31).
 MPlayer prints the available subtitle IDs when run in verbose (\-v) mode.
@@ -3108,10 +3116,14 @@ Experimental OpenAL audio output driver
 PulseAudio audio output driver
 .PD 0
 .RSs
-.IPs "[<host>][:<output sink>]"
+.IPs "[<host>[:<output sink>[:broken_pause]]]"
 Specify the host and optionally output sink to use.
 An empty <host> string uses a local connection, "localhost"
 uses network transfer (most likely not what you want).
+You can also explicitly force the workaround for broken
+pause functionality (default: autodetected).
+To only enable that without specifying a host/sink the
+syntax is \-ao pulse:::broken_pause
 .RE
 .PD 1
 .
@@ -3281,7 +3293,11 @@ on.
 .
 .TP
 .B "\-dr \ \ \ "
-Turns on direct rendering (not supported by all codecs and video outputs)
+Turns on direct rendering (not supported by all codecs and video outputs).
+This can result in significantly faster blitting on some systems, on most
+the difference will be minimal.
+In some cases, particularly with decoders specifying their buffer requirements
+badly, it can be vastly slower.
 .br
 .I WARNING:
 May cause OSD/SUB corruption!
@@ -3459,7 +3475,8 @@ vdpau, x11, xv, xvmc, corevideo).
 .br
 .I NOTE:
 This option is only supported by the x11, xmga, xv, xvmc, xvidix,
-gl, gl2, directx, fbdev, tdfxfb and corevideo video output drivers.
+gl, gl2, direct3d, directx, fbdev, sdl, dfxfb and corevideo
+video output drivers.
 .sp 1
 .I EXAMPLE:
 .PD 0
@@ -4172,8 +4189,9 @@ This limits the framerate to (horizontal refresh rate / n).
 Requires GLX_SGI_swap_control support to work.
 With some (most/all?) implementations this only works in fullscreen mode.
 .IPs ycbcr
-Use the GL_MESA_ycbcr_texture extension to convert YUV to RGB.
-In most cases this is probably slower than doing software conversion to RGB.
+Use the GL_APPLE_ycbcr_422 extension to convert YUV to RGB.
+Default is disabled if yuv= is specified, auto-detected otherwise.
+Note that this will enable a few special settings to get into a special driver fast-path.
 .IPs yuv=<n>
 Select the type of YUV to RGB conversion.
 The default is auto-detection deciding between values 0 and 2.
@@ -4284,7 +4302,16 @@ Convert side by side input to full-color green-magenta stereo.
 .IPs 3
 Convert side by side input to quadbuffered stereo.
 Only supported by very few OpenGL cards.
+.IPs 4
+Mix left and right in a pixel pattern.
+Pattern is given by stipple option.
 .RE
+.IPs stipple=<bit pattern>
+Lowest 16 bit give the 4x4 pattern to use (default: 0x0f0f).
+Examples to try:
+0x0f0f, 0xf0f0: horizontal lines;
+0xaaaa, 0x5555: vertical lines;
+0xa5a5, 0x5a5a: checkerboard pattern
 .RE
 .sp 1
 .RS
@@ -6093,7 +6120,17 @@ Changing playback speed, would change pitch, leaving audio tempo at 1.2x.
 Collects and prints statistics about the audio stream, especially the volume.
 These statistics are especially intended to help adjusting the volume while
 avoiding clipping.
-The volumes are printed in dB and compatible with the volume audio filter.
+The volumes are printed in dB and compatible with the volume audio filter,
+they are always rounded towards -0dB.
+.sp 1
+The 'n_samples' field is the total number of samples seen by the filter.
+The 'mean_volume' field is the root mean square.
+The 'max_volume' field is exactly what it says.
+The 'histogram_Xdb' fields count how many samples were at -XdB, for X just
+below max_volume.
+.sp 1
+For example, if max_volume is -7dB and histogram_7dB is 19, 'volume=7' will
+not cause clipping and 'volume=8' will cause clipping on exactly 19 samples.
 .
 .
 .
@@ -10617,6 +10654,10 @@ different QP based on the frame's complexity.
 This option should generally be used instead of qp.
 .
 .TP
+.B crf_max=<float>
+With CRF and VBV, limit RF to this value (may cause VBV underflows!).
+.
+.TP
 .B pass=<1\-3>
 Enable 2 or 3-pass mode.
 It is recommended to always encode in 2 or 3-pass mode as it leads to a
@@ -10752,7 +10793,7 @@ values of keyint.
 .
 .TP
 .B keyint_min=<1\-keyint/2>
-Sets minimum interval between IDR-frames (default: 25).
+Sets minimum interval between IDR-frames (default: auto).
 If scenecuts appear within this interval, they are still encoded as
 I-frames, but do not start a new GOP.
 In H.264, I-frames do not necessarily bound a closed GOP because it is
@@ -10830,6 +10871,39 @@ Disallow P-frames referencing B-frames. Gives worse compression, but is
 required for Blu-ray compatibility.
 .IPs "none\ "
 Disable using B-frames as references.
+.RE
+.PD 1
+.
+.TP
+.B (no)open_gop
+Use recovery points to close GOPs; only available with bframes.
+.
+.TP
+.B (no)bluray_compat
+Enable compatibility hacks for Blu-Ray support.
+.
+.TP
+.B (no)fake_interlaced
+Flag stream as interlaced but encode progressive. Makes it posssible to
+encode 25p and 30p Blu-Ray streams. Ignored in interlaced mode.
+.
+.TP
+.B frame_packing=<0-5>
+Define frame arrangement for stereoscopic videos.
+.PD 0
+.RSs
+.IPs 0
+Checkerboard - pixels are alternately from L and R.
+.IPs 1
+Column alternation - L and R are interlaced by column.
+.IPs 2
+Row alternation - L and R are interlaced by row.
+.IPs 3
+Side by side - L is on the left, R is on the right.
+.IPs 4
+Top-bottom - L is on top, R is on the bottom.
+.IPs 5
+Frame alternation - one view per frame.
 .RE
 .PD 1
 .
@@ -10992,9 +11066,9 @@ Weighted P-frame prediction mode (default: 2).
 .IPs 0
 disabled (fastest)
 .IPs 1
-blind mode (slightly better quality)
+weighted refs (better quality)
 .IPs 2
-smart mode (best)
+weighted refs + duplicates (best)
 .RE
 .PD 1
 .
@@ -11068,7 +11142,7 @@ exhaustive search (very slow, and no better than umh)
 radius of exhaustive or multi-hexagon motion search (default: 16)
 .
 .TP
-.B subq=<0\-9>
+.B subq=<0\-11>
 Adjust subpel refinement quality.
 This parameter controls quality versus speed tradeoffs involved in the motion
 estimation decision process.
@@ -11108,7 +11182,11 @@ Enables rate-distortion optimization of macroblock types in all frames (default)
 .IPs 8
 Enables rate-distortion optimization of motion vectors and intra prediction modes in I- and P-frames.
 .IPs 9
-Enables rate-distortion optimization of motion vectors and intra prediction modes in all frames (best).
+Enables rate-distortion optimization of motion vectors and intra prediction modes in all frames.
+.IPs 10
+QP-RD; requires trellis=2 and aq_mode=1 or higher (best).
+.IPs 11
+Full RD; disable all early terminations.
 .RE
 .PD 1
 .RS
@@ -11291,6 +11369,11 @@ Use this parameter only if you know what it means,
 and you have a need to set it.
 .
 .TP
+.B (no)cpu_independent
+Ensure exact reproducibility across different CPUs instead of chosing
+different algorithms when available/better (default:enabled).
+.
+.TP
 .B threads=<0\-16>
 Spawn threads to encode in parallel on multiple CPUs (default: 0).
 This has a slight penalty to compression quality.
@@ -11336,14 +11419,30 @@ Some players, such as the Sony PSP, require the use of this option.
 The default behavior causes SPS and PPS to repeat prior to each IDR frame.
 .
 .TP
-.B (no)interlaced
-Treat the video content as interlaced.
+.B (no)tff
+Enable interlaced mode, top field first (default: disabled)
+.
+.TP
+.B (no)bff
+Enable interlaced mode, bottom field first (default: disabled)
+.
+.TP
+.B nal_hrd=<none|vbr|cbr>
+Signal HRD information (requires vbv_bufsize) (default: none).
+.
+.TP
+.B (no)pic_struct
+Force pic_struct in Picture Timing SEI (default: disabled).
 .
 .TP
 .B (no)constrained_intra
 Enable constrained intra prediction (default: disabled).
 This significantly reduces compression, but is required for the base layer of
 SVC encodes.
+.
+.TP
+.B output_csp=<i420|i422|i444|rgb>
+Specify output colorspace (default: i420).
 .
 .TP
 .B (no)aud
@@ -12230,7 +12329,7 @@ explains how to create useful bug reports.
 MPlayer was initially written by Arpad Gereoffy.
 See the AUTHORS file for a list of some of the many other contributors.
 .PP
-MPlayer is (C) 2000\-2009 The MPlayer Team
+MPlayer is (C) 2000\-2012 The MPlayer Team
 .PP
 This man page was written mainly by Gabucino, Jonas Jermann and Diego Biurrun.
 It is maintained by Diego Biurrun.
