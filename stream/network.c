@@ -23,8 +23,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
-
 #include <errno.h>
 #include <ctype.h>
 
@@ -104,6 +104,8 @@ const mime_struct_t mime_type_table[] = {
 	// OGG Streaming
 	{ "application/ogg", DEMUXER_TYPE_OGG },
 	{ "application/x-ogg", DEMUXER_TYPE_OGG },
+	{ "audio/ogg", DEMUXER_TYPE_OGG },
+	{ "video/ogg", DEMUXER_TYPE_OGG },
 	// NullSoft Streaming Video
 	{ "video/nsv", DEMUXER_TYPE_NSV},
 	{ "misc/ultravox", DEMUXER_TYPE_NSV},
@@ -131,7 +133,7 @@ streaming_ctrl_free( streaming_ctrl_t *streaming_ctrl ) {
 }
 
 URL_t*
-check4proxies( URL_t *url ) {
+check4proxies( const URL_t *url ) {
 	URL_t *url_out = NULL;
 	if( url==NULL ) return NULL;
 	url_out = url_new( url->url );
@@ -186,8 +188,16 @@ check4proxies( URL_t *url ) {
 	return url_out;
 }
 
+URL_t *url_new_with_proxy(const char *urlstr)
+{
+	URL_t *url = url_new(urlstr);
+	URL_t *url_with_proxy = check4proxies(url);
+	url_free(url);
+	return url_with_proxy;
+}
+
 int
-http_send_request( URL_t *url, off_t pos ) {
+http_send_request( URL_t *url, int64_t pos ) {
 	HTTP_header_t *http_hdr;
 	URL_t *server_url;
 	char str[256];
@@ -373,7 +383,7 @@ http_authenticate(HTTP_header_t *http_hdr, URL_t *url, int *auth_retry) {
 }
 
 int
-http_seek( stream_t *stream, off_t pos ) {
+http_seek( stream_t *stream, int64_t pos ) {
 	HTTP_header_t *http_hdr = NULL;
 	int fd;
 	if( stream==NULL ) return 0;
@@ -469,7 +479,7 @@ nop_streaming_read( int fd, char *buffer, int size, streaming_ctrl_t *stream_ctr
 }
 
 int
-nop_streaming_seek( int fd, off_t pos, streaming_ctrl_t *stream_ctrl ) {
+nop_streaming_seek( int fd, int64_t pos, streaming_ctrl_t *stream_ctrl ) {
 	return -1;
 }
 

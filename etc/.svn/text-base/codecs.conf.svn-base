@@ -132,7 +132,7 @@ videocodec ffzmbv
   fourcc ZMBV
   driver ffmpeg
   dll "zmbv"
-  out RGB24
+  out RGB24,BGR8,BGR15LE,BGR16,BGR32
 
 videocodec ffcdxl
   info "FFmpeg CDXL"
@@ -151,6 +151,14 @@ videocodec geov
   driver vfw
   dll "GeoCodec.dll"
   out BGR24 flip
+
+videocodec geoh264
+  info "GeoCodec h264"
+  status working
+  fourcc G264
+  driver vfw
+  dll "GX264.dll"
+  out RGB24,RGB32,BGR32,BGR24 flip
 
 videocodec imm4
   info "infinity cctv codec"
@@ -283,6 +291,14 @@ videocodec ffayuv
   dll ayuv
   out 444A
 
+videocodec ffy216
+  info "FFmpeg Pinnacle Targa CineWave YUV16"
+  status working
+  fourcc Y216
+  driver ffmpeg
+  dll targa_y216
+  out 422P16
+
 videocodec ffyuv4
   info "FFmpeg libquicktime yuv4 packed 4:2:0"
   status working
@@ -290,6 +306,15 @@ videocodec ffyuv4
   driver ffmpeg
   dll yuv4
   out YV12
+
+videocodec ff012v
+  info "FFmpeg 012v Uncompressed 4:2:2"
+  status working
+  fourcc 012v
+  fourcc a12v
+  driver ffmpeg
+  dll 012v
+  out 422P16
 
 videocodec blackmagic
   info "Blackmagic 10-bit"
@@ -693,12 +718,36 @@ videocodec ffsgi
   dll sgi
   out RGB24,Y800,RGB64BE,RGB48BE,RGBA
 
+videocodec ffsgirle
+  info "FFmpeg SGI RLE"
+  status working
+  fourcc rle1
+  driver ffmpeg
+  dll sgirle
+  out RGB8
+
 videocodec sgi
   info "SGI image"
   status working
   fourcc SGI1 ; SGI1 is an internal MPlayer FOURCC
   driver sgi
   out BGR24
+
+videocodec ffmvc1
+  info "FFmpeg SGI Motion Video Compressor 1"
+  status working
+  fourcc mvc1 ; internal MPlayer FourCC
+  driver ffmpeg
+  dll mvc1
+  out BGR15
+
+videocodec ffmvc2
+  info "FFmpeg SGI Motion Video Compressor 2"
+  status working
+  fourcc mvc2 ; internal MPlayer FourCC
+  driver ffmpeg
+  dll mvc2
+  out BGRA
 
 videocodec ffsunras
   info "FFmpeg SUN Rasterfile"
@@ -707,6 +756,14 @@ videocodec ffsunras
   driver ffmpeg
   dll sunrast
   out BGR24,BGR8,Y800,RGB24,RGBA,BGRA
+
+videocodec ffyop
+  info "FFmpeg Psygnosis YOP"
+  status working
+  fourcc YOP1 ; internal MPlayer FourCC
+  driver ffmpeg
+  dll yop
+  out BGR8
 
 videocodec ffindeo3
   info "FFmpeg Intel Indeo 3.1/3.2"
@@ -781,7 +838,7 @@ videocodec ffcyuv
   fourcc cyuv,CYUV
   driver ffmpeg
   dll "cyuv"
-  out 411P
+  out 411P,UYVY
 
 videocodec ffaura
   info "Auravision Aura (libavcodec)"
@@ -898,7 +955,7 @@ videocodec ffcvid
   fourcc cvid,CVID
   driver ffmpeg
   dll "cinepak"
-  out YV12,BGR8 query
+  out RGB24,YV12,BGR8 query
 
 videocodec cvidvfw
   info "Cinepak Video"
@@ -1153,6 +1210,7 @@ videocodec ffwmv2
   info "FFmpeg WMV2/WMV8"
   status working
   fourcc WMV2,wmv2
+  fourcc GXVE,gxve
   driver ffmpeg
   dll wmv2
   out YV12,I420,IYUV
@@ -1232,6 +1290,14 @@ videocodec ffmss1
   dll mss1
   out BGR8
 
+videocodec ffmss2
+  info "FFmpeg MS Screen 2"
+  status working
+  fourcc MSS2
+  driver ffmpeg
+  dll mss2
+  out BGR15,RGB24
+
 videocodec ffmsascreen
   info "FFmpeg MS ATC Screen 1"
   status working
@@ -1253,7 +1319,7 @@ videocodec ffh264
   fourcc ai5p,ai5q,ai52,ai53
   fourcc ai55,ai56
   fourcc x3eV
-  fourcc Q264
+  fourcc Q264,V264
   format 0x10000005
   driver ffmpeg
   dll h264
@@ -1274,7 +1340,7 @@ videocodec ffh264vdpau
   fourcc ai5p,ai5q,ai52,ai53
   fourcc ai55,ai56
   fourcc x3eV
-  fourcc Q264
+  fourcc Q264,V264
   format 0x10000005
   driver ffmpeg
   dll h264_vdpau
@@ -1297,6 +1363,25 @@ videocodec ffh264crystalhd
   driver ffmpeg
   dll h264_crystalhd
   out YUY2
+
+videocodec ffh264vda
+  info "FFmpeg H.264 (VDA)"
+  status working
+  fourcc H264,h264
+  fourcc X264,x264
+  fourcc avc1,AVC1
+  fourcc davc,DAVC
+  fourcc vvvc ; only one sample using this fourcc
+  fourcc ai1p,ai1q,ai12,ai13
+  fourcc ai15,ai16
+  fourcc ai5p,ai5q,ai52,ai53
+  fourcc ai55,ai56
+  fourcc x3eV
+  fourcc Q264
+  format 0x10000005
+  driver ffmpeg
+  dll h264_vda
+  out YUY2,UYVY,YV12,NV12
 
 ;http://corecodec.org/
 videocodec coreavcwindows
@@ -1342,6 +1427,7 @@ videocodec ffodivx
   format 0x4
   fourcc UMP4
   fourcc RMP4
+  fourcc ZMP4
   fourcc 3IV2,3iv2  ; 3ivx Delta 4
   fourcc DXGM
   fourcc SEDG ; diskless camcorder Samsung Miniket VP-M110
@@ -1860,13 +1946,27 @@ videocodec fflibopenjpeg
   fourcc mjp2
   driver ffmpeg
   dll "libopenjpeg"
+  out XYZ12
   out RGB64LE,RGB64BE
   out RGB48LE,RGB48BE
   out RGB24,RGB32,BGR32,Y8,Y800,Y8A,Y16
+  out YV12,422P
   out 420P16,420P14,420P12,420P10,420P9
   out 422P16,422P14,422P12,422P10,422P9
   out 444P16,444P14,444P12,444P10,444P9
   out 420A,422A,444A
+
+videocodec ffjpeg2000
+  info "FFmpeg JPEG 2000 digital cinema"
+  status working
+  fourcc MJ2C
+  fourcc MJP2
+  fourcc mjp2
+  driver ffmpeg
+  dll "jpeg2000"
+  out XYZ12
+  out Y800,Y16
+  out RGB48LE,RGB48BE,RGB32,BGR32,RGB24
 
 videocodec ffj2k
   info "FFmpeg JPEG 2000"
@@ -2436,7 +2536,7 @@ videocodec fflagarith
   fourcc LAGS
   driver ffmpeg
   dll lagarith
-  out YV12,RGB24,BGR32
+  out YV12,RGB24,BGR32,422P
 
 ;http://lags.leetcode.net/codec.html
 videocodec lagarith
@@ -2577,6 +2677,14 @@ videocodec canopusll
   driver vfw
   dll "CLLCcodc.dll"
   out BGR24
+
+videocodec ffcanopusll
+  status working
+  info "FFmpeg Canopus Lossless Codec"
+  fourcc CLLC
+  driver ffmpeg
+  dll "cllc"
+  out RGB24,ARGB
 
 videocodec ffvp3
   info "FFmpeg VP3"
@@ -2987,6 +3095,15 @@ videocodec webtrain
   driver vfw
   dll "wtvc.dll"
   out BGR16 flip
+
+videocodec ficvvfw
+  info "Mirillis Action screen capture codec"
+  status working
+  comment "requires msvcm90.dll msvcp90.dll msvcr90.dll"
+  fourcc FICV
+  driver vfw
+  dll "ficvdec_x86.dll"
+  out BGR32,BGR24,BGR16 flip
 
 videocodec ffkega
   info "FFmpeg Kega Video"
@@ -4160,19 +4277,40 @@ videocodec ffrawy800
   dll rawvideo
   out Y800,Y8
 
+videocodec ffrawabgr
+  info "RAW ABGR"
+  status working
+  fourcc ABGR
+  driver ffmpeg
+  dll rawvideo
+  out ABGR
+
 ; NULL codec - for testing.
 
 videocodec null
   info "NULL codec (no decoding!)"
-  status crashing
+  status working
   comment "for unknown/unsupported codecs or testing"
   driver null
+  flags dummy
   out YV12
   out I420
   out YUY2
   out UYVY
   out YVU9
   out BGR32,BGR24,BGR16,BGR15
+
+videocodec black
+  info "black codec (no decoding just output black frames!)"
+  status working
+  comment "for unknown/unsupported codecs or testing"
+  driver black
+  flags dummy
+  out YV12
+  out I420
+  out YUY2
+  out UYVY
+  out RGB24,BGR32
 
 ;=============================================================================
 ;                   AUDIO CODECS
@@ -4467,6 +4605,13 @@ audiocodec raatrcmac
   driver realaud
   dll "atrc.bundle/Contents/MacOS/atrc"
 
+audiocodec ffevrc
+  info "FFmpeg EVRC decoder"
+  status working
+  fourcc sevc
+  driver ffmpeg
+  dll evrc
+
 audiocodec ffadpcmadx
   info "FFmpeg SEGA CRI adx codec"
   status working
@@ -4533,6 +4678,21 @@ audiocodec msadpcm
   format 0x2
   format 0x0200736d  ; "ms\x00\x02" (MOV files)
   driver msadpcm
+
+audiocodec ffadpcmoki
+  info "FFmpeg ADPCM IMA Dialogic OKI"
+  status working
+  format 0x10
+  format 0x17
+  driver ffmpeg
+  dll adpcm_ima_oki
+
+audiocodec ffadpcmafc
+  info "FFmpeg ADPCM Nintendo Gamecube AFC"
+  status working
+  fourcc "AFC " ; internal MPlayer FourCC
+  driver ffmpeg
+  dll adpcm_afc
 
 audiocodec ffadpcmimadk4
   info "FFmpeg DK4 IMA ADPCM audio"
@@ -4994,25 +5154,10 @@ audiocodec ffsonic
   driver ffmpeg
   dll "sonic"
 
-audiocodec mp3
-  ; this is preferred over ffmp2/ffmp3 since it is faster due to using
-  ; floating point and there are even broken mkv files where the audio
-  ; needs to be parsed, making this codec work more reliably
-  info "mp3lib MPEG layer-2, layer-3"
-  status buggy
-  comment "Barely maintained, miscompiles with newer gcc versions"
-  format 0x50        ; layer-1 && layer-2
-  format 0x55        ; layer-3
-  format 0x5500736d  ; "ms\0\x55" older mp3 fcc (MOV files)
-  format 0x5000736d  ; "ms\0\x50" older mp2 fcc (MOV files)
-  format 0x55005354  ;  broken file
-  fourcc ".mp3"      ; CBR/VBR MP3 (MOV files)
-  fourcc "MP3 "      ; used in .nsv files
-  fourcc "LAME"      ; used in mythtv .nuv files
-  driver mp3lib
-
 audiocodec mpg123
   ; this is preferred over ffmp2/ffmp3 since it is faster, generally
+  ; and there are even broken mkv files where the audio
+  ; needs to be parsed, making this codec work more reliably
   info "MPEG 1.0/2.0/2.5 layers I, II, III"
   status working
   comment "High-performance decoder using libmpg123."
@@ -5345,6 +5490,13 @@ audiocodec libopencoreamrwb
   driver ffmpeg
   dll "libopencore_amrwb"
 
+audiocodec libilbc
+  info "FFmpeg libilbc"
+  status working
+  fourcc ilbc
+  driver ffmpeg
+  dll libilbc
+
 audiocodec ffadcpmswf
   info "FFmpeg's ADPCM Flash-variant"
   status working
@@ -5523,9 +5675,21 @@ audiocodec speex
   comment "Speex driver using libspeex"
   fourcc 'spx '
   fourcc spex
+  fourcc SPXN
   format 0xA109
   driver speex
   dll "speex"
+
+audiocodec fflibspeex
+  info "ffmpeg libSpeex audio"
+  status working
+  comment "ffmpeg libspeex"
+  fourcc 'spx '
+  fourcc spex
+  fourcc SPXN
+  format 0xA109
+  driver ffmpeg
+  dll "libspeex"
 
 audiocodec vivoaudio
   info "Vivo G.723/Siren Audio Codec"
@@ -5556,6 +5720,7 @@ audiocodec ffg7231
   status working
   fourcc 7231 ; internal MPlayer FourCC
   format 0x42
+  format 0xA100
   driver ffmpeg
   dll "g723_1"
 
@@ -5796,4 +5961,11 @@ audiocodec ffwavesynth
   fourcc "FFWS" ; internal MPlayer FourCC
   driver ffmpeg
   dll "wavesynth"
+
+audiocodec fftak
+  info "FFmpeg TAK"
+  status working
+  fourcc "TAK " ; internal MPlayer FourCC
+  driver ffmpeg
+  dll "tak"
 

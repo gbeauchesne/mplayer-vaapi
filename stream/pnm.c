@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * $Id: pnm.c 34262 2011-10-26 15:12:35Z diego $
+ * $Id: pnm.c 35395 2012-11-10 13:19:29Z reimar $
  *
  * pnm protocol implementation
  * based upon code from joschka
@@ -821,7 +821,6 @@ static int pnm_streaming_read( int fd, char *buffer, int size, streaming_ctrl_t 
 static int open_s(stream_t *stream,int mode, void* opts, int* file_format) {
   int fd;
   pnm_t *pnm;
-  URL_t *url;
 
   mp_msg(MSGT_OPEN, MSGL_INFO, "STREAM_PNM, URL: %s\n", stream->url);
   stream->streaming_ctrl = streaming_ctrl_new();
@@ -829,9 +828,7 @@ static int open_s(stream_t *stream,int mode, void* opts, int* file_format) {
     return STREAM_ERROR;
 
   stream->streaming_ctrl->bandwidth = network_bandwidth;
-  url = url_new(stream->url);
-  stream->streaming_ctrl->url = check4proxies(url);
-  //url_free(url);
+  stream->streaming_ctrl->url = url_new_with_proxy(stream->url);
 
   fd = connect2Server( stream->streaming_ctrl->url->hostname,
     stream->streaming_ctrl->url->port ? stream->streaming_ctrl->url->port : 7070,1 );

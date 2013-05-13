@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 #include <assert.h>
 #include <math.h>
 #include <inttypes.h>
@@ -40,11 +41,10 @@
 #define FOURCC_SPEEX  mmioFOURCC('s', 'p', 'x', ' ')
 #define FOURCC_THEORA mmioFOURCC('t', 'h', 'e', 'o')
 
+#include <ogg/ogg.h>
 #ifdef CONFIG_TREMOR
-#include <tremor/ogg.h>
 #include <tremor/ivorbiscodec.h>
 #else
-#include <ogg/ogg.h>
 #include <vorbis/codec.h>
 #endif
 
@@ -299,7 +299,7 @@ static unsigned char *demux_ogg_read_packet(ogg_stream_t *os, ogg_packet *pack,
            have theora_state st, until all header packets were passed to the
            decoder. */
         if (!pack->bytes || !(*data&0x80)) {
-            int64_t iframemask = (1 << os->keyframe_granule_shift) - 1;
+            int64_t iframemask = (1ull << os->keyframe_granule_shift) - 1;
 
             if (pack->granulepos >= 0) {
                 os->lastpos  = pack->granulepos >> os->keyframe_granule_shift;

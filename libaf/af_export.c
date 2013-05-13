@@ -74,8 +74,7 @@ static int control(struct af_instance_s* af, int cmd, void* arg)
     int mapsize;
 
     // Free previous buffers
-    if (s->buf)
-      free(s->buf[0]);
+    free(s->buf[0]);
 
     // unmap previous area
     if(s->mmap_area)
@@ -104,9 +103,11 @@ static int control(struct af_instance_s* af, int cmd, void* arg)
     // Init memory mapping
     s->fd = open(s->filename, O_RDWR | O_CREAT | O_TRUNC, 0640);
     mp_msg(MSGT_AFILTER, MSGL_INFO, "[export] Exporting to file: %s\n", s->filename);
-    if(s->fd < 0)
+    if(s->fd < 0) {
       mp_msg(MSGT_AFILTER, MSGL_FATAL, "[export] Could not open/create file: %s\n",
 	     s->filename);
+      return AF_ERROR;
+    }
 
     // header + buffer
     mapsize = (SIZE_HEADER + (af->data->bps * s->sz * af->data->nch));
@@ -181,8 +182,7 @@ static void uninit( struct af_instance_s* af )
 
   if(af->setup){
     af_export_t* s = af->setup;
-    if (s->buf)
-      free(s->buf[0]);
+    free(s->buf[0]);
 
     // Free mmaped area
     if(s->mmap_area)

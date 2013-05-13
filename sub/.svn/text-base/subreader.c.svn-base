@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <ctype.h>
 
 #include <sys/types.h>
@@ -163,7 +164,7 @@ static subtitle *sub_read_line_sami(stream_t* st, subtitle *current, int utf16) 
 	    s++;
 	    if (*s == 'P' || *s == 'p') { s++; state = 2; continue; } /* found '<P' */
 	    for (; *s != '>' && *s != '\0'; s++); /* skip remains of non-<P> TAG */
-	    if (s == '\0')
+	    if (*s == '\0')
 	      break;
 	    s++;
 	    continue;
@@ -274,7 +275,7 @@ static const char *sub_readtext(const char *source, char **dest) {
     }
 
     *dest= malloc (len+1);
-    if (!dest) {return ERR;}
+    if (!*dest) {return ERR;}
 
     strncpy(*dest, source, len);
     (*dest)[len]=0;
@@ -677,7 +678,7 @@ static subtitle *sub_read_line_ssa(stream_t *st,subtitle *current, int utf16) {
             tmp = line2;
             if(!(tmp=strchr(++tmp, ','))) break;
             if(brace && brace < tmp) break; // comma inside command
-            if(*(++tmp) == ' ') break;
+            if(tmp[1] == ' ') break;
                   /* a space after a comma means we're already in a sentence */
             line2 = tmp;
           }
@@ -1097,9 +1098,11 @@ static subtitle *sub_read_line_jacosub(stream_t* st, subtitle * current, int utf
 	    }			//-- switch
 	}			//-- for
 	*q = '\0';
-	current->text[current->lines] = strdup(line1);
+	if (current->lines < SUB_MAX_TEXT)
+	    current->text[current->lines] = strdup(line1);
     }				//-- while
-    current->lines++;
+    if (current->lines < SUB_MAX_TEXT)
+        current->lines++;
     return current;
 }
 

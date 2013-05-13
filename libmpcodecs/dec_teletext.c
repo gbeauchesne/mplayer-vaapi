@@ -579,6 +579,10 @@ static void put_to_cache(priv_vbi_t* priv,tt_page* pg,int line){
     pgc->subpagenum=pg->subpagenum;
     pgc->primary_lang=pg->primary_lang;
     pgc->secondary_lang=pg->secondary_lang;
+    if (pg->flags & TT_PGFL_ERASE_PAGE) {
+        memset(pgc->raw, 0, sizeof(pgc->raw));
+        pg->flags &= ~TT_PGFL_ERASE_PAGE;
+    }
     pgc->flags=pg->flags;
     for(j=0;j<6;++j)
         pgc->links[j]=pg->links[j];
@@ -1321,7 +1325,7 @@ static void decode_pkt28(priv_vbi_t* priv,unsigned char*data){
  * Used XawTV's algorithm. Signal phase is calculated with help of starting clock
  * run-in sequence (min/max values and bit distance values are calculated)
  */
-static int decode_raw_line_runin(priv_vbi_t* priv,unsigned char* buf,unsigned char* data){
+static int decode_raw_line_runin(const priv_vbi_t* priv,const unsigned char* buf,unsigned char* data){
     const int magic= 0x27; // reversed 1110010
     int dt[256],hi[6],lo[6];
     int i,x,r;
@@ -1862,6 +1866,9 @@ int teletext_control(void* p, int cmd, void *arg)
         return VBI_CONTROL_TRUE;
     case TV_VBI_CONTROL_DECODE_PAGE:
         vbi_decode(priv,*(unsigned char**)arg);
+        return VBI_CONTROL_TRUE;
+    case TV_VBI_CONTROL_DECODE_LINE:
+        vbi_decode_line(priv, arg);
         return VBI_CONTROL_TRUE;
     case TV_VBI_CONTROL_DECODE_DVB:
         vbi_decode_dvb(priv, arg);

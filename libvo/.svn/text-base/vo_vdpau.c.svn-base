@@ -33,6 +33,7 @@
  */
 
 #include <stdio.h>
+#include <strings.h>
 
 #include "config.h"
 #include "sub/ass_mp.h"
@@ -680,7 +681,6 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width,
 #ifdef CONFIG_XF86VM
         if (vm)
             vo_vm_switch();
-        else
 #endif
         XGetWindowAttributes(mDisplay, DefaultRootWindow(mDisplay), &attribs);
         depth = attribs.depth;
@@ -1005,7 +1005,7 @@ static int draw_frame(uint8_t *src[])
 
 static struct vdpau_render_state *get_surface(int number)
 {
-    if (number > MAX_VIDEO_SURFACES)
+    if (number >= MAX_VIDEO_SURFACES)
         return NULL;
     if (surface_render[number].surface == VDP_INVALID_HANDLE) {
         VdpStatus vdp_st;

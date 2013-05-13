@@ -1,6 +1,4 @@
 /*
- * WindowMaker implementation adopted for MPlayer
- *
  * This file is part of MPlayer.
  *
  * MPlayer is free software; you can redistribute it and/or modify
@@ -16,6 +14,9 @@
  * You should have received a copy of the GNU General Public License along
  * with MPlayer; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * based on: WindowMaker implementation,
+ *           adopted for MPlayer
  */
 
 #include <X11/Xlib.h>
@@ -61,19 +62,19 @@ void wsXDNDInitialize(void)
     XA_XdndTypeList = XInternAtom(wsDisplay, "XdndTypeList", False);
 }
 
-void wsXDNDMakeAwareness(wsTWindow* window) {
+void wsXDNDMakeAwareness(wsWindow* win) {
     long int xdnd_version = XDND_VERSION;
-    XChangeProperty (wsDisplay, window->WindowID, XA_XdndAware, XA_ATOM,
+    XChangeProperty (wsDisplay, win->WindowID, XA_XdndAware, XA_ATOM,
             32, PropModeAppend, (char *)&xdnd_version, 1);
 }
 
-void wsXDNDClearAwareness(wsTWindow* window) {
-    XDeleteProperty (wsDisplay, window->WindowID, XA_XdndAware);
+void wsXDNDClearAwareness(wsWindow* win) {
+    XDeleteProperty (wsDisplay, win->WindowID, XA_XdndAware);
 }
 
 #define MAX_DND_FILES 64
 Bool
-wsXDNDProcessSelection(wsTWindow* wnd, XEvent *event)
+wsXDNDProcessSelection(wsWindow* win, XEvent *event)
 {
     Atom ret_type;
     int ret_format;
@@ -96,7 +97,7 @@ wsXDNDProcessSelection(wsTWindow* wnd, XEvent *event)
     xevent.xclient.window = selowner;
     xevent.xclient.message_type = XA_XdndFinished;
     xevent.xclient.format = 32;
-    XDND_FINISHED_TARGET_WIN(&xevent) = wnd->WindowID;
+    XDND_FINISHED_TARGET_WIN(&xevent) = win->WindowID;
     XSendEvent(wsDisplay, selowner, 0, 0, &xevent);
 
     if (!delme){
@@ -140,8 +141,8 @@ wsXDNDProcessSelection(wsTWindow* wnd, XEvent *event)
       }
 
       /* Handle the files */
-      if(wnd->DandDHandler){
-	wnd->DandDHandler(num,files);
+      if(win->DNDHandler){
+	win->DNDHandler(num,files);
       }
     }
 

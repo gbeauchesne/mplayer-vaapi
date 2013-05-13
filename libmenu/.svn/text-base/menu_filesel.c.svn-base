@@ -21,6 +21,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -139,8 +140,6 @@ static char* replace_path(char* title , char* dir , int escape) {
     return title;
 }
 
-typedef int (*kill_warn)(const void*, const void*);
-
 static int mylstat(char *dir, char *file,struct stat* st) {
   int l = strlen(dir) + strlen(file);
   char s[l+2];
@@ -168,7 +167,9 @@ static int mylstat(char *dir, char *file,struct stat* st) {
   return stat(s,st);
 }
 
-static int compare(char **a, char **b){
+static int compare(const void *av, const void *bv){
+  const char * const *a = av;
+  const char * const *b = bv;
   if((*a)[strlen(*a) - 1] == '/') {
     if((*b)[strlen(*b) - 1] == '/')
       return strcmp(*b, *a) ;
@@ -313,12 +314,11 @@ bailout:
   free_extensions (extensions);
   closedir(dirp);
 
-  qsort(namelist, n, sizeof(char *), (kill_warn)compare);
-
   if (n < 0) {
     mp_msg(MSGT_GLOBAL,MSGL_ERR,MSGTR_LIBMENU_ReaddirError,strerror(errno));
     return 0;
   }
+  qsort(namelist, n, sizeof(char *), compare);
   while(n--) {
     if((e = calloc(1,sizeof(list_entry_t))) != NULL){
     e->p.next = NULL;

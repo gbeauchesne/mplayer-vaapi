@@ -659,8 +659,6 @@ static const char help_text[]=
 
 // ====================== GUI messages/buttons ========================
 
-#ifdef CONFIG_GUI
-
 // --- labels ---
 #define MSGTR_About "關于"
 #define MSGTR_FileSelect "選擇文件..."
@@ -921,13 +919,13 @@ static const char help_text[]=
 
 // ws.c
 
-#define MSGTR_WS_RemoteDisplay "[ws] 遠程顯示, 停用 XMITSHM。\n"
-#define MSGTR_WS_NoXshm "[ws] 抱歉, 你的係統不支持 X 共享内存擴展。\n"
-#define MSGTR_WS_NoXshape "[ws] 抱歉, 你的係統不支持 XShape 擴展。\n"
-#define MSGTR_WS_ColorDepthTooLow "[ws] 抱歉, 色彩深度太低。\n"
-#define MSGTR_WS_TooManyOpenWindows "[ws] 打開窗口太多。\n"
-#define MSGTR_WS_ShmError "[ws] 共享内存擴展錯誤\n"
-#define MSGTR_WS_NotEnoughMemoryDrawBuffer "[ws] 抱歉, 内存不够繪製緩衝。\n"
+#define MSGTR_WS_RemoteDisplay "遠程顯示, 停用 XMITSHM。\n"
+#define MSGTR_WS_NoXshm "抱歉, 你的係統不支持 X 共享内存擴展。\n"
+#define MSGTR_WS_NoXshape "抱歉, 你的係統不支持 XShape 擴展。\n"
+#define MSGTR_WS_ColorDepthTooLow "抱歉, 色彩深度太低。\n"
+#define MSGTR_WS_TooManyOpenWindows "打開窗口太多。\n"
+#define MSGTR_WS_ShmError "共享内存擴展錯誤\n"
+#define MSGTR_WS_NotEnoughMemoryDrawBuffer "抱歉, 内存不够繪製緩衝。\n"
 #define MSGTR_WS_DpmsUnavailable "DPMS 不可用?\n"
 #define MSGTR_WS_DpmsNotEnabled "不能啟用 DPMS。\n"
 
@@ -935,8 +933,6 @@ static const char help_text[]=
 
 #define MSGTR_WS_NotAFile "這好像不是一個文件...\n"
 #define MSGTR_WS_DDNothing "D&D: 没有任何東西返回!\n"
-
-#endif
 
 // ======================= VO Video Output drivers ========================
 

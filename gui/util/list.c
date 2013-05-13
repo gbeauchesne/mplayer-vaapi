@@ -26,6 +26,10 @@
 
 #include "list.h"
 #include "string.h"
+#include "gui/app/gui.h"
+
+#include "mp_msg.h"
+#include "path.h"
 
 static plItem *plList;
 static plItem *plCurrent;
@@ -42,9 +46,13 @@ static urlItem *urlList;
  *         pointer to current list item (ITEM command) or
  *         NULL (DELETE or unknown command)
  *
+ * @note PLAYLIST_ITEM_GET_POS returns the position number as pointer
+ *       (if @a data is NULL the last position number, i.e. number of items),
+ *       and position 0 means "not found"
  */
 void *listMgr(int cmd, void *data)
 {
+    unsigned int pos;
     plItem *pdat  = (plItem *)data;
     urlItem *udat = (urlItem *)data;
 
@@ -90,6 +98,21 @@ void *listMgr(int cmd, void *data)
         } else
             return listMgr(PLAYLIST_ITEM_APPEND, pdat);
 
+    case PLAYLIST_ITEM_FIND:
+
+        if (plList) {
+            plItem *item = plList;
+
+            do {
+                if (gstrcmp(item->path, pdat->path) == 0 && gstrcmp(item->name, pdat->name) == 0)
+                    return item;
+
+                item = item->next;
+            } while (item);
+        }
+
+        return NULL;
+
     case PLAYLIST_ITEM_SET_CURR:
 
         plCurrent = pdat;
@@ -98,6 +121,31 @@ void *listMgr(int cmd, void *data)
     case PLAYLIST_ITEM_GET_CURR:
 
         return plCurrent;
+
+    case PLAYLIST_ITEM_GET_POS:
+
+        pos = 0;
+
+        if (plList) {
+            unsigned int i = 0;
+            plItem *item   = plList;
+
+            do {
+                i++;
+
+                if (item == pdat) {
+                    pos = i;
+                    break;
+                }
+
+                item = item->next;
+            } while (item);
+
+            if (!pdat)
+                pos = i;
+        }
+
+        return (void *)pos;
 
     case PLAYLIST_ITEM_GET_PREV:
 
@@ -113,6 +161,19 @@ void *listMgr(int cmd, void *data)
         if (plCurrent && plCurrent->next) {
             plCurrent = plCurrent->next;
             return plCurrent;
+        }
+
+        return NULL;
+
+    case PLAYLIST_ITEM_GET_LAST:
+
+        if (plList) {
+            plItem *item = plList;
+
+            while (item->next)
+                item = item->next;
+
+            return item;
         }
 
         return NULL;
@@ -274,4 +335,49 @@ void listRepl(char ***list, const char *search, const char *replace)
 
     (*list)[i]     = strdup(replace);
     (*list)[i + 1] = NULL;
+}
+
+/**
+ * @brief Append or insert a file to the playlist.
+ *
+ * @param what file to be added
+ * @param how command (#PLAYLIST_ITEM_APPEND or #PLAYLIST_ITEM_INSERT) to be performed
+ *
+ * @return #True (ok) or #False (error)
+ */
+int add_to_gui_playlist(const char *what, int how)
+{
+    const char *file;
+    char *path;
+    plItem *item;
+
+    if (!what || !*what || (how != PLAYLIST_ITEM_APPEND && how != PLAYLIST_ITEM_INSERT))
+        return False;
+
+    file = mp_basename(what);
+    path = strdup(what);
+
+    if (!path)
+        return False;
+
+    if (file > what)
+        path[file - what - 1] = 0;
+    else
+        strcpy(path, ".");
+
+    item = calloc(1, sizeof(plItem));
+
+    if (!item) {
+        free(path);
+        return False;
+    }
+
+    mp_msg(MSGT_GPLAYER, MSGL_DBG2, "[list] adding %s/%s\n", path, file);
+
+    item->name = strdup(file);
+    item->path = path;
+
+    listMgr(how, item);
+
+    return True;
 }

@@ -24,6 +24,7 @@
 #include <limits.h>
 #include "config.h"
 #include "mp_msg.h"
+#include "fmt-conversion.h"
 #include "help_mp.h"
 #include "mencoder.h"
 #include "aviheader.h"
@@ -40,8 +41,6 @@
 #include "libavutil/avstring.h"
 
 #include "mp_taglists.h"
-
-enum PixelFormat imgfmt2pixfmt(int fmt);
 
 #define BIO_BUFFER_SIZE 32768
 
@@ -96,7 +95,7 @@ static int64_t mp_seek(void *opaque, int64_t pos, int whence)
 	}
 	else if(whence == SEEK_END)
 	{
-		off_t size=0;
+		uint64_t size=0;
 		if(stream_control(muxer->stream, STREAM_CTRL_GET_SIZE, &size) == STREAM_UNSUPPORTED || size < pos)
 			return -1;
 		pos = size - pos;
@@ -115,7 +114,7 @@ static muxer_stream_t* lavf_new_stream(muxer_t *muxer, int type)
 	muxer_stream_priv_t *spriv;
 	AVCodecContext *ctx;
 
-	if(!muxer || (type != MUXER_TYPE_VIDEO && type != MUXER_TYPE_AUDIO))
+	if(type != MUXER_TYPE_VIDEO && type != MUXER_TYPE_AUDIO)
 	{
 		mp_msg(MSGT_MUXER, MSGL_ERR, "UNKNOWN TYPE %d\n", type);
 		return NULL;
@@ -156,7 +155,7 @@ static muxer_stream_t* lavf_new_stream(muxer_t *muxer, int type)
 	spriv->avstream->id = 1;
 
 	ctx = spriv->avstream->codec;
-	ctx->codec_id = CODEC_ID_NONE;
+	ctx->codec_id = AV_CODEC_ID_NONE;
 	switch(type)
 	{
 		case MUXER_TYPE_VIDEO:
@@ -177,19 +176,17 @@ static muxer_stream_t* lavf_new_stream(muxer_t *muxer, int type)
 
 static void fix_parameters(muxer_stream_t *stream)
 {
-	muxer_stream_priv_t *spriv = (muxer_stream_priv_t *) stream->priv;
-	AVCodecContext *ctx;
-
-	ctx = spriv->avstream->codec;
+	muxer_stream_priv_t *spriv = stream->priv;
+	AVCodecContext *ctx = spriv->avstream->codec;
 
         ctx->bit_rate= stream->avg_rate;
-        if(stream->wf && stream->wf->nAvgBytesPerSec && !ctx->bit_rate)
-            ctx->bit_rate = stream->wf->nAvgBytesPerSec * 8;
         ctx->rc_buffer_size= stream->vbv_size;
         ctx->rc_max_rate= stream->max_rate;
 
 	if(stream->type == MUXER_TYPE_AUDIO)
 	{
+		if (!ctx->bit_rate)
+		    ctx->bit_rate = stream->wf->nAvgBytesPerSec * 8;
 		ctx->codec_id = mp_tag2codec_id(stream->wf->wFormatTag, 1);
 #if 0 //breaks aac in mov at least
 		ctx->codec_tag = codec_get_wav_tag(ctx->codec_id);
@@ -230,7 +227,11 @@ static void fix_parameters(muxer_stream_t *stream)
 		ctx->bit_rate = 800000;
 		ctx->time_base.den = stream->h.dwRate;
 		ctx->time_base.num = stream->h.dwScale;
-		if(stream->bih && (stream->bih->biSize > sizeof(*stream->bih)))
+		if (stream->aspect)
+			ctx->sample_aspect_ratio =
+			spriv->avstream->sample_aspect_ratio = av_d2q(stream->aspect * ctx->height / ctx->width, 255);
+
+		if(stream->bih->biSize > sizeof(*stream->bih))
 		{
 			ctx->extradata_size = stream->bih->biSize - sizeof(*stream->bih);
 			ctx->extradata = av_malloc(ctx->extradata_size);
@@ -250,7 +251,7 @@ static void write_chunk(muxer_stream_t *stream, size_t len, unsigned int flags, 
 {
 	muxer_t *muxer = stream->muxer;
 	muxer_priv_t *priv = muxer->priv;
-	muxer_stream_priv_t *spriv = (muxer_stream_priv_t *) stream->priv;
+	muxer_stream_priv_t *spriv = stream->priv;
 	AVPacket pkt;
 
 	if(len)

@@ -249,7 +249,7 @@ static int cue_find_bin (const char *firstline) {
       break;
     }
     fd_bin = open(cur_name, O_RDONLY);
-    if (fstat(fd_bin, &filestat) == -1 || !S_ISREG(filestat.st_mode)) {
+    if (fd_bin != -1 && (fstat(fd_bin, &filestat) == -1 || !S_ISREG(filestat.st_mode))) {
         close(fd_bin);
         fd_bin = -1;
     }
@@ -480,7 +480,7 @@ static int cue_vcd_get_track_end (int track){
   return VCD_SECTOR_DATA * sector;
 }
 
-static int seek(stream_t *s,off_t newpos) {
+static int seek(stream_t *s, int64_t newpos) {
   s->pos=newpos;
   cue_set_msf(s->pos/VCD_SECTOR_DATA);
   return 1;

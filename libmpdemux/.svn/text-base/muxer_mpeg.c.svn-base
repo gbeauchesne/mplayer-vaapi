@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/types.h>
 
 #include "config.h"
@@ -77,18 +78,18 @@
 #define FRAMERATE_5994 7
 #define FRAMERATE_60 8
 
-static char ftypes[] = {'?', 'I', 'P', 'B'};
+static const char ftypes[] = {'?', 'I', 'P', 'B'};
 #define FTYPE(x) (ftypes[(x)])
 
-static const char *framerates[] = {
+static const char * const framerates[] = {
 	"unchanged", "23.976", "24", "25", "29.97", "30", "50", "59.94", "60"
 };
 
-static const char *aspect_ratios[] = {
+static const char * const aspect_ratios[] = {
 	"unchanged", "1/1", "4/3", "16/9", "2.21/1"
 };
 
-static char *conf_mux = "mpeg2";
+static const char *conf_mux = "mpeg2";
 static uint32_t conf_packet_size = 0;		//dvd
 static uint32_t conf_muxrate = 0;		//kb/s
 static float conf_vaspect = 0;
@@ -363,11 +364,10 @@ static mpeg_frame_t *init_frames(uint16_t num, size_t size)
 static int add_frame(muxer_headers_t *spriv, uint64_t idur, uint8_t *ptr, int len, uint8_t pt, uint64_t dts, uint64_t pts);
 
 static muxer_stream_t* mpegfile_new_stream(muxer_t *muxer,int type){
-  muxer_priv_t *priv = (muxer_priv_t*) muxer->priv;
+  muxer_priv_t *priv = muxer->priv;
   muxer_stream_t *s;
   muxer_headers_t *spriv;
 
-  if (!muxer) return NULL;
   if(muxer->avih.dwStreams>=MUXER_MAX_STREAMS){
     mp_msg(MSGT_MUXER, MSGL_ERR, "Too many streams! increase MUXER_MAX_STREAMS !\n");
     return NULL;
@@ -573,9 +573,7 @@ static void write_mpeg2_scr(unsigned char *b, uint64_t ts)
 static int write_mpeg_pack_header(muxer_t *muxer, char *buff)
 {
 	int len;
-	muxer_priv_t *priv;
-
-	priv = (muxer_priv_t *) muxer->priv;
+	muxer_priv_t *priv = muxer->priv;
 	AV_WB32(buff, PACK_HEADER_START_CODE);
 	if(priv->mux==MUX_MPEG1)
 	{
@@ -599,8 +597,7 @@ static int write_mpeg_system_header(muxer_t *muxer, char *buff)
 {
 	int len;
 	uint8_t i;
-	muxer_priv_t *priv;
-	priv = (muxer_priv_t *) muxer->priv;
+	muxer_priv_t *priv = muxer->priv;
 
 	len = 0;
 	AV_WB32(&buff[len], SYSTEM_HEADER_START_CODE);
@@ -638,8 +635,7 @@ static int write_mpeg_psm(muxer_t *muxer, char *buff)
 	uint8_t i;
 	uint16_t dlen;
 	uint32_t crc;
-	muxer_priv_t *priv;
-	priv = (muxer_priv_t *) muxer->priv;
+	muxer_priv_t *priv = muxer->priv;
 
 	len = 0;
 	AV_WB32(&buff[len], PSM_START_CODE);
@@ -842,12 +838,9 @@ static uint32_t calc_pes_hlen(int format, muxer_headers_t *h, muxer_priv_t *priv
 static int write_mpeg_pack(muxer_t *muxer, muxer_stream_t *s, stream_t *stream, int isoend)
 {
 	size_t tot, offset;
-	muxer_priv_t *priv;
-	unsigned char *buff;
+	muxer_priv_t *priv = muxer->priv;
+	unsigned char *buff = priv->buff;
 	int stuffing_len;
-
-	priv = (muxer_priv_t *) muxer->priv;
-	buff = priv->buff;
 
 	if(isoend)
 	{
@@ -1131,8 +1124,8 @@ static int fill_packet(muxer_t *muxer, muxer_stream_t *s, int finalize)
 	//spriv->pack_offset is the start position initialized to 0
 	//data is taken from spriv->framebuf
 	//if audio and a52 insert the headers
-	muxer_priv_t *priv = (muxer_priv_t *) muxer->priv;
-	muxer_headers_t *spriv = (muxer_headers_t *) s->priv;
+	muxer_priv_t *priv = muxer->priv;
+	muxer_headers_t *spriv = s->priv;
 	int len, m, n, dvd_pack = 0;
 	int write_psm = 0;
 	mpeg_frame_t *frm;
@@ -1495,8 +1488,7 @@ static int flush_buffers(muxer_t *muxer, int finalize)
 	uint64_t init_delay = 0;
 	muxer_stream_t *s, *vs, *as;
 	muxer_headers_t *vpriv = NULL, *apriv = NULL;
-	muxer_priv_t *priv = (muxer_priv_t *) muxer->priv;
-	double duration;
+	muxer_priv_t *priv = muxer->priv;
 	uint64_t iduration, iaduration;
 
 	/*
@@ -1534,11 +1526,9 @@ static int flush_buffers(muxer_t *muxer, int finalize)
 
 		vpriv = (muxer_headers_t*) vs->priv;
 
-		duration = 0;
 		iduration = 0;
 		for(i = 0; i < n; i++)
 			iduration += vpriv->framebuf[i].idur;
-		duration = (double) (iduration / 27000000.0);
 
 		if(as != NULL)
 		{
@@ -1780,7 +1770,7 @@ static size_t parse_mpeg12_video(muxer_stream_t *s, muxer_priv_t *priv, muxer_he
 		mp_msg(MSGT_MUXER, MSGL_FATAL, "\r\nPARSE_MPEG12: add_frames(%zu) failed, exit\r\n", len);
 		return 0;
 	}
-	mp_msg(MSGT_MUXER, MSGL_DBG2, "\r\nVIDEO FRAME, PT: %C, tr: %d, diff: %d, dts: %.3f, pts: %.3f, pdt: %u, gop_reset: %d\r\n",
+	mp_msg(MSGT_MUXER, MSGL_DBG2, "\r\nVIDEO FRAME, PT: %c, tr: %d, diff: %d, dts: %.3f, pts: %.3f, pdt: %u, gop_reset: %d\r\n",
 		ftypes[pt], temp_ref, frames_diff, ((double) spriv->last_dts/27000000.0f),
 		((double) spriv->last_pts/27000000.0f), spriv->picture.display_time, gop_reset);
 
@@ -2289,8 +2279,8 @@ static void mpegfile_write_chunk(muxer_stream_t *s,size_t len,unsigned int flags
 	size_t sz = 0;
 	uint64_t tmp;
 	muxer_t *muxer = s->muxer;
-	muxer_priv_t *priv = (muxer_priv_t *)muxer->priv;
-	muxer_headers_t *spriv = (muxer_headers_t*) s->priv;
+	muxer_priv_t *priv = muxer->priv;
+	muxer_headers_t *spriv = s->priv;
 	float fps;
 	uint32_t stream_format, nf;
 
@@ -2391,7 +2381,7 @@ static void mpegfile_write_index(muxer_t *muxer)
 {
 	int i, nf;
 	double fake_timer;
-	muxer_priv_t *priv = (muxer_priv_t *) muxer->priv;
+	muxer_priv_t *priv = muxer->priv;
 
 	mp_msg(MSGT_MUXER, MSGL_INFO, MSGTR_WritingTrailer);
 
@@ -2413,7 +2403,7 @@ static void mpegfile_write_index(muxer_t *muxer)
 
 static void mpegfile_write_header(muxer_t *muxer)
 {
-	muxer_priv_t *priv = (muxer_priv_t*) muxer->priv;
+	muxer_priv_t *priv = muxer->priv;
 
 	mp_msg(MSGT_MUXER, MSGL_INFO, MSGTR_WritingHeader);
 
@@ -2725,7 +2715,7 @@ int muxer_init_muxer_mpeg(muxer_t *muxer)
 		return 0;
 	}
 
-	muxer->priv = (void *) priv;
+	muxer->priv = priv;
 	muxer->cont_new_stream = &mpegfile_new_stream;
 	muxer->cont_write_chunk = &mpegfile_write_chunk;
 	muxer->cont_write_header = &mpegfile_write_header;

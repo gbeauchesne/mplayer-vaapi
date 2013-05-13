@@ -149,7 +149,7 @@ static image *pngRead(skin_t *skin, const char *fname)
       int src_stride[4] = { 4 * bmp.Width, 0, 0, 0 };
       uint8_t *dst[4] = { NULL, NULL, NULL, NULL };
       int dst_stride[4];
-      enum PixelFormat out_pix_fmt = PIX_FMT_NONE;
+      enum AVPixelFormat out_pix_fmt = PIX_FMT_NONE;
       struct SwsContext *sws;
       if      (skin->desktopbpp == 16) out_pix_fmt = PIX_FMT_RGB555;
       else if (skin->desktopbpp == 24) out_pix_fmt = PIX_FMT_RGB24;
@@ -549,7 +549,7 @@ static void loadfonts(skin_t* skin)
 skin_t* loadskin(char* skindir, int desktopbpp)
 {
     FILE *fp;
-    int reachedendofwindow = 0;
+    int reachedendofwindow = FALSE;
     int linenumber = 0;
     skin_t *skin = calloc(1, sizeof(skin_t));
     char *filename;
@@ -582,14 +582,14 @@ skin_t* loadskin(char* skindir, int desktopbpp)
     {
         int pos = 0;
         unsigned int i;
-        int insidequote = 0;
+        int insidequote = FALSE;
         fgets(tmp, MAX_LINESIZE, fp);
         linenumber++;
         memset(desc, 0, MAX_LINESIZE);
         for (i=0; i<strlen(tmp); i++)
         {
-            if((tmp[i] == '"') && !insidequote) { insidequote=1; continue; }
-            else if((tmp[i] == '"') && insidequote) { insidequote=0 ; continue; }
+            if((tmp[i] == '"') && !insidequote) { insidequote=TRUE; continue; }
+            else if((tmp[i] == '"') && insidequote) { insidequote=FALSE ; continue; }
             /* remove spaces and linebreaks */
             if((!insidequote && (tmp[i] == ' ')) || (tmp[i] == '\n') || (tmp[i] == '\r')) continue;
             /* remove comments */
@@ -612,7 +612,7 @@ skin_t* loadskin(char* skindir, int desktopbpp)
         else if(!strncmp(desc, "window", 6))
         {
             mp_msg(MSGT_GPLAYER, MSGL_DBG2, "[SKIN] [WINDOW] \"%s\"\n", desc + 7);
-            reachedendofwindow = 0;
+            reachedendofwindow = FALSE;
             (skin->windowcount)++;
             skin->windows = realloc(skin->windows, sizeof(window *) * skin->windowcount);
             mywindow = skin->windows[(skin->windowcount) - 1] = calloc(1, sizeof(window));
@@ -621,7 +621,7 @@ skin_t* loadskin(char* skindir, int desktopbpp)
             else if(!strncmp(desc+7, "video", 5) || !strncmp(desc+7, "sub", 3))   // legacy
             {
                 mywindow->type = wiVideo;
-                mywindow->decoration = 1;
+                mywindow->decoration = TRUE;
             }
             else if(!strncmp(desc + 7, "menu", 4)) mywindow->type = wiMenu;
             else if(!strncmp(desc + 7, "playbar", 7)) mywindow->type = wiPlaybar;
@@ -629,7 +629,7 @@ skin_t* loadskin(char* skindir, int desktopbpp)
         }
         else if(!strncmp(desc, "decoration", 10) && !strncmp(desc + 11, "enable", 6))
         {
-            mywindow->decoration = 1;
+            mywindow->decoration = TRUE;
             mp_msg(MSGT_GPLAYER, MSGL_DBG2, "[SKIN] [DECORATION] enabled decoration for window \"%s\"\n", mywindow->name);
         }
         else if(!strncmp(desc, "background", 10))
@@ -652,7 +652,7 @@ skin_t* loadskin(char* skindir, int desktopbpp)
             }
             else
             {
-                reachedendofwindow = 1;
+                reachedendofwindow = TRUE;
                 mp_msg(MSGT_GPLAYER, MSGL_DBG2, "[SKIN] [END] of window \"%s\"\n", mywindow->name);
             }
         }

@@ -17,7 +17,9 @@
  */
 
 #include <string.h>
+#include <strings.h>
 #include <libavutil/avutil.h>
+#include <libavutil/common.h>
 
 #include "bstr.h"
 

@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <errno.h>
 #include <math.h>
 #include <limits.h>
@@ -1378,8 +1379,7 @@ update_stats(xvid_mplayer_module_t *mod, xvid_enc_stats_t *stats)
 			mod->max_framenum = mod->frames;
 		}
 
-		if (xvidenc_psnr) {
-			if (!mod->fvstats) {
+		if (xvidenc_psnr && !mod->fvstats) {
 				char filename[20];
 				time_t today2;
 				struct tm *today;
@@ -1392,7 +1392,8 @@ update_stats(xvid_mplayer_module_t *mod, xvid_enc_stats_t *stats)
 					/* Disable PSNR file output so we don't get here again */
 					xvidenc_psnr = 0;
 				}
-			}
+		}
+		if (xvidenc_psnr) {
 			fprintf (mod->fvstats, "%6d, %2d, %6d, %2.2f, %2.2f, %2.2f, %2.2f %c\n",
 					mod->frames,
 					stats->quant,
@@ -1483,9 +1484,6 @@ static void *read_matrix(unsigned char *filename)
 		value     = (value>255)?255:value;
 		matrix[i] = value;
 	}
-
-	/* Fills the rest with 1 */
-	while(i<64) matrix[i++] = 1;
 
 	/* We're done */
 	fclose(input);

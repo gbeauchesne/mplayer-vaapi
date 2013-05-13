@@ -1,5 +1,5 @@
-.\" sync with en/mplayer.1 rev. 34993
-.\" MPlayer (C) 2000-2012 MPlayer Team
+.\" sync with en/mplayer.1 rev. 36241
+.\" MPlayer (C) 2000-2013 MPlayer Team
 .\" This man page was/is translated by JRaSH<jrash06 at gmail.com>
 .
 .\" --------------------------------------------------------------------------
@@ -343,7 +343,7 @@ MPlayer 有一个完全可配置的，命令驱动的控制层面，\
 .PD 1
 .PP
 .RS
-（以下的按键仅当使用 sdl 
+（以下的按键仅当使用 sdl
 视频输出驱动时有效。）
 .RE
 .PP
@@ -1021,7 +1021,7 @@ EDL 记录含有一些只对这个特定文件来说是正确的绝对数值。\
 强制使用单个固定的视频系统用于多个文件的播放\
 （一次初始化/终止操作用于所有文件）。\
 这样只打开一个窗口，将用于所有文件的播放。\
-目前以下驱动兼容 fixed-vo：gl、gl2、mga、svga、x11、xmga、\
+目前以下驱动兼容 fixed-vo：gl、gl_tiled、mga、svga、x11、xmga、\
 xv、xvidix 和 dfbmga。
 .
 .TP
@@ -1074,6 +1074,10 @@ mplayer \-heartbeat\-cmd "xscreensaver\-command \-deactivate" file
 mplayer \-heartbeat\-cmd "gnome\-screensaver\-command \-p" file
 .RE
 .PD 1
+.
+.TP
+.B \-heartbeat\-interval
+指定每隔多久 \-heartbeat\-cmd 要执行一次，以两次执行间相隔的秒数为单位（默认值：30.0）。
 .
 .TP
 .B \-identify
@@ -1204,7 +1208,7 @@ mplayer \-heartbeat\-cmd "gnome\-screensaver\-command \-p" file
 指针移动事件。\
 选择 DVD 菜单中的按钮需要该选项。\
 支持基于 X11 的视频输出（x11、xv、xvmc等）\
-以及 gl、gl2、direct3d 和 corevideo 的视频输出
+以及 gl、gl_tiled、direct3d 和 corevideo 的视频输出
 .
 .TP
 .B \-noar
@@ -1242,6 +1246,26 @@ mplayer \-heartbeat\-cmd "gnome\-screensaver\-command \-p" file
 时方式的 sleep 时，这些内核已经以相类似的精度唤醒进程了。
 .
 .TP
+.B \-pausing <0\-3>（仅用于 MPlayer）
+指定命令默认使用的暂时行为，也就是命令结后，\
+MPlayer 是继续播放还是暂停。\
+参见 DOCS/tech/slave.txt 以了解更多详情。
+.PD 0
+.RSs
+.IPs 0
+继续
+.IPs 1
+暂停（pausing）
+.IPs 2
+保持暂停 / 播放状态（pausing_keep）
+.IPs 3
+切换暂停 / 播放状态（pausing_toggle）
+.IPs 4
+暂停同时画面帧无步进（实验性）（pausing_keep_force）
+.RE
+.PD 1
+.
+.TP
 .B \-playing\-msg <字符串>
 开始播放前打印字符串。\
 支持以下的变量替换：
@@ -1259,11 +1283,27 @@ mplayer \-heartbeat\-cmd "gnome\-screensaver\-command \-p" file
 根据播放列表播放文件（支持 ASX、Winamp、SMIL、或\
 每行一个文件名的格式）。
 .br
+.I 警告：\
+MPlayer 解析及使用播放列表文件的方式不具备防范恶意构建文件的\
+安全性。\
+这些文件可能触发危险行为。\
+该隐患存在于迄今所有的 MPlayer 的版本中，但不幸的是之前未能\
+将此情况妥善写入文档中，而且一些用户已受此误导而将 -playlist 用于\
+不可信来源的参数。\
+请勿将 -playlist 用于任意的因特网来源或你不信任的文件！
+.br
 .I 注意：
 该选项处理为一项条目，其后的选项仅应用于该播放列表\
 的元素。
 .br
 FIXME: 需彻底解释清楚并记入文档。
+.
+.TP
+.B \-allow-dangerous-playlist-parsing
+该选项允许将任何文件解析为播放列表。用于例如一台服务将一个文件公告为播放列表\
+类型的情况。\
+仅当清楚知道所有涉及的服务器都可信任时才启用该选项。\
+MPlayer 的播放列表处理代码设计上并不能应对恶意播放列表文件。
 .
 .TP
 .B \-rtc\-device <设备>
@@ -1428,10 +1468,6 @@ MPlayer 在输出详细信息模式下（\-v）运行时会打印可用的语言
 这个选项可以告诉 MPlayer 使用哪个角度（默认值：1）。
 .
 .TP
-.B \-bluray\-chapter <章节代码>（仅用于蓝光 DVD）
-告诉 MPlayer 从哪个蓝光 DVD 章节开始播放当前标题的内容（默认值：1）。
-.
-.TP
 .B \-bluray\-device <碟片路径>（仅用于蓝光 DVD）
 指定蓝光碟片的位置。必须是一个具有蓝光 DVD 结构的目录。
 .
@@ -1539,7 +1575,7 @@ MPlayer 要求解码器将音频解码为该选项所指定的\
 .PD 1
 .
 .TP
-.B \-chapter <章节代码>[\-<中止章节代码>]（仅用于 dvd:// 和 dvdnav://）
+.B \-chapter <章节代码>[\-<中止章节代码>]
 指定从哪个章节开始播放。\
 可同时指定播放至哪个场景中止（默认值：1）。
 .
@@ -1669,7 +1705,8 @@ MPlayer 在关闭时将驱动器的速度重置为默认值。\
 .I 注意：
 字节数表示的位置可能不精确，因为只能停在帧数据块的边界上。\
 当与 \-ss 选项组合使用时，如非以字节数指定位置，\-endpos 的时间\
-会向前平移 \-ss 所指定的秒数。
+会向前平移 \-ss 所指定的秒数。\
+另外，当与任何 \-dump 选项一同使用时，该选项可能无法正确或有效地起作用。
 .sp 1
 .I 示例：
 .PD 0
@@ -2084,7 +2121,8 @@ radio://1, radio://104.4, radio_set_channel 1
 .
 .TP
 .B \-ss <时间点>（另见 \-sb）
-定位到所给时间的位置。
+定位到所给时间的位置。\
+要禁止定位操作，需使用 \-ss nopts ，\-ss 0 的行为并非所愿。
 .sp 1
 .I 示例：
 .PD 0
@@ -2751,8 +2789,10 @@ DVD/\:VOBsub 的抗锯齿/\:缩放模式。\
 .PD 1
 .
 .TP
-.B "\-subcc <1\-4>\ "
+.B "\-subcc <1\-8>\ "
 显示来自指定通道的 DVD 可隐藏字幕（DVD Closed Caption）。\
+值 5 至 8 用以选择从 EIA-708 数据中抽取兼容 EIA-608 数据流的\
+一种模式。\
 这些字幕
 .B 不
 是 VOB 字幕，而是为听力有障碍的人准备的特殊的 ASCII 字幕，\
@@ -2882,9 +2922,10 @@ sub,subtitles,/tmp/subs，那么 MPlayer 将在这些目录下搜索\
 而使基于时间的字幕文件减慢播放字幕。
 .
 .TP
-.B \-subpos <0\-100>（有助于与 \-vf expand 一同使用）
+.B \-subpos <0\-150>（有助于与 \-vf expand 一同使用）
 指定字幕在屏幕上显示的位置。\
-参数值是以屏幕高度的百分比为单位的字幕垂直位置。
+参数值是以屏幕高度的百分比为单位的字幕垂直位置。\
+值大于 100 时将截断部分字幕的显示。
 .
 .TP
 .B \-subwidth <10\-100>
@@ -3469,12 +3510,12 @@ x 和 y 指定的是从屏幕左上角到所显示图像的左上角\
 如果使用 \-wid 选项指定了外部窗口，\
 那么 x 和 y 坐标是相对于窗口而非\
 屏幕的左上角。\
-使用完全支持 \-xineramascreen 的视频输出的驱动（direct3d、gl、gl2、\
+使用完全支持 \-xineramascreen 的视频输出的驱动（direct3d、gl、gl_tiled、\
 vdpau、x11、xv、xvmc、corevideo）时，坐标是相对于 \-xineramascreen 选项\
 所给屏幕的值。
 .br
 .I 注意：
-该选项仅 x11、xmga、xv、xvmc、xvidix、gl、gl2、direct3d、\
+该选项仅 x11、xmga、xv、xvmc、xvidix、gl、gl_tiled、direct3d、\
 directx、fbdev、sdl、dfxfb 和 corevideo 视频输出驱动\
 支持。
 .sp 1
@@ -3563,15 +3604,15 @@ directx、fbdev、sdl、dfxfb 和 corevideo 视频输出驱动\
 .B "\-ontop\ "
 让播放器窗口保持位于其他窗口之上。\
 使用 X11 的视频输出驱动（除了 SDL），以及使用 directx、corevideo、quartz、\
-ggi 和 gl2 的驱动都支持。
+ggi 和 gl_tiled 的驱动都支持。
 .
 .TP
 .B \-panscan <0.0\-1.0>
 启用全景显示功能（裁剪诸如 16:9 影片的两边以适应 4:3 不带\
 黑边的显示方式）。\
 该范围内的参数值用来控制裁减多少图像。\
-只能与 xv, xmga, mga, gl, gl2, quartz, corevideo 和 xvidix 的\
-视频输出驱动一同起作用。
+只能与 directx、xv、xmga、mga、gl、gl_tiled、quartz、corevideo 和 xvidix 的\
+视频输出驱动一同使用。
 .br
 .I 注意：
 也允许 \-1 和 0 间的值，但这些值处于高度试验阶段，\
@@ -3584,8 +3625,7 @@ ggi 和 gl2 的驱动都支持。
 值为正数表示默认范围所乘的倍数。\
 值为负数表示可以放大至 \-panscanrange+1 所表示的因数。\
 例如 \-panscanrange \-3 允许缩放因子达到 4。\
-该功能是实验性的。\
-不要报告相关缺隐，除非在使用 \-vo gl。
+该功能是实验性的。
 .
 .TP
 .B \-refreshrate <Hz>
@@ -3665,7 +3705,7 @@ dga、x11、xv、sdl 和 directx 视频输出驱动支持该选项。\
 （因为其总是在所给屏幕上全屏显示），\
 \-geometry 是目前可用于此目的的最好\
 选项。\
-至少 direct3d、gl、gl2、x11、xv 和 corevideo 视频输出\
+至少 direct3d、gl、gl_tiled、x11、xv 和 corevideo 视频输出\
 驱动支持该选项。
 .
 .TP
@@ -4039,6 +4079,7 @@ Mac OS X CoreVideo 视频输出驱动
 .PD 0
 .RSs
 .IPs device_id=<数值>
+过时选项，可使用 \-xineramascreen 代替。
 选择用于全屏模式的显示设备，或将其设为 \-1 以总是使用视频窗口所在的屏幕\
 （默认值：\-1 \- 自动选择）。
 .IPs shared_buffer
@@ -4148,6 +4189,10 @@ OpenGL 视频输出驱动，简单版本。\
 2：SDL
 .br
 3：X11/EGL（高度处于实验阶段）
+.br
+4：OSX/Cocoa
+.br
+5：Android（十分糟糕的实现，仅用于测试）
 .RE
 .IPs (no)ati\-hack
 当使用了 PBO 时（当使用了 \-dr 或强制使用 \-pbo 时），\
@@ -4189,8 +4234,9 @@ OSD 的颜色（默认值是：0x00ffffff，对应不透明的白色）。
 需要 GLX_SGI_swap_control 支持以起作用。\
 某些（大多数/所有？）实现设备仅能在全屏模式下起作用。
 .IPs ycbcr
-使用 GL_MESA_ycbcr_texture 扩展组件将 YUV 转换为 RGB 格式。\
-在大多数情况下，该方法很可能比使用软件转换成 RGB 慢。
+使用 GL_APPLE_ycbcr_422 扩展组件将 YUV 转换为 RGB 格式。\
+如果指定了 yuv= 则默认为禁用，否则默认为自动检测。\
+注意该选项将启用一些特殊的设置以进入驱动程序中的一种特殊的快速通道。
 .IPs yuv=<n>
 选择 YUV 到 RGB 转换的类型。\
 默认方式是自动侦测，选取 0 到 2 之间的一个值。
@@ -4205,15 +4251,15 @@ OSD 的颜色（默认值是：0x00ffffff，对应不透明的白色）。
 提供饱和度和色调的控制功能。\
 该方法速度快但不精确。
 .br
-2：使用片断程序。\
-需要 GL_ARB_fragment_program 扩展组件和至少三个纹理处理单元。\
-提供亮度、对比度、饱和度和色调控制。
-.br
-3：使用利用 POW 指令的片断程序。\
+2：使用利用 POW 指令的片断程序。\
 需要 GL_ARB_fragment_program 扩展组件和至少三个纹理处理单元。\
 提供亮度、对比度、饱和度、色调和伽玛校正值的控制功能。\
 伽玛校正值也能在红、绿和蓝三个方面单独设置。\
 方法 4 通常更快。
+.br
+3：与 2 相同。\
+为该类型专门分配一个值是出于历史原因，MPlayer 现在为按需启用的\
+伽玛校正值控制功能插入额外的指令。
 .br
 4：使用具有额外查阅操作的片断程序。\
 需要 GL_ARB_fragment_program 扩展组件和至少四个纹理处理单元。\
@@ -4301,7 +4347,16 @@ GL_ARB_fragment_shader！）。\
 .IPs 3
 将画面并行排列的输入信号转换为四重缓冲的立体图像。\
 只有少数 OpenGL 显卡支持
+.IPs 4
+以按像素排列的方式将左右眼的图像混合在一起。\
+混合样式由 stipple 选项指定。
 .RE
+.IPs stipple=<以比特表示的方式>
+数值的最低 16 位用以指定所使用 4x4 排列样式（默认值：0x0f0f）。\
+可供尝试的示例：\
+0x0f0f, 0xf0f0：按水平线排列；
+0xaaaa, 0x5555：按垂直线排列；
+0xa5a5, 0x5a5a：交错网格排列
 .RE
 .sp 1
 .RS
@@ -4365,7 +4420,7 @@ GL_ARB_fragment_shader！）。\
 .PD 1
 .
 .TP
-.B "gl2\ \ \ \ "
+.B "gl_tiled \ \ \ "
 OpenGL 视频输出驱动的修改版。\
 支持大于最大纹理尺寸的视频，但是缺少\
 许多 GL 驱动的高级功能和优化选项，\
@@ -8855,10 +8910,6 @@ iter（迭代重叠的区块，仅用于 snow）
 注意，该选项有问题
 .
 .TP
-.B inter_threshold <\-1000\-1000>
-当前没有任何作用。
-.
-.TP
 .B keyint=<0\-300>
 关键帧的最大间隔，单位为帧数（默认值：250，\
 或者说 25fps 的影片中每 10 秒一个关键帧。\
@@ -12319,7 +12370,7 @@ rar p test-SVCD.rar | mencoder \-ovc lavc \-lavcopts vcodec=mpeg4:vbitrate=800 \
 MPlayer 最初由 Arpad Gereoffy 制作。\
 参见 AUTHORS 文件以查看其它众多贡献者的部分列表。
 .PP
-MPlayer 为 (C) 2000\-2012 MPlayer 团队所有
+MPlayer 为 (C) 2000\-2013 MPlayer 团队所有
 .PP
 本（英文）手册主要由 Gabucino、Jonas Jermann 和 Diego Biurrun 编写，\
 由 Diego Biurrun 维护。中文版由 JRaSH <jrash06 AT 163.com> 翻译。\

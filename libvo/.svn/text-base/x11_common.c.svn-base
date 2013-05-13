@@ -21,6 +21,7 @@
 #include <math.h>
 #include <inttypes.h>
 #include <limits.h>
+#include <locale.h>
 
 #include "config.h"
 #include "mp_msg.h"
@@ -29,6 +30,7 @@
 #include "x11_common.h"
 
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #include <assert.h>
 
@@ -83,7 +85,7 @@
 #define WIN_LAYER_ONTOP                  6
 #define WIN_LAYER_ABOVE_DOCK             10
 
-int fs_layer = WIN_LAYER_ABOVE_DOCK;
+static int fs_layer = WIN_LAYER_ABOVE_DOCK;
 static int orig_layer = 0;
 static int old_gravity = NorthWestGravity;
 
@@ -131,8 +133,9 @@ static int vo_old_width = 0;
 static int vo_old_height = 0;
 
 #ifdef CONFIG_XF86VM
-XF86VidModeModeInfo **vidmodes = NULL;
-XF86VidModeModeLine modeline;
+static int modecount;
+static XF86VidModeModeInfo **vidmodes;
+static XF86VidModeModeLine modeline;
 #endif
 
 static int vo_x11_get_fs_type(int supported);
@@ -253,7 +256,7 @@ void fstype_help(void)
     mp_msg(MSGT_VO, MSGL_INFO, "    %-15s %s\n", "stays_on_top",
            "use _NETWM_STATE_STAYS_ON_TOP hint if available");
     mp_msg(MSGT_VO, MSGL_INFO,
-           "You can also negate the settings with simply putting '-' in the beginning");
+           "You can also negate individual flags by preceding them with a '-' character");
     mp_msg(MSGT_VO, MSGL_INFO, "\n");
 }
 
@@ -426,6 +429,9 @@ int vo_init(void)
         return 1;               // already called
     }
 
+    // Required so that XLookupString returns UTF-8
+    if (!setlocale(LC_CTYPE, "C.UTF-8") && !setlocale(LC_CTYPE, "en_US.utf8"))
+        mp_msg(MSGT_VO, MSGL_WARN, "Could not find a UTF-8 locale, some keys will not be handled.\n");
     XSetErrorHandler(x11_errorhandler);
 
     dispName = XDisplayName(mDisplayName);
@@ -678,7 +684,7 @@ void vo_x11_decoration(Display * vo_Display, Window w, int d)
     int mformat;
     unsigned long mn, mb;
 
-    if (!WinID)
+    if (WinID >= 0)
         return;
 
     if (vo_fsmode & 8)
@@ -809,14 +815,130 @@ static int check_resize(void)
     return rc;
 }
 
+static int to_utf8(const uint8_t *in)
+{
+    uint32_t v = 0;
+    GET_UTF8(v, *in++, goto err;)
+    if (*in || v >= KEY_BASE)
+        goto err;
+    return v;
+err:
+    return 0;
+}
+
+static int handle_x11_event(Display *mydisplay, XEvent *event)
+{
+    int key = 0;
+    uint8_t buf[16] = {0};
+    KeySym keySym;
+    static XComposeStatus stat;
+    static int ctrl_state;
+#ifdef CONFIG_GUI
+        if (use_gui)
+        {
+            gui(GUI_HANDLE_X_EVENT, event);
+            if (vo_window != event->xany.window)
+                return 0;
+        }
+#endif
+        switch (event->type)
+        {
+            case Expose:
+                return VO_EVENT_EXPOSE;
+            case ConfigureNotify:
+                if (vo_window == None)
+                    break;
+                return check_resize();
+            case KeyPress:
+            case KeyRelease:
+                {
+                    int key, utf8;
+
+#ifdef CONFIG_GUI
+                    if ( use_gui ) { break; }
+#endif
+
+                    XLookupString(&event->xkey, buf, sizeof(buf), &keySym,
+                                  &stat);
+                    key =
+                        ((keySym & 0xff00) !=
+                         0 ? ((keySym & 0x00ff) + 256) : (keySym));
+                    utf8 = buf[0] > 0xc0 ? to_utf8(buf) : 0;
+                    if (utf8) key = 0;
+                    if (key == wsLeftCtrl || key == wsRightCtrl) {
+                        ctrl_state = event->type == KeyPress;
+                        mplayer_put_key(KEY_CTRL |
+                            (ctrl_state ? MP_KEY_DOWN : 0));
+                    } else if (event->type == KeyRelease) {
+                        break;
+                    }
+                    // Attempt to fix if somehow our state got out of
+                    // sync with reality.
+                    // This usually happens when a shortcut involving CTRL
+                    // was used to switch to a different window/workspace.
+                    if (ctrl_state != !!(event->xkey.state & 4)) {
+                        ctrl_state = !!(event->xkey.state & 4);
+                        mplayer_put_key(KEY_CTRL |
+                            (ctrl_state ? MP_KEY_DOWN : 0));
+                    }
+                    if (!vo_x11_putkey_ext(keySym)) {
+                        if (utf8) mplayer_put_key(utf8);
+                        else vo_x11_putkey(key);
+                    }
+                    return VO_EVENT_KEYPRESS;
+                }
+                break;
+            case MotionNotify:
+                vo_mouse_movement(event->xmotion.x, event->xmotion.y);
+
+                return VO_EVENT_MOUSE;
+            case ButtonPress:
+                key = MP_KEY_DOWN;
+            case ButtonRelease:
+#ifdef CONFIG_GUI
+                // Ignore mouse button 1-3 under GUI.
+                if (use_gui && (event->xbutton.button >= 1)
+                    && (event->xbutton.button <= 3))
+                    return VO_EVENT_MOUSE;
+#endif
+                key |= MOUSE_BTN0 + event->xbutton.button - 1;
+                mplayer_put_key(key);
+                return VO_EVENT_MOUSE;
+            case PropertyNotify:
+                {
+                    char *name =
+                        XGetAtomName(mydisplay, event->xproperty.atom);
+
+                    if (!name)
+                        break;
+
+                    XFree(name);
+                }
+                break;
+            case MapNotify:
+                if (WinID < 0) {
+                    vo_hint.win_gravity = old_gravity;
+                    XSetWMNormalHints(mDisplay, vo_window, &vo_hint);
+                    vo_fs_flip = 0;
+                }
+                break;
+            case DestroyNotify:
+                mp_msg(MSGT_VO, MSGL_WARN, "Our window was destroyed, exiting\n");
+                mplayer_put_key(KEY_CLOSE_WIN);
+                break;
+	    case ClientMessage:
+                if (event->xclient.message_type == XAWM_PROTOCOLS &&
+                    event->xclient.data.l[0] == XAWM_DELETE_WINDOW)
+                    mplayer_put_key(KEY_CLOSE_WIN);
+                break;
+        }
+        return 0;
+}
+
 int vo_x11_check_events(Display * mydisplay)
 {
     int ret = 0;
     XEvent Event;
-    char buf[100];
-    KeySym keySym;
-    static XComposeStatus stat;
-    static int ctrl_state;
 
     if (vo_mouse_autohide && mouse_waiting_hide &&
                                  (GetTimerMS() - mouse_timer >= 1000)) {
@@ -829,130 +951,13 @@ int vo_x11_check_events(Display * mydisplay)
     while (XPending(mydisplay))
     {
         XNextEvent(mydisplay, &Event);
-#ifdef CONFIG_GUI
-        if (use_gui)
-        {
-            gui(GUI_HANDLE_X_EVENT, &Event);
-            if (vo_window != Event.xany.window)
-                continue;
-        }
-#endif
-//       printf("\rEvent.type=%X  \n",Event.type);
-        switch (Event.type)
-        {
-            case Expose:
-                ret |= VO_EVENT_EXPOSE;
-                break;
-            case ConfigureNotify:
-                if (vo_window == None)
-                    break;
-                ret |= check_resize();
-                break;
-            case KeyPress:
-            case KeyRelease:
-                {
-                    int key;
-
-#ifdef CONFIG_GUI
-                    if ( use_gui ) { break; }
-#endif
-
-                    XLookupString(&Event.xkey, buf, sizeof(buf), &keySym,
-                                  &stat);
-                    key =
-                        ((keySym & 0xff00) !=
-                         0 ? ((keySym & 0x00ff) + 256) : (keySym));
-                    if (key == wsLeftCtrl || key == wsRightCtrl) {
-                        ctrl_state = Event.type == KeyPress;
-                        mplayer_put_key(KEY_CTRL |
-                            (ctrl_state ? MP_KEY_DOWN : 0));
-                    } else if (Event.type == KeyRelease) {
-                        break;
-                    }
-                    // Attempt to fix if somehow our state got out of
-                    // sync with reality.
-                    // This usually happens when a shortcut involving CTRL
-                    // was used to switch to a different window/workspace.
-                    if (ctrl_state != !!(Event.xkey.state & 4)) {
-                        ctrl_state = !!(Event.xkey.state & 4);
-                        mplayer_put_key(KEY_CTRL |
-                            (ctrl_state ? MP_KEY_DOWN : 0));
-                    }
-                    if (!vo_x11_putkey_ext(keySym)) {
-                        vo_x11_putkey(key);
-                    }
-                    ret |= VO_EVENT_KEYPRESS;
-                }
-                break;
-            case MotionNotify:
-                vo_mouse_movement(Event.xmotion.x, Event.xmotion.y);
-
-                if (vo_mouse_autohide)
-                {
-                    vo_showcursor(mydisplay, vo_window);
-                    mouse_waiting_hide = 1;
-                    mouse_timer = GetTimerMS();
-                }
-                break;
-            case ButtonPress:
-                if (vo_mouse_autohide)
-                {
-                    vo_showcursor(mydisplay, vo_window);
-                    mouse_waiting_hide = 1;
-                    mouse_timer = GetTimerMS();
-                }
-#ifdef CONFIG_GUI
-                // Ignore mouse button 1-3 under GUI.
-                if (use_gui && (Event.xbutton.button >= 1)
-                    && (Event.xbutton.button <= 3))
-                    break;
-#endif
-                mplayer_put_key((MOUSE_BTN0 + Event.xbutton.button -
-                                 1) | MP_KEY_DOWN);
-                break;
-            case ButtonRelease:
-                if (vo_mouse_autohide)
-                {
-                    vo_showcursor(mydisplay, vo_window);
-                    mouse_waiting_hide = 1;
-                    mouse_timer = GetTimerMS();
-                }
-#ifdef CONFIG_GUI
-                // Ignore mouse button 1-3 under GUI.
-                if (use_gui && (Event.xbutton.button >= 1)
-                    && (Event.xbutton.button <= 3))
-                    break;
-#endif
-                mplayer_put_key(MOUSE_BTN0 + Event.xbutton.button - 1);
-                break;
-            case PropertyNotify:
-                {
-                    char *name =
-                        XGetAtomName(mydisplay, Event.xproperty.atom);
-
-                    if (!name)
-                        break;
-
-//          fprintf(stderr,"[ws] PropertyNotify ( 0x%x ) %s ( 0x%x )\n",vo_window,name,Event.xproperty.atom );
-
-                    XFree(name);
-                }
-                break;
-            case MapNotify:
-                vo_hint.win_gravity = old_gravity;
-                XSetWMNormalHints(mDisplay, vo_window, &vo_hint);
-                vo_fs_flip = 0;
-                break;
-            case DestroyNotify:
-                mp_msg(MSGT_VO, MSGL_WARN, "Our window was destroyed, exiting\n");
-                mplayer_put_key(KEY_CLOSE_WIN);
-                break;
-	    case ClientMessage:
-                if (Event.xclient.message_type == XAWM_PROTOCOLS &&
-                    Event.xclient.data.l[0] == XAWM_DELETE_WINDOW)
-                    mplayer_put_key(KEY_CLOSE_WIN);
-                break;
-        }
+        ret |= handle_x11_event(mydisplay, &Event);
+    }
+    if (vo_mouse_autohide && (ret & VO_EVENT_MOUSE))
+    {
+        vo_showcursor(mydisplay, vo_window);
+        mouse_waiting_hide = 1;
+        mouse_timer = GetTimerMS();
     }
     return ret;
 }
@@ -1157,10 +1162,9 @@ void vo_x11_create_vo_window(XVisualInfo *vis, int x, int y,
     // wait for map
     do {
       XNextEvent(mDisplay, &xev);
+      handle_x11_event(mDisplay, &xev);
     } while (xev.type != MapNotify || xev.xmap.event != vo_window);
     vo_x11_clearwindow(mDisplay, vo_window);
-    XSelectInput(mDisplay, vo_window, NoEventMask);
-    XSync(mDisplay, False);
     vo_x11_selectinput_witherr(mDisplay, vo_window,
           StructureNotifyMask | KeyPressMask | KeyReleaseMask | PointerMotionMask |
           ButtonPressMask | ButtonReleaseMask | ExposureMask);
@@ -1581,7 +1585,7 @@ static int x11_selectinput_errorhandler(Display * display,
         mp_msg(MSGT_VO, MSGL_ERR,
                "X11 error: BadAccess during XSelectInput Call\n");
         mp_msg(MSGT_VO, MSGL_ERR,
-               "X11 error: The 'ButtonPressMask' mask of specified window has probably already used by another appication (see man XSelectInput)\n");
+               "X11 error: The 'ButtonPressMask' mask of specified window was probably already used by another application (see man XSelectInput)\n");
         /* If you think MPlayer should shutdown with this error,
          * comment out the following line */
         return 0;
@@ -1630,8 +1634,6 @@ void vo_vm_switch(void)
     int i, j, have_vm = 0;
     int X = vo_dwidth, Y = vo_dheight;
     int modeline_width, modeline_height;
-
-    int modecount;
 
     if (XF86VidModeQueryExtension(mDisplay, &vm_event, &vm_error))
     {
@@ -1686,7 +1688,7 @@ void vo_vm_close(void)
 {
     if (vidmodes != NULL)
     {
-        int i, modecount;
+        int i;
 
         free(vidmodes);
         vidmodes = NULL;
@@ -1706,6 +1708,7 @@ void vo_vm_close(void)
         XF86VidModeSwitchToMode(mDisplay, mScreen, vidmodes[i]);
         free(vidmodes);
         vidmodes = NULL;
+        modecount = 0;
     }
 }
 #endif
@@ -1742,7 +1745,7 @@ int vo_find_depth_from_visuals(Display * dpy, int screen,
                    visuals[i].blue_mask);
             /*
              * Save the visual index and its depth, if this is the first
-             * truecolor visul, or a visual that is 'preferred' over the
+             * truecolor visual, or a visual that is 'preferred' over the
              * previous 'best' visual.
              */
             if (bestvisual_depth == -1

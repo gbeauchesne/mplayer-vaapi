@@ -21,19 +21,19 @@
  * @brief Font file parser and font rendering
  */
 
-#include <gtk/gtk.h>
+#include <glib.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "font.h"
+#include "skin.h"
 #include "gui/util/cut.h"
 #include "gui/util/mem.h"
 #include "gui/util/string.h"
-#include "skin.h"
 
-#include "libavutil/avstring.h"
 #include "mp_msg.h"
+#include "libavutil/avstring.h"
 
 #define MAX_FONTS 25
 
@@ -336,7 +336,7 @@ static int fntTextHeight(int id, char *str)
  *
  * @return image containing the rendered text
  */
-guiImage *fntTextRender(wItem *item, int px, char *txt)
+guiImage *fntTextRender(guiItem *item, int px, char *txt)
 {
     unsigned char *u;
     unsigned int i;

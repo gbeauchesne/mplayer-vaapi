@@ -27,13 +27,40 @@
 #include <unistd.h>
 
 #include "bitmap.h"
+#include "gui/app/gui.h"
 
 #include "help_mp.h"
+#include "mp_msg.h"
 #include "libavcodec/avcodec.h"
 #include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 #include "libvo/fastmemcpy.h"
-#include "mp_msg.h"
+
+/**
+ * @brief Check whether a (PNG) file exists.
+ *
+ * @param fname filename (with path, but may lack extension)
+ *
+ * @return path including extension (ok) or NULL (not accessible)
+ */
+static const char *fExist(const char *fname)
+{
+    static const char ext[][4] = { "png", "PNG" };
+    static char buf[512];
+    unsigned int i;
+
+    if (access(fname, R_OK) == 0)
+        return fname;
+
+    for (i = 0; i < FF_ARRAY_ELEMS(ext); i++) {
+        snprintf(buf, sizeof(buf), "%s.%s", fname, ext[i]);
+
+        if (access(buf, R_OK) == 0)
+            return buf;
+    }
+
+    return NULL;
+}
 
 /**
  * @brief Read and decode a PNG file into bitmap data.
@@ -42,12 +69,12 @@
  * @param img pointer suitable to store the image data
  *
  * @return 0 (ok), 1 (decoding error), 2 (open error), 3 (file too big),
- *                 4 (out of memory), 5 (avcodec alloc error)
+ *                 4 (out of memory), 5 (read error), 6 (avcodec alloc error)
  */
 static int pngRead(const char *fname, guiImage *img)
 {
     FILE *file;
-    long len;
+    size_t len, l;
     void *data;
     int decode_ok, bpl;
     AVCodecContext *avctx;
@@ -75,8 +102,13 @@ static int pngRead(const char *fname, guiImage *img)
     }
 
     fseek(file, 0, SEEK_SET);
-    fread(data, len, 1, file);
+    l = fread(data, len, 1, file);
     fclose(file);
+
+    if (l != 1) {
+        av_free(data);
+        return 5;
+    }
 
     avctx = avcodec_alloc_context3(NULL);
     frame = avcodec_alloc_frame();
@@ -85,11 +117,11 @@ static int pngRead(const char *fname, guiImage *img)
         av_free(frame);
         av_free(avctx);
         av_free(data);
-        return 5;
+        return 6;
     }
 
     avcodec_register_all();
-    avcodec_open2(avctx, avcodec_find_decoder(CODEC_ID_PNG), NULL);
+    avcodec_open2(avctx, avcodec_find_decoder(AV_CODEC_ID_PNG), NULL);
 
     av_init_packet(&pkt);
     pkt.data = data;
@@ -138,7 +170,7 @@ static int pngRead(const char *fname, guiImage *img)
         if (img->Image)
             memcpy_pic(img->Image, frame->data[0], bpl, img->Height, bpl, frame->linesize[0]);
         else
-            decode_ok = 0;
+            decode_ok = False;
     }
 
     avcodec_close(avctx);
@@ -154,7 +186,7 @@ static int pngRead(const char *fname, guiImage *img)
  *
  * @param img image to be converted
  *
- * @return 1 (ok) or 0 (error)
+ * @return #True (ok) or #False (error)
  *
  * @note This is an in-place conversion,
  *       new memory will be allocated for @a img if necessary.
@@ -174,7 +206,7 @@ static int convert_ARGB(guiImage *img)
         if (!img->Image) {
             free(orgImage);
             mp_msg(MSGT_GPLAYER, MSGL_DBG2, "[bitmap] not enough memory: %lu\n", img->ImageSize);
-            return 0;
+            return False;
         }
 
         mp_msg(MSGT_GPLAYER, MSGL_DBG2, "[bitmap] 32 bpp conversion size: %lu\n", img->ImageSize);
@@ -189,35 +221,9 @@ static int convert_ARGB(guiImage *img)
         for (i = 0; i < img->ImageSize; i += 4)
             *(uint32_t *)&img->Image[i] = (img->Image[i + 3] << 24) | AV_RB24(&img->Image[i]);
     } else
-        return 0;
+        return False;
 
-    return 1;
-}
-
-/**
- * @brief Check whether a (PNG) file exists.
- *
- * @param fname filename (with path, but may lack extension)
- *
- * @return path including extension (ok) or NULL (not accessible)
- */
-static const char *fExist(const char *fname)
-{
-    static const char ext[][4] = { "png", "PNG" };
-    static char buf[512];
-    unsigned int i;
-
-    if (access(fname, R_OK) == 0)
-        return fname;
-
-    for (i = 0; i < FF_ARRAY_ELEMS(ext); i++) {
-        snprintf(buf, sizeof(buf), "%s.%s", fname, ext[i]);
-
-        if (access(buf, R_OK) == 0)
-            return buf;
-    }
-
-    return NULL;
+    return True;
 }
 
 /**
@@ -273,7 +279,7 @@ void bpFree(guiImage *img)
  * @param in image to render a bitmap mask from
  * @param out bitmap mask
  *
- * @return 1 (ok) or 0 (error)
+ * @return #True (ok) or #False (error)
  *
  * @note As a side effect, transparent pixels of @a in will be rendered black.
  */
@@ -293,7 +299,7 @@ int bpRenderMask(const guiImage *in, guiImage *out)
 
     if (!out->Image) {
         mp_msg(MSGT_GPLAYER, MSGL_DBG2, "[bitmap] not enough memory: %lu\n", out->ImageSize);
-        return 0;
+        return False;
     }
 
     buf = (uint32_t *)in->Image;
@@ -329,5 +335,5 @@ int bpRenderMask(const guiImage *in, guiImage *out)
 
     mp_msg(MSGT_GPLAYER, MSGL_DBG2, "[bitmap] 1 bpp conversion size: %lu\n", out->ImageSize);
 
-    return 1;
+    return True;
 }

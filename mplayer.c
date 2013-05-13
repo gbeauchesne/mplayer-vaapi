@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 #include <unistd.h>
 #include <assert.h>
@@ -145,6 +146,7 @@ int enable_mouse_movements;
 float start_volume = -1;
 double start_pts   = MP_NOPTS_VALUE;
 char *heartbeat_cmd;
+float heartbeat_interval = 30.0;
 static int max_framesize;
 
 int noconsolecontrols;
@@ -203,7 +205,7 @@ int term_osd = 1;
 static char *term_osd_esc = "\x1b[A\r\x1b[K";
 static char *playing_msg;
 // seek:
-static double seek_to_sec;
+static double seek_to_sec = MP_NOPTS_VALUE;
 static off_t seek_to_byte;
 static off_t step_sec;
 static int loop_seek;
@@ -327,6 +329,8 @@ int volstep = 3; ///< step size of mixer changes
 static char *prog_path;
 static int crash_debug;
 #endif
+
+static int allow_playlist_parsing;
 
 /* This header requires all the global variable declarations. */
 #include "cfg-mplayer.h"
@@ -1033,7 +1037,7 @@ static int playtree_add_playlist(play_tree_t *entry)
 #ifdef CONFIG_GUI
     if (use_gui) {
         if (entry) {
-            guiPlaylistAdd(entry, mconfig);
+            guiPlaylist(GUI_PLAYLIST_ADD, entry, mconfig, 0);
             play_tree_free_list(entry, 1);
         }
     } else
@@ -1748,7 +1752,7 @@ double playing_audio_pts(sh_audio_t *sh_audio, demux_stream_t *d_audio,
 static int is_at_end(MPContext *mpctx, m_time_size_t *end_at, double pts)
 {
     switch (end_at->type) {
-    case END_AT_TIME: return end_at->pos <= pts;
+    case END_AT_TIME: return pts != MP_NOPTS_VALUE && end_at->pos <= pts;
     case END_AT_SIZE: return end_at->pos <= stream_tell(mpctx->stream);
     }
     return 0;
@@ -1799,6 +1803,7 @@ static int generate_video_frame(sh_video_t *sh_video, demux_stream_t *d_video)
             start   = NULL;
             pts     = MP_NOPTS_VALUE;
             hit_eof = 1;
+            drop_frame = 0;
         }
         if (in_size > max_framesize)
             max_framesize = in_size;
@@ -2292,8 +2297,15 @@ static int sleep_until_update(float *time_frame, float *aq_sleep_time)
     //============================== SLEEP: ===================================
 
     // flag 256 means: libvo driver does its timing (dvb card)
-    if (*time_frame > 0.001 && !(vo_flags & 256))
-        *time_frame = timing_sleep(*time_frame);
+    if (!(vo_flags & 256)) {
+        if (*time_frame > 0.3) {
+            // Avoid sleeping too long without reacting to user input
+            usec_sleep(200000);
+            *time_frame -= GetRelativeTime();
+            frame_time_remaining = 1;
+	} else if (*time_frame > 0.001)
+            *time_frame = timing_sleep(*time_frame);
+    }
 
     handle_udp_master(mpctx->sh_video->pts);
 
@@ -2761,7 +2773,7 @@ int main(int argc, char *argv[])
     int profile_config_loaded;
     int i;
 
-    common_preinit();
+    common_preinit(&argc, &argv);
 
     // Create the config context and register the options
     mconfig = m_config_new();
@@ -2779,7 +2791,7 @@ int main(int argc, char *argv[])
     if (argc > 1 && argv[1] &&
         (!strcmp(argv[1], "-gui") || !strcmp(argv[1], "-nogui"))) {
         use_gui = !strcmp(argv[1], "-gui");
-    } else if (argv[0] && strstr(mp_basename(argv[0]), GMPlayer)) {
+    } else if (argv[0] && strstr(mp_basename(argv[0]), gmplayer)) {
         use_gui = 1;
     }
 
@@ -2851,7 +2863,7 @@ int main(int argc, char *argv[])
             play_tree_add_bpf(mpctx->playtree, cwd);
         }
         // Import initital playtree into GUI.
-        guiPlaylistInitialize(mpctx->playtree, mconfig, enqueue);
+        guiPlaylist(GUI_PLAYLIST_INIT, mpctx->playtree, mconfig, enqueue);
     }
 #endif /* CONFIG_GUI */
 
@@ -3127,6 +3139,7 @@ play_next_file:
             run_command(mpctx, cmd);
             break;
         }
+        mpctx->osd_function = cmd->pausing ? OSD_PAUSE : OSD_PLAY;
 
         mp_cmd_free(cmd);
 
@@ -3234,8 +3247,12 @@ play_next_file:
         current_module = "handle_playlist";
         mp_msg(MSGT_CPLAYER, MSGL_V, "Parsing playlist %s...\n",
                filename_recode(filename));
-        entry      = parse_playtree(mpctx->stream, use_gui);
-        mpctx->eof = playtree_add_playlist(entry);
+        if (allow_playlist_parsing) {
+            entry      = parse_playtree(mpctx->stream, use_gui);
+            mpctx->eof = playtree_add_playlist(entry);
+        } else {
+            mp_msg(MSGT_CPLAYER, MSGL_ERR, "Playlist parsing disabled for security reasons. Ignoring file.\n");
+        }
         goto goto_next_file;
     }
     mpctx->stream->start_pos += seek_to_byte;
@@ -3258,6 +3275,11 @@ play_next_file:
         }
         stream_dump_progress_start();
         while (!mpctx->stream->eof && !async_quit_request) {
+            double pts;
+            if (stream_control(mpctx->stream, STREAM_CTRL_GET_CURRENT_TIME, &pts) != STREAM_OK)
+                pts = MP_NOPTS_VALUE;
+            if (is_at_end(mpctx, &end_at, pts))
+                break;
             len = stream_read(mpctx->stream, buf, 4096);
             if (len > 0) {
                 if (fwrite(buf, len, 1, f) != 1) {
@@ -3462,7 +3484,10 @@ goto_enable_cache:
         stream_dump_progress_start();
         while (!ds->eof) {
             unsigned char *start;
-            int in_size = ds_get_packet(ds, &start);
+            double pts;
+            int in_size = ds_get_packet_pts(ds, &start, &pts);
+            if (is_at_end(mpctx, &end_at, pts))
+                break;
             if ((mpctx->demuxer->file_format == DEMUXER_TYPE_AVI || mpctx->demuxer->file_format == DEMUXER_TYPE_ASF || mpctx->demuxer->file_format == DEMUXER_TYPE_MOV)
                 && stream_dump_type == 2)
                 fwrite(&in_size, 1, 4, f);
@@ -3693,7 +3718,7 @@ goto_enable_cache:
             goto goto_next_file;
         }
 
-        if (seek_to_sec) {
+        if (seek_to_sec != MP_NOPTS_VALUE) {
             seek(mpctx, seek_to_sec, SEEK_ABSOLUTE);
             end_at.pos += seek_to_sec;
         }
@@ -3808,7 +3833,9 @@ goto_enable_cache:
                 if (heartbeat_cmd) {
                     static unsigned last_heartbeat;
                     unsigned now = GetTimerMS();
-                    if (now - last_heartbeat > 30000) {
+                    // compare as unsigned so that any mistakes (overflow etc)
+                    // trigger a heartbeat, thus resetting the logic.
+                    if (now - last_heartbeat > (unsigned)(heartbeat_interval * 1000)) {
                         last_heartbeat = now;
                         system(heartbeat_cmd);
                     }
@@ -3949,6 +3976,11 @@ goto_enable_cache:
                 mpctx->eof    = 0;
                 abs_seek_pos  = SEEK_ABSOLUTE;
                 rel_seek_secs = seek_to_sec;
+                if (seek_to_sec == MP_NOPTS_VALUE) {
+                    // the first pts is not necessarily 0
+                    abs_seek_pos  = SEEK_ABSOLUTE | SEEK_FACTOR;
+                    rel_seek_secs = 0;
+                }
                 loop_seek     = 1;
             }
 

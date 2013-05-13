@@ -1,4 +1,4 @@
-// Synced with help_mp-en.h rev. 34958
+// Synced with help_mp-en.h rev. 35968
 //
 // Translated by JRaSH <jrash06@gmail.com>
 
@@ -604,6 +604,7 @@ static const char help_text[]=
 #define MSGTR_IDFGCVD "抱歉，未找到与 GUI 兼容的视频输出驱动。\n"
 #define MSGTR_NEEDLAVC "抱歉，未重新编码前无法用你的 DXR3/H+ 设备播放非 MPEG 文件。\n请启用 DXR3/H+ 配置盒中的 lavc 编解码器。"
 #define MSGTR_ICONERROR "未找到图标‘%s’（大小为 %d）或格式不支持。\n"
+#define MSGTR_LOCALE_ENCODING "不支持 G_FILENAME_ENCODING=@locale 或 G_BROKEN_FILENAMES，\n必须在 G_FILENAME_ENCODING 中明确指定编码方式。\n"
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "界面外观配置文件错误，行 %d：%s"
@@ -839,15 +840,16 @@ static const char help_text[]=
 #define MSGTR_NotAFile "这好像不是文件：%s！\n"
 
 // ws.c
-#define MSGTR_WS_RemoteDisplay "[ws] 远程显示界面，禁用 XMITSHM。\n"
-#define MSGTR_WS_NoXshm "[ws] 抱歉，你的系统不支持 X 共享内存扩展组件。\n"
-#define MSGTR_WS_NoXshape "[ws] 抱歉，你的系统不支持 XShape 扩展组件。\n"
-#define MSGTR_WS_ColorDepthTooLow "[ws] 抱歉，色彩深度太低。\n"
-#define MSGTR_WS_TooManyOpenWindows "[ws] 打开窗口太多。\n"
-#define MSGTR_WS_ShmError "[ws] 共享内存扩展组件错误\n"
-#define MSGTR_WS_NotEnoughMemoryDrawBuffer "[ws] 抱歉，内存不足以用于绘制缓冲。\n"
+#define MSGTR_WS_RemoteDisplay "远程显示界面，禁用 XMITSHM。\n"
+#define MSGTR_WS_NoXshm "抱歉，你的系统不支持 X 共享内存扩展组件。\n"
+#define MSGTR_WS_NoXshape "抱歉，你的系统不支持 XShape 扩展组件。\n"
+#define MSGTR_WS_ColorDepthTooLow "抱歉，色彩深度太低。\n"
+#define MSGTR_WS_TooManyOpenWindows "打开窗口太多。\n"
+#define MSGTR_WS_ShmError "共享内存扩展组件错误\n"
+#define MSGTR_WS_NotEnoughMemoryDrawBuffer "抱歉，内存不足以用于绘制缓冲。\n"
 #define MSGTR_WS_DpmsUnavailable "DPMS 不可用？\n"
 #define MSGTR_WS_DpmsNotEnabled "无法启用 DPMS。\n"
+#define MSGTR_WS_XError "出现了一个 X11 的错误！\n"
 
 // wsxdnd.c
 #define MSGTR_WS_NotAFile "这好像不是一个文件...\n"
@@ -1201,6 +1203,7 @@ static const char help_text[]=
 // old vo drivers that have been replaced
 #define MSGTR_VO_PGM_HasBeenReplaced "PGM 视频输出驱动已替换为 -vo pnm:pgmyuv。\n"
 #define MSGTR_VO_MD5_HasBeenReplaced "MD5 视频输出驱动已替换为 -vo md5sum。\n"
+#define MSGTR_VO_GL2_HasBeenRenamed "g12 视频输出驱动已更名为 -vo gl_tiled，但实际上应使用 -vo gl。\n"
 
 
 // ======================= audio output drivers ========================

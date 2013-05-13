@@ -26,7 +26,7 @@
 #include "mp_msg.h"
 #include "cpudetect.h"
 #include "libavutil/common.h"
-#include "libavutil/x86_cpu.h"
+#include "libavutil/x86/asm.h"
 #include "mpbswap.h"
 
 #include "img_format.h"
@@ -414,7 +414,7 @@ static int analyze(struct vf_priv_s *p)
       n++;
       }
 
-   if(!n)
+   if(n <= 15)
       {
       mp_msg(MSGT_VFILTER, MSGL_FATAL, "%s: Empty 2-pass log file.\n",
              vf_info_divtc.name);

@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include <assert.h>
 #include <time.h>
 
@@ -47,6 +48,18 @@ LIBVD_EXTERN(ffmpeg)
 
 #include "libavcodec/avcodec.h"
 
+#ifndef AV_EF_COMPLIANT
+#define AV_EF_COMPLIANT 0
+#endif
+
+#ifndef AV_EF_CAREFUL
+#define AV_EF_CAREFUL 0
+#endif
+
+#ifndef AV_EF_AGGRESSIVE
+#define AV_EF_AGGRESSIVE 0
+#endif
+
 #if AVPALETTE_SIZE > 1024
 #error palette too large, adapt libmpcodecs/vf.c:vf_get_image
 #endif
@@ -58,7 +71,7 @@ LIBVD_EXTERN(ffmpeg)
 typedef struct {
     AVCodecContext *avctx;
     AVFrame *pic;
-    enum PixelFormat pix_fmt;
+    enum AVPixelFormat pix_fmt;
     int do_slices;
     int do_dr1;
     int nonref_dr; ///< allow dr only for non-reference frames
@@ -80,8 +93,8 @@ static void release_buffer(AVCodecContext *avctx, AVFrame *pic);
 static void draw_slice(struct AVCodecContext *s, const AVFrame *src, int offset[4],
                        int y, int type, int height);
 
-static enum PixelFormat get_format(struct AVCodecContext *avctx,
-                                   const enum PixelFormat *pix_fmt);
+static enum AVPixelFormat get_format(struct AVCodecContext *avctx,
+                                     const enum AVPixelFormat *pix_fmt);
 
 static int lavc_param_workaround_bugs= FF_BUG_AUTODETECT;
 static int lavc_param_error_resilience=2;
@@ -188,7 +201,9 @@ static int control(sh_video_t *sh, int cmd, void *arg, ...){
     return CONTROL_UNKNOWN;
 }
 
-static void set_format_params(struct AVCodecContext *avctx, enum PixelFormat fmt){
+static void set_format_params(struct AVCodecContext *avctx,
+                              enum AVPixelFormat fmt)
+{
     int imgfmt;
     if (fmt == PIX_FMT_NONE)
         return;
@@ -245,9 +260,18 @@ static int init(sh_video_t *sh){
     if(use_slices && (lavc_codec->capabilities&CODEC_CAP_DRAW_HORIZ_BAND) && !do_vis_debug)
         ctx->do_slices=1;
 
-    if(lavc_codec->capabilities&CODEC_CAP_DR1 && !do_vis_debug && lavc_codec->id != CODEC_ID_INTERPLAY_VIDEO && lavc_codec->id != CODEC_ID_VP8 && lavc_codec->id != CODEC_ID_LAGARITH)
+    if (lavc_codec->capabilities & CODEC_CAP_DR1 && !do_vis_debug &&
+        lavc_codec->id != AV_CODEC_ID_INTERPLAY_VIDEO &&
+        lavc_codec->id != AV_CODEC_ID_H264 &&
+        lavc_codec->id != AV_CODEC_ID_VP8)
         ctx->do_dr1=1;
-    ctx->nonref_dr = lavc_codec->id == CODEC_ID_H264;
+    // TODO: fix and enable again. This currently causes issues when using filters
+    // and seeking, usually failing with the "Ran out of numbered images" message,
+    // but bugzilla #2118 might be related as well.
+    if (0 && lavc_codec->id == AV_CODEC_ID_H264) {
+        ctx->do_dr1 = 1;
+        ctx->nonref_dr = 1;
+    }
     ctx->ip_count= ctx->b_count= 0;
 
     ctx->pic = avcodec_alloc_frame();
@@ -378,7 +402,6 @@ static int init(sh_video_t *sh){
             avctx->extradata = av_mallocz(avctx->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
             memcpy(avctx->extradata, sh->bih+1, avctx->extradata_size);
         }
-        avctx->sub_id= AV_RB32(avctx->extradata+4);
 
 //        printf("%X %X %d %d\n", extrahdr[0], extrahdr[1]);
         break;
@@ -450,6 +473,10 @@ static void draw_slice(struct AVCodecContext *s,
     sh_video_t *sh = s->opaque;
     uint8_t *source[MP_MAX_PLANES]= {src->data[0] + offset[0], src->data[1] + offset[1], src->data[2] + offset[2]};
     int strides[MP_MAX_PLANES] = {src->linesize[0], src->linesize[1], src->linesize[2]};
+    if (!src->data[0]) {
+        mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "BUG in FFmpeg, draw_slice called with NULL pointer!\n");
+        return;
+    }
     if (height < 0)
     {
         int i;
@@ -467,11 +494,39 @@ static void draw_slice(struct AVCodecContext *s,
     }
 }
 
-
-static int init_vo(sh_video_t *sh, enum PixelFormat pix_fmt){
+static void update_configuration(sh_video_t *sh, enum AVPixelFormat pix_fmt) {
     vd_ffmpeg_ctx *ctx = sh->context;
-    AVCodecContext *avctx = ctx->avctx;
-    float aspect= av_q2d(avctx->sample_aspect_ratio) * avctx->width / avctx->height;
+    const AVCodecContext *avctx = ctx->avctx;
+     // it is possible another vo buffers to be used after vo config()
+     // lavc reset its buffers on width/heigh change but not on aspect change!!!
+    if (av_cmp_q(avctx->sample_aspect_ratio, ctx->last_sample_aspect_ratio) ||
+        pix_fmt != ctx->pix_fmt ||
+        !ctx->vo_initialized)
+    {
+        float aspect= av_q2d(avctx->sample_aspect_ratio) * avctx->width / avctx->height;
+        ctx->vo_initialized = 0;
+        // this is a special-case HACK for MPEG-1/2 VDPAU that uses neither get_format nor
+        // sets the value correctly in avcodec_open.
+        set_format_params(avctx, pix_fmt);
+        mp_msg(MSGT_DECVIDEO, MSGL_V, "[ffmpeg] aspect_ratio: %f\n", aspect);
+
+        // Do not overwrite s->aspect on the first call, so that a container
+        // aspect if available is preferred.
+        // But set it even if the sample aspect did not change, since a
+        // resolution change can cause an aspect change even if the
+        // _sample_ aspect is unchanged.
+        if (sh->aspect == 0 || ctx->last_sample_aspect_ratio.den)
+            sh->aspect = aspect;
+        ctx->last_sample_aspect_ratio = avctx->sample_aspect_ratio;
+        ctx->pix_fmt = pix_fmt;
+        ctx->best_csp = pixfmt2imgfmt(pix_fmt);
+    }
+}
+
+static int init_vo(sh_video_t *sh, enum AVPixelFormat pix_fmt)
+{
+    vd_ffmpeg_ctx *ctx = sh->context;
+    const AVCodecContext *avctx = ctx->avctx;
     int width, height;
 
     width = avctx->width;
@@ -484,33 +539,14 @@ static int init_vo(sh_video_t *sh, enum PixelFormat pix_fmt){
         width = sh->bih->biWidth>>lavc_param_lowres;
         height = sh->bih->biHeight>>lavc_param_lowres;
     }
-
-     // it is possible another vo buffers to be used after vo config()
-     // lavc reset its buffers on width/heigh change but not on aspect change!!!
-    if (av_cmp_q(avctx->sample_aspect_ratio, ctx->last_sample_aspect_ratio) ||
-        width != sh->disp_w  ||
-        height != sh->disp_h ||
-        pix_fmt != ctx->pix_fmt ||
-        !ctx->vo_initialized)
-    {
+    if (width != sh->disp_w  || height != sh->disp_h)
         ctx->vo_initialized = 0;
-        // this is a special-case HACK for MPEG-1/2 VDPAU that uses neither get_format nor
-        // sets the value correctly in avcodec_open.
-        set_format_params(avctx, avctx->pix_fmt);
-        mp_msg(MSGT_DECVIDEO, MSGL_V, "[ffmpeg] aspect_ratio: %f\n", aspect);
 
-        // Do not overwrite s->aspect on the first call, so that a container
-        // aspect if available is preferred.
-        // But set it even if the sample aspect did not change, since a
-        // resolution change can cause an aspect change even if the
-        // _sample_ aspect is unchanged.
-        if (sh->aspect == 0 || ctx->last_sample_aspect_ratio.den)
-            sh->aspect = aspect;
-        ctx->last_sample_aspect_ratio = avctx->sample_aspect_ratio;
+    update_configuration(sh, pix_fmt);
+    if (!ctx->vo_initialized)
+    {
         sh->disp_w = width;
         sh->disp_h = height;
-        ctx->pix_fmt = pix_fmt;
-        ctx->best_csp = pixfmt2imgfmt(pix_fmt);
         if (!mpcodecs_config_vo(sh, sh->disp_w, sh->disp_h, ctx->best_csp))
             return -1;
         ctx->vo_initialized = 1;
@@ -524,8 +560,8 @@ static int get_buffer(AVCodecContext *avctx, AVFrame *pic){
     mp_image_t *mpi=NULL;
     int flags= MP_IMGFLAG_ACCEPT_ALIGNED_STRIDE | MP_IMGFLAG_PREFER_ALIGNED_STRIDE;
     int type= MP_IMGTYPE_IPB;
-    int width= avctx->width;
-    int height= avctx->height;
+    int width = FFMAX(avctx->width,  -(-avctx->coded_width  >> avctx->lowres));
+    int height= FFMAX(avctx->height, -(-avctx->coded_height >> avctx->lowres));
     // special case to handle reget_buffer
     if (pic->opaque && pic->data[0] && (!pic->buffer_hints || pic->buffer_hints & FF_BUFFER_HINTS_REUSABLE))
         return 0;
@@ -582,7 +618,12 @@ static int get_buffer(AVCodecContext *avctx, AVFrame *pic){
 
     if (IMGFMT_IS_HWACCEL(ctx->best_csp)) {
         type =  MP_IMGTYPE_NUMBERED;
-    } else
+    } else if (avctx->has_b_frames) {
+        // HACK/TODO: slices currently do not work properly with B-frames,
+        // causing out-of-order frames or crashes with e.g. -vf scale,unsharp
+        // or -vf screenshot,unsharp.
+        flags &= ~MP_IMGFLAG_DRAW_CALLBACK;
+    }
     if (type == MP_IMGTYPE_IP || type == MP_IMGTYPE_IPB) {
         if(ctx->b_count>1 || ctx->ip_count>2){
             mp_msg(MSGT_DECVIDEO, MSGL_WARN, MSGTR_MPCODECS_DRIFailure);
@@ -697,6 +738,7 @@ static void release_buffer(struct AVCodecContext *avctx, AVFrame *pic){
         return;
     }
 
+    if (mpi) {
 //printf("release buffer %d %d %d\n", mpi ? mpi->flags&MP_IMGFLAG_PRESERVE : -99, ctx->ip_count, ctx->b_count);
 
         if(mpi->flags&MP_IMGFLAG_PRESERVE)
@@ -704,9 +746,12 @@ static void release_buffer(struct AVCodecContext *avctx, AVFrame *pic){
         else
             ctx->b_count--;
 
-    if (mpi) {
         // release mpi (in case MPI_IMGTYPE_NUMBERED is used, e.g. for VDPAU)
         mpi->usage_count--;
+        if (mpi->usage_count < 0) {
+            mp_msg(MSGT_DECVIDEO, MSGL_ERR, "Bad mp_image usage count, please report!\n");
+            mpi->usage_count = 0;
+        }
     }
 
     for(i=0; i<4; i++){
@@ -882,7 +927,7 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags){
 //--
 
     if(!got_picture) {
-	if (avctx->codec->id == CODEC_ID_H264 &&
+        if (avctx->codec->id == AV_CODEC_ID_H264 &&
 	    skip_frame <= AVDISCARD_DEFAULT)
 	    return &mpi_no_picture; // H.264 first field only
 	else
@@ -892,7 +937,7 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags){
     if(init_vo(sh, avctx->pix_fmt) < 0) return NULL;
 
     if(dr1 && pic->opaque){
-        mpi= (mp_image_t *)pic->opaque;
+        mpi=pic->opaque;
     }
 
     if(!mpi)
@@ -903,9 +948,10 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags){
         return NULL;
     }
 
-    if (mpi->w != pic->width || mpi->h != pic->height ||
-        pic->width != avctx->width || pic->height != avctx->height) {
-        mp_msg(MSGT_DECVIDEO, MSGL_ERR, "Dropping frame with size not matching configured size\n");
+    if (mpi->w != avctx->width || mpi->h != avctx->height ||
+        pic->width < mpi->w || pic->height < mpi->h) {
+        mp_msg(MSGT_DECVIDEO, MSGL_ERR, "Dropping frame with size not matching configured size (%ix%i vs %ix%i vs %ix%i)\n",
+               mpi->w, mpi->h, pic->width, pic->height, avctx->width, avctx->height);
         return NULL;
     }
 
@@ -947,9 +993,10 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags){
     return mpi;
 }
 
-static enum PixelFormat get_format(struct AVCodecContext *avctx,
-                                    const enum PixelFormat *fmt){
-    enum PixelFormat selected_format;
+static enum AVPixelFormat get_format(struct AVCodecContext *avctx,
+                                     const enum AVPixelFormat *fmt)
+{
+    enum AVPixelFormat selected_format;
     int imgfmt;
     sh_video_t *sh = avctx->opaque;
     int i;
@@ -963,8 +1010,10 @@ static enum PixelFormat get_format(struct AVCodecContext *avctx,
         }
     }
     selected_format = fmt[i];
-    if (selected_format == PIX_FMT_NONE)
+    if (selected_format == PIX_FMT_NONE) {
         selected_format = avcodec_default_get_format(avctx, fmt);
+        update_configuration(sh, selected_format);
+    }
     set_format_params(avctx, selected_format);
     return selected_format;
 }

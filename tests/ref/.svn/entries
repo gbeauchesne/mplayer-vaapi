@@ -1,7 +1,7 @@
 10
 
 dir
-35107
+36265
 svn://svn.mplayerhq.hu/mplayer/trunk/tests/ref
 svn://svn.mplayerhq.hu/mplayer
 
@@ -26,64 +26,31 @@ reimar
 
 b3059339-0415-0410-9bf9-f77b7e298cf2
 
-msrle
+iv32
 dir
 
-cram
+ea-mad
 dir
 
-ea-tgv
-dir
-
-frwu
-dir
-
-bink
-dir
-
-r210
-dir
-
-cvid
-dir
-
-v210
-dir
-
-vble
-dir
-
-dxtory
+cljr
 dir
 
 mxf
 dir
 
-ansi
+ea-dct
 dir
 
-v410
-dir
-
-wnv1
-dir
-
-mimic
-dir
-
-bethsoft-vid
+ea-vp6
 dir
 
 rl2
 dir
 
-mjpegb
-dir
-
 iv8
 dir
 
-flash-vp6
+aasc
 dir
 
 4xm
@@ -92,22 +59,22 @@ dir
 vp3
 dir
 
+ea-cmv
+dir
+
 lcl
 dir
 
 vp5
 dir
 
-h264-conformance
+fraps
 dir
 
-8bps
+ulti
 dir
 
 vp8
-dir
-
-zmbv
 dir
 
 wtv
@@ -119,121 +86,79 @@ dir
 smc
 dir
 
-iv32
+iv41
 dir
 
 amv
 dir
 
-smjpeg
+ea-tgv
 dir
 
-lmlm4
-dir
-
-idcin
-dir
-
-cljr
-dir
-
-pcm-dvd
-dir
-
-quickdraw
-dir
-
-vp8-test-vectors-r1
-dir
-
-nsv
-dir
-
-aasc
-dir
-
-cdgraphics
-dir
-
-fli
-dir
-
-tiertex-seq
-dir
-
-prores
-dir
-
-alg-mm
-dir
-
-mpeg2
-dir
-
-dxa
-dir
-
-ulti
-dir
-
-idroq
-dir
-
-utvideo
-dir
-
-auravision
-dir
-
-iv41
-dir
-
-smacker
+msmpeg4v1
 dir
 
 film
 dir
 
-thp
+qtrle
 dir
 
-wc3movie
+dxtory
+dir
+
+pcm-dvd
 dir
 
 qpeg
 dir
 
-rpl
+wc3movie
+dir
+
+interplay-mve
+dir
+
+vp8-test-vectors-r1
 dir
 
 delphine-cin
 dir
 
-txd
-dir
-
 wmv8
-dir
-
-ea-mpc
 dir
 
 VMnc
 dir
 
+mjpegb
+dir
+
+nsv
+dir
+
 isom
+dir
+
+tiertex-seq
+dir
+
+fli
 dir
 
 vcr1
 dir
 
-fraps
+dxa
 dir
 
 rpza
 dir
 
-psx-str
+utvideo
+dir
+
+msrle
 dir
 
 vixl
@@ -248,13 +173,10 @@ dir
 h264
 dir
 
-msmpeg4v1
+smacker
 dir
 
-ea-mad
-dir
-
-bmv
+smjpeg
 dir
 
 cyuv
@@ -263,28 +185,16 @@ dir
 duck
 dir
 
-vmd
-dir
-
 SIFF
-dir
-
-qtrle
-dir
-
-vqa
 dir
 
 rt21
 dir
 
-vc1
-dir
-
 svq1
 dir
 
-deluxepaint-anm
+thp
 dir
 
 loco
@@ -299,13 +209,13 @@ dir
 tscc
 dir
 
-interplay-mve
+rpl
 dir
 
-ea-dct
+mimic
 dir
 
-ea-vp6
+txd
 dir
 
 sp5x
@@ -314,24 +224,114 @@ dir
 KMVC
 dir
 
-bfi
+flash-vp6
 dir
 
-tmv
+cdgraphics
 dir
 
 kega
 dir
 
-ea-cmv
+alg-mm
+dir
+
+prores
+dir
+
+CSCD
+dir
+
+auravision
+dir
+
+psx-str
+dir
+
+cram
+dir
+
+bink
+dir
+
+frwu
+dir
+
+r210
+dir
+
+bmv
+dir
+
+lmlm4
+dir
+
+cvid
+dir
+
+idcin
+dir
+
+vmd
+dir
+
+vqa
+dir
+
+vble
+dir
+
+v210
+dir
+
+vc1
+dir
+
+quickdraw
+dir
+
+v410
+dir
+
+ansi
+dir
+
+wnv1
+dir
+
+deluxepaint-anm
+dir
+
+bethsoft-vid
+dir
+
+bfi
+dir
+
+ea-mpc
+dir
+
+tmv
 dir
 
 nuv
 dir
 
+mpeg2
+dir
+
 cyberia-c93
 dir
 
-CSCD
+h264-conformance
+dir
+
+8bps
+dir
+
+idroq
+dir
+
+zmbv
 dir
 

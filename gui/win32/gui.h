@@ -24,12 +24,14 @@
 #ifndef MPLAYER_GUI_GUI_H
 #define MPLAYER_GUI_GUI_H
 
-#include "config.h"
 #include "mplayer.h"
 #include "playtree.h"
 #include "m_config.h"
 #include "skinload.h"
 #include "playlist.h"
+
+/* Name of the program the GUI utilizes */
+#define MPlayer "MPlayer"
 
 extern float video_aspect;
 extern play_tree_t* playtree;
@@ -103,7 +105,7 @@ int destroy_window(gui_t *gui);
 int create_window(gui_t *gui, char *skindir);
 int create_videowindow(gui_t *gui);
 int parse_filename(char *file, play_tree_t *playtree, m_config_t *mconfig, int clear);
-void capitalize(char *filename);
+void capitalize(char *fname);
 LPSTR acp(LPCSTR utf8);
 
 void renderinfobox(skin_t *skin, window_priv_t *priv);

@@ -19,7 +19,7 @@
 #ifndef MPLAYER_GUI_FONT_H
 #define MPLAYER_GUI_FONT_H
 
-#include "gui/app.h"
+#include "gui/app/app.h"
 #include "gui/util/bitmap.h"
 
 #define ASCII_CHRS 128   // number of ASCII characters
@@ -43,7 +43,7 @@ typedef struct {
 int fntFindID(char *name);
 void fntFreeFont(void);
 int fntRead(char *path, char *fname);
-guiImage *fntTextRender(wItem *item, int px, char *txt);
+guiImage *fntTextRender(guiItem *item, int px, char *txt);
 int fntTextWidth(int id, char *str);
 
 #endif /* MPLAYER_GUI_FONT_H */

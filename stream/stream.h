@@ -29,10 +29,6 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-#ifndef O_BINARY
-#define O_BINARY 0
-#endif
-
 #define STREAMTYPE_DUMMY -1    // for placeholders, when the actual reading is handled in the demuxer
 #define STREAMTYPE_FILE 0      // read from seekable file
 #define STREAMTYPE_VCD  1      // raw mode-2 CDROM reading, 2324 bytes/sector
@@ -100,6 +96,7 @@
 #define STREAM_CTRL_SET_ANGLE 11
 #define STREAM_CTRL_GET_NUM_TITLES 12
 #define STREAM_CTRL_GET_LANG 13
+#define STREAM_CTRL_GET_CURRENT_TITLE 14
 
 enum stream_ctrl_type {
 	stream_ctrl_audio,
@@ -127,7 +124,7 @@ typedef struct streaming_control {
 	unsigned int buffer_pos;
 	unsigned int bandwidth;	// The downstream available
 	int (*streaming_read)( int fd, char *buffer, int buffer_size, struct streaming_control *stream_ctrl );
-	int (*streaming_seek)( int fd, off_t pos, struct streaming_control *stream_ctrl );
+	int (*streaming_seek)( int fd, int64_t pos, struct streaming_control *stream_ctrl );
 	void *data;
 } streaming_ctrl_t;
 
@@ -154,7 +151,7 @@ typedef struct stream {
   // Write
   int (*write_buffer)(struct stream *s, char* buffer, int len);
   // Seek
-  int (*seek)(struct stream *s,off_t pos);
+  int (*seek)(struct stream *s, int64_t pos);
   // Control
   // Will be later used to let streams like dvd and cdda report
   // their structure (ie tracks, chapters, etc)
@@ -168,7 +165,7 @@ typedef struct stream {
   int sector_size; // sector size (seek will be aligned on this size if non 0)
   int read_chunk; // maximum amount of data to read at once to limit latency (0 for default)
   unsigned int buf_pos,buf_len;
-  off_t pos,start_pos,end_pos;
+  int64_t pos,start_pos,end_pos;
   int eof;
   int mode; //STREAM_READ or STREAM_WRITE
   unsigned int cache_pid;
@@ -187,7 +184,7 @@ typedef struct stream {
 #endif
 
 int stream_fill_buffer(stream_t *s);
-int stream_seek_long(stream_t *s, off_t pos);
+int stream_seek_long(stream_t *s, int64_t pos);
 void stream_capture_do(stream_t *s);
 
 #ifdef CONFIG_STREAM_CACHE
@@ -311,12 +308,12 @@ static inline int stream_eof(stream_t *s)
   return s->eof;
 }
 
-static inline off_t stream_tell(stream_t *s)
+static inline int64_t stream_tell(stream_t *s)
 {
   return s->pos+s->buf_pos-s->buf_len;
 }
 
-static inline int stream_seek(stream_t *s, off_t pos)
+static inline int stream_seek(stream_t *s, int64_t pos)
 {
 
   mp_dbg(MSGT_DEMUX, MSGL_DBG3, "seek to 0x%"PRIX64"\n", pos);
@@ -327,7 +324,7 @@ static inline int stream_seek(stream_t *s, off_t pos)
     pos = 0;
   }
   if(pos<s->pos){
-    off_t x=pos-(s->pos-s->buf_len);
+    int64_t x=pos-(s->pos-s->buf_len);
     if(x>=0){
       s->buf_pos=x;
 //      putchar('*');fflush(stdout);
@@ -338,7 +335,7 @@ static inline int stream_seek(stream_t *s, off_t pos)
   return cache_stream_seek_long(s,pos);
 }
 
-static inline int stream_skip(stream_t *s, off_t len)
+static inline int stream_skip(stream_t *s, int64_t len)
 {
   if( len<0 || (len>2*STREAM_BUFFER_SIZE && (s->flags & MP_STREAM_SEEK_FW)) ) {
     // negative or big skip!
@@ -374,12 +371,11 @@ int stream_check_interrupt(int time);
 /// Internal read function bypassing the stream buffer
 int stream_read_internal(stream_t *s, void *buf, int len);
 /// Internal seek function bypassing the stream buffer
-int stream_seek_internal(stream_t *s, off_t newpos);
+int stream_seek_internal(stream_t *s, int64_t newpos);
 
 extern int bluray_angle;
 extern int bluray_chapter;
 extern int dvd_speed;
-extern int dvd_title;
 extern int dvd_chapter;
 extern int dvd_last_chapter;
 extern int dvd_angle;
@@ -399,5 +395,7 @@ typedef struct {
  int type;
  int channels;
 } stream_language_t;
+
+int parse_chapter_range(const m_option_t *conf, const char *range);
 
 #endif /* MPLAYER_STREAM_H */

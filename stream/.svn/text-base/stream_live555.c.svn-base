@@ -29,7 +29,7 @@
 #include "libmpdemux/demuxer.h"
 #include "help_mp.h"
 
-static int _rtsp_streaming_seek(int fd, off_t pos, streaming_ctrl_t* streaming_ctrl) {
+static int _rtsp_streaming_seek(int fd, int64_t pos, streaming_ctrl_t* streaming_ctrl) {
   return -1; // For now, we don't handle RTSP stream seeking
 }
 
@@ -40,16 +40,12 @@ static int rtsp_streaming_start(stream_t* stream) {
 
 
 static int open_live_rtsp_sip(stream_t *stream,int mode, void* opts, int* file_format) {
-  URL_t *url;
-
   stream->streaming_ctrl = streaming_ctrl_new();
   if( stream->streaming_ctrl==NULL ) {
     return STREAM_ERROR;
   }
   stream->streaming_ctrl->bandwidth = network_bandwidth;
-  url = url_new(stream->url);
-  stream->streaming_ctrl->url = check4proxies(url);
-  //url_free(url);
+  stream->streaming_ctrl->url = url_new_with_proxy(stream->url);
 
   mp_msg(MSGT_OPEN, MSGL_INFO, "STREAM_LIVE555, URL: %s\n", stream->url);
 

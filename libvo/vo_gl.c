@@ -105,12 +105,13 @@ static int osd_color;
 static int use_aspect;
 static int use_ycbcr;
 #define MASK_ALL_YUV (~(1 << YUV_CONVERSION_NONE))
-#define MASK_NOT_COMBINERS (~((1 << YUV_CONVERSION_NONE) | (1 << YUV_CONVERSION_COMBINERS)))
-#define MASK_GAMMA_SUPPORT (MASK_NOT_COMBINERS & ~(1 << YUV_CONVERSION_FRAGMENT))
+#define MASK_NOT_COMBINERS (~((1 << YUV_CONVERSION_NONE) | (1 << YUV_CONVERSION_COMBINERS) | (1 << YUV_CONVERSION_COMBINERS_ATI) | (1 << YUV_CONVERSION_TEXT_FRAGMENT)))
+#define MASK_GAMMA_SUPPORT MASK_NOT_COMBINERS
 static int use_yuv;
 static int colorspace;
 static int levelconv;
 static int is_yuv;
+static int is_xyz;
 static int lscale;
 static int cscale;
 static float filter_strength;
@@ -151,7 +152,6 @@ static int stereo_mode;
 static int stipple;
 static enum MPGLType backend;
 
-static int int_pause;
 static int eq_bri = 0;
 static int eq_cont = 0;
 static int eq_sat = 0;
@@ -171,47 +171,47 @@ static unsigned int slice_height = 1;
 // performance statistics
 static int imgcnt, dr_imgcnt, dr_rejectcnt;
 
+static int did_render;
+
 static void redraw(void);
 
-static void resize(int x,int y){
+static float video_matrix[16];
+
+static void resize(void) {
   // simple orthogonal projection for 0-image_width;0-image_height
-  float matrix[16] = {
-    2.0/image_width,   0, 0, 0,
-    0, -2.0/image_height, 0, 0,
-    0, 0, 0, 0,
-    -1, 1, 0, 1
-  };
-  mp_msg(MSGT_VO, MSGL_V, "[gl] Resize: %dx%d\n",x,y);
+  memset(video_matrix, 0, sizeof(video_matrix));
+  video_matrix[0]  = 2.0/image_width;
+  video_matrix[5]  = -2.0/image_height;
+  video_matrix[12] = -1;
+  video_matrix[13] = 1;
+  video_matrix[15] = 1;
+  mp_msg(MSGT_VO, MSGL_V, "[gl] Resize: %dx%d\n", vo_dwidth, vo_dheight);
   if (WinID >= 0) {
-    int left = 0, top = 0, w = x, h = y;
+    int left = 0, top = 0, w = vo_dwidth, h = vo_dheight;
     geometry(&left, &top, &w, &h, vo_dwidth, vo_dheight);
-    top = y - h - top;
+    top = vo_dheight - h - top;
     mpglViewport(left, top, w, h);
   } else
-    mpglViewport( 0, 0, x, y );
+    mpglViewport(0, 0, vo_dwidth, vo_dheight);
 
-  mpglMatrixMode(GL_PROJECTION);
   ass_border_x = ass_border_y = 0;
   if (aspect_scaling() && use_aspect) {
     int new_w, new_h;
-    GLdouble scale_x, scale_y;
+    double scale_x, scale_y;
     aspect(&new_w, &new_h, A_WINZOOM);
     panscan_calc_windowed();
     new_w += vo_panscan_x;
     new_h += vo_panscan_y;
-    scale_x = (GLdouble)new_w / (GLdouble)x;
-    scale_y = (GLdouble)new_h / (GLdouble)y;
-    matrix[0]  *= scale_x;
-    matrix[12] *= scale_x;
-    matrix[5]  *= scale_y;
-    matrix[13] *= scale_y;
+    scale_x = (double)new_w / (double)vo_dwidth;
+    scale_y = (double)new_h / (double)vo_dheight;
+    video_matrix[0]  *= scale_x;
+    video_matrix[12] *= scale_x;
+    video_matrix[5]  *= scale_y;
+    video_matrix[13] *= scale_y;
     ass_border_x = (vo_dwidth - new_w) / 2;
     ass_border_y = (vo_dheight - new_h) / 2;
   }
-  mpglLoadMatrixf(matrix);
-
-  mpglMatrixMode(GL_MODELVIEW);
-  mpglLoadIdentity();
+  mpglLoadMatrixf(video_matrix);
 
   if (!scaled_osd) {
 #ifdef CONFIG_FREETYPE
@@ -258,6 +258,14 @@ static void update_yuvconv(void) {
   params.chrom_texw = params.texw >> xs;
   params.chrom_texh = params.texh >> ys;
   params.csp_params.input_shift = -depth & 7;
+  params.is_planar = is_yuv;
+  if (is_xyz) {
+    params.csp_params.format = MP_CSP_XYZ;
+    params.csp_params.input_shift = 0;
+    params.csp_params.rgamma *= 2.2;
+    params.csp_params.ggamma *= 2.2;
+    params.csp_params.bgamma *= 2.2;
+  }
   glSetupYUVConversion(&params);
   if (custom_prog) {
     FILE *f = fopen(custom_prog, "rb");
@@ -539,7 +547,7 @@ static GLint get_scale_type(int chroma) {
  * \brief Initialize a (new or reused) OpenGL context.
  * set global gl-related variables to their default values
  */
-static int initGl(uint32_t d_width, uint32_t d_height) {
+static int initGl(void) {
   GLint scale_type = get_scale_type(0);
   autodetectGlExtensions();
   using_tex_rect = gl_format == GL_YCBCR_422_APPLE || use_rectangle == 1;
@@ -567,7 +575,7 @@ static int initGl(uint32_t d_width, uint32_t d_height) {
   if (mipmap_gen)
     mpglTexParameteri(gl_target, GL_GENERATE_MIPMAP, GL_TRUE);
 
-  if (is_yuv || stereo_mode == GL_3D_STIPPLE) {
+  if (is_yuv || is_xyz || custom_prog || stereo_mode == GL_3D_STIPPLE) {
     int i;
     mpglGenTextures(21, default_texs);
     default_texs[21] = 0;
@@ -577,6 +585,7 @@ static int initGl(uint32_t d_width, uint32_t d_height) {
       mpglBindTexture(GL_TEXTURE_RECTANGLE, default_texs[i + 7]);
       mpglBindTexture(GL_TEXTURE_3D, default_texs[i + 14]);
     }
+    mpglActiveTexture(GL_TEXTURE0);
   }
   if (stereo_mode == GL_3D_STIPPLE)
     glSetupAlphaStippleTex(stipple);
@@ -601,7 +610,7 @@ static int initGl(uint32_t d_width, uint32_t d_height) {
     mpglActiveTexture(GL_TEXTURE0);
     mpglBindTexture(gl_target, 0);
   }
-  if (is_yuv || custom_prog)
+  if (is_yuv || is_xyz || custom_prog)
   {
     if ((MASK_NOT_COMBINERS & (1 << use_yuv)) || custom_prog) {
       if (!mpglGenPrograms || !mpglBindProgram) {
@@ -614,7 +623,7 @@ static int initGl(uint32_t d_width, uint32_t d_height) {
     update_yuvconv();
   }
 
-  resize(d_width, d_height);
+  resize();
 
   mpglClearColor( 0.0f,0.0f,0.0f,0.0f );
   mpglClear( GL_COLOR_BUFFER_BIT );
@@ -629,6 +638,10 @@ static int create_window(uint32_t d_width, uint32_t d_height, uint32_t flags, co
     flags |= VOFLAG_STEREO;
 #ifdef CONFIG_GL_WIN32
   if (glctx.type == GLTYPE_W32 && !vo_w32_config(d_width, d_height, flags))
+    return -1;
+#endif
+#ifdef CONFIG_GL_OSX
+  if (glctx.type == GLTYPE_OSX && !vo_osx_config(d_width, d_height, flags))
     return -1;
 #endif
 #ifdef CONFIG_GL_EGL_X11
@@ -685,6 +698,14 @@ static int create_window(uint32_t d_width, uint32_t d_height, uint32_t flags, co
   return 0;
 }
 
+#ifdef CONFIG_GL_OSX
+static void osx_redraw(void)
+{
+  // resize will call redraw to refresh the screen
+  resize();
+}
+#endif
+
 /* connect to server, create and map window,
  * allocate colors and (shared) memory
  */
@@ -697,9 +718,19 @@ config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_height, uin
   image_format = format;
   is_yuv = mp_get_chroma_shift(image_format, &xs, &ys, NULL) > 0;
   is_yuv |= (xs << 8) | (ys << 16);
+  is_xyz = IMGFMT_IS_XYZ(image_format);
   glFindFormat(format, NULL, &gl_texfmt, &gl_format, &gl_type);
 
-  int_pause = 0;
+  if (glctx.type == GLTYPE_OSX && vo_doublebuffering && !is_yuv) {
+    // doublebuffering causes issues when e.g. drawing yuy2 or rgb textures
+    // (nothing is draw) unless using glfinish which makes things slow.
+    // This is possibly because we do not actually request a double-buffered
+    // context.
+    // However single-buffering causes slowdown and artefacts when
+    // drawing planar formats. Mostly tested on PPC MacMini
+    mp_msg(MSGT_VO, MSGL_INFO, "[gl] -double not supported on OSX for interleaved formats, switching to -nodouble\n");
+    vo_doublebuffering = 0;
+  }
   vo_flipped = !!(flags & VOFLAG_FLIPPING);
 
   if (create_window(d_width, d_height, flags, title) < 0)
@@ -713,8 +744,11 @@ config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_height, uin
     mp_msg(MSGT_VO, MSGL_ERR, "Can not enable mesa-buffer because AllocateMemoryMESA was not found\n");
     mesa_buffer = 0;
   }
-  initGl(vo_dwidth, vo_dheight);
+  initGl();
 
+#ifdef CONFIG_GL_OSX
+  vo_osx_redraw_func = osx_redraw;
+#endif
   return 0;
 }
 
@@ -723,10 +757,10 @@ static void check_events(void)
     int e=glctx.check_events();
     if(e&VO_EVENT_REINIT) {
         uninitGl();
-        initGl(vo_dwidth, vo_dheight);
+        initGl();
     }
-    if(e&VO_EVENT_RESIZE) resize(vo_dwidth,vo_dheight);
-    if(e&VO_EVENT_EXPOSE && int_pause) redraw();
+    if(e&VO_EVENT_RESIZE) resize();
+    else if(e&VO_EVENT_EXPOSE) redraw();
 }
 
 /**
@@ -805,18 +839,18 @@ static void do_render_osd(int type) {
       0,  0, 0, 0,
       -1, 1, 0, 1
     };
-    mpglMatrixMode(GL_PROJECTION);
-    mpglPushMatrix();
     mpglLoadMatrixf(matrix);
   }
-  if (osd_color != 0xffffff)
-    mpglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
   mpglEnable(GL_BLEND);
   if (draw_eosd) {
+    mpglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     mpglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     mpglCallList(eosdDispList);
+    mpglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
   }
   if (draw_osd) {
+    if (osd_color != 0xffffff)
+      mpglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     mpglColor4ub((osd_color >> 16) & 0xff, (osd_color >> 8) & 0xff, osd_color & 0xff, 0xff - (osd_color >> 24));
     // draw OSD
 #ifndef FAST_OSD
@@ -835,13 +869,13 @@ static void do_render_osd(int type) {
       mpglBindTexture(gl_target, osdtex[i]);
       glDrawTex(c->x, c->y, c->w, c->h, 0, 0, c->w, c->h, c->sx, c->sy, using_tex_rect, 0, 0, 0);
     }
+    if (osd_color != 0xffffff)
+      mpglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
   }
   // set rendering parameters back to defaults
   mpglDisable(GL_BLEND);
-  if (osd_color != 0xffffff)
-    mpglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
   if (!scaled_osd)
-    mpglPopMatrix();
+    mpglLoadMatrixf(video_matrix);
   mpglBindTexture(gl_target, 0);
 }
 
@@ -860,8 +894,8 @@ static void draw_osd(void)
 }
 
 static void do_render(void) {
-  mpglColor4f(1,1,1,1);
-  if (is_yuv || custom_prog)
+  mpglColor4ub(255, 255, 255, 255);
+  if (is_yuv || is_xyz || custom_prog)
     glEnableYUVConversion(gl_target, yuvconvtype);
   if (stereo_mode) {
     glEnable3DLeft(stereo_mode);
@@ -884,26 +918,38 @@ static void do_render(void) {
               using_tex_rect, is_yuv,
               mpi_flipped ^ vo_flipped, 0);
   }
-  if (is_yuv || custom_prog)
+  if (is_yuv || is_xyz || custom_prog)
     glDisableYUVConversion(gl_target, yuvconvtype);
+  did_render = 1;
 }
 
 static void flip_page(void) {
-  if (vo_doublebuffering) {
-    if (use_glFinish) mpglFinish();
-    glctx.swapGlBuffers(&glctx);
-    if (aspect_scaling() && use_aspect)
+  int need_clear = aspect_scaling() && use_aspect;
+  // We might get an expose event between draw_image and its
+  // corresponding flip_page.
+  // For double-buffering we would then flip in a clear backbuffer.
+  // Easiest way to handle it is by keeping track if the
+  // current GL buffer contains a properly rendered video.
+  // did_render will always be false for single buffer.
+  if (!did_render) {
+    if (!vo_doublebuffering && need_clear)
       mpglClear(GL_COLOR_BUFFER_BIT);
-  } else {
     do_render();
     do_render_osd(RENDER_OSD | RENDER_EOSD);
-    if (use_glFinish) mpglFinish();
-    else mpglFlush();
   }
+  if (use_glFinish) mpglFinish();
+
+  if (vo_doublebuffering) {
+    glctx.swapGlBuffers(&glctx);
+    if (need_clear)
+      mpglClear(GL_COLOR_BUFFER_BIT);
+  } else if (!use_glFinish)
+    mpglFlush();
+
+  did_render = 0;
 }
 
 static void redraw(void) {
-  if (vo_doublebuffering) { do_render(); do_render_osd(RENDER_OSD | RENDER_EOSD); }
   flip_page();
 }
 
@@ -1134,8 +1180,8 @@ query_format(uint32_t format)
 {
     int depth;
     int caps = VFCAP_CSP_SUPPORTED | VFCAP_CSP_SUPPORTED_BY_HW |
-               VFCAP_FLIP |
-               VFCAP_HWSCALE_UP | VFCAP_HWSCALE_DOWN | VFCAP_ACCEPT_STRIDE;
+               VFCAP_FLIP | VFCAP_ACCEPT_STRIDE |
+               VFCAP_HWSCALE_UP | VFCAP_HWSCALE_DOWN;
     if (use_osd)
       caps |= VFCAP_OSD | VFCAP_EOSD | (scaled_osd ? 0 : VFCAP_EOSD_UNSCALED);
     if (format == IMGFMT_RGB24 || format == IMGFMT_RGBA)
@@ -1143,6 +1189,8 @@ query_format(uint32_t format)
     if (use_yuv && mp_get_chroma_shift(format, NULL, NULL, &depth) &&
         (depth == 8 || depth == 16 || glYUVLargeRange(use_yuv)) &&
         (IMGFMT_IS_YUVP16_NE(format) || !IMGFMT_IS_YUVP16(format)))
+        return caps;
+    if ((MASK_NOT_COMBINERS & (1 << use_yuv)) && IMGFMT_IS_XYZ(format))
         return caps;
     // HACK, otherwise we get only b&w with some filters (e.g. -vf eq)
     // ideally MPlayer should be fixed instead not to use Y800 when it has the choice
@@ -1283,8 +1331,8 @@ static int preinit_internal(const char *arg, int allow_sw)
               "  yuv=<n>\n"
               "    0: use software YUV to RGB conversion.\n"
               "    1: use register combiners (nVidia only, for older cards).\n"
-              "    2: use fragment program.\n"
-              "    3: use fragment program with gamma correction.\n"
+              "    2: use fragment program with gamma correction.\n"
+              "    3: same as 2.\n"
               "    4: use fragment program with gamma correction via lookup.\n"
               "    5: use ATI-specific method (for older cards).\n"
               "    6: use lookup via 3D texture.\n"
@@ -1338,6 +1386,8 @@ static int preinit_internal(const char *arg, int allow_sw)
               "    1: X11/GLX\n"
               "    2: SDL\n"
               "    3: X11/EGL (experimental)\n"
+              "    4: OSX/Cocoa\n"
+              "    5: Android (experimental)\n"
               "\n" );
       return -1;
     }
@@ -1398,10 +1448,6 @@ static const struct {
 static int control(uint32_t request, void *data)
 {
   switch (request) {
-  case VOCTRL_PAUSE:
-  case VOCTRL_RESUME:
-    int_pause = (request == VOCTRL_PAUSE);
-    return VO_TRUE;
   case VOCTRL_QUERY_FORMAT:
     return query_format(*(uint32_t*)data);
   case VOCTRL_GET_IMAGE:
@@ -1434,18 +1480,18 @@ static int control(uint32_t request, void *data)
     return VO_TRUE;
   case VOCTRL_FULLSCREEN:
     glctx.fullscreen();
-    resize(vo_dwidth, vo_dheight);
+    resize();
     return VO_TRUE;
   case VOCTRL_BORDER:
     glctx.border();
-    resize(vo_dwidth, vo_dheight);
+    resize();
     return VO_TRUE;
   case VOCTRL_GET_PANSCAN:
     if (!use_aspect) return VO_NOTIMPL;
     return VO_TRUE;
   case VOCTRL_SET_PANSCAN:
     if (!use_aspect) return VO_NOTIMPL;
-    resize(vo_dwidth, vo_dheight);
+    resize();
     return VO_TRUE;
   case VOCTRL_GET_EQUALIZER:
     if (is_yuv) {
@@ -1468,7 +1514,7 @@ static int control(uint32_t request, void *data)
       if (!(eq_map[i].supportmask & (1 << use_yuv)))
         break;
       *eq_map[i].value = eq->value;
-      if (strcmp(data, "gamma") == 0)
+      if (strcmp(eq->item, "gamma") == 0)
         eq_rgamma = eq_ggamma = eq_bgamma = eq->value;
       update_yuvconv();
       return VO_TRUE;

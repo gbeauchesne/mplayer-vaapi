@@ -24,10 +24,13 @@ enum {
     PLAYLIST_GET,
     PLAYLIST_ITEM_APPEND,
     PLAYLIST_ITEM_INSERT,
+    PLAYLIST_ITEM_FIND,
     PLAYLIST_ITEM_SET_CURR,
     PLAYLIST_ITEM_GET_CURR,
+    PLAYLIST_ITEM_GET_POS,
     PLAYLIST_ITEM_GET_PREV,
     PLAYLIST_ITEM_GET_NEXT,
+    PLAYLIST_ITEM_GET_LAST,
     PLAYLIST_ITEM_DEL_CURR,
     PLAYLIST_DELETE,
     URLLIST_GET,
@@ -46,13 +49,18 @@ typedef struct urlItem {
     struct urlItem *next;
 } urlItem;
 
-/// @name list manager (playlist, URL list)
+/// @name List manager (playlist, URL list)
 void *listMgr(int cmd, void *data);
 
-/// @name char pointer list operations
+/// @name Char pointer list operations
 //@{
 void listRepl(char ***list, const char *search, const char *replace);
 void listSet(char ***list, const char *entry);
+//@}
+
+/// @name High-level list operations
+//@{
+int add_to_gui_playlist(const char *what, int how);
 //@}
 
 #endif /* MPLAYER_GUI_LIST_H */

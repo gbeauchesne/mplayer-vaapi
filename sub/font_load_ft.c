@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <strings.h>
 
 #ifdef CONFIG_ICONV
 #include <iconv.h>
@@ -787,7 +788,7 @@ static int prepare_charset(char *charmap, char *encoding, FT_ULong *charset, FT_
     charset_size = count;
 
     iconv_close(cd);
-    if (charset_size==0) {
+    if (charset_size <= 1) {
 	mp_msg(MSGT_OSD, MSGL_ERR, "No characters to render!\n");
 	return -1;
     }

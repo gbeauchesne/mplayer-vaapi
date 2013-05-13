@@ -24,10 +24,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/time.h>
 #include <inttypes.h>
 
@@ -122,6 +120,9 @@
 
 #ifdef CONFIG_MGA
 
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+
 #include "drivers/mga_vid.h"
 
 static mga_vid_config_t mga_vid_config;
@@ -175,9 +176,8 @@ static int mga_init(void)
 static unsigned int GetTimer(void)
 {
     struct timeval tv;
-    struct timezone tz;
     //float s;
-    gettimeofday(&tv, &tz);
+    gettimeofday(&tv, NULL);
     //s = tv.tv_usec; s *= 0.000001; s += tv.tv_sec;
     return tv.tv_sec * 1000000 + tv.tv_usec;
 }

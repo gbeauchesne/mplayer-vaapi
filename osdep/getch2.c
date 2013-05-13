@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #ifdef CONFIG_IOCTL
@@ -59,12 +60,13 @@
 #include "mp_fifo.h"
 #include "keycodes.h"
 #include "getch2.h"
+#include "libavutil/common.h"
 
 #ifdef HAVE_TERMIOS
 static struct termios tio_orig;
 #endif
 static int getch2_len=0;
-static char getch2_buf[BUF_LEN];
+static uint8_t getch2_buf[BUF_LEN];
 
 int screen_width=80;
 int screen_height=24;
@@ -200,6 +202,14 @@ void getch2(void)
                         len = 2;
                 }
                 code = KEY_ENTER;
+            } else if (code >= 0xc0) {
+                uint32_t utf8 = 0;
+                i = 0;
+                GET_UTF8(utf8, (i < getch2_len ? getch2_buf[i++] : 0), goto not_utf8;)
+                if (utf8 < KEY_BASE) {
+                    code = utf8;
+                    len = i;
+                }
             }
         }
         else if (getch2_len > 1) {
@@ -224,7 +234,7 @@ void getch2(void)
             }
             if ((c == '[' || c == 'O') && getch2_len >= 3) {
                 int c = getch2_buf[2];
-                const short ctable[] = {
+                static const unsigned ctable[] = {
                     KEY_UP, KEY_DOWN, KEY_RIGHT, KEY_LEFT, 0,
                     KEY_END, KEY_PGDWN, KEY_HOME, KEY_PGUP, 0, 0, KEY_INS, 0, 0, 0,
                     KEY_F+1, KEY_F+2, KEY_F+3, KEY_F+4};
@@ -237,7 +247,7 @@ void getch2(void)
             }
             if (getch2_len >= 4 && c == '[' && getch2_buf[3] == '~') {
                 int c = getch2_buf[2];
-                const int ctable[8] = {KEY_HOME, KEY_INS, KEY_DEL, KEY_END, KEY_PGUP, KEY_PGDWN, KEY_HOME, KEY_END};
+                static const int ctable[8] = {KEY_HOME, KEY_INS, KEY_DEL, KEY_END, KEY_PGUP, KEY_PGDWN, KEY_HOME, KEY_END};
                 if (c >= '1' && c <= '8') {
                     code = ctable[c - '1'];
                     len = 4;
@@ -248,7 +258,7 @@ void getch2(void)
                 int i = getch2_buf[2] - '0';
                 int j = getch2_buf[3] - '0';
                 if (i >= 0 && i <= 9 && j >= 0 && j <= 9) {
-                    const short ftable[20] = {
+                    static const uint8_t ftable[20] = {
                         11,12,13,14,15, 17,18,19,20,21,
                         23,24,25,26,28, 29,31,32,33,34 };
                     int a = i*10 + j;
@@ -261,6 +271,7 @@ void getch2(void)
                 }
             }
         }
+    not_utf8:
     found:
         getch2_len -= len;
         for (i = 0; i < getch2_len; i++)

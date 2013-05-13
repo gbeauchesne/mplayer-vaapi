@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 
 #include <sys/types.h>
@@ -31,6 +32,7 @@
 #include "help_mp.h"
 #include "m_config.h"
 #include "mpcommon.h"
+#include "codec-cfg.h"
 
 #include "libvo/fastmemcpy.h"
 
@@ -107,6 +109,9 @@ extern const demuxer_desc_t demuxer_desc_lavf_preferred;
 extern const demuxer_desc_t demuxer_desc_aac;
 extern const demuxer_desc_t demuxer_desc_nut;
 extern const demuxer_desc_t demuxer_desc_mng;
+
+// never add this to the list
+extern const demuxer_desc_t demuxer_desc_demuxers;
 
 /* Please do not add any new demuxers here. If you want to implement a new
  * demuxer, add it to libavformat, except for wrappers around external
@@ -214,6 +219,8 @@ demux_stream_t *new_demuxer_stream(struct demuxer *demuxer, int id)
 static const demuxer_desc_t *get_demuxer_desc_from_type(int file_format)
 {
     int i;
+    if (file_format == DEMUXER_TYPE_DEMUXERS)
+        return &demuxer_desc_demuxers;
 
     for (i = 0; demuxer_list[i]; i++)
         if (file_format == demuxer_list[i]->type)
@@ -238,7 +245,7 @@ demuxer_t *alloc_demuxer(stream_t *stream, int type, const char *filename)
         if (!(d->desc = get_demuxer_desc_from_type(type)))
             mp_msg(MSGT_DEMUXER, MSGL_ERR,
                    "BUG! Invalid demuxer type in new_demuxer(), "
-                   "big troubles ahead.");
+                   "big troubles ahead.\n");
     if (filename) // Filename hack for avs_check_file
         d->filename = strdup(filename);
     return d;
@@ -399,6 +406,8 @@ void free_sh_video(sh_video_t *sh)
 void free_demuxer(demuxer_t *demuxer)
 {
     int i;
+    if (!demuxer)
+        return;
     mp_msg(MSGT_DEMUXER, MSGL_DBG2, "DEMUXER: freeing %s demuxer at %p\n",
            demuxer->desc->shortdesc, demuxer);
     if (demuxer->desc->close)
@@ -469,33 +478,33 @@ static void ds_add_packet_internal(demux_stream_t *ds, demux_packet_t *dp)
 #ifdef CONFIG_FFMPEG
 static void allocate_parser(AVCodecContext **avctx, AVCodecParserContext **parser, unsigned format)
 {
-    enum CodecID codec_id = CODEC_ID_NONE;
+    enum AVCodecID codec_id = AV_CODEC_ID_NONE;
 
     init_avcodec();
 
     switch (format) {
     case 0x1600:
     case MKTAG('M', 'P', '4', 'A'):
-        codec_id = CODEC_ID_AAC;
+        codec_id = AV_CODEC_ID_AAC;
         break;
     case 0x1602:
     case MKTAG('M', 'P', '4', 'L'):
-        codec_id = CODEC_ID_AAC_LATM;
+        codec_id = AV_CODEC_ID_AAC_LATM;
         break;
     case 0x2000:
     case 0x332D6361:
     case 0x332D4341:
     case 0x20736D:
     case MKTAG('s', 'a', 'c', '3'):
-        codec_id = CODEC_ID_AC3;
+        codec_id = AV_CODEC_ID_AC3;
         break;
     case MKTAG('d', 'n', 'e', 't'):
         // DNET/byte-swapped AC-3 - there is no parser for that yet
-        //codec_id = CODEC_ID_DNET;
+        //codec_id = AV_CODEC_ID_DNET;
         break;
     case MKTAG('E', 'A', 'C', '3'):
     case MKTAG('e', 'c', '-', '3'):
-        codec_id = CODEC_ID_EAC3;
+        codec_id = AV_CODEC_ID_EAC3;
         break;
     case 0x2001:
     case 0x86:
@@ -503,13 +512,13 @@ static void allocate_parser(AVCodecContext **avctx, AVCodecParserContext **parse
     case MKTAG('d', 't', 's', ' '):
     case MKTAG('d', 't', 's', 'b'):
     case MKTAG('d', 't', 's', 'c'):
-        codec_id = CODEC_ID_DTS;
+        codec_id = AV_CODEC_ID_DTS;
         break;
     case MKTAG('f', 'L', 'a', 'C'):
-        codec_id = CODEC_ID_FLAC;
+        codec_id = AV_CODEC_ID_FLAC;
         break;
     case MKTAG('M', 'L', 'P', ' '):
-        codec_id = CODEC_ID_MLP;
+        codec_id = AV_CODEC_ID_MLP;
         break;
     case 0x55:
     case 0x5500736d:
@@ -517,19 +526,19 @@ static void allocate_parser(AVCodecContext **avctx, AVCodecParserContext **parse
     case MKTAG('.', 'm', 'p', '3'):
     case MKTAG('M', 'P', '3', ' '):
     case MKTAG('L', 'A', 'M', 'E'):
-        codec_id = CODEC_ID_MP3;
+        codec_id = AV_CODEC_ID_MP3;
         break;
     case 0x50:
     case 0x5000736d:
     case MKTAG('.', 'm', 'p', '2'):
     case MKTAG('.', 'm', 'p', '1'):
-        codec_id = CODEC_ID_MP2;
+        codec_id = AV_CODEC_ID_MP2;
         break;
     case MKTAG('T', 'R', 'H', 'D'):
-        codec_id = CODEC_ID_TRUEHD;
+        codec_id = AV_CODEC_ID_TRUEHD;
         break;
     }
-    if (codec_id != CODEC_ID_NONE) {
+    if (codec_id != AV_CODEC_ID_NONE) {
         *avctx = avcodec_alloc_context3(NULL);
         if (!*avctx)
             return;
@@ -553,6 +562,8 @@ static void get_parser(sh_common_t *sh, AVCodecContext **avctx, AVCodecParserCon
         return;
 
     allocate_parser(avctx, parser, sh->format);
+    if (!*parser && sh->codec) // fallback to support forcing a codec
+        allocate_parser(avctx, parser, sh->codec->fourcc[0]);
     sh->avctx  = *avctx;
     sh->parser = *parser;
 }
@@ -657,10 +668,15 @@ int ds_fill_buffer(demux_stream_t *ds)
                    "ds_fill_buffer(unknown 0x%X) called\n", (unsigned int) ds);
     }
     while (1) {
+        int apacks = demux->audio ? demux->audio->packs : 0;
+        int abytes = demux->audio ? demux->audio->bytes : 0;
+        int vpacks = demux->video ? demux->video->packs : 0;
+        int vbytes = demux->video ? demux->video->bytes : 0;
         if (ds->packs) {
             demux_packet_t *p = ds->first;
             // obviously not yet EOF after all
             ds->eof = 0;
+            ds->fill_count = 0;
 #if 0
             if (demux->reference_clock != MP_NOPTS_VALUE) {
                 if (   p->pts != MP_NOPTS_VALUE
@@ -695,20 +711,26 @@ int ds_fill_buffer(demux_stream_t *ds)
             --ds->packs;
             return 1;
         }
+        // avoid buffering too far ahead in e.g. badly interleaved files
+        // or when one stream is shorter, without breaking large audio
+        // delay with well interleaved files.
+        // This needs to be enough for at least 1 second of packets
+        // since libavformat mov demuxer does not try to interleave
+        // with more than 1s precision.
+        if (ds->fill_count > 80)
+            break;
         // avoid printing the "too many ..." message over and over
         if (ds->eof)
             break;
-        if (demux->audio->packs >= MAX_PACKS
-            || demux->audio->bytes >= MAX_PACK_BYTES) {
+        if (apacks >= MAX_PACKS || abytes >= MAX_PACK_BYTES) {
             mp_msg(MSGT_DEMUXER, MSGL_ERR, MSGTR_TooManyAudioInBuffer,
-                   demux->audio->packs, demux->audio->bytes);
+                   apacks, abytes);
             mp_msg(MSGT_DEMUXER, MSGL_HINT, MSGTR_MaybeNI);
             break;
         }
-        if (demux->video->packs >= MAX_PACKS
-            || demux->video->bytes >= MAX_PACK_BYTES) {
+        if (vpacks >= MAX_PACKS || vbytes >= MAX_PACK_BYTES) {
             mp_msg(MSGT_DEMUXER, MSGL_ERR, MSGTR_TooManyVideoInBuffer,
-                   demux->video->packs, demux->video->bytes);
+                   vpacks, vbytes);
             mp_msg(MSGT_DEMUXER, MSGL_HINT, MSGTR_MaybeNI);
             break;
         }
@@ -730,6 +752,15 @@ int ds_fill_buffer(demux_stream_t *ds)
                    "ds_fill_buffer()->demux_fill_buffer() failed\n");
             break; // EOF
         }
+        if (demux->audio)
+            ds->fill_count += demux->audio->packs - apacks;
+        if (demux->video && demux->video->packs > vpacks &&
+            // Empty packets or "skip" packets in e.g. AVI can cause issues.
+            demux->video->bytes > vbytes + 100 &&
+            // when video needs parsing we will have lots of video packets
+            // in-between audio packets, so ignore them in that case.
+            demux->video->sh && !((sh_video_t *)demux->video->sh)->needs_parsing)
+            ds->fill_count++;
     }
     ds->buffer_pos = ds->buffer_size = 0;
     ds->buffer = NULL;
@@ -1300,6 +1331,8 @@ static void demux_resync(demuxer_t *demuxer)
     sh_video_t *sh_video = demuxer->video->sh;
     sh_audio_t *sh_audio = demuxer->audio->sh;
     demux_control(demuxer, DEMUXER_CTRL_RESYNC, NULL);
+    demuxer->audio->fill_count = -80;
+    demuxer->video->fill_count = -80;
     if (sh_video) {
         resync_video_stream(sh_video);
     }

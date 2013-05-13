@@ -35,6 +35,7 @@
 #define VO_EVENT_KEYPRESS 4
 #define VO_EVENT_REINIT 8
 #define VO_EVENT_MOVE 16
+#define VO_EVENT_MOUSE 32
 
 /* Obsolete: VOCTRL_QUERY_VAA 1 */
 /* does the device support the required format */
@@ -279,9 +280,19 @@ void calc_src_dst_rects(int src_width, int src_height, struct vo_rect *src, stru
                         struct vo_rect *borders, const struct vo_rect *crop);
 void vo_mouse_movement(int posx, int posy);
 
+static inline int pixel_stride(unsigned fmt) {
+    if (IMGFMT_IS_RGB(fmt))
+        return (IMGFMT_RGB_DEPTH(fmt) + 7) / 8;
+    if (IMGFMT_IS_BGR(fmt))
+        return (IMGFMT_BGR_DEPTH(fmt) + 7) / 8;
+    if (fmt == IMGFMT_YUY2 || fmt == IMGFMT_UYVY)
+        return 2;
+    return IMGFMT_IS_YUVP16(fmt) ? 2 : 1;
+}
+
 static inline int aspect_scaling(void)
 {
-  return vo_fs;
+  return vo_fs || vo_keepaspect;
 }
 
 #endif /* MPLAYER_VIDEO_OUT_H */

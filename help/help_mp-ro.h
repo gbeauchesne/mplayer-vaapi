@@ -1,5 +1,5 @@
 // FIXME: This needs to be redone properly.
-// Partially sync'ed with help_mp-en.h $Revision: 34253 $
+// Partially sync'ed with help_mp-en.h $Revision: 35687 $
 // This is a retranslation of the file by Bogdan Butnaru <bogdanb@fastmail.fm>,
 // based on the previous translation by Codre Adrian
 // <codreadrian@softhome.net> (address bounces).
@@ -279,8 +279,6 @@ static const char help_text[]=
 
 // ====================== GUI messages/buttons ========================
 
-#ifdef CONFIG_GUI
-
 // --- labels ---
 #define MSGTR_About "Despre MPlayer"
 #define MSGTR_FileSelect "Alege fiºierul..."
@@ -475,5 +473,3 @@ static const char help_text[]=
 #define MSGTR_MSGBOX_LABEL_FatalError "Eroare fatalã!"
 #define MSGTR_MSGBOX_LABEL_Error "Eroare!"
 #define MSGTR_MSGBOX_LABEL_Warning "Atenþie!"
-
-#endif

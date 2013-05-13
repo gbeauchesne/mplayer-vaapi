@@ -760,7 +760,7 @@ static const char help_text[]=
 #define MSGTR_AudioPreferences "Audio-Treiberkonfiguration"
 #define MSGTR_NoMediaOpened "Keine Medien geöffnet."
 #define MSGTR_Title "Titel %d"
-#define MSGTR_NoChapter "kein Kapitel"
+#define MSGTR_NoChapter "Kein Kapitel"
 #define MSGTR_Chapter "Kapitel %d"
 #define MSGTR_NoFileLoaded "Keine Datei geladen."
 #define MSGTR_Filter_UTF8Subtitles "UTF-8 kodierte Untertitel (*.utf, *.utf-8, *.utf8)"
@@ -810,6 +810,7 @@ static const char help_text[]=
 #define MSGTR_IDFGCVD "Sorry, es wurde kein GUI-kompatibler Ausgabetreiber gefunden.\n"
 #define MSGTR_NEEDLAVC "Sorry, du versuchst, Nicht-MPEG Dateien ohne erneute Encodierung abzuspielen.\nBitte aktiviere lavc in der DXR3/H+-Konfigurationsbox."
 #define MSGTR_ICONERROR "Icon '%s' (Größe %d) wurde nicht gefunden oder das Format wird nicht unterstützt.\n"
+#define MSGTR_LOCALE_ENCODING "G_FILENAME_ENCODING=@locale oder G_BROKEN_FILENAMES wird nicht unterstützt,\ndie Kodierung muss in G_FILENAME_ENCODING explizit angegeben werden.\n"
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "Fehler in Skin-Konfigurationsdatei in Zeile %d: %s"
@@ -1046,15 +1047,16 @@ static const char help_text[]=
 #define MSGTR_NotAFile "Dies scheint keine Datei zu sein: %s !\n"
 
 // ws.c
-#define MSGTR_WS_RemoteDisplay "[ws] Ferngesteuertes Display, deaktiviere XMITSHM.\n"
-#define MSGTR_WS_NoXshm "[ws] Sorry, dein System unterstützt die Shared-Memory-Erweiterung von X nicht.\n"
-#define MSGTR_WS_NoXshape "[ws] Sorry, dein System unterstützt die XShape-Erweiterung nicht.\n"
-#define MSGTR_WS_ColorDepthTooLow "[ws] Sorry, die Farbtiefe ist zu niedrig.\n"
-#define MSGTR_WS_TooManyOpenWindows "[ws] Es sind zu viele Fenster geöffnet.\n"
-#define MSGTR_WS_ShmError "[ws] Fehler der Shared-Memory-Erweiterung\n"
-#define MSGTR_WS_NotEnoughMemoryDrawBuffer "[ws] Sorry, nicht genügend Speicher zum Schreiben des Buffers.\n"
+#define MSGTR_WS_RemoteDisplay "Ferngesteuertes Display, deaktiviere XMITSHM.\n"
+#define MSGTR_WS_NoXshm "Sorry, dein System unterstützt die Shared-Memory-Erweiterung von X nicht.\n"
+#define MSGTR_WS_NoXshape "Sorry, dein System unterstützt die XShape-Erweiterung nicht.\n"
+#define MSGTR_WS_ColorDepthTooLow "Sorry, die Farbtiefe ist zu niedrig.\n"
+#define MSGTR_WS_TooManyOpenWindows "Es sind zu viele Fenster geöffnet.\n"
+#define MSGTR_WS_ShmError "Fehler der Shared-Memory-Erweiterung\n"
+#define MSGTR_WS_NotEnoughMemoryDrawBuffer "Sorry, nicht genügend Speicher zum Schreiben des Buffers.\n"
 #define MSGTR_WS_DpmsUnavailable "DPMS nicht verfügbar?\n"
 #define MSGTR_WS_DpmsNotEnabled "Konnte DPMS nicht aktivieren.\n"
+#define MSGTR_WS_XError "Ein X11-Fehler ist aufgetreten!\n"
 
 // wsxdnd.c
 #define MSGTR_WS_NotAFile "Dies scheint keine Datei zu sein...\n"
@@ -1168,6 +1170,7 @@ static const char help_text[]=
 // alte Videoausgabetreiber, die ersetzt wurden
 #define MSGTR_VO_PGM_HasBeenReplaced "Der pgm-Videoausgabetreiber wurde ersetzt durch -vo pnm:pgmyuv.\n"
 #define MSGTR_VO_MD5_HasBeenReplaced "Der md5-Videoausgabetreiber wurde ersetzt durch -vo md5sum.\n"
+#define MSGTR_VO_GL2_HasBeenRenamed "Der gl2-Videoausgabetreiber wurde in -vo gl_tiled umbenannt, aber es sollte stattdessen -vo gl verwendet werden.\n"
 
 
 // ======================= Audioausgabetreiber ========================

@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
+#include <strings.h>
 
 #include "config.h"
 #include "mp_msg.h"
@@ -182,7 +183,7 @@ static int control(int cmd,void *arg){
 	    if(AF_FORMAT_IS_AC3(ao_data.format))
 		return CONTROL_TRUE;
 
-	    if ((fd = open(oss_mixer_device, O_RDONLY)) > 0)
+	    if ((fd = open(oss_mixer_device, O_RDONLY)) != -1)
 	    {
 		ioctl(fd, SOUND_MIXER_READ_DEVMASK, &devs);
 		if (devs & (1 << oss_mixer_channel))

@@ -20,20 +20,22 @@
 
 #include <string.h>
 
-#include "config.h"
 #include "libvo/x11_common.h"
 #include "help_mp.h"
+#include "mp_msg.h"
 #include "mp_core.h"
 
-#include "gmplayer.h"
-#include "gui/app.h"
+#include "ui.h"
+#include "gui/app/app.h"
+#include "gui/app/gui.h"
 #include "gui/interface.h"
-#include "widgets.h"
+#include "gui/dialog/dialog.h"
+#include "gui/wm/ws.h"
+#include "gui/wm/wsxdnd.h"
 
-int             uiVideoRender = 0;
 int             videoVisible = 0;
 
-void uiVideoDraw( void )
+static void uiVideoDraw( void )
 {
  if ( guiApp.videoWindow.State == wsWindowClosed ) mplayer( MPLAYER_EXIT_GUI, EXIT_QUIT, 0 );
 
@@ -41,18 +43,17 @@ void uiVideoDraw( void )
  if ( guiApp.videoWindow.State == wsWindowFocusOut && metacity_hack != 3 ) videoVisible--;
 
  if ( !guiApp.videoWindow.Mapped ||
-      guiApp.videoWindow.Visible == wsWindowNotVisible ) return;
+      guiApp.videoWindow.Visible == wsWindowNotVisible ||
+      guiInfo.Playing) return;
 
- if ( guiInfo.Playing ) uiVideoRender=0;
-
- if ( uiVideoRender && guiApp.videoWindow.State == wsWindowExpose )
+ if ( guiApp.videoWindow.State == wsWindowExpose )
   {
-   if ( guiApp.video.Bitmap.Image ) wsPutImage( &guiApp.videoWindow );
+   wsWindowBackground(&guiApp.videoWindow, guiApp.video.R, guiApp.video.G, guiApp.video.B);
+   if ( guiApp.video.Bitmap.Image ) wsImageDraw( &guiApp.videoWindow );
   }
- guiApp.videoWindow.State=0;
 }
 
-void uiVideoMouseHandle( int Button,int X,int Y,int RX,int RY )
+static void uiVideoMouse( int Button,int X,int Y,int RX,int RY )
 {
  static int mplVideoMoved = 0;
  static int msButton = 0;
@@ -66,11 +67,11 @@ void uiVideoMouseHandle( int Button,int X,int Y,int RX,int RY )
           break;
    case wsPMMouseButton:
           gtkShow( ivHidePopUpMenu,NULL );
-          uiShowMenu( RX,RY );
+          uiMenuShow( RX,RY );
           msButton=wsPMMouseButton;
           break;
    case wsRMMouseButton:
-          uiHideMenu( RX,RY,1 );
+          uiMenuHide( RX,RY,1 );
           msButton=0;
           break;
 /* --- */
@@ -87,14 +88,11 @@ void uiVideoMouseHandle( int Button,int X,int Y,int RX,int RY )
                    mplVideoMoved=1;
                    if ( !guiApp.videoWindow.isFullScreen )
                     {
-                     wsMoveWindow( &guiApp.videoWindow,True,RX - sx,RY - sy );
-                     guiApp.video.x = guiApp.videoWindow.X;
-                     guiApp.video.y = guiApp.videoWindow.Y;
-                     // NOTE TO MYSELF: dragging the title bar goes unnoticed?
+                     wsWindowMove( &guiApp.videoWindow,True,RX - sx,RY - sy );
                     }
                    break;
             case wsPMMouseButton:
-                   uiMenuMouseHandle( RX,RY );
+                   if (guiApp.menuIsPresent) guiApp.menuWindow.MouseHandler( 0,RX,RY,0,0 );
                    break;
 	    default: uiPlaybarShow( Y ); break;
            }
@@ -102,11 +100,34 @@ void uiVideoMouseHandle( int Button,int X,int Y,int RX,int RY )
    case wsRLMouseButton:
           if ( ( !mplVideoMoved )&&( guiApp.videoWindow.isFullScreen ) )
            {
-            if( videoVisible++%2 ) wsRaiseWindowTop( wsDisplay,guiApp.mainWindow.WindowID );
-             else wsRaiseWindowTop( wsDisplay,guiApp.videoWindow.WindowID );
+            // NOTE TO MYSELF: this doesn't work, fix later with wsWindowLayer()?
+            if( videoVisible++%2 ) wsWindowRaiseTop( wsDisplay,guiApp.mainWindow.WindowID );
+             else wsWindowRaiseTop( wsDisplay,guiApp.videoWindow.WindowID );
 	   }
           msButton=0;
           mplVideoMoved=0;
           break;
   }
+}
+
+void uiVideoInit (void)
+{
+  wsWindowCreate(&guiApp.videoWindow, guiApp.video.x, guiApp.video.y, guiApp.video.width, guiApp.video.height, wsShowFrame | wsHideWindow | wsWaitMap | wsAspect, wsShowMouseCursor | wsHandleMouseButton | wsHandleMouseMove, "MPlayer - Video");
+  mp_msg(MSGT_GPLAYER, MSGL_DBG2, "[video] videoWindow ID: 0x%x\n", (int) guiApp.videoWindow.WindowID);
+  wsWindowIcon(wsDisplay, guiApp.videoWindow.WindowID, &guiIcon);
+  if (guiApp.video.Bitmap.Image)
+  {
+    wsImageResize(&guiApp.videoWindow, guiApp.video.Bitmap.Width, guiApp.video.Bitmap.Height);
+    wsImageRender(&guiApp.videoWindow, guiApp.video.Bitmap.Image);
+  }
+  wsXDNDMakeAwareness(&guiApp.videoWindow);
+  guiApp.videoWindow.DrawHandler = uiVideoDraw;
+  guiApp.videoWindow.MouseHandler = uiVideoMouse;
+  guiApp.videoWindow.KeyHandler = guiApp.mainWindow.KeyHandler;
+  guiApp.videoWindow.DNDHandler = guiApp.mainWindow.DNDHandler;
+}
+
+void uiVideoDone (void)
+{
+  wsWindowDestroy(&guiApp.videoWindow);
 }

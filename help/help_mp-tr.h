@@ -686,8 +686,6 @@ static const char help_text[]=
 
 // ====================== GUI messages/buttons ========================
 
-#ifdef CONFIG_GUI
-
 // --- labels ---
 #define MSGTR_About "Hakkında"
 #define MSGTR_FileSelect "Dosya Seç..."
@@ -949,13 +947,13 @@ static const char help_text[]=
 
 // ws.c
 
-#define MSGTR_WS_RemoteDisplay "[ws] uzaktan kumanda göstergesi, XMITSHM devredışı bırakılıyor.\n"
-#define MSGTR_WS_NoXshm "[ws] Üzgünüm, sisteminiz X paylaşımlı bellek genişletmesini desteklemiyor.\n"
-#define MSGTR_WS_NoXshape "[ws] Üzgünüm, sisteminiz Xshape genişletmesini desteklemiyor.\n"
-#define MSGTR_WS_ColorDepthTooLow "[ws] Üzgünüm, renk derinliği çok düşük.\n"
-#define MSGTR_WS_TooManyOpenWindows "[ws] Çok sayıda açık pencere var.\n"
-#define MSGTR_WS_ShmError "[ws] paylaşımlı bellek genişletme hatası\n"
-#define MSGTR_WS_NotEnoughMemoryDrawBuffer "[ws] Üzgünüm, ilerleme tamponu için yeterli bellek yok.\n"
+#define MSGTR_WS_RemoteDisplay "uzaktan kumanda göstergesi, XMITSHM devredışı bırakılıyor.\n"
+#define MSGTR_WS_NoXshm "Üzgünüm, sisteminiz X paylaşımlı bellek genişletmesini desteklemiyor.\n"
+#define MSGTR_WS_NoXshape "Üzgünüm, sisteminiz Xshape genişletmesini desteklemiyor.\n"
+#define MSGTR_WS_ColorDepthTooLow "Üzgünüm, renk derinliği çok düşük.\n"
+#define MSGTR_WS_TooManyOpenWindows "Çok sayıda açık pencere var.\n"
+#define MSGTR_WS_ShmError "paylaşımlı bellek genişletme hatası\n"
+#define MSGTR_WS_NotEnoughMemoryDrawBuffer "Üzgünüm, ilerleme tamponu için yeterli bellek yok.\n"
 #define MSGTR_WS_DpmsUnavailable "DPMS kullanılamıyor?\n"
 #define MSGTR_WS_DpmsNotEnabled "DPMS etkinleştirilimedi.\n"
 
@@ -963,8 +961,6 @@ static const char help_text[]=
 
 #define MSGTR_WS_NotAFile " Bu bir dosya olarak görünmüyor...\n"
 #define MSGTR_WS_DDNothing "D&D: Hiçbirşey geri dönmedi!\n"
-
-#endif
 
 // ======================= VO Video Output drivers ========================
 

@@ -40,10 +40,11 @@
 #include <ctype.h>
 #include <assert.h>
 #include <string.h>
+#include <strings.h>
 
 #include "config.h"
 #include "mp_msg.h"
-#ifdef CODECS2HTML
+#if defined(CODECS2HTML) || defined(TESTING)
 #ifdef __GNUC__
 #define mp_msg(t, l, m, args...) fprintf(stderr, m, ##args)
 #else
@@ -54,6 +55,7 @@
 #include "help_mp.h"
 
 #include "libavutil/avutil.h"
+#include "libavutil/common.h"
 #include "libmpcodecs/img_format.h"
 #include "codec-cfg.h"
 
@@ -233,6 +235,7 @@ static const struct {
     {"ABGR",        IMGFMT_ABGR},
     {"RGB1",        IMGFMT_RGB1},
     {"BGR1",        IMGFMT_BGR1},
+    {"XYZ12",       IMGFMT_XYZ12},
     {"GBR24P",      IMGFMT_GBR24P},
     {"GBR12P",      IMGFMT_GBR12P},
     {"GBR14P",      IMGFMT_GBR14P},
@@ -752,6 +755,9 @@ int parse_codec_cfg(const char *cfgfile)
             if (!strcmp(token[0], "align16"))
                 codec->flags |= CODECS_FLAG_ALIGN16;
             else
+            if (!strcmp(token[0], "dummy"))
+                codec->flags |= CODECS_FLAG_DUMMY;
+            else
                 goto err_out_parse_error;
         } else if (!strcmp(token[0], "status")) {
             if (get_token(1, 1) < 0)
@@ -870,8 +876,7 @@ codecs_t* find_codec(unsigned int fourcc,unsigned int *fourccmap,
         for (/* NOTHING */; i--; c++) {
             if(start && c<=start) continue;
             for (j = 0; j < CODECS_MAX_FOURCC; j++) {
-                // FIXME: do NOT hardwire 'null' name here:
-                if (c->fourcc[j]==fourcc || !strcmp(c->drv,"null")) {
+                if (c->fourcc[j]==fourcc || c->flags & CODECS_FLAG_DUMMY) {
                     if (fourccmap)
                         *fourccmap = c->fourccmap[j];
                     return c;

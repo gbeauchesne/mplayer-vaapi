@@ -106,7 +106,7 @@ static int64_t mp_seek(void *opaque, int64_t pos, int whence) {
     else if(whence == SEEK_SET)
         pos += stream->start_pos;
     else if(whence == AVSEEK_SIZE && stream->end_pos > 0) {
-        off_t size;
+        uint64_t size;
         stream_control(stream, STREAM_CTRL_GET_SIZE, &size);
         if (size > stream->end_pos)
             stream->end_pos = size;
@@ -280,6 +280,7 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
     int stream_id;
     AVDictionaryEntry *lang = av_dict_get(st->metadata, "language", NULL, 0);
     AVDictionaryEntry *title= av_dict_get(st->metadata, "title",    NULL, 0);
+    AVDictionaryEntry *rot  = av_dict_get(st->metadata, "rotate",   NULL, 0);
     int g;
 
     switch(codec->codec_type){
@@ -321,20 +322,20 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
             sh_audio->samplerate= codec->sample_rate;
             sh_audio->i_bps= codec->bit_rate/8;
             switch (codec->codec_id) {
-                case CODEC_ID_PCM_S8:
-                case CODEC_ID_PCM_U8:
+                case AV_CODEC_ID_PCM_S8:
+                case AV_CODEC_ID_PCM_U8:
                     sh_audio->samplesize = 1;
                     break;
-                case CODEC_ID_PCM_S16LE:
-                case CODEC_ID_PCM_S16BE:
-                case CODEC_ID_PCM_U16LE:
-                case CODEC_ID_PCM_U16BE:
+                case AV_CODEC_ID_PCM_S16LE:
+                case AV_CODEC_ID_PCM_S16BE:
+                case AV_CODEC_ID_PCM_U16LE:
+                case AV_CODEC_ID_PCM_U16BE:
                     sh_audio->samplesize = 2;
                     break;
-                case CODEC_ID_PCM_ALAW:
+                case AV_CODEC_ID_PCM_ALAW:
                     sh_audio->format = 0x6;
                     break;
-                case CODEC_ID_PCM_MULAW:
+                case AV_CODEC_ID_PCM_MULAW:
                     sh_audio->format = 0x7;
                     break;
             }
@@ -362,18 +363,21 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
             priv->vstreams[priv->video_streams] = i;
             bih=calloc(sizeof(*bih) + codec->extradata_size,1);
 
-            if(codec->codec_id == CODEC_ID_RAWVIDEO) {
+            if (codec->codec_id == AV_CODEC_ID_RAWVIDEO) {
                 switch (codec->pix_fmt) {
                     case PIX_FMT_RGB24:
                         codec->codec_tag= MKTAG(24, 'B', 'G', 'R');
+                        break;
                     case PIX_FMT_BGR24:
                         codec->codec_tag= MKTAG(24, 'R', 'G', 'B');
+                        break;
                 }
             }
             codec->codec_tag = mp_codec_id2tag(codec->codec_id, codec->codec_tag, 0);
             bih->biSize= sizeof(*bih) + codec->extradata_size;
             bih->biWidth= codec->width;
             bih->biHeight= codec->height;
+            bih->biPlanes= 1;
             bih->biBitCount= codec->bits_per_coded_sample;
             bih->biSizeImage = bih->biWidth * bih->biHeight * bih->biBitCount/8;
             bih->biCompression= codec->codec_tag;
@@ -399,6 +403,8 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
             sh_video->i_bps=codec->bit_rate/8;
             if (title && title->value)
                 mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_VID_%d_NAME=%s\n", priv->video_streams, title->value);
+            if (rot && rot->value)
+                mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_VID_%d_ROTATE=%s\n", priv->video_streams, rot->value);
             mp_msg(MSGT_DEMUX,MSGL_DBG2,"aspect= %d*%d/(%d*%d)\n",
                 codec->width, codec->sample_aspect_ratio.num,
                 codec->height, codec->sample_aspect_ratio.den);
@@ -427,26 +433,34 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
         case AVMEDIA_TYPE_SUBTITLE:{
             sh_sub_t* sh_sub;
             char type;
-            if(codec->codec_id == CODEC_ID_TEXT)
+            if (codec->codec_id == AV_CODEC_ID_TEXT
+#if LIBAVUTIL_VERSION_MICRO >= 100
+                || codec->codec_id == AV_CODEC_ID_SUBRIP
+#endif /* LIBAVUTIL_VERSION_MICRO >= 100 */
+                )
                 type = 't';
-            else if(codec->codec_id == CODEC_ID_MOV_TEXT)
+            else if (codec->codec_id == AV_CODEC_ID_MOV_TEXT)
                 type = 'm';
-            else if(codec->codec_id == CODEC_ID_SSA)
+            else if (codec->codec_id == AV_CODEC_ID_SSA
+#if LIBAVUTIL_VERSION_MICRO >= 100
+                     || codec->codec_id == AV_CODEC_ID_ASS
+#endif /* LIBAVUTIL_VERSION_MICRO >= 100 */
+                )
                 type = 'a';
-            else if(codec->codec_id == CODEC_ID_DVD_SUBTITLE)
+            else if (codec->codec_id == AV_CODEC_ID_DVD_SUBTITLE)
                 type = 'v';
-            else if(codec->codec_id == CODEC_ID_XSUB)
+            else if (codec->codec_id == AV_CODEC_ID_XSUB)
                 type = 'x';
-            else if(codec->codec_id == CODEC_ID_DVB_SUBTITLE)
+            else if (codec->codec_id == AV_CODEC_ID_DVB_SUBTITLE)
                 type = 'b';
-            else if(codec->codec_id == CODEC_ID_DVB_TELETEXT)
+            else if (codec->codec_id == AV_CODEC_ID_DVB_TELETEXT)
                 type = 'd';
-            else if(codec->codec_id == CODEC_ID_HDMV_PGS_SUBTITLE)
+            else if (codec->codec_id == AV_CODEC_ID_HDMV_PGS_SUBTITLE)
                 type = 'p';
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 14, 100)
-            else if(codec->codec_id == CODEC_ID_EIA_608)
+#if LIBAVUTIL_VERSION_MICRO >= 100
+            else if (codec->codec_id == AV_CODEC_ID_EIA_608)
                 type = 'c';
-#endif
+#endif /* LIBAVUTIL_VERSION_MICRO >= 100 */
             else if(codec->codec_tag == MKTAG('c', '6', '0', '8'))
                 type = 'c';
             else
@@ -469,7 +483,7 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
             break;
         }
         case AVMEDIA_TYPE_ATTACHMENT:{
-            if (st->codec->codec_id == CODEC_ID_TTF) {
+            if (st->codec->codec_id == AV_CODEC_ID_TTF) {
                 AVDictionaryEntry *fnametag = av_dict_get(st->metadata, "filename", NULL, 0);
                 demuxer_add_attachment(demuxer, fnametag ? fnametag->value : NULL,
                                        "application/x-truetype-font",
@@ -529,7 +543,7 @@ static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
     }
 
     if(demuxer->stream->url) {
-        if (!strncmp(demuxer->stream->url, "ffmpeg://rtsp:", 14))
+        if (!strncmp(demuxer->stream->url, "ffmpeg://", 9))
             av_strlcpy(mp_filename, demuxer->stream->url + 9, sizeof(mp_filename));
         else
             av_strlcat(mp_filename, demuxer->stream->url, sizeof(mp_filename));
@@ -590,6 +604,7 @@ static demuxer_t* demux_open_lavf(demuxer_t *demuxer){
     if(!priv->video_streams){
         if(!priv->audio_streams){
 	    mp_msg(MSGT_HEADER,MSGL_ERR,"LAVF: no audio or video headers found - broken file?\n");
+            if (!priv->sub_streams)
             return NULL;
         }
         demuxer->video->id=-2; // audio-only
@@ -676,9 +691,11 @@ static void demux_seek_lavf(demuxer_t *demuxer, float rel_seek_secs, float audio
     if (flags & SEEK_ABSOLUTE) {
       priv->last_pts = priv->avfc->start_time != AV_NOPTS_VALUE ?
                        priv->avfc->start_time : 0;
-    } else {
-      if (rel_seek_secs < 0) avsflags = AVSEEK_FLAG_BACKWARD;
     }
+    // This is important also for SEEK_ABSOLUTE because seeking
+    // is done by dts, while start_time is relative to pts and thus
+    // usually too large.
+    if (rel_seek_secs <= 0) avsflags = AVSEEK_FLAG_BACKWARD;
     if (flags & SEEK_FACTOR) {
       if (priv->avfc->duration == 0 || priv->avfc->duration == AV_NOPTS_VALUE)
         return;
@@ -812,7 +829,7 @@ redo:
                             prog->aid = program->stream_index[i];
                         break;
                     case AVMEDIA_TYPE_SUBTITLE:
-                        if(prog->sid == -2 && priv->avfc->streams[program->stream_index[i]]->codec->codec_id == CODEC_ID_TEXT)
+                        if(prog->sid == -2)
                             prog->sid = program->stream_index[i];
                         break;
                 }

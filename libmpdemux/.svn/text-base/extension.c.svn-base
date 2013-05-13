@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include "config.h"
 #include "mp_msg.h"
@@ -84,6 +85,7 @@ static struct {
         { "mac", DEMUXER_TYPE_LAVF },
         { "str", DEMUXER_TYPE_LAVF },
         { "cdg", DEMUXER_TYPE_LAVF },
+        { "tak", DEMUXER_TYPE_LAVF },
 
 // At least the following are hacks against broken autodetection
 // that should not be there

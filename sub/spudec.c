@@ -36,12 +36,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <strings.h>
 #include <math.h>
 #include "sub.h"
 #include "libvo/video_out.h"
 #include "spudec.h"
 #include "vobsub.h"
 #include "libavutil/avutil.h"
+#include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 #include "libswscale/swscale.h"
 
@@ -227,7 +229,9 @@ static int spudec_alloc_image(spudec_handle_t *this, int stride, int height)
   if (this->image_size < this->stride * this->height) {
     if (this->image != NULL) {
       free(this->image);
+      this->image = NULL;
       free(this->pal_image);
+      this->pal_image = NULL;
       this->image_size = 0;
       this->pal_width = this->pal_height  = 0;
     }
@@ -540,11 +544,6 @@ static void spudec_process_control(spudec_handle_t *this, int pts100)
 	       current_nibble[0] / 2, current_nibble[1] / 2);
 	off+=4;
 	break;
-      case 0xff:
-	/* All done, bye-bye */
-	mp_msg(MSGT_SPUDEC,MSGL_DBG2,"Done!\n");
-	return;
-//	break;
       default:
 	mp_msg(MSGT_SPUDEC,MSGL_WARN,"spudec: Error determining control type 0x%02x.  Skipping %d bytes.\n",
 	       type, next_off - off);
@@ -748,10 +747,24 @@ void spudec_draw(void *this, void (*draw_alpha)(int x0,int y0, int w,int h, unsi
     }
 }
 
+static void validate_dimensions(spudec_handle_t *spu, unsigned dxs, unsigned dys)
+{
+    if (spu->orig_frame_width == 0 || spu->orig_frame_height == 0) {
+        spu->width  = FFMIN(spu->width,  dxs);
+        spu->height = FFMIN(spu->height, dys);
+        spu->start_col = FFMIN(spu->start_col, dxs - spu->width);
+        spu->start_row = FFMIN(spu->start_row, dys - spu->height);
+        return;
+    }
+    spu->orig_frame_width  = FFMAX(spu->orig_frame_width,  spu->start_col + spu->width);
+    spu->orig_frame_height = FFMAX(spu->orig_frame_height, spu->start_row + spu->height);
+}
+
 /* calc the bbox for spudec subs */
 void spudec_calc_bbox(void *me, unsigned int dxs, unsigned int dys, unsigned int* bbox)
 {
   spudec_handle_t *spu = me;
+  validate_dimensions(spu, dxs, dys);
   if (spu->orig_frame_width == 0 || spu->orig_frame_height == 0
   || (spu->orig_frame_width == dxs && spu->orig_frame_height == dys)) {
     // unscaled
@@ -896,6 +909,7 @@ void spudec_draw_scaled(void *me, unsigned int dxs, unsigned int dys, void (*dra
 	return;
     }
 
+    validate_dimensions(spu, dxs, dys);
     if (!(spu_aamode&16) && (spu->orig_frame_width == 0 || spu->orig_frame_height == 0
 	|| (spu->orig_frame_width == dxs && spu->orig_frame_height == dys))) {
       spudec_draw(spu, draw_alpha);
@@ -944,6 +958,11 @@ void spudec_draw_scaled(void *me, unsigned int dxs, unsigned int dys, void (*dra
 	  table_y = calloc(spu->scaled_height, sizeof(scale_pixel));
 	  if (!table_x || !table_y) {
 	    mp_msg(MSGT_SPUDEC, MSGL_FATAL, "Fatal: spudec_draw_scaled: calloc failed\n");
+	    free(table_x);
+	    table_x = NULL;
+	    free(table_y);
+	    table_y = NULL;
+	    break;
 	  }
 	  scale_table(0, 0, spu->width - 1, spu->scaled_width - 1, table_x);
 	  scale_table(0, 0, spu->height - 1, spu->scaled_height - 1, table_y);

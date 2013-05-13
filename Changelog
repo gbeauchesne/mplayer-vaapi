@@ -1,8 +1,32 @@
 MPlayer
 
+    Decoders:
+    * Hardware accelerated decoding on OS X via VDA.
+
     Other:
     * "run" slave/keybinding command now supports expanding properties
     * better support for > 8 bit formats in -vo gl
+    * support for XYZ color space in -vo gl
+    * -vo gl now supports OSD (not EOSD though) with GLES backend.
+    * GLES backend now uses GLES v2 with YUV support via shaders
+    * -vo gl now has an OSX/Cocoa backend, so it should be a better
+      alternative to -vo corevideo now.
+    * -vo gl2 renamed to -vo gl_tiled to stop people from assuming it is
+      better than -vo gl (it is in many ways worse).
+    * Fixes for DVB, teletext and closed-caption based subtitles.
+    * Support teletext and CC subtitles in WTV.
+    * Support binding keys corresponding to non-ASCII characters.
+    * Limited -endpos support for -dump*
+
+    Ports:
+    * Windows: support file names as UTF-8 in slave mode and passing
+      file names as wchar command line arguments.
+    * Android: MPlayer can be run from adb shell and display videos
+      via OpenGL ES.
+      Note that just a bit of seeking etc. would cause reproducible
+      system reboots after just a few seconds on my Galaxy S2.
+    * Android: -wid is supported. This should allow using MPlayer in slave
+      mode, a native window pointer needs to be passed as -wid. Untested.
 
   1.1: "We gave up on 1.0"
 

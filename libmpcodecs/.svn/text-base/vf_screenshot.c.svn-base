@@ -37,6 +37,7 @@
 #include "vf.h"
 #include "vf_scale.h"
 
+#include "libavutil/mem.h"
 #include "libswscale/swscale.h"
 #include "libavcodec/avcodec.h"
 
@@ -138,6 +139,7 @@ static void scale_image(struct vf_priv_s* priv, mp_image_t *mpi)
 
 static void start_slice(struct vf_instance *vf, mp_image_t *mpi)
 {
+    mpi->priv=
     vf->dmpi=vf_get_image(vf->next,mpi->imgfmt,
         mpi->type, mpi->flags, mpi->width, mpi->height);
     if (vf->priv->shot) {
@@ -188,10 +190,7 @@ static int put_image(struct vf_instance *vf, mp_image_t *mpi, double pts)
 {
     mp_image_t *dmpi = (mp_image_t *)mpi->priv;
 
-    if (mpi->flags & MP_IMGFLAG_DRAW_CALLBACK)
-      dmpi = vf->dmpi;
-    else
-    if(!(mpi->flags&MP_IMGFLAG_DIRECT)){
+    if(!(mpi->flags&(MP_IMGFLAG_DIRECT|MP_IMGFLAG_DRAW_CALLBACK))){
         dmpi=vf_get_image(vf->next,mpi->imgfmt,
                                     MP_IMGTYPE_EXPORT, 0,
                                     mpi->width, mpi->height);
@@ -302,7 +301,7 @@ static int vf_open(vf_instance_t *vf, char *args)
     vf->priv->avctx = avcodec_alloc_context3(NULL);
     vf->priv->avctx->pix_fmt = PIX_FMT_RGB24;
     avcodec_register_all();
-    if (avcodec_open2(vf->priv->avctx, avcodec_find_encoder(CODEC_ID_PNG), NULL)) {
+    if (avcodec_open2(vf->priv->avctx, avcodec_find_encoder(AV_CODEC_ID_PNG), NULL)) {
         mp_msg(MSGT_VFILTER, MSGL_FATAL, "Could not open libavcodec PNG encoder\n");
         return 0;
     }

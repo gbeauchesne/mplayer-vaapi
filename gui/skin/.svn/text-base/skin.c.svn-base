@@ -26,17 +26,17 @@
 
 #include "skin.h"
 #include "font.h"
-#include "gui/app.h"
 #include "gui/interface.h"
-#include "gui/ui/widgets.h"
+#include "gui/app/app.h"
+#include "gui/app/gui.h"
+#include "gui/dialog/dialog.h"
 #include "gui/util/cut.h"
 #include "gui/util/string.h"
 
-#include "config.h"
 #include "help_mp.h"
+#include "mp_msg.h"
 #include "libavutil/avstring.h"
 #include "libavutil/common.h"
-#include "mp_msg.h"
 
 typedef struct {
     const char *name;
@@ -44,7 +44,7 @@ typedef struct {
 } _item;
 
 char *skinDirInHome;
-char *skinMPlayerDir;
+char *skinDirInData;
 
 static guiItems *skin;
 
@@ -52,9 +52,9 @@ static int linenumber;
 static unsigned char path[512];
 
 static unsigned char currWinName[32];
-static wItem *currWin;
+static guiItem *currWin;
 static int *currWinItemIdx;
-static wItem *currWinItems;
+static guiItem *currWinItems;
 
 /**
  * @brief Display a skin error message.
@@ -79,16 +79,16 @@ static void skin_error(const char *format, ...)
  *
  * @param item name of the item to be put in a message in case of an error
  *
- * @return 1 (ok) or 0 (error)
+ * @return #True (ok) or #False (error)
  */
 static int section_item(char *item)
 {
     if (!skin) {
         skin_error(MSGTR_SKIN_ERROR_SECTION, item);
-        return 0;
+        return False;
     }
 
-    return 1;
+    return True;
 }
 
 /**
@@ -96,16 +96,16 @@ static int section_item(char *item)
  *
  * @param item name of the item to be put in a message in case of an error
  *
- * @return 1 (ok) or 0 (error)
+ * @return #True (ok) or #False (error)
  */
 static int window_item(char *item)
 {
     if (!currWinName[0]) {
         skin_error(MSGTR_SKIN_ERROR_WINDOW, item);
-        return 0;
+        return False;
     }
 
-    return 1;
+    return True;
 }
 
 /**
@@ -126,46 +126,13 @@ static int in_window(char *name)
 }
 
 /**
- * @brief Read a skin @a image file.
- *
- * @param fname filename (with path)
- * @param img pointer suitable to store the image data
- *
- * @return return code of #bpRead()
- */
-int skinImageRead(char *fname, guiImage *img)
-{
-    int i = bpRead(fname, img);
-
-    switch (i) {
-    case -1:
-        skin_error(MSGTR_SKIN_BITMAP_16bit, fname);
-        break;
-
-    case -2:
-        skin_error(MSGTR_SKIN_BITMAP_FileNotFound, fname);
-        break;
-
-    case -5:
-        skin_error(MSGTR_SKIN_BITMAP_PNGReadError, fname);
-        break;
-
-    case -8:
-        skin_error(MSGTR_SKIN_BITMAP_ConversionError, fname);
-        break;
-    }
-
-    return i;
-}
-
-/**
  * @brief Get next free item in current @a window.
  *
  * @return pointer to next free item (ok) or NULL (error)
  */
-static wItem *next_item(void)
+static guiItem *next_item(void)
 {
-    wItem *item = NULL;
+    guiItem *item = NULL;
 
     if (*currWinItemIdx < MAX_ITEMS - 1) {
         (*currWinItemIdx)++;
@@ -338,14 +305,19 @@ static int item_base(char *in)
 
     mp_msg(MSGT_GPLAYER, MSGL_DBG2, "\n");
 
-    av_strlcpy(file, path, sizeof(file));
-    av_strlcat(file, fname, sizeof(file));
+    if (is_video && (strcmp(fname, "NULL") == 0)) {
+        currWin->width  = 0;
+        currWin->height = 0;
+    } else {
+        av_strlcpy(file, path, sizeof(file));
+        av_strlcat(file, fname, sizeof(file));
 
-    if (skinImageRead(file, &currWin->Bitmap) != 0)
-        return 1;
+        if (skinImageRead(file, &currWin->Bitmap) != 0)
+            return 1;
 
-    currWin->width  = currWin->Bitmap.Width;
-    currWin->height = currWin->Bitmap.Height;
+        currWin->width  = currWin->Bitmap.Width;
+        currWin->height = currWin->Bitmap.Height;
+    }
 
     if (is_video) {
         if (w && h) {
@@ -354,7 +326,10 @@ static int item_base(char *in)
         }
     }
 
-    mp_msg(MSGT_GPLAYER, MSGL_DBG2, "[skin]     bitmap: %dx%d\n", currWin->width, currWin->height);
+    if (currWin->width == 0 || currWin->height == 0)
+        return 1;
+
+    mp_msg(MSGT_GPLAYER, MSGL_DBG2, "[skin]    %s: %dx%d\n", (is_video && w && h ? "size" : " bitmap"), currWin->width, currWin->height);
 
     if (!is_video) {
         if (!bpRenderMask(&currWin->Bitmap, &currWin->Mask)) {
@@ -365,9 +340,9 @@ static int item_base(char *in)
     }
 
     if (is_bar)
-        skin->playbarIsPresent = 1;
+        skin->playbarIsPresent = True;
     if (is_menu)
-        skin->menuIsPresent = 1;
+        skin->menuIsPresent = True;
 
     return 0;
 }
@@ -417,7 +392,7 @@ static int item_button(char *in)
     unsigned char file[512];
     int x, y, w, h, message;
     char msg[32];
-    wItem *item;
+    guiItem *item;
 
     if (!window_item("button"))
         return 1;
@@ -488,7 +463,7 @@ static int item_button(char *in)
 static int item_selected(char *in)
 {
     unsigned char file[512];
-    wItem *currItem;
+    guiItem *currItem;
 
     if (!window_item("selected"))
         return 1;
@@ -532,7 +507,7 @@ static int item_menu(char *in)
 {
     int x, y, w, h, message;
     char msg[32];
-    wItem *item;
+    guiItem *item;
 
     if (!window_item("menu"))
         return 1;
@@ -592,7 +567,7 @@ static int item_hpotmeter(char *in)
     unsigned char phfname[256];
     unsigned char buf[512];
     int pwidth, pheight, ph, d, x, y, w, h, message;
-    wItem *item;
+    guiItem *item;
 
     if (!window_item("h/v potmeter"))
         return 1;
@@ -682,7 +657,7 @@ static int item_hpotmeter(char *in)
 static int item_vpotmeter(char *in)
 {
     int r;
-    wItem *item;
+    guiItem *item;
 
     r = item_hpotmeter(in);
 
@@ -708,7 +683,7 @@ static int item_potmeter(char *in)
     unsigned char phfname[256];
     unsigned char buf[512];
     int ph, d, x, y, w, h, message;
-    wItem *item;
+    guiItem *item;
 
     if (!window_item("potmeter"))
         return 1;
@@ -827,7 +802,7 @@ static int item_slabel(char *in)
     int x, y, id;
     char fnt[256];
     char txt[256];
-    wItem *item;
+    guiItem *item;
 
     if (!window_item("slabel"))
         return 1;
@@ -890,7 +865,7 @@ static int item_dlabel(char *in)
     int x, y, w, a, id;
     char fnt[256];
     char txt[256];
-    wItem *item;
+    guiItem *item;
 
     if (!window_item("dlabel"))
         return 1;
@@ -1000,6 +975,39 @@ static _item skinItem[] = {
 };
 
 /**
+ * @brief Read a skin @a image file.
+ *
+ * @param fname filename (with path)
+ * @param img pointer suitable to store the image data
+ *
+ * @return return code of #bpRead()
+ */
+int skinImageRead(char *fname, guiImage *img)
+{
+    int i = bpRead(fname, img);
+
+    switch (i) {
+    case -1:
+        skin_error(MSGTR_SKIN_BITMAP_16bit, fname);
+        break;
+
+    case -2:
+        skin_error(MSGTR_SKIN_BITMAP_FileNotFound, fname);
+        break;
+
+    case -5:
+        skin_error(MSGTR_SKIN_BITMAP_PNGReadError, fname);
+        break;
+
+    case -8:
+        skin_error(MSGTR_SKIN_BITMAP_ConversionError, fname);
+        break;
+    }
+
+    return i;
+}
+
+/**
  * @brief Build the skin file path for a skin name.
  *
  * @param dir skins directory
@@ -1042,7 +1050,7 @@ int skinRead(char *sname)
     skinfname = setname(skinDirInHome, sname);
 
     if ((skinfile = fopen(skinfname, "rt")) == NULL) {
-        skinfname = setname(skinMPlayerDir, sname);
+        skinfname = setname(skinDirInData, sname);
 
         if ((skinfile = fopen(skinfname, "rt")) == NULL) {
             mp_msg(MSGT_GPLAYER, MSGL_ERR, MSGTR_SKIN_SkinFileNotFound, skinfname);
@@ -1074,18 +1082,22 @@ int skinRead(char *sname)
 
         for (i = 0; i < FF_ARRAY_ELEMS(skinItem); i++) {
             if (!strcmp(item, skinItem[i].name)) {
-                if (skinItem[i].func(param) != 0)
+                if (skinItem[i].func(param) != 0) {
+                    fclose(skinfile);
                     return -2;
-                else
+                } else
                     break;
             }
         }
 
         if (i == FF_ARRAY_ELEMS(skinItem)) {
             skin_error(MSGTR_SKIN_UNKNOWN_ITEM, item);
+            fclose(skinfile);
             return -2;
         }
     }
+
+    fclose(skinfile);
 
     if (linenumber == 0) {
         mp_msg(MSGT_GPLAYER, MSGL_ERR, MSGTR_SKIN_SkinFileNotReadable, skinfname);

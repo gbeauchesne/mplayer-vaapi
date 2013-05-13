@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU General Public License along
  * with MPlayer; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * based on: WindowMaker implementation,
+ *           adopted for MPlayer
  */
 
 #ifndef MPLAYER_GUI_WSXDND_H
@@ -22,10 +25,10 @@
 #include "ws.h"
 
 void wsXDNDInitialize(void);
-Bool wsXDNDProcessSelection(wsTWindow* wnd,XEvent *event);
+Bool wsXDNDProcessSelection(wsWindow* win,XEvent *event);
 Bool wsXDNDProcessClientMessage(XClientMessageEvent *event);
-void wsXDNDMakeAwareness(wsTWindow* window);
-void wsXDNDClearAwareness(wsTWindow* window);
+void wsXDNDMakeAwareness(wsWindow* win);
+void wsXDNDClearAwareness(wsWindow* win);
 
 /* header was ripped from xdnd's example on its page */
 

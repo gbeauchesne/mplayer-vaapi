@@ -50,6 +50,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/time.h>
 #if defined(__MINGW32__) || defined(__CYGWIN__)
 #include <windows.h>
@@ -578,7 +579,7 @@ audio_encoder_t *aencoder = NULL;
 
 user_correct_pts = 0;
 
-  common_preinit();
+  common_preinit(&argc, &argv);
 
   // Create the config context and register the options
   mconfig = m_config_new();

@@ -446,9 +446,10 @@ and reproduce your crash. As soon as you did it, gdb will return you to the
 command line prompt where you have to enter
 <screen>
 bt
-disass $pc-32 $pc+32
+disass $pc-32,$pc+32
 info all-registers
 </screen>
+With older gdb versions, use disass $pc-32 $pc+32.
 </para>
 </sect3>
 
@@ -460,7 +461,7 @@ info all-registers
 Create the following command file:
 <screen>
 bt
-disass $pc-32 $pc+32
+disass $pc-32,$pc+32
 info all-registers
 </screen>
 Then simply execute this command:

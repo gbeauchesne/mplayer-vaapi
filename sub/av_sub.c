@@ -27,6 +27,9 @@
 void reset_avsub(struct sh_sub *sh)
 {
     if (sh->context) {
+        AVCodecContext *ctx = sh->context;
+        ctx->extradata = NULL;
+        ctx->extradata_size = 0;
         avcodec_close(sh->context);
         av_freep(&sh->context);
     }
@@ -81,7 +84,7 @@ int decode_avsub(struct sh_sub *sh, uint8_t **data, int *size,
                  double *pts, double *endpts)
 {
     AVCodecContext *ctx = sh->context;
-    enum CodecID cid = CODEC_ID_NONE;
+    enum AVCodecID cid = AV_CODEC_ID_NONE;
     int new_type = 0;
     int res;
     int got_sub;
@@ -90,11 +93,11 @@ int decode_avsub(struct sh_sub *sh, uint8_t **data, int *size,
 
     switch (sh->type) {
     case 'b':
-        cid = CODEC_ID_DVB_SUBTITLE; break;
+        cid = AV_CODEC_ID_DVB_SUBTITLE; break;
     case 'p':
-        cid = CODEC_ID_HDMV_PGS_SUBTITLE; break;
+        cid = AV_CODEC_ID_HDMV_PGS_SUBTITLE; break;
     case 'x':
-        cid = CODEC_ID_XSUB; break;
+        cid = AV_CODEC_ID_XSUB; break;
     }
 
     av_init_packet(&pkt);
@@ -107,8 +110,15 @@ int decode_avsub(struct sh_sub *sh, uint8_t **data, int *size,
         AVCodec *sub_codec;
         init_avcodec();
         ctx = avcodec_alloc_context3(NULL);
+        if (!ctx) {
+            mp_msg(MSGT_SUBREADER, MSGL_FATAL,
+                   "Could not allocate subtitle decoder context\n");
+            return -1;
+        }
+        ctx->extradata_size = sh->extradata_len;
+        ctx->extradata = sh->extradata;
         sub_codec = avcodec_find_decoder(cid);
-        if (!ctx || !sub_codec || avcodec_open2(ctx, sub_codec, NULL) < 0) {
+        if (!sub_codec || avcodec_open2(ctx, sub_codec, NULL) < 0) {
             mp_msg(MSGT_SUBREADER, MSGL_FATAL,
                    "Could not open subtitle decoder\n");
             av_freep(&ctx);

@@ -170,7 +170,7 @@ if(len>0){
 
 static void write_avi_list(stream_t *stream, unsigned int id, int len)
 {
-  unsigned int list_id = FOURCC_LIST;
+  unsigned int list_id = mmioFOURCC('L', 'I', 'S', 'T');
   int le_len;
   int le_id;
   len += 4; // list fix
@@ -228,7 +228,7 @@ static void avifile_write_header(muxer_t *muxer){
   }
 
   /* deal with stream delays */
-  for (i = 0; muxer->streams[i] && i < MUXER_MAX_STREAMS; ++i) {
+  for (i = 0; i < MUXER_MAX_STREAMS && muxer->streams[i]; ++i) {
       muxer_stream_t *s = muxer->streams[i];
       if (s->type == MUXER_TYPE_AUDIO && muxer->audio_delay_fix > 0.0) {
           s->h.dwStart = muxer->audio_delay_fix * s->h.dwRate/s->h.dwScale + 0.5;

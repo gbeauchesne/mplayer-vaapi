@@ -129,9 +129,6 @@ typedef struct {
 #define AVIIF_NOTIME	    0x00000100L // this frame doesn't take any time
 #define AVIIF_COMPUSE       0x0FFF0000L // these bits are for compressor use
 
-#define FOURCC_RIFF     mmioFOURCC('R', 'I', 'F', 'F')
-#define FOURCC_LIST     mmioFOURCC('L', 'I', 'S', 'T')
-
 typedef struct
 {
     uint32_t		ckid;
@@ -345,7 +342,7 @@ typedef enum {
 
 typedef struct {
   // index stuff:
-  void* idx;
+  AVIINDEXENTRY *idx;
   int idx_size;
   off_t idx_pos;
   off_t idx_pos_a;
@@ -370,8 +367,6 @@ typedef struct {
   int isodml;
   int warned_unaligned;
 } avi_priv_t;
-
-#define AVI_PRIV ((avi_priv_t*)(demuxer->priv))
 
 #define AVI_IDX_OFFSET(x) ((((uint64_t)(x)->dwFlags&0xffff0000)<<16)+(x)->dwChunkOffset)
 

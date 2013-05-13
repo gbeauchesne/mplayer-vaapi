@@ -40,6 +40,7 @@
 #include "vf.h"
 
 #include "libvo/fastmemcpy.h"
+#include "libavutil/common.h"
 #include "libavutil/mem.h"
 
 extern const vf_info_t vf_info_1bpp;
@@ -279,6 +280,7 @@ mp_image_t* vf_get_image(vf_instance_t* vf, unsigned int outfmt, int mp_imgtype,
   mp_image_t* mpi=NULL;
   int w2;
   int number = (mp_imgtype >> 16) - 1;
+  int missing_palette;
 
 #ifdef MP_DEBUG
   assert(w == -1 || w >= vf->w);
@@ -296,7 +298,9 @@ mp_image_t* vf_get_image(vf_instance_t* vf, unsigned int outfmt, int mp_imgtype,
 
   if(vf->put_image==vf_next_put_image){
       // passthru mode, if the filter uses the fallback/default put_image() code
-      return vf_get_image(vf->next,outfmt,mp_imgtype,mp_imgflag,w,h);
+      mpi = vf_get_image(vf->next,outfmt,mp_imgtype,mp_imgflag,w,h);
+      mpi->usage_count++;
+      return mpi;
   }
 
   // Note: we should call libvo first to check if it supports direct rendering
@@ -342,8 +346,10 @@ mp_image_t* vf_get_image(vf_instance_t* vf, unsigned int outfmt, int mp_imgtype,
     mpi->number = number;
     break;
   }
-  if(mpi){
-    int missing_palette = !(mpi->flags & MP_IMGFLAG_RGB_PALETTE) && (mp_imgflag & MP_IMGFLAG_RGB_PALETTE);
+
+  if (!mpi)
+    return NULL;
+
     mpi->type=mp_imgtype;
     mpi->w=vf->w; mpi->h=vf->h;
     // keep buffer allocation status & color flags only:
@@ -352,15 +358,17 @@ mp_image_t* vf_get_image(vf_instance_t* vf, unsigned int outfmt, int mp_imgtype,
     // accept restrictions, draw_slice and palette flags only:
     mpi->flags|=mp_imgflag&(MP_IMGFLAGMASK_RESTRICTIONS|MP_IMGFLAG_DRAW_CALLBACK|MP_IMGFLAG_RGB_PALETTE);
     if(!vf->draw_slice) mpi->flags&=~MP_IMGFLAG_DRAW_CALLBACK;
-    if(mpi->width!=w2 || mpi->height!=h || missing_palette){
+    missing_palette = !(mpi->flags & MP_IMGFLAG_RGB_PALETTE) && (mp_imgflag & MP_IMGFLAG_RGB_PALETTE);
+    if(mpi->width!=w2 || mpi->height!=h || mpi->imgfmt != outfmt || missing_palette){
 //      printf("vf.c: MPI parameters changed!  %dx%d -> %dx%d   \n", mpi->width,mpi->height,w2,h);
         if(mpi->flags&MP_IMGFLAG_ALLOCATED){
-            if(mpi->width<w2 || mpi->height<h || missing_palette){
+            if(mpi->width<w2 || mpi->height<h || mpi->imgfmt != outfmt || missing_palette){
                 // need to re-allocate buffer memory:
                 av_freep(&mpi->planes[0]);
                 if (mpi->flags & MP_IMGFLAG_RGB_PALETTE)
                     av_freep(&mpi->planes[1]);
                 mpi->flags&=~MP_IMGFLAG_ALLOCATED;
+                mpi->bpp = 0;
                 mp_msg(MSGT_VFILTER,MSGL_V,"vf.c: have to REALLOCATE buffer memory in vf_%s :(\n",
                        vf->info->name);
             }
@@ -427,7 +435,6 @@ mp_image_t* vf_get_image(vf_instance_t* vf, unsigned int outfmt, int mp_imgtype,
     }
 
   mpi->qscale = NULL;
-  }
   mpi->usage_count++;
   // TODO: figure out what is going on with EXPORT types
   if (mpi->usage_count > 1 && mpi->type != MP_IMGTYPE_EXPORT)
