@@ -1517,7 +1517,7 @@ if ! test -e ffmpeg ; then
         echo "git clone --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg; touch ffmpeg/mp_auto_pull"
         exit 1
     fi
-    ffrevision=93e75c78ddae7ac1fd7211b9269b5cdcfd30c665
+    ffrevision=bc63a760837c8b173f2a3820ccb06f9cac1c07b4
     cd ffmpeg && git checkout $ffrevision && cd ..
     touch ffmpeg/mp_auto_pull
 fi
