@@ -43,6 +43,7 @@
 #endif
 
 #include <assert.h>
+#include <strings.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <va/va_x11.h>
@@ -282,6 +283,11 @@ static const char *string_of_VAProfile(VAProfile profile)
         PROFILE(MPEG4Simple);
         PROFILE(MPEG4AdvancedSimple);
         PROFILE(MPEG4Main);
+#if VA_CHECK_VERSION(0,32,0)
+        PROFILE(JPEGBaseline);
+        PROFILE(H263Baseline);
+        PROFILE(H264ConstrainedBaseline);
+#endif
         PROFILE(H264Baseline);
         PROFILE(H264Main);
         PROFILE(H264High);
@@ -289,6 +295,7 @@ static const char *string_of_VAProfile(VAProfile profile)
         PROFILE(VC1Main);
         PROFILE(VC1Advanced);
 #undef PROFILE
+    default: break;
     }
     return "<unknown>";
 }
@@ -303,7 +310,15 @@ static const char *string_of_VAEntrypoint(VAEntrypoint entrypoint)
         ENTRYPOINT(IDCT);
         ENTRYPOINT(MoComp);
         ENTRYPOINT(Deblocking);
+#if VA_CHECK_VERSION(0,32,0)
+        ENTRYPOINT(EncSlice);
+        ENTRYPOINT(EncPicture);
+#endif
+#if VA_CHECK_VERSION(0,34,0)
+        ENTRYPOINT(VideoProc);
+#endif
 #undef ENTRYPOINT
+    default: break;
     }
     return "<unknown>";
 }
@@ -1473,7 +1488,7 @@ static GLXFBConfig *get_fbconfig_for_depth(int depth)
 {
     GLXFBConfig *fbconfigs, *ret = NULL;
     int          n_elements, i, found;
-    int          db, stencil, alpha, mipmap, rgba, value;
+    int          db, stencil, alpha, rgba, value;
 
     static GLXFBConfig *cached_config = NULL;
     static int          have_cached_config = 0;
@@ -1485,7 +1500,6 @@ static GLXFBConfig *get_fbconfig_for_depth(int depth)
 
     db      = SHRT_MAX;
     stencil = SHRT_MAX;
-    mipmap  = 0;
     rgba    = 0;
 
     found = n_elements;
@@ -2337,7 +2351,7 @@ static int draw_slice(uint8_t * image[], int stride[],
     VAStatus status;
     uint8_t *image_data = NULL;
     uint8_t *dst[3] = { 0, };
-    unsigned int dst_stride[3];
+    unsigned int dst_stride[3] = { 0, };
 
     mp_msg(MSGT_VO, MSGL_DBG2, "[vo_vaapi] draw_slice(): location (%d,%d), size %dx%d\n", x, y, w, h);
 
